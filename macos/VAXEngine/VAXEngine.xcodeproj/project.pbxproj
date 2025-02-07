@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		1110D8862D511F9E0080F1F0 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1110D8852D511F9E0080F1F0 /* MetalKit.framework */; };
+		1110D8F32D5120840080F1F0 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1110D8F22D5120840080F1F0 /* Metal.framework */; };
+		1110D8F52D51208A0080F1F0 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1110D8F42D51208A0080F1F0 /* QuartzCore.framework */; };
+		1110D8F72D5120C70080F1F0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1110D8F62D5120C70080F1F0 /* Foundation.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		1110D83F2D50C0820080F1F0 /* VAXEngine.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VAXEngine.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1110D8852D511F9E0080F1F0 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		1110D8F22D5120840080F1F0 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		1110D8F42D51208A0080F1F0 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		1110D8F62D5120C70080F1F0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -28,6 +39,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1110D8F32D5120840080F1F0 /* Metal.framework in Frameworks */,
+				1110D8862D511F9E0080F1F0 /* MetalKit.framework in Frameworks */,
+				1110D8F52D51208A0080F1F0 /* QuartzCore.framework in Frameworks */,
+				1110D8F72D5120C70080F1F0 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -39,6 +54,7 @@
 			children = (
 				1110D8522D50C0FE0080F1F0 /* Sources */,
 				1110D8412D50C0820080F1F0 /* VAXEngine */,
+				1110D8842D511F9D0080F1F0 /* Frameworks */,
 				1110D8402D50C0820080F1F0 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -49,6 +65,17 @@
 				1110D83F2D50C0820080F1F0 /* VAXEngine.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		1110D8842D511F9D0080F1F0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1110D8F62D5120C70080F1F0 /* Foundation.framework */,
+				1110D8F42D51208A0080F1F0 /* QuartzCore.framework */,
+				1110D8F22D5120840080F1F0 /* Metal.framework */,
+				1110D8852D511F9E0080F1F0 /* MetalKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -89,6 +116,7 @@
 				TargetAttributes = {
 					1110D83E2D50C0820080F1F0 = {
 						CreatedOnToolsVersion = 16.2;
+						LastSwiftMigration = 1620;
 					};
 				};
 			};
@@ -255,6 +283,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = VAXEngine/VAXEngine.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -264,6 +293,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/VAXEngine/metal-cpp";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -273,6 +303,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.moonlight.luna.VAXEngine;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/VAXEngine-Bridging-Header.h";
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -282,6 +315,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = VAXEngine/VAXEngine.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -291,6 +325,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/VAXEngine/metal-cpp";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -300,6 +335,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.moonlight.luna.VAXEngine;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/VAXEngine-Bridging-Header.h";
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
