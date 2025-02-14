@@ -5,31 +5,38 @@
 #include <QuartzCore/QuartzCore.hpp>
 #import "MTLEngine.h"
 #include "MTLRenderer.hpp"
-
+#include "TESTCPP.hpp"
+#include "MTLStack.hpp"
 
 @implementation MTLEngine {
   MTLRenderer* renderer;
-  MTL::Device* device;
+  MTLStack* mtlStack;
   CA::MetalLayer* metalLayer;
 }
 
 -(id) init {
   if (self = [super init]) {
-    device = MTL::CreateSystemDefaultDevice();
-    renderer = new MTLRenderer(device);
+    mtlStack = new MTLStack();
+    renderer = new MTLRenderer(mtlStack);
   }
+//  runTESTCPP();
   return self;
 }
 
 -(void) dealloc {
+  NSLog(@"MTLEngine dealloc");
   delete renderer;
   renderer = nullptr;
-  device->release();
-  device = nullptr;
+  delete mtlStack;
+  mtlStack = nullptr;
 }
 
 - (void)configure: (MTKView *)view {
-  view.device = (__bridge id<MTLDevice>)device;
+  view.device = (__bridge id<MTLDevice>)(&mtlStack->device());
+  view.preferredFramesPerSecond = 60;
+  view.clearColor = MTLClearColor(0, 0, 0, 0);
+  view.depthStencilPixelFormat = MTLPixelFormatDepth32Float;
+  view.sampleCount = 1;
 }
 
 - (CAMetalLayer *)getRenderingLayer {

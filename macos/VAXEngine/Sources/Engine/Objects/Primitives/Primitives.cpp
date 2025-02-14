@@ -7,12 +7,12 @@
 
 using namespace MTL;
 
-Mesh Primitives::createRGBTriangle(Device& device) {
-  simd::float3 vertices[] = {
+Mesh* Primitives::createRGBTriangle(Device& device) {
+  simd_float3 vertices[] = {
     { -0.5f, -0.5f, 0.0f },
     { 0.5f, -0.5f, 0.0f },
     { 0.0f, 0.5f, 0.0f }
   };
   Buffer* buffer = device.newBuffer(&vertices, sizeof(vertices), ResourceStorageModeShared);
-  return Mesh(std::vector<MeshBuffer>({ MeshBuffer(buffer) }), 3);
+  return new Mesh(std::vector<MeshBuffer>({ MeshBuffer(buffer) }), 3);
 }

@@ -11,7 +11,8 @@
 class MeshBuffer {
 public:
   explicit MeshBuffer(MTL::Buffer * buffer);
-  MeshBuffer(const MeshBuffer & rhs) = default;
+  MeshBuffer(MTL::Buffer * buffer, uint offset);
+  MeshBuffer(const MeshBuffer & rhs);
   MeshBuffer(MeshBuffer && rhs) = default;
   virtual ~MeshBuffer();
 
@@ -19,9 +20,11 @@ public:
   MeshBuffer & operator=(MeshBuffer && rhs) = default;
 
   const MTL::Buffer & buffer() const;
+  uint offset() const;
 
 private:
   MTL::Buffer* _buffer;
+  uint _offset;
 };
 
 #endif /* MeshBuffer_hpp */

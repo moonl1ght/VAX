@@ -11,7 +11,7 @@
 
 namespace Primitives {
 
-  Mesh createRGBTriangle(MTL::Device& device);
+Mesh* createRGBTriangle(MTL::Device& device);
 
 }
 

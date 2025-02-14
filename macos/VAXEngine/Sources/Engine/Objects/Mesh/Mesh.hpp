@@ -15,9 +15,13 @@ public:
   explicit Mesh(std::vector<MeshBuffer> vertexBuffers, u_int vertexCount);
   virtual ~Mesh();
 
+  void draw(MTL::RenderCommandEncoder * const renderCommandEncoder) const;
+
 private:
   u_int _vertexCount;
   std::vector<MeshBuffer> _vertexBuffers;
+
+  void drawPrimitives(MTL::RenderCommandEncoder * const renderCommandEncoder) const;
 };
 
 #endif /* Mesh_hpp */
