@@ -16,7 +16,7 @@ public:
   MeshBuffer(MeshBuffer && rhs) = default;
   virtual ~MeshBuffer();
 
-  MeshBuffer & operator=(MeshBuffer & rhs) = default;
+  MeshBuffer & operator=(MeshBuffer & rhs);
   MeshBuffer & operator=(MeshBuffer && rhs) = default;
 
   const MTL::Buffer & buffer() const;

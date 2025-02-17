@@ -25,10 +25,10 @@ MeshBuffer::~MeshBuffer() {
 MeshBuffer::MeshBuffer(const MeshBuffer& other)
 : _buffer(other._buffer->retain())
 , _offset(other._offset) {
-  std::cout << "copy constructor mesh Buffer" << std::endl;
-//  buffer = new char[size];
-//  std::memcpy(buffer, other.buffer, size);
-//  std::cout << "Data copied\n";
+}
+
+MeshBuffer& MeshBuffer::operator=(MeshBuffer & rhs) {
+  return *this;
 }
 
 const Buffer& MeshBuffer::buffer() const {
