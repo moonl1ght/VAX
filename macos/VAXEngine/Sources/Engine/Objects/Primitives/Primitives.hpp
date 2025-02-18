@@ -8,10 +8,11 @@
 #include <stdio.h>
 #include <Metal/Metal.hpp>
 #include "Mesh.hpp"
+#include "Model.hpp"
 
 namespace Primitives {
 
-Mesh* createRGBTriangle(MTL::Device& device);
+Model createRGBTriangle(MTL::Device& device);
 
 }
 

@@ -11,12 +11,16 @@ struct Viewer: View {
 
   var body: some View {
     
-    MetalView(renderer: presenter.renderer)
+    MetalView(renderer: presenter.engine)
   }
 }
 
 extension Viewer {
   final class Presenter: ObservableObject {
-    let renderer = EngineWrapper()
+    let engine = EngineWrapper()
+
+    init() {
+      engine.load()
+    }
   }
 }

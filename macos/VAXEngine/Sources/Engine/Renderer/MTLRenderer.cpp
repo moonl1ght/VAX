@@ -5,16 +5,15 @@
 #include "MTLRenderer.hpp"
 #include <iostream>
 
-#include "Primitives.hpp"
 #include "VertexDescriptor.hpp"
 
 using namespace std;
 using namespace MTL;
 
-MTLRenderer::MTLRenderer(MTLStack* mtlStack)
+MTLRenderer::MTLRenderer(MTLStack* mtlStack, Scene* scene)
 : _mtlStack(mtlStack)
 , _renderPassDescriptor(RenderPassDescriptor::alloc()->init())
-, _triangle(Primitives::createRGBTriangle(mtlStack->device())){
+, _scene(scene) {
   cout << "init renderer" << endl;
   createRenderPipeline();
 };
@@ -41,7 +40,11 @@ void MTLRenderer::draw(CA::MetalLayer *layer) {
 //  renderCommandEncoder->setDepthStencilState(_depthStencilState);
   renderCommandEncoder->setRenderPipelineState(_renderPipelineState);
 
-  _triangle->draw(renderCommandEncoder);
+  for (auto& model: _scene->models()) {
+    model->mesh().draw(renderCommandEncoder);
+  }
+
+//  _triangle->draw(renderCommandEncoder);
 
   renderCommandEncoder->endEncoding();
 

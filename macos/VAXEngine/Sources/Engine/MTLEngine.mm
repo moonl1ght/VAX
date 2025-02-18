@@ -7,17 +7,21 @@
 #include "MTLRenderer.hpp"
 #include "TESTCPP.hpp"
 #include "MTLStack.hpp"
+#include "Scene.hpp"
+#include "Primitives.hpp"
 
 @implementation MTLEngine {
   MTLRenderer* renderer;
   MTLStack* mtlStack;
   CA::MetalLayer* metalLayer;
+  Scene* scene;
 }
 
 -(id) init {
   if (self = [super init]) {
     mtlStack = new MTLStack();
-    renderer = new MTLRenderer(mtlStack);
+    scene = new Scene();
+    renderer = new MTLRenderer(mtlStack, scene);
   }
 //  runTESTCPP();
   return self;
@@ -29,6 +33,8 @@
   renderer = nullptr;
   delete mtlStack;
   mtlStack = nullptr;
+  delete scene;
+  scene = nullptr;
 }
 
 - (void)configure: (MTKView *)view {
@@ -43,7 +49,9 @@
   return (__bridge CAMetalLayer *)metalLayer;
 }
 
-- (void)load { }
+- (void)load {
+  scene->addModel(std::make_unique<Model>(Primitives::createRGBTriangle(mtlStack->device())));
+}
 
 - (void) drawIn: (MTKView *)view {
   CA::MetalLayer* layer = (__bridge CA::MetalLayer*)view.layer;

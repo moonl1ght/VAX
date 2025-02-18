@@ -10,12 +10,12 @@
 #include <QuartzCore/QuartzCore.hpp>
 
 #include "MTLStack.hpp"
-#include "Mesh.hpp"
+#include "Scene.hpp"
 
 class MTLRenderer
 {
 public:
-  explicit MTLRenderer(MTLStack* _mtlStack);
+  explicit MTLRenderer(MTLStack* _mtlStack, Scene* scene);
   virtual ~MTLRenderer();
 
   void draw(CA::MetalLayer* layer);
@@ -25,8 +25,7 @@ private:
   MTL::RenderPassDescriptor* _renderPassDescriptor;
   MTL::RenderPipelineState* _renderPipelineState;
   MTL::DepthStencilState* _depthStencilState;
-
-  Mesh* _triangle;
+  Scene* _scene;
 
   void updateRenderPassDescriptor(CA::MetalDrawable* drawable);
   void createRenderPipeline();
