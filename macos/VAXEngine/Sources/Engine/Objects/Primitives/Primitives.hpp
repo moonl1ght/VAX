@@ -14,6 +14,8 @@ namespace Primitives {
 
 Model createRGBTriangle(MTL::Device& device);
 
+Model createRGBCube(MTL::Device& device);
+
 }
 
 #endif /* Primitives_hpp */

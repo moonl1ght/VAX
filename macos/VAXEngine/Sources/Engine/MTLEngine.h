@@ -11,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nonnull CAMetalLayer *)getRenderingLayer;
 - (void) load;
+- (void) resize: (CGSize) viewSize drawableSize: (CGSize) drawableSize;
 - (void) configure: (MTKView *)view;
 - (void) drawIn: (MTKView *)view;
 

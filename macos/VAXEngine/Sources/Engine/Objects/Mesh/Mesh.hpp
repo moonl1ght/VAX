@@ -9,9 +9,12 @@
 #include <Metal/Metal.hpp>
 
 #include "MeshBuffer.hpp"
+#include "Transform.hpp"
 
 class Mesh {
 public:
+  Transform transform;
+
   explicit Mesh(std::vector<MeshBuffer> vertexBuffers, u_int vertexCount);
   virtual ~Mesh();
 

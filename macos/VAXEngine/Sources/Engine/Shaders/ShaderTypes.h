@@ -20,11 +20,19 @@ typedef enum BufferIndex {
   kBufferIndexMeshPositions = 0,
 } BufferIndex;
 
-typedef struct {
-  matrix_float4x4 modelMatrix;
+typedef struct VertexUniforms {
   matrix_float4x4 viewMatrix;
   matrix_float4x4 projectionMatrix;
+
+  inline int size() { return sizeof(matrix_float4x4) * 2; }
+
 } VertexUniforms;
+
+typedef struct ModelUniforms {
+  matrix_float4x4 modelMatrix;
+
+  inline int size() { return sizeof(matrix_float4x4); }
+} ModelUniforms;
 
 typedef struct {
 } FragmentUniforms;

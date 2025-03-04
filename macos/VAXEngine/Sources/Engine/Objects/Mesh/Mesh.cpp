@@ -15,6 +15,8 @@ Mesh::Mesh(std::vector<MeshBuffer> vertexBuffers, u_int vertexCount)
 Mesh::~Mesh() { };
 
 void Mesh::draw(RenderCommandEncoder * const renderCommandEncoder) const {
+  ModelUniforms modelUniforms = { transform.modelMatrix() };
+  renderCommandEncoder->setVertexBytes(&modelUniforms, modelUniforms.size(), 11);
   for (const auto& buffer : _vertexBuffers) {
     renderCommandEncoder->setVertexBuffer(&buffer.buffer(), buffer.offset(), kVertexAttributePosition);
   }

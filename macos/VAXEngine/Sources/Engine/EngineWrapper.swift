@@ -13,10 +13,16 @@ final class EngineWrapper: MTKViewRenderer {
   }
 
   func configure(_ mtkView: MTKView) {
+//    mtkView.
     engine.configure(mtkView)
   }
   
   func resizeView(drawableSize: CGSize, viewportSize: CGSize) {
+    let scaleFactor = NSScreen.main?.backingScaleFactor ?? 1
+    engine.resize(
+      CGSize(width: viewportSize.width * scaleFactor, height: viewportSize.height * scaleFactor),
+      drawableSize:  CGSize(width: drawableSize.width * scaleFactor, height: drawableSize.height * scaleFactor)
+    )
   }
   
   func draw(in mtkView: MTKView) {

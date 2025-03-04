@@ -17,3 +17,38 @@ Model Primitives::createRGBTriangle(Device &device) {
   Mesh* mesh = new Mesh(std::vector<MeshBuffer>({ MeshBuffer(buffer) }), 3);
   return Model(mesh);
 }
+
+Model Primitives::createRGBCube(Device &device) {
+  simd_float3 A = { -1.0f, 1.0f, 1.0f };
+  simd_float3 AC = { 1.0f, 0.0f, 0.0f };
+  simd_float3 B = { -1.0f, -1.0f, 1.0f };
+  simd_float3 BC = { 0.0f, 1.0f, 0.0f };
+  simd_float3 C = { 1.0f, -1.0f, 1.0f };
+  simd_float3 CC = { 0.0f, 0.0f, 1.0f };
+  simd_float3 D = { 1.0f, 1.0f, 1.0f };
+  simd_float3 DC = { 1.0f, 0.6f, 0.4f };
+
+  simd_float3 Q = { -1.0f, 1.0f, -1.0f };
+  simd_float3 QC = { 1.0f, 0.0f, 0.0f };
+  simd_float3 R = { 1.0f, 1.0f, -1.0f };
+  simd_float3 RC = { 0.0f, 1.0f, 0.0f };
+  simd_float3 S = { -1.0f, -1.0f, -1.0f };
+  simd_float3 SC = { 0.0f, 0.0f, 1.0f };
+  simd_float3 T = { 1.0f, -1.0f, -1.0f };
+  simd_float3 TC = { 1.0f, 0.6f, 0.4f };
+
+  simd_float3 vertices[] = {
+    A,AC,B,BC,C,CC ,A,AC,C,CC,D,DC, //Front
+    R,RC,T,TC,S,SC ,Q,QC,R,RC,S,SC, //Back
+
+    Q,QC,S,SC,B,BC ,Q,QC,B,BC,A,AC, //Left
+    D,DC,C,CC,T,TC ,D,DC,T,TC,R,RC, //Right
+
+    Q,QC,A,AC,D,DC ,Q,QC,D,DC,R,RC, //Top
+    B,BC,S,SC,T,TC ,B,BC,T,TC,C,CC
+  };
+
+  Buffer* buffer = device.newBuffer(&vertices, sizeof(vertices), ResourceStorageModeShared);
+  Mesh* mesh = new Mesh(std::vector<MeshBuffer>({ MeshBuffer(buffer) }), 36);
+  return Model(mesh);
+}

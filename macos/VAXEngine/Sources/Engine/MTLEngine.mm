@@ -50,7 +50,13 @@
 }
 
 - (void)load {
-  scene->addModel(std::make_unique<Model>(Primitives::createRGBTriangle(mtlStack->device())));
+  auto cube = std::make_unique<Model>(Primitives::createRGBCube(mtlStack->device()));
+  scene->addModel(std::move(cube));
+  scene->camera.transform.position.z = -10;
+}
+
+- (void)resize:(CGSize)viewSize drawableSize:(CGSize)drawableSize {
+  renderer->resize(VAXSize{viewSize.width, viewSize.height}, VAXSize{viewSize.width, viewSize.height});
 }
 
 - (void) drawIn: (MTKView *)view {

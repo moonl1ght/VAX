@@ -7,9 +7,12 @@
 
 #include <stdio.h>
 #include "Model.hpp"
+#include "Camera.hpp"
 
 class Scene {
 public:
+  Camera camera = Camera();
+
   explicit Scene();
   virtual ~Scene();
 
