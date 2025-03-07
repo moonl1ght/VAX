@@ -7,6 +7,6 @@
 
 #include "AAPLMathUtilities.h"
 #include "Angles.h"
-#include "VAXSize.hpp"
+#include "VAXMathObjects.hpp"
 
 #endif /* MathUtils_h */

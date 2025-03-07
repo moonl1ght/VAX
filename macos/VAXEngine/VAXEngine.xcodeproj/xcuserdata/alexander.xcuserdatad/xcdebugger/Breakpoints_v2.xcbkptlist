@@ -62,8 +62,8 @@
             filePath = "Sources/Engine/Objects/Camera/Camera.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "8"
-            endingLineNumber = "8"
+            startingLineNumber = "11"
+            endingLineNumber = "11"
             landmarkName = "Camera::viewMatrix()"
             landmarkType = "7">
          </BreakpointContent>
@@ -97,6 +97,22 @@
             startingLineNumber = "34"
             endingLineNumber = "34"
             landmarkName = "MTLRenderer::resize(viewSize, drawableSize)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "92CE735C-6632-455E-B0E3-268A188C8492"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Sources/Engine/Objects/Camera/Camera.cpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "37"
+            endingLineNumber = "37"
+            landmarkName = "Camera::rotate(delta)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

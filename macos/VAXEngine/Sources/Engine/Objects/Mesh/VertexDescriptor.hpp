@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <Metal/Metal.hpp>
 
-namespace VAX {
+namespace vax {
   class VertexDescriptor {
   public:
     virtual ~VertexDescriptor();

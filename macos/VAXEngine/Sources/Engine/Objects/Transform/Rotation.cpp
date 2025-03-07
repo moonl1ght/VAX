@@ -13,3 +13,10 @@ matrix_float4x4 Rotation::rotationMatrix() const {
   auto quaternion = simd_quaternion(YXZ);
   return matrix4x4_from_quaternion(quaternion.vector);
 }
+
+matrix_float4x4 Rotation::yxzRotationMatrix(vector_float3 axis) const {
+  auto rotationX = matrix4x4_rotation(angles[0], (vector_float3){axis[0], 0, 0});
+  auto rotationY = matrix4x4_rotation(angles[1], (vector_float3){0, axis[1], 0});
+  auto rotationZ = matrix4x4_rotation(angles[2], (vector_float3){0, 0, axis[2]});
+  return matrix_multiply(matrix_multiply(rotationY, rotationX), rotationZ);
+}

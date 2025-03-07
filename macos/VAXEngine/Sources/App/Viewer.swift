@@ -10,8 +10,8 @@ struct Viewer: View {
   @StateObject private var presenter = Presenter()
 
   var body: some View {
-    
     MetalView(renderer: presenter.engine)
+      .gesture(GestureBuilder.buildDragGestureWithInputController(presenter.engine.inputController))
   }
 }
 

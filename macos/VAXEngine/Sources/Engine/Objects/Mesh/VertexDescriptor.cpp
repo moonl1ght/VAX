@@ -5,19 +5,19 @@
 #include "VertexDescriptor.hpp"
 #include "ShaderTypes.h"
 
-VAX::VertexDescriptor::VertexDescriptor(MTL::VertexDescriptor* mtlVertexDescriptor)
+vax::VertexDescriptor::VertexDescriptor(MTL::VertexDescriptor* mtlVertexDescriptor)
 : _mtlVertexDescriptor(mtlVertexDescriptor)
 { }
 
-VAX::VertexDescriptor::~VertexDescriptor() {
+vax::VertexDescriptor::~VertexDescriptor() {
   _mtlVertexDescriptor->release();
 }
 
-const MTL::VertexDescriptor& VAX::VertexDescriptor::vertexDescriptor() {
+const MTL::VertexDescriptor& vax::VertexDescriptor::vertexDescriptor() {
   return *_mtlVertexDescriptor;
 }
 
-VAX::VertexDescriptor VAX::VertexDescriptor::createSimpleVertexDescriptor() {
+vax::VertexDescriptor vax::VertexDescriptor::createSimpleVertexDescriptor() {
   MTL::VertexDescriptor* vd = MTL::VertexDescriptor::alloc()->init();
 
   int offset = 0;
@@ -33,5 +33,5 @@ VAX::VertexDescriptor VAX::VertexDescriptor::createSimpleVertexDescriptor() {
 
   vd->layouts()->object(0)->setStride(offset);
 
-  return VAX::VertexDescriptor(vd);
+  return vax::VertexDescriptor(vd);
 }

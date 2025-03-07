@@ -6,7 +6,12 @@ import Foundation
 import MetalKit
 
 final class EngineWrapper: MTKViewRenderer {
+  let inputController: InputController
   private let engine = MTLEngine()
+
+  init() {
+    inputController = InputController(engine: engine)
+  }
 
   func load() {
     engine.load()

@@ -37,6 +37,11 @@ public:
   matrix_float4x4 projectionMatrix() const;
   matrix_float4x4 viewMatrix() const;
 
+  void rotate(simd_float2 delta);
+  void setPosition(simd_float3 position);
+
+private:
+  void updateRotationForPosition();
 };
 
 #endif /* Camera_hpp */

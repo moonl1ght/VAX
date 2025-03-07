@@ -11,7 +11,7 @@
 
 #include "MTLStack.hpp"
 #include "Scene.hpp"
-#include "VAXSize.hpp"
+#include "VAXMathObjects.hpp"
 
 class MTLRenderer
 {
@@ -20,7 +20,7 @@ public:
   virtual ~MTLRenderer();
 
   void draw(CA::MetalLayer* layer);
-  void resize(const VAXSize viewSize, const VAXSize drawableSize);
+  void resize(const vax::Size viewSize, const vax::Size drawableSize);
 
 private:
   MTLStack* _mtlStack;
@@ -30,7 +30,7 @@ private:
   Scene* _scene;
   MTL::Texture* _depthTexture;
 
-  void createDepthTexture(const VAXSize drawableSize);
+  void createDepthTexture(const vax::Size drawableSize);
   void updateRenderPassDescriptor(CA::MetalDrawable* drawable);
   void createRenderPipeline();
 };

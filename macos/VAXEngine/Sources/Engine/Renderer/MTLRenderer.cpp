@@ -29,7 +29,7 @@ MTLRenderer::~MTLRenderer() {
   _depthStencilState = nullptr;
 };
 
-void MTLRenderer::resize(const VAXSize viewSize, const VAXSize drawableSize) {
+void MTLRenderer::resize(const vax::Size viewSize, const vax::Size drawableSize) {
   createDepthTexture(drawableSize);
   _scene->camera.aspectRatio = drawableSize.whRatio();
 }
@@ -65,7 +65,7 @@ void MTLRenderer::updateRenderPassDescriptor(CA::MetalDrawable* drawable) {
 
   colorAttachment->setTexture(drawable->texture());
   colorAttachment->setLoadAction(LoadActionClear);
-  colorAttachment->setClearColor(ClearColor(1/255.0f, 0/255.0f, 48.0f/255.0f, 1.0));
+  colorAttachment->setClearColor(ClearColor(255.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f, 1.0));
   colorAttachment->setStoreAction(StoreActionStore);
 
   depthAttachment->setTexture(_depthTexture);
@@ -81,7 +81,7 @@ void MTLRenderer::createRenderPipeline() {
   RenderPipelineDescriptor* renderPipelineDescriptor = RenderPipelineDescriptor::alloc()->init();
   renderPipelineDescriptor->setVertexFunction(vertexFunction);
   renderPipelineDescriptor->setFragmentFunction(fragmentFunction);
-  VAX::VertexDescriptor vertexDescriptor = VAX::VertexDescriptor::createSimpleVertexDescriptor();
+  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createSimpleVertexDescriptor();
   renderPipelineDescriptor->setVertexDescriptor(&vertexDescriptor.vertexDescriptor());
   assert(renderPipelineDescriptor);
   PixelFormat pixelFormat = PixelFormatBGRA8Unorm;
@@ -109,7 +109,7 @@ void MTLRenderer::createRenderPipeline() {
   fragmentFunction->release();
 }
 
-void MTLRenderer::createDepthTexture(const VAXSize drawableSize) {
+void MTLRenderer::createDepthTexture(const vax::Size drawableSize) {
   if (_depthTexture != nullptr) {
     _depthTexture->release();
     _depthTexture = nullptr;
