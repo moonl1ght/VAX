@@ -11,6 +11,49 @@
 		1110D8F32D5120840080F1F0 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1110D8F22D5120840080F1F0 /* Metal.framework */; };
 		1110D8F52D51208A0080F1F0 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1110D8F42D51208A0080F1F0 /* QuartzCore.framework */; };
 		1110D8F72D5120C70080F1F0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1110D8F62D5120C70080F1F0 /* Foundation.framework */; };
+		11C98FA02D807E9400C40C81 /* conan_poly2tri_poly2tri.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F8B2D807E9400C40C81 /* conan_poly2tri_poly2tri.xcconfig */; };
+		11C98FA12D807E9400C40C81 /* conan_zlib_zlib_debug_arm64.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F922D807E9400C40C81 /* conan_zlib_zlib_debug_arm64.xcconfig */; };
+		11C98FA22D807E9400C40C81 /* conan_assimp_assimp_debug_arm64.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F732D807E9400C40C81 /* conan_assimp_assimp_debug_arm64.xcconfig */; };
+		11C98FA32D807E9400C40C81 /* conan_kuba_zip_kuba_zip_debug_arm64.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F802D807E9400C40C81 /* conan_kuba_zip_kuba_zip_debug_arm64.xcconfig */; };
+		11C98FA42D807E9400C40C81 /* conan_kuba_zip.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F7E2D807E9400C40C81 /* conan_kuba_zip.xcconfig */; };
+		11C98FA52D807E9400C40C81 /* conan_draco_draco_debug_arm64.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F7D2D807E9400C40C81 /* conan_draco_draco_debug_arm64.xcconfig */; };
+		11C98FA62D807E9400C40C81 /* conandeps.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F952D807E9400C40C81 /* conandeps.xcconfig */; };
+		11C98FA72D807E9400C40C81 /* conan_nlohmann_json_nlohmann_json.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F852D807E9400C40C81 /* conan_nlohmann_json_nlohmann_json.xcconfig */; };
+		11C98FA82D807E9400C40C81 /* conan_poly2tri_poly2tri_debug_arm64.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F8C2D807E9400C40C81 /* conan_poly2tri_poly2tri_debug_arm64.xcconfig */; };
+		11C98FA92D807E9400C40C81 /* conan_minizip_minizip_debug_arm64.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F832D807E9400C40C81 /* conan_minizip_minizip_debug_arm64.xcconfig */; };
+		11C98FAA2D807E9400C40C81 /* conantoolchain.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F982D807E9400C40C81 /* conantoolchain.xcconfig */; };
+		11C98FAB2D807E9400C40C81 /* conan_pugixml_pugixml_debug_arm64.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F8F2D807E9400C40C81 /* conan_pugixml_pugixml_debug_arm64.xcconfig */; };
+		11C98FAC2D807E9400C40C81 /* conan_zlib.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F902D807E9400C40C81 /* conan_zlib.xcconfig */; };
+		11C98FAD2D807E9400C40C81 /* conan_draco_draco.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F7C2D807E9400C40C81 /* conan_draco_draco.xcconfig */; };
+		11C98FAE2D807E9400C40C81 /* conan_bzip2.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F742D807E9400C40C81 /* conan_bzip2.xcconfig */; };
+		11C98FAF2D807E9400C40C81 /* conan_bzip2_bzip2.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F752D807E9400C40C81 /* conan_bzip2_bzip2.xcconfig */; };
+		11C98FB02D807E9400C40C81 /* conan_clipper_clipper.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F782D807E9400C40C81 /* conan_clipper_clipper.xcconfig */; };
+		11C98FB12D807E9400C40C81 /* conan_pugixml_pugixml.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F8E2D807E9400C40C81 /* conan_pugixml_pugixml.xcconfig */; };
+		11C98FB22D807E9400C40C81 /* conan_zlib_zlib.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F912D807E9400C40C81 /* conan_zlib_zlib.xcconfig */; };
+		11C98FB32D807E9400C40C81 /* conan_pugixml.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F8D2D807E9400C40C81 /* conan_pugixml.xcconfig */; };
+		11C98FB42D807E9400C40C81 /* conan_assimp_assimp.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F722D807E9400C40C81 /* conan_assimp_assimp.xcconfig */; };
+		11C98FB52D807E9400C40C81 /* conan_nlohmann_json.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F842D807E9400C40C81 /* conan_nlohmann_json.xcconfig */; };
+		11C98FB62D807E9400C40C81 /* conanrun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F962D807E9400C40C81 /* conanrun.sh */; };
+		11C98FB72D807E9400C40C81 /* conan_openddl_parser_openddl_parser_debug_arm64.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F892D807E9400C40C81 /* conan_openddl_parser_openddl_parser_debug_arm64.xcconfig */; };
+		11C98FB82D807E9400C40C81 /* conanrunenv-debug-armv8.sh in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F972D807E9400C40C81 /* conanrunenv-debug-armv8.sh */; };
+		11C98FB92D807E9400C40C81 /* conan_bzip2_bzip2_debug_arm64.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F762D807E9400C40C81 /* conan_bzip2_bzip2_debug_arm64.xcconfig */; };
+		11C98FBA2D807E9400C40C81 /* conan_openddl_parser.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F872D807E9400C40C81 /* conan_openddl_parser.xcconfig */; };
+		11C98FBB2D807E9400C40C81 /* conan_openddl_parser_openddl_parser.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F882D807E9400C40C81 /* conan_openddl_parser_openddl_parser.xcconfig */; };
+		11C98FBC2D807E9400C40C81 /* conan_minizip.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F812D807E9400C40C81 /* conan_minizip.xcconfig */; };
+		11C98FBD2D807E9400C40C81 /* conanbuildenv-debug-armv8.sh in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F942D807E9400C40C81 /* conanbuildenv-debug-armv8.sh */; };
+		11C98FBE2D807E9400C40C81 /* conan_nlohmann_json_nlohmann_json_debug_arm64.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F862D807E9400C40C81 /* conan_nlohmann_json_nlohmann_json_debug_arm64.xcconfig */; };
+		11C98FBF2D807E9400C40C81 /* conan_clipper.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F772D807E9400C40C81 /* conan_clipper.xcconfig */; };
+		11C98FC02D807E9400C40C81 /* conan_draco.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F7B2D807E9400C40C81 /* conan_draco.xcconfig */; };
+		11C98FC12D807E9400C40C81 /* deactivate_conanrun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F9B2D807E9400C40C81 /* deactivate_conanrun.sh */; };
+		11C98FC22D807E9400C40C81 /* conan_poly2tri.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F8A2D807E9400C40C81 /* conan_poly2tri.xcconfig */; };
+		11C98FC32D807E9400C40C81 /* conan_minizip_minizip.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F822D807E9400C40C81 /* conan_minizip_minizip.xcconfig */; };
+		11C98FC42D807E9400C40C81 /* conan_kuba_zip_kuba_zip.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F7F2D807E9400C40C81 /* conan_kuba_zip_kuba_zip.xcconfig */; };
+		11C98FC52D807E9400C40C81 /* conanbuild.sh in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F932D807E9400C40C81 /* conanbuild.sh */; };
+		11C98FC62D807E9400C40C81 /* conan_clipper_clipper_debug_arm64.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F792D807E9400C40C81 /* conan_clipper_clipper_debug_arm64.xcconfig */; };
+		11C98FC72D807E9400C40C81 /* conan_config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F7A2D807E9400C40C81 /* conan_config.xcconfig */; };
+		11C98FC82D807E9400C40C81 /* conantoolchain_debug_arm64.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F992D807E9400C40C81 /* conantoolchain_debug_arm64.xcconfig */; };
+		11C98FC92D807E9400C40C81 /* conan_assimp.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F712D807E9400C40C81 /* conan_assimp.xcconfig */; };
+		11C98FCA2D807E9400C40C81 /* deactivate_conanbuild.sh in Resources */ = {isa = PBXBuildFile; fileRef = 11C98F9A2D807E9400C40C81 /* deactivate_conanbuild.sh */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +62,49 @@
 		1110D8F22D5120840080F1F0 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		1110D8F42D51208A0080F1F0 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		1110D8F62D5120C70080F1F0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		11C98F712D807E9400C40C81 /* conan_assimp.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_assimp.xcconfig; sourceTree = "<group>"; };
+		11C98F722D807E9400C40C81 /* conan_assimp_assimp.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_assimp_assimp.xcconfig; sourceTree = "<group>"; };
+		11C98F732D807E9400C40C81 /* conan_assimp_assimp_debug_arm64.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_assimp_assimp_debug_arm64.xcconfig; sourceTree = "<group>"; };
+		11C98F742D807E9400C40C81 /* conan_bzip2.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_bzip2.xcconfig; sourceTree = "<group>"; };
+		11C98F752D807E9400C40C81 /* conan_bzip2_bzip2.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_bzip2_bzip2.xcconfig; sourceTree = "<group>"; };
+		11C98F762D807E9400C40C81 /* conan_bzip2_bzip2_debug_arm64.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_bzip2_bzip2_debug_arm64.xcconfig; sourceTree = "<group>"; };
+		11C98F772D807E9400C40C81 /* conan_clipper.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_clipper.xcconfig; sourceTree = "<group>"; };
+		11C98F782D807E9400C40C81 /* conan_clipper_clipper.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_clipper_clipper.xcconfig; sourceTree = "<group>"; };
+		11C98F792D807E9400C40C81 /* conan_clipper_clipper_debug_arm64.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_clipper_clipper_debug_arm64.xcconfig; sourceTree = "<group>"; };
+		11C98F7A2D807E9400C40C81 /* conan_config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_config.xcconfig; sourceTree = "<group>"; };
+		11C98F7B2D807E9400C40C81 /* conan_draco.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_draco.xcconfig; sourceTree = "<group>"; };
+		11C98F7C2D807E9400C40C81 /* conan_draco_draco.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_draco_draco.xcconfig; sourceTree = "<group>"; };
+		11C98F7D2D807E9400C40C81 /* conan_draco_draco_debug_arm64.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_draco_draco_debug_arm64.xcconfig; sourceTree = "<group>"; };
+		11C98F7E2D807E9400C40C81 /* conan_kuba_zip.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_kuba_zip.xcconfig; sourceTree = "<group>"; };
+		11C98F7F2D807E9400C40C81 /* conan_kuba_zip_kuba_zip.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_kuba_zip_kuba_zip.xcconfig; sourceTree = "<group>"; };
+		11C98F802D807E9400C40C81 /* conan_kuba_zip_kuba_zip_debug_arm64.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_kuba_zip_kuba_zip_debug_arm64.xcconfig; sourceTree = "<group>"; };
+		11C98F812D807E9400C40C81 /* conan_minizip.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_minizip.xcconfig; sourceTree = "<group>"; };
+		11C98F822D807E9400C40C81 /* conan_minizip_minizip.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_minizip_minizip.xcconfig; sourceTree = "<group>"; };
+		11C98F832D807E9400C40C81 /* conan_minizip_minizip_debug_arm64.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_minizip_minizip_debug_arm64.xcconfig; sourceTree = "<group>"; };
+		11C98F842D807E9400C40C81 /* conan_nlohmann_json.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_nlohmann_json.xcconfig; sourceTree = "<group>"; };
+		11C98F852D807E9400C40C81 /* conan_nlohmann_json_nlohmann_json.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_nlohmann_json_nlohmann_json.xcconfig; sourceTree = "<group>"; };
+		11C98F862D807E9400C40C81 /* conan_nlohmann_json_nlohmann_json_debug_arm64.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_nlohmann_json_nlohmann_json_debug_arm64.xcconfig; sourceTree = "<group>"; };
+		11C98F872D807E9400C40C81 /* conan_openddl_parser.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_openddl_parser.xcconfig; sourceTree = "<group>"; };
+		11C98F882D807E9400C40C81 /* conan_openddl_parser_openddl_parser.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_openddl_parser_openddl_parser.xcconfig; sourceTree = "<group>"; };
+		11C98F892D807E9400C40C81 /* conan_openddl_parser_openddl_parser_debug_arm64.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_openddl_parser_openddl_parser_debug_arm64.xcconfig; sourceTree = "<group>"; };
+		11C98F8A2D807E9400C40C81 /* conan_poly2tri.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_poly2tri.xcconfig; sourceTree = "<group>"; };
+		11C98F8B2D807E9400C40C81 /* conan_poly2tri_poly2tri.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_poly2tri_poly2tri.xcconfig; sourceTree = "<group>"; };
+		11C98F8C2D807E9400C40C81 /* conan_poly2tri_poly2tri_debug_arm64.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_poly2tri_poly2tri_debug_arm64.xcconfig; sourceTree = "<group>"; };
+		11C98F8D2D807E9400C40C81 /* conan_pugixml.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_pugixml.xcconfig; sourceTree = "<group>"; };
+		11C98F8E2D807E9400C40C81 /* conan_pugixml_pugixml.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_pugixml_pugixml.xcconfig; sourceTree = "<group>"; };
+		11C98F8F2D807E9400C40C81 /* conan_pugixml_pugixml_debug_arm64.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_pugixml_pugixml_debug_arm64.xcconfig; sourceTree = "<group>"; };
+		11C98F902D807E9400C40C81 /* conan_zlib.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_zlib.xcconfig; sourceTree = "<group>"; };
+		11C98F912D807E9400C40C81 /* conan_zlib_zlib.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_zlib_zlib.xcconfig; sourceTree = "<group>"; };
+		11C98F922D807E9400C40C81 /* conan_zlib_zlib_debug_arm64.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conan_zlib_zlib_debug_arm64.xcconfig; sourceTree = "<group>"; };
+		11C98F932D807E9400C40C81 /* conanbuild.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = conanbuild.sh; sourceTree = "<group>"; };
+		11C98F942D807E9400C40C81 /* conanbuildenv-debug-armv8.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "conanbuildenv-debug-armv8.sh"; sourceTree = "<group>"; };
+		11C98F952D807E9400C40C81 /* conandeps.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conandeps.xcconfig; sourceTree = "<group>"; };
+		11C98F962D807E9400C40C81 /* conanrun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = conanrun.sh; sourceTree = "<group>"; };
+		11C98F972D807E9400C40C81 /* conanrunenv-debug-armv8.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "conanrunenv-debug-armv8.sh"; sourceTree = "<group>"; };
+		11C98F982D807E9400C40C81 /* conantoolchain.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conantoolchain.xcconfig; sourceTree = "<group>"; };
+		11C98F992D807E9400C40C81 /* conantoolchain_debug_arm64.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = conantoolchain_debug_arm64.xcconfig; sourceTree = "<group>"; };
+		11C98F9A2D807E9400C40C81 /* deactivate_conanbuild.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = deactivate_conanbuild.sh; sourceTree = "<group>"; };
+		11C98F9B2D807E9400C40C81 /* deactivate_conanrun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = deactivate_conanrun.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -52,6 +138,7 @@
 		1110D8362D50C0820080F1F0 = {
 			isa = PBXGroup;
 			children = (
+				11C98F9F2D807E9400C40C81 /* build_conan */,
 				1110D8522D50C0FE0080F1F0 /* Sources */,
 				1110D8412D50C0820080F1F0 /* VAXEngine */,
 				1110D8842D511F9D0080F1F0 /* Frameworks */,
@@ -76,6 +163,80 @@
 				1110D8852D511F9E0080F1F0 /* MetalKit.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		11C98F9C2D807E9400C40C81 /* generators */ = {
+			isa = PBXGroup;
+			children = (
+				11C98F712D807E9400C40C81 /* conan_assimp.xcconfig */,
+				11C98F722D807E9400C40C81 /* conan_assimp_assimp.xcconfig */,
+				11C98F732D807E9400C40C81 /* conan_assimp_assimp_debug_arm64.xcconfig */,
+				11C98F742D807E9400C40C81 /* conan_bzip2.xcconfig */,
+				11C98F752D807E9400C40C81 /* conan_bzip2_bzip2.xcconfig */,
+				11C98F762D807E9400C40C81 /* conan_bzip2_bzip2_debug_arm64.xcconfig */,
+				11C98F772D807E9400C40C81 /* conan_clipper.xcconfig */,
+				11C98F782D807E9400C40C81 /* conan_clipper_clipper.xcconfig */,
+				11C98F792D807E9400C40C81 /* conan_clipper_clipper_debug_arm64.xcconfig */,
+				11C98F7A2D807E9400C40C81 /* conan_config.xcconfig */,
+				11C98F7B2D807E9400C40C81 /* conan_draco.xcconfig */,
+				11C98F7C2D807E9400C40C81 /* conan_draco_draco.xcconfig */,
+				11C98F7D2D807E9400C40C81 /* conan_draco_draco_debug_arm64.xcconfig */,
+				11C98F7E2D807E9400C40C81 /* conan_kuba_zip.xcconfig */,
+				11C98F7F2D807E9400C40C81 /* conan_kuba_zip_kuba_zip.xcconfig */,
+				11C98F802D807E9400C40C81 /* conan_kuba_zip_kuba_zip_debug_arm64.xcconfig */,
+				11C98F812D807E9400C40C81 /* conan_minizip.xcconfig */,
+				11C98F822D807E9400C40C81 /* conan_minizip_minizip.xcconfig */,
+				11C98F832D807E9400C40C81 /* conan_minizip_minizip_debug_arm64.xcconfig */,
+				11C98F842D807E9400C40C81 /* conan_nlohmann_json.xcconfig */,
+				11C98F852D807E9400C40C81 /* conan_nlohmann_json_nlohmann_json.xcconfig */,
+				11C98F862D807E9400C40C81 /* conan_nlohmann_json_nlohmann_json_debug_arm64.xcconfig */,
+				11C98F872D807E9400C40C81 /* conan_openddl_parser.xcconfig */,
+				11C98F882D807E9400C40C81 /* conan_openddl_parser_openddl_parser.xcconfig */,
+				11C98F892D807E9400C40C81 /* conan_openddl_parser_openddl_parser_debug_arm64.xcconfig */,
+				11C98F8A2D807E9400C40C81 /* conan_poly2tri.xcconfig */,
+				11C98F8B2D807E9400C40C81 /* conan_poly2tri_poly2tri.xcconfig */,
+				11C98F8C2D807E9400C40C81 /* conan_poly2tri_poly2tri_debug_arm64.xcconfig */,
+				11C98F8D2D807E9400C40C81 /* conan_pugixml.xcconfig */,
+				11C98F8E2D807E9400C40C81 /* conan_pugixml_pugixml.xcconfig */,
+				11C98F8F2D807E9400C40C81 /* conan_pugixml_pugixml_debug_arm64.xcconfig */,
+				11C98F902D807E9400C40C81 /* conan_zlib.xcconfig */,
+				11C98F912D807E9400C40C81 /* conan_zlib_zlib.xcconfig */,
+				11C98F922D807E9400C40C81 /* conan_zlib_zlib_debug_arm64.xcconfig */,
+				11C98F932D807E9400C40C81 /* conanbuild.sh */,
+				11C98F942D807E9400C40C81 /* conanbuildenv-debug-armv8.sh */,
+				11C98F952D807E9400C40C81 /* conandeps.xcconfig */,
+				11C98F962D807E9400C40C81 /* conanrun.sh */,
+				11C98F972D807E9400C40C81 /* conanrunenv-debug-armv8.sh */,
+				11C98F982D807E9400C40C81 /* conantoolchain.xcconfig */,
+				11C98F992D807E9400C40C81 /* conantoolchain_debug_arm64.xcconfig */,
+				11C98F9A2D807E9400C40C81 /* deactivate_conanbuild.sh */,
+				11C98F9B2D807E9400C40C81 /* deactivate_conanrun.sh */,
+			);
+			path = generators;
+			sourceTree = "<group>";
+		};
+		11C98F9D2D807E9400C40C81 /* Debug */ = {
+			isa = PBXGroup;
+			children = (
+				11C98F9C2D807E9400C40C81 /* generators */,
+			);
+			path = Debug;
+			sourceTree = "<group>";
+		};
+		11C98F9E2D807E9400C40C81 /* build */ = {
+			isa = PBXGroup;
+			children = (
+				11C98F9D2D807E9400C40C81 /* Debug */,
+			);
+			path = build;
+			sourceTree = "<group>";
+		};
+		11C98F9F2D807E9400C40C81 /* build_conan */ = {
+			isa = PBXGroup;
+			children = (
+				11C98F9E2D807E9400C40C81 /* build */,
+			);
+			path = build_conan;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -144,6 +305,49 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				11C98FA02D807E9400C40C81 /* conan_poly2tri_poly2tri.xcconfig in Resources */,
+				11C98FA12D807E9400C40C81 /* conan_zlib_zlib_debug_arm64.xcconfig in Resources */,
+				11C98FA22D807E9400C40C81 /* conan_assimp_assimp_debug_arm64.xcconfig in Resources */,
+				11C98FA32D807E9400C40C81 /* conan_kuba_zip_kuba_zip_debug_arm64.xcconfig in Resources */,
+				11C98FA42D807E9400C40C81 /* conan_kuba_zip.xcconfig in Resources */,
+				11C98FA52D807E9400C40C81 /* conan_draco_draco_debug_arm64.xcconfig in Resources */,
+				11C98FA62D807E9400C40C81 /* conandeps.xcconfig in Resources */,
+				11C98FA72D807E9400C40C81 /* conan_nlohmann_json_nlohmann_json.xcconfig in Resources */,
+				11C98FA82D807E9400C40C81 /* conan_poly2tri_poly2tri_debug_arm64.xcconfig in Resources */,
+				11C98FA92D807E9400C40C81 /* conan_minizip_minizip_debug_arm64.xcconfig in Resources */,
+				11C98FAA2D807E9400C40C81 /* conantoolchain.xcconfig in Resources */,
+				11C98FAB2D807E9400C40C81 /* conan_pugixml_pugixml_debug_arm64.xcconfig in Resources */,
+				11C98FAC2D807E9400C40C81 /* conan_zlib.xcconfig in Resources */,
+				11C98FAD2D807E9400C40C81 /* conan_draco_draco.xcconfig in Resources */,
+				11C98FAE2D807E9400C40C81 /* conan_bzip2.xcconfig in Resources */,
+				11C98FAF2D807E9400C40C81 /* conan_bzip2_bzip2.xcconfig in Resources */,
+				11C98FB02D807E9400C40C81 /* conan_clipper_clipper.xcconfig in Resources */,
+				11C98FB12D807E9400C40C81 /* conan_pugixml_pugixml.xcconfig in Resources */,
+				11C98FB22D807E9400C40C81 /* conan_zlib_zlib.xcconfig in Resources */,
+				11C98FB32D807E9400C40C81 /* conan_pugixml.xcconfig in Resources */,
+				11C98FB42D807E9400C40C81 /* conan_assimp_assimp.xcconfig in Resources */,
+				11C98FB52D807E9400C40C81 /* conan_nlohmann_json.xcconfig in Resources */,
+				11C98FB62D807E9400C40C81 /* conanrun.sh in Resources */,
+				11C98FB72D807E9400C40C81 /* conan_openddl_parser_openddl_parser_debug_arm64.xcconfig in Resources */,
+				11C98FB82D807E9400C40C81 /* conanrunenv-debug-armv8.sh in Resources */,
+				11C98FB92D807E9400C40C81 /* conan_bzip2_bzip2_debug_arm64.xcconfig in Resources */,
+				11C98FBA2D807E9400C40C81 /* conan_openddl_parser.xcconfig in Resources */,
+				11C98FBB2D807E9400C40C81 /* conan_openddl_parser_openddl_parser.xcconfig in Resources */,
+				11C98FBC2D807E9400C40C81 /* conan_minizip.xcconfig in Resources */,
+				11C98FBD2D807E9400C40C81 /* conanbuildenv-debug-armv8.sh in Resources */,
+				11C98FBE2D807E9400C40C81 /* conan_nlohmann_json_nlohmann_json_debug_arm64.xcconfig in Resources */,
+				11C98FBF2D807E9400C40C81 /* conan_clipper.xcconfig in Resources */,
+				11C98FC02D807E9400C40C81 /* conan_draco.xcconfig in Resources */,
+				11C98FC12D807E9400C40C81 /* deactivate_conanrun.sh in Resources */,
+				11C98FC22D807E9400C40C81 /* conan_poly2tri.xcconfig in Resources */,
+				11C98FC32D807E9400C40C81 /* conan_minizip_minizip.xcconfig in Resources */,
+				11C98FC42D807E9400C40C81 /* conan_kuba_zip_kuba_zip.xcconfig in Resources */,
+				11C98FC52D807E9400C40C81 /* conanbuild.sh in Resources */,
+				11C98FC62D807E9400C40C81 /* conan_clipper_clipper_debug_arm64.xcconfig in Resources */,
+				11C98FC72D807E9400C40C81 /* conan_config.xcconfig in Resources */,
+				11C98FC82D807E9400C40C81 /* conantoolchain_debug_arm64.xcconfig in Resources */,
+				11C98FC92D807E9400C40C81 /* conan_assimp.xcconfig in Resources */,
+				11C98FCA2D807E9400C40C81 /* deactivate_conanbuild.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -162,6 +366,7 @@
 /* Begin XCBuildConfiguration section */
 		1110D84C2D50C0830080F1F0 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 11C98F952D807E9400C40C81 /* conandeps.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -225,6 +430,7 @@
 		};
 		1110D84D2D50C0830080F1F0 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 11C98F952D807E9400C40C81 /* conandeps.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -280,6 +486,7 @@
 		};
 		1110D84F2D50C0830080F1F0 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 11C98F952D807E9400C40C81 /* conandeps.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -312,6 +519,7 @@
 		};
 		1110D8502D50C0830080F1F0 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 11C98F952D807E9400C40C81 /* conandeps.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
