@@ -4,6 +4,7 @@
 
 #include "Model.hpp"
 #include <iostream>
+#include <assimp/Importer.hpp>
 
 using namespace std;
 
@@ -15,6 +16,8 @@ Model::~Model() {
 Model::Model(Model&& rhs): _mesh(rhs._mesh) {
   rhs._mesh = nullptr;
   cout << "move constructor" << endl;
+
+  Assimp::Importer();
 }
 
 Model& Model::operator=(Model&& rhs)

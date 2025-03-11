@@ -7,6 +7,26 @@
 
 #include <simd/simd.h>
 
+typedef enum {
+  unused = 0,
+  Sunlight = 1,
+  Spotlight = 2,
+  Pointlight = 3,
+  Ambientlight = 4
+} LightType;
+
+typedef struct {
+  vector_float3 position;
+  vector_float3 color;
+  vector_float3 specularColor;
+  float intensity;
+  vector_float3 attenuation;
+  LightType type;
+  float coneAngle;
+  vector_float3 coneDirection;
+  float coneAttenuation;
+} Light;
+
 typedef enum VertexAttributes {
   kVertexAttributePosition = 0,
   kVertexAttributeNormal = 1,
@@ -35,6 +55,8 @@ typedef struct ModelUniforms {
 } ModelUniforms;
 
 typedef struct {
+  uint lightCount;
+  vector_float3 cameraPosition;
 } FragmentUniforms;
 
 #endif /* ShaderTypes_h */

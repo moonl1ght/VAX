@@ -5,12 +5,18 @@
 #include "Scene.hpp"
 #include <iostream>
 
+#include "LightBuilder.hpp"
+
 using namespace std;
 
 Scene::Scene() { }
 
 Scene::~Scene() {
   cout << "delete scene" << endl;
+}
+
+void Scene::loadScene() {
+
 }
 
 void Scene::addModel(unique_ptr<Model> model) {

@@ -24,3 +24,10 @@ vertex VertexOut basic_vertex(const VertexIn in [[ stage_in ]],
 fragment float4 basic_fragment(const FragmentIn in [[ stage_in ]]) {
   return in.color;
 }
+
+[[host_name("basicFragmentWithPhongLight")]]
+fragment float4 basic_fragment_phong_lighting(const FragmentIn in [[ stage_in ]],
+                                              constant FragmentUniforms &uniforms [[ buffer(1) ]],
+                                              constant Light* light [[ buffer(2) ]]) {
+  return in.color;
+}

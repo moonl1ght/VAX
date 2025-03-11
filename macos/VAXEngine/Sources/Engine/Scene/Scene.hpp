@@ -22,6 +22,7 @@ public:
   Scene& operator=(Scene& rhs) = delete;
   Scene& operator=(Scene&& rhs) = delete;
 
+  void loadScene();
   void addModel(std::unique_ptr<Model>);
   const std::vector<std::unique_ptr<Model>>& models() const noexcept;
 

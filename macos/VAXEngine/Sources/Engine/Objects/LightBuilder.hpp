@@ -1,0 +1,66 @@
+//
+// Created by Alexander Lakhonin on 07.03.2025.
+//
+
+#ifndef LightBuilder_hpp
+#define LightBuilder_hpp
+
+#include "ShaderTypes.h"
+#include "Color.hpp"
+
+namespace LightBulder {
+  Light sunlight() {
+    Light light = Light();
+    light.position = {0.0f, 0.0f, 0.0f};
+    light.color = Color::white().simd_vec();
+    light.specularColor = {0.6f, 0.6f, 0.6f};
+    light.attenuation = {1.0f, 0.0f, 0.0f};
+    light.type = Sunlight;
+    return light;
+  }
+
+  Light ambient() {
+    Light light = sunlight();
+    light.color = {0.05f, 0.1f, 0.0f};
+    light.type = Ambientlight;
+    return light;
+  }
+}
+
+//
+//struct SceneLighting {
+//
+//  let redLight: Light = {
+//    var light = Self.buildDefaultLight()
+//    light.type = Point
+//    light.position = [-0.8, 0.76, -0.18]
+//    light.color = [1, 0, 0]
+//    light.attenuation = [0.5, 2, 1]
+//    return light
+//  }()
+//
+//  lazy var spotlight: Light = {
+//    var light = Self.buildDefaultLight()
+//    light.type = Spot
+//    light.position = [-0.64, 0.64, -1.07]
+//    light.color = [1, 0, 1]
+//    light.attenuation = [1, 0.5, 0]
+//    light.coneAngle = Float(40).degreesToRadians
+//    light.coneDirection = [0.5, -0.7, 1]
+//    light.coneAttenuation = 8
+//    return light
+//  }()
+//
+//  var lights: [Light] = []
+//
+//  init() {
+//    lights.append(sunlight)
+//    lights.append(ambientLight)
+//    lights.append(redLight)
+//    lights.append(spotlight)
+//  }
+//}
+
+
+
+#endif /* LightBuilder_hpp */

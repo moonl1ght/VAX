@@ -1,0 +1,8 @@
+[requires]
+assimp/5.4.3
+nlohmann_json/3.11.3
+[generators]
+XcodeDeps
+XcodeToolchain
+[layout]
+cmake_layout
