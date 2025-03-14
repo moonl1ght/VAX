@@ -12,6 +12,9 @@
 #include <iostream>
 #include <algorithm>
 
+@implementation AppPathes { }
+@end
+
 @implementation MTLEngine {
   MTLRenderer* renderer;
   MTLStack* mtlStack;
@@ -22,7 +25,7 @@
 -(id) init {
   if (self = [super init]) {
     mtlStack = new MTLStack();
-    scene = new Scene();
+    scene = new Scene(mtlStack);
     renderer = new MTLRenderer(mtlStack, scene);
   }
 //  runTESTCPP();
@@ -52,10 +55,13 @@
 }
 
 - (void)load {
-  auto cube = std::make_unique<Model>(Primitives::createRGBCube(mtlStack->device()));
-//  cube->mesh().transform.rotation.setZ(radians_from_degrees(45));
-  scene->addModel(std::move(cube));
+//  NSLog(self.appPathes.bundlePath);
+//  std::cout << "path: " << self.appPathes.bundlePath << std::endl;
+//  auto cube = std::make_unique<Model>(Primitives::createRGBCube(mtlStack->device()));
+////  cube->mesh().transform.rotation.setZ(radians_from_degrees(45));
+//  scene->addModel(std::move(cube));
   scene->camera.setPosition({5.0f, 5.0f, -10.0f});
+  scene->loadScene(std::string([self.appPathes.bundlePath UTF8String]));
 //  float z = -10;
 //  float x = 5;
 //  float y = 5;

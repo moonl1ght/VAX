@@ -26,10 +26,10 @@ vax::VertexDescriptor vax::VertexDescriptor::createSimpleVertexDescriptor() {
   vd->attributes()->object(kVertexAttributePosition)->setBufferIndex(0);
   offset += sizeof(simd_float3);
 
-  vd->attributes()->object(kVertexAttributeVertexColor)->setFormat(MTL::VertexFormatFloat3);
-  vd->attributes()->object(kVertexAttributeVertexColor)->setOffset(offset);
-  vd->attributes()->object(kVertexAttributeVertexColor)->setBufferIndex(0);
-  offset += sizeof(simd_float3);
+//  vd->attributes()->object(kVertexAttributeVertexColor)->setFormat(MTL::VertexFormatFloat3);
+//  vd->attributes()->object(kVertexAttributeVertexColor)->setOffset(offset);
+//  vd->attributes()->object(kVertexAttributeVertexColor)->setBufferIndex(0);
+//  offset += sizeof(simd_float3);
 
   vd->layouts()->object(0)->setStride(offset);
 

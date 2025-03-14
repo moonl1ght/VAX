@@ -8,12 +8,13 @@
 #include <stdio.h>
 #include "Model.hpp"
 #include "Camera.hpp"
+#include "MTLStack.hpp"
 
 class Scene {
 public:
   Camera camera = Camera();
 
-  explicit Scene();
+  explicit Scene(MTLStack* mtlStack);
   virtual ~Scene();
 
   Scene(const Scene& rhs) = delete;
@@ -22,11 +23,13 @@ public:
   Scene& operator=(Scene& rhs) = delete;
   Scene& operator=(Scene&& rhs) = delete;
 
-  void loadScene();
+  void loadScene(std::string bundleResourcesPath);
   void addModel(std::unique_ptr<Model>);
   const std::vector<std::unique_ptr<Model>>& models() const noexcept;
 
 private:
+  MTLStack* _mtlStack;
+
   std::vector<std::unique_ptr<Model>> _models;
 };
 

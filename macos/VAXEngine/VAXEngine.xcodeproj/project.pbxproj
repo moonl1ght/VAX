@@ -118,6 +118,11 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
+		111545752D82E82B00FB5370 /* Resources */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Resources;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +143,7 @@
 		1110D8362D50C0820080F1F0 = {
 			isa = PBXGroup;
 			children = (
+				111545752D82E82B00FB5370 /* Resources */,
 				11C98F9F2D807E9400C40C81 /* build_conan */,
 				1110D8522D50C0FE0080F1F0 /* Sources */,
 				1110D8412D50C0820080F1F0 /* VAXEngine */,
@@ -257,6 +263,7 @@
 			fileSystemSynchronizedGroups = (
 				1110D8412D50C0820080F1F0 /* VAXEngine */,
 				1110D8522D50C0FE0080F1F0 /* Sources */,
+				111545752D82E82B00FB5370 /* Resources */,
 			);
 			name = VAXEngine;
 			packageProductDependencies = (

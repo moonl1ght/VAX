@@ -10,6 +10,9 @@ final class EngineWrapper: MTKViewRenderer {
   private let engine = MTLEngine()
 
   init() {
+    let appPathes = AppPathes()
+    appPathes.bundlePath = Bundle.main.resourcePath ?? ""
+    engine.appPathes = appPathes
     inputController = InputController(engine: engine)
   }
 

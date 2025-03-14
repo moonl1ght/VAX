@@ -14,8 +14,8 @@ Model Primitives::createRGBTriangle(Device &device) {
     { 0.0f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }
   };
   Buffer* buffer = device.newBuffer(&vertices, sizeof(vertices), ResourceStorageModeShared);
-  Mesh* mesh = new Mesh(std::vector<MeshBuffer>({ MeshBuffer(buffer) }), 3);
-  return Model(mesh);
+  Mesh* mesh = new Mesh(MeshBuffer(buffer), 3);
+  return Model({mesh});
 }
 
 Model Primitives::createRGBCube(Device &device) {
@@ -49,6 +49,6 @@ Model Primitives::createRGBCube(Device &device) {
   };
 
   Buffer* buffer = device.newBuffer(&vertices, sizeof(vertices), ResourceStorageModeShared);
-  Mesh* mesh = new Mesh(std::vector<MeshBuffer>({ MeshBuffer(buffer) }), 36);
-  return Model(mesh);
+  Mesh* mesh = new Mesh(MeshBuffer(buffer), 36);
+  return Model({mesh});
 }

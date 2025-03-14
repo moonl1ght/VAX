@@ -6,17 +6,22 @@
 #include <iostream>
 
 #include "LightBuilder.hpp"
+#include "ModelLoader.hpp"
 
 using namespace std;
 
-Scene::Scene() { }
+Scene::Scene(MTLStack* mtlStack): _mtlStack(mtlStack) { }
 
 Scene::~Scene() {
   cout << "delete scene" << endl;
 }
 
-void Scene::loadScene() {
+void Scene::loadScene(std::string bundleResourcesPath) {
 
+  ModelLoader modelLoader = ModelLoader(_mtlStack);
+  auto model = std::make_unique<Model>(modelLoader.loadModel(bundleResourcesPath.append("/smg.obj")));
+  addModel(std::move(model));
+//  modelLoader.loadModel("/Users/alexander/Library/Developer/Xcode/DerivedData/VAXEngine-gortrzmlzgbahdaksohoczzkkmez/Build/Products/Debug/VAXEngine.app/Contents/Resources/backpack.obj");
 }
 
 void Scene::addModel(unique_ptr<Model> model) {

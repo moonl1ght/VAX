@@ -15,7 +15,7 @@ vertex VertexOut basic_vertex(const VertexIn in [[ stage_in ]],
   float4 position = uniforms.projectionMatrix * uniforms.viewMatrix * modelUniforms.modelMatrix * float4(in.position, 1.0);
   VertexOut out {
     .position = position,
-    .color = float4(in.color, 1.0)
+    .color = float4(1.0, 0.0, 0.0, 1.0)
   };
   return out;
 }

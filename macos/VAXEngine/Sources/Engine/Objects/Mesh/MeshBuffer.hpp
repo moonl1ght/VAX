@@ -13,11 +13,11 @@ public:
   explicit MeshBuffer(MTL::Buffer * buffer);
   MeshBuffer(MTL::Buffer * buffer, uint offset);
   MeshBuffer(const MeshBuffer & rhs);
-  MeshBuffer(MeshBuffer && rhs) = default;
+  MeshBuffer(MeshBuffer && rhs) = delete;
   virtual ~MeshBuffer();
 
   MeshBuffer& operator=(MeshBuffer & rhs);
-  MeshBuffer& operator=(MeshBuffer && rhs) = default;
+  MeshBuffer& operator=(MeshBuffer && rhs) = delete;
 
   const MTL::Buffer & buffer() const;
   uint offset() const;

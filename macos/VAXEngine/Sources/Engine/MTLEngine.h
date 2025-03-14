@@ -9,7 +9,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface AppPathes: NSObject
+@property(nonatomic, strong) NSString* bundlePath;
+@end
+
 @interface MTLEngine: NSObject
+@property(nonatomic, strong) AppPathes* appPathes;
 
 - (nonnull CAMetalLayer *)getRenderingLayer;
 - (void) load;

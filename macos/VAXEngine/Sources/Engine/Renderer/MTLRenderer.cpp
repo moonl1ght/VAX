@@ -49,7 +49,9 @@ void MTLRenderer::draw(CA::MetalLayer *layer) {
   VertexUniforms vertexUniforms = { _scene->camera.viewMatrix(), _scene->camera.projectionMatrix() };
   renderCommandEncoder->setVertexBytes(&vertexUniforms, vertexUniforms.size(), 10);
   for (auto& model: _scene->models()) {
-    model->mesh().draw(renderCommandEncoder);
+    for (auto mesh: model->meshes()) {
+      mesh->draw(renderCommandEncoder);
+    }
   }
 
   renderCommandEncoder->endEncoding();
