@@ -5,7 +5,6 @@
 #include <QuartzCore/QuartzCore.hpp>
 #import "MTLEngine.h"
 #include "MTLRenderer.hpp"
-#include "TESTCPP.hpp"
 #include "MTLStack.hpp"
 #include "Scene.hpp"
 #include "Primitives.hpp"
@@ -60,7 +59,7 @@
 //  auto cube = std::make_unique<Model>(Primitives::createRGBCube(mtlStack->device()));
 ////  cube->mesh().transform.rotation.setZ(radians_from_degrees(45));
 //  scene->addModel(std::move(cube));
-  scene->camera.setPosition({5.0f, 5.0f, -10.0f});
+  scene->camera.setPosition({3.0f, 3.0f, -3.0f});
   scene->loadScene(std::string([self.appPathes.bundlePath UTF8String]));
 //  float z = -10;
 //  float x = 5;

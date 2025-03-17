@@ -30,8 +30,8 @@ typedef struct {
 typedef enum VertexAttributes {
   kVertexAttributePosition = 0,
   kVertexAttributeNormal = 1,
-  kVertexAttributeUV = 2,
-  kVertexAttributeVertexColor = 3,
+  kVertexAttributeVertexColor = 2,
+  kVertexAttributeUV = 3,
   kVertexAttributeTangent = 4,
   kVertexAttributeBitangent = 5
 } VertexAttributes;
@@ -55,8 +55,17 @@ typedef struct ModelUniforms {
 } ModelUniforms;
 
 typedef struct {
-  uint lightCount;
   vector_float3 cameraPosition;
+  uint lightCount;
 } FragmentUniforms;
+
+typedef struct {
+  int width;
+  int height;
+} TextureInfo;
+
+typedef struct {
+  int diffuseTextureIndex;
+} TextureIndices;
 
 #endif /* ShaderTypes_h */

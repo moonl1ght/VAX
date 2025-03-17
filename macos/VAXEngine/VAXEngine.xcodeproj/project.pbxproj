@@ -123,6 +123,11 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		111546BD2D847EF400FB5370 /* stb */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = stb;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,6 +148,7 @@
 		1110D8362D50C0820080F1F0 = {
 			isa = PBXGroup;
 			children = (
+				111546BA2D847EAE00FB5370 /* Deps */,
 				111545752D82E82B00FB5370 /* Resources */,
 				11C98F9F2D807E9400C40C81 /* build_conan */,
 				1110D8522D50C0FE0080F1F0 /* Sources */,
@@ -169,6 +175,14 @@
 				1110D8852D511F9E0080F1F0 /* MetalKit.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		111546BA2D847EAE00FB5370 /* Deps */ = {
+			isa = PBXGroup;
+			children = (
+				111546BD2D847EF400FB5370 /* stb */,
+			);
+			path = Deps;
 			sourceTree = "<group>";
 		};
 		11C98F9C2D807E9400C40C81 /* generators */ = {
@@ -264,6 +278,7 @@
 				1110D8412D50C0820080F1F0 /* VAXEngine */,
 				1110D8522D50C0FE0080F1F0 /* Sources */,
 				111545752D82E82B00FB5370 /* Resources */,
+				111546BD2D847EF400FB5370 /* stb */,
 			);
 			name = VAXEngine;
 			packageProductDependencies = (

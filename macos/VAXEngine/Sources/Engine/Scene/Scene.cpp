@@ -19,7 +19,8 @@ Scene::~Scene() {
 void Scene::loadScene(std::string bundleResourcesPath) {
 
   ModelLoader modelLoader = ModelLoader(_mtlStack);
-  auto model = std::make_unique<Model>(modelLoader.loadModel(bundleResourcesPath.append("/smg.obj")));
+  modelLoader.bundleResourcesPath = bundleResourcesPath;
+  auto model = std::make_unique<Model>(modelLoader.loadModel("/smg.obj"));
   addModel(std::move(model));
 //  modelLoader.loadModel("/Users/alexander/Library/Developer/Xcode/DerivedData/VAXEngine-gortrzmlzgbahdaksohoczzkkmez/Build/Products/Debug/VAXEngine.app/Contents/Resources/backpack.obj");
 }

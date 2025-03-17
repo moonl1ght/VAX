@@ -12,11 +12,13 @@ using namespace metal;
 typedef struct {
   float3 position [[ attribute(kVertexAttributePosition) ]];
   float3 color [[ attribute(kVertexAttributeVertexColor) ]];
+  float2 uv [[ attribute(kVertexAttributeUV) ]];
 } VertexIn;
 
 typedef struct {
   float4 position [[ position ]];
   float4 color;
+  float2 uv;
 } FragmentIn;
 
 typedef FragmentIn VertexOut;

@@ -49,9 +49,7 @@ void MTLRenderer::draw(CA::MetalLayer *layer) {
   VertexUniforms vertexUniforms = { _scene->camera.viewMatrix(), _scene->camera.projectionMatrix() };
   renderCommandEncoder->setVertexBytes(&vertexUniforms, vertexUniforms.size(), 10);
   for (auto& model: _scene->models()) {
-    for (auto mesh: model->meshes()) {
-      mesh->draw(renderCommandEncoder);
-    }
+    model->draw(renderCommandEncoder);
   }
 
   renderCommandEncoder->endEncoding();
@@ -78,7 +76,7 @@ void MTLRenderer::updateRenderPassDescriptor(CA::MetalDrawable* drawable) {
 
 void MTLRenderer::createRenderPipeline() {
   Function* vertexFunction = _mtlStack->library().newFunction(NS::String::string("basicVertex", NS::ASCIIStringEncoding));
-  Function* fragmentFunction = _mtlStack->library().newFunction(NS::String::string("basicFragment", NS::ASCIIStringEncoding));
+  Function* fragmentFunction = _mtlStack->library().newFunction(NS::String::string("basicFragmentWithPhongLight", NS::ASCIIStringEncoding));
 
   RenderPipelineDescriptor* renderPipelineDescriptor = RenderPipelineDescriptor::alloc()->init();
   renderPipelineDescriptor->setVertexFunction(vertexFunction);

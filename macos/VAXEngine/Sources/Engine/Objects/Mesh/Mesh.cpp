@@ -43,6 +43,7 @@ void Mesh::draw(RenderCommandEncoder * const renderCommandEncoder) const {
   ModelUniforms modelUniforms = { transform.modelMatrix() };
   renderCommandEncoder->setVertexBytes(&modelUniforms, modelUniforms.size(), 11);
   renderCommandEncoder->setVertexBuffer(&_vertexBuffer.buffer(), _vertexBuffer.offset(), kVertexAttributePosition);
+  renderCommandEncoder->setFragmentBytes(&textureIndices, sizeof(textureIndices), 3);
   switch (drawingMode) {
     case DrawingMode::primitives:
       drawPrimitives(renderCommandEncoder);
@@ -65,5 +66,4 @@ void Mesh::drawIndexedPrimitives(RenderCommandEncoder * const renderCommandEncod
                                               MTL::IndexTypeUInt32,
                                               _indicesBuffer,
                                               0);
-//  renderCommandEncoder->drawPrimitives(PrimitiveTypeTriangle, NS::UInteger(0), _vertexCount);
 }
