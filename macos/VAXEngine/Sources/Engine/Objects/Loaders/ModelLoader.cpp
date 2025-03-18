@@ -63,7 +63,7 @@ Mesh* ModelLoader::processMesh(aiMesh* aiMesh,
     for (unsigned int j = 0; j < face.mNumIndices; j++) {
       unsigned int vertexIndex = face.mIndices[j];
       aiVector3D pos = aiMesh->mVertices[vertexIndex];
-//      aiVector3D normal = aiMesh->mNormals[vertexIndex];
+      aiVector3D normal = aiMesh->mNormals[vertexIndex];
       aiVector3D texCoord = aiMesh->mTextureCoords[0][vertexIndex];
 //      aiVector3D tangent = aiMesh->mTangents[vertexIndex];
 //      aiVector3D bitangent = aiMesh->mTangents[vertexIndex];
@@ -71,9 +71,8 @@ Mesh* ModelLoader::processMesh(aiMesh* aiMesh,
       Mesh::Vertex vertex;
       vertex.position = {pos.x, pos.y, pos.z};
       vertex.uv = {texCoord.x, texCoord.y};
-      vertex.color = {200, 200, 200};
-//      vertex.normal = {normal.x, normal.y, normal.z};
-//      vertex.textureCoordinate = {texCoord.x, texCoord.y};
+      vertex.color = {1, 0, 0};
+      vertex.normal = {normal.x, normal.y, normal.z};
 //      vertex.tangent = {tangent.x, tangent.y, tangent.z};
 //      vertex.bitangent = {bitangent.x, bitangent.y, bitangent.z};
 //      vertex.diffuseTextureIndex = {textureIndexMap[diffuseTextureName.C_Str()]};

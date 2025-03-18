@@ -11,7 +11,7 @@
 namespace LightBulder {
   Light sunlight() {
     Light light = Light();
-    light.position = {0.0f, 0.0f, 0.0f};
+    light.position = {1.0f, 2.0f, -2.0f};
     light.color = Color::white().simd_vec();
     light.specularColor = {0.6f, 0.6f, 0.6f};
     light.attenuation = {1.0f, 0.0f, 0.0f};
@@ -25,42 +25,26 @@ namespace LightBulder {
     light.type = Ambientlight;
     return light;
   }
+
+  Light pointlight() {
+    Light light = sunlight();
+    light.color = {1.0f, 0.0f, 0.0f};
+    light.type = Pointlight;
+    light.attenuation = {0.5f, 2.0f, 1.0f};
+    light.position = {-0.8, 0.76, -1.1};
+    return light;
+  }
+
+  Light spotlight() {
+    Light light = sunlight();
+    light.color = {1.0f, 1.0f, 0.0f};
+    light.position = {-0.8, 0.76, -1.1};
+    light.attenuation = {1.0f, 0.5f, 0.0f};
+    light.coneAngle = radians_from_degrees(40);
+    light.coneAttenuation = 8;
+    light.type = Spotlight;
+    return light;
+  }
 }
-
-//
-//struct SceneLighting {
-//
-//  let redLight: Light = {
-//    var light = Self.buildDefaultLight()
-//    light.type = Point
-//    light.position = [-0.8, 0.76, -0.18]
-//    light.color = [1, 0, 0]
-//    light.attenuation = [0.5, 2, 1]
-//    return light
-//  }()
-//
-//  lazy var spotlight: Light = {
-//    var light = Self.buildDefaultLight()
-//    light.type = Spot
-//    light.position = [-0.64, 0.64, -1.07]
-//    light.color = [1, 0, 1]
-//    light.attenuation = [1, 0.5, 0]
-//    light.coneAngle = Float(40).degreesToRadians
-//    light.coneDirection = [0.5, -0.7, 1]
-//    light.coneAttenuation = 8
-//    return light
-//  }()
-//
-//  var lights: [Light] = []
-//
-//  init() {
-//    lights.append(sunlight)
-//    lights.append(ambientLight)
-//    lights.append(redLight)
-//    lights.append(spotlight)
-//  }
-//}
-
-
 
 #endif /* LightBuilder_hpp */

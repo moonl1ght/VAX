@@ -22,7 +22,8 @@ void Scene::loadScene(std::string bundleResourcesPath) {
   modelLoader.bundleResourcesPath = bundleResourcesPath;
   auto model = std::make_unique<Model>(modelLoader.loadModel("/smg.obj"));
   addModel(std::move(model));
-//  modelLoader.loadModel("/Users/alexander/Library/Developer/Xcode/DerivedData/VAXEngine-gortrzmlzgbahdaksohoczzkkmez/Build/Products/Debug/VAXEngine.app/Contents/Resources/backpack.obj");
+
+  _lights = {LightBulder::sunlight()};
 }
 
 void Scene::addModel(unique_ptr<Model> model) {
@@ -31,4 +32,8 @@ void Scene::addModel(unique_ptr<Model> model) {
 
 const vector<unique_ptr<Model>>& Scene::models() const noexcept {
   return _models;
+}
+
+const vector<Light>& Scene::lights() const noexcept {
+  return _lights;
 }

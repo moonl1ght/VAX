@@ -28,12 +28,11 @@ vax::VertexDescriptor vax::VertexDescriptor::createSimpleVertexDescriptor() {
   offset += sizeof(simd_float3);
   vd->layouts()->object(0)->setStride(offset);
 
-//  vd->attributes()->object(kVertexAttributeUV)->setFormat(MTL::VertexFormatFloat3);
-//  vd->attributes()->object(kVertexAttributeUV)->setOffset(offset);
-//  vd->attributes()->object(kVertexAttributeUV)->setBufferIndex(0);
-//  offset += sizeof(simd_float3);
-//  vd->layouts()->object(0)->setStride(offset);
-//  std::cout << sizeof(simd_float3) << " " << sizeof(simd_float4) << std::endl;
+  vd->attributes()->object(kVertexAttributeNormal)->setFormat(MTL::VertexFormatFloat3);
+  vd->attributes()->object(kVertexAttributeNormal)->setOffset(offset);
+  vd->attributes()->object(kVertexAttributeNormal)->setBufferIndex(0);
+  offset += sizeof(simd_float3);
+  vd->layouts()->object(0)->setStride(offset);
 
   vd->attributes()->object(kVertexAttributeVertexColor)->setFormat(MTL::VertexFormatFloat3);
   vd->attributes()->object(kVertexAttributeVertexColor)->setOffset(offset);
@@ -46,12 +45,6 @@ vax::VertexDescriptor vax::VertexDescriptor::createSimpleVertexDescriptor() {
   vd->attributes()->object(kVertexAttributeUV)->setBufferIndex(0);
   offset += sizeof(simd_float3);
   vd->layouts()->object(0)->setStride(offset);
-
-//  vd->attributes()->object(kVertexAttributeUV)->setFormat(MTL::VertexFormatFloat2);
-//  vd->attributes()->object(kVertexAttributeUV)->setOffset(offset);
-//  vd->attributes()->object(kVertexAttributeUV)->setBufferIndex(0);
-//  offset += sizeof(simd_float2);
-//  std::cout << sizeof(simd_float3) << " " << sizeof(simd_float4) << std::endl;
 
 
 //  vd->layouts()->object(0)->setStride(offset);

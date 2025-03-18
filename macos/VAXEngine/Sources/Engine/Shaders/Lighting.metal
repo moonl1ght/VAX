@@ -9,18 +9,18 @@ using namespace metal;
 
 float3 phongLighting(float3 normal,
                      float3 position,
-                     constant FragmentUniforms &params,
+                     constant FragmentUniforms &uniforms,
                      constant Light *lights,
                      float3 baseColor)
 {
-  float3 diffuseColor = 0;
+  float3 diffuseColor = baseColor * 0.5; // self color as an ambient
   float3 ambientColor = 0;
   float3 specularColor = 0;
 
   float materialShininess = 32;
   float3 materialSpecularColor = float3(1, 1, 1);
 
-  for (uint i = 0; i < params.lightCount; i++) {
+  for (uint i = 0; i < uniforms.lightCount; i++) {
     Light light = lights[i];
     switch (light.type) {
       case Sunlight: {
@@ -29,7 +29,7 @@ float3 phongLighting(float3 normal,
         diffuseColor += light.color * baseColor * diffuseIntensity;
         if (diffuseIntensity > 0) {
           float3 reflection = reflect(lightDirection, normal);
-          float3 viewDirection = normalize(params.cameraPosition);
+          float3 viewDirection = normalize(uniforms.cameraPosition);
           float specularIntensity = pow(saturate(dot(reflection, viewDirection)), materialShininess);
           specularColor += light.specularColor * materialSpecularColor * specularIntensity;
         }

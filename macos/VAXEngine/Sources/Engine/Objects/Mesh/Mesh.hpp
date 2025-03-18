@@ -22,6 +22,7 @@ public:
 
   struct Vertex {
     simd_float3 position;
+    simd_float3 normal;
     simd_float3 color;
     simd_float2 uv;
   };

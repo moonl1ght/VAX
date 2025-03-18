@@ -26,11 +26,13 @@ public:
   void loadScene(std::string bundleResourcesPath);
   void addModel(std::unique_ptr<Model>);
   const std::vector<std::unique_ptr<Model>>& models() const noexcept;
+  const std::vector<Light>& lights() const noexcept;
 
 private:
   MTLStack* _mtlStack;
 
   std::vector<std::unique_ptr<Model>> _models;
+  std::vector<Light> _lights;
 };
 
 #endif /* Scene_hpp */

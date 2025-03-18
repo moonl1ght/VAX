@@ -47,7 +47,11 @@ void MTLRenderer::draw(CA::MetalLayer *layer) {
   renderCommandEncoder->setRenderPipelineState(_renderPipelineState);
 
   VertexUniforms vertexUniforms = { _scene->camera.viewMatrix(), _scene->camera.projectionMatrix() };
+  auto lights = _scene->lights();
+  FragmentUniforms fragmentsUniforms = { _scene->camera.transform.position, (uint)lights.size() };
   renderCommandEncoder->setVertexBytes(&vertexUniforms, vertexUniforms.size(), 10);
+  renderCommandEncoder->setFragmentBytes(&fragmentsUniforms, sizeof(fragmentsUniforms), 3);
+  renderCommandEncoder->setFragmentBytes(lights.data(), sizeof(Light) * lights.size(), 4);
   for (auto& model: _scene->models()) {
     model->draw(renderCommandEncoder);
   }

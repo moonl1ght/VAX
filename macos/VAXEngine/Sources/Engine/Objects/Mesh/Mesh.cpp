@@ -43,7 +43,7 @@ void Mesh::draw(RenderCommandEncoder * const renderCommandEncoder) const {
   ModelUniforms modelUniforms = { transform.modelMatrix() };
   renderCommandEncoder->setVertexBytes(&modelUniforms, modelUniforms.size(), 11);
   renderCommandEncoder->setVertexBuffer(&_vertexBuffer.buffer(), _vertexBuffer.offset(), kVertexAttributePosition);
-  renderCommandEncoder->setFragmentBytes(&textureIndices, sizeof(textureIndices), 3);
+  renderCommandEncoder->setFragmentBytes(&textureIndices, sizeof(textureIndices), 5);
   switch (drawingMode) {
     case DrawingMode::primitives:
       drawPrimitives(renderCommandEncoder);

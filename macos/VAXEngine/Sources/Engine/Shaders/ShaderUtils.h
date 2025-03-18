@@ -11,6 +11,7 @@ using namespace metal;
 
 typedef struct {
   float3 position [[ attribute(kVertexAttributePosition) ]];
+  float3 normal [[ attribute(kVertexAttributeNormal) ]];
   float3 color [[ attribute(kVertexAttributeVertexColor) ]];
   float2 uv [[ attribute(kVertexAttributeUV) ]];
 } VertexIn;
@@ -18,6 +19,9 @@ typedef struct {
 typedef struct {
   float4 position [[ position ]];
   float4 color;
+  float4 fragmentWorldPosition;
+  float3 worldNormal;
+  float3 normal;
   float2 uv;
 } FragmentIn;
 
