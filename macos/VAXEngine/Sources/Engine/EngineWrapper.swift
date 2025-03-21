@@ -12,6 +12,7 @@ final class EngineWrapper: MTKViewRenderer {
   init() {
     let appPathes = AppPathes()
     appPathes.bundlePath = Bundle.main.resourcePath ?? ""
+    appPathes.documentPath = FileManager.documentsDir ?? ""
     engine.appPathes = appPathes
     inputController = InputController(engine: engine)
   }
@@ -35,5 +36,9 @@ final class EngineWrapper: MTKViewRenderer {
   
   func draw(in mtkView: MTKView) {
     engine.draw(in: mtkView)
+  }
+
+  func sendEvent(_ event: AppEvent) {
+    engine.handle(event)
   }
 }

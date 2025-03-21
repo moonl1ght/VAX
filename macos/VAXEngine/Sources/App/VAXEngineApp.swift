@@ -10,5 +10,8 @@ struct VAXEngineApp: App {
     WindowGroup {
       ContentView()
     }
+    Window("Settings", id: "settings-window") {
+      SettingsView()
+    }
   }
 }

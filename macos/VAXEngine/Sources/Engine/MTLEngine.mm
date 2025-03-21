@@ -10,6 +10,9 @@
 #include "Primitives.hpp"
 #include <iostream>
 #include <algorithm>
+#include "Settings.hpp"
+
+using json = nlohmann::json;
 
 @implementation AppPathes { }
 @end
@@ -54,6 +57,7 @@
 }
 
 - (void)load {
+  [self loadSettings];
 //  NSLog(self.appPathes.bundlePath);
 //  std::cout << "path: " << self.appPathes.bundlePath << std::endl;
 //  auto cube = std::make_unique<Model>(Primitives::createRGBCube(mtlStack->device()));
@@ -91,6 +95,22 @@
 //  std::cout << "handleDragGesture: " << scene->camera.transform.position.x << " y: " << scene->camera.transform.position.y << " z: " << scene->camera.transform.position.z << std::endl;
 //  std::cout << "rotation: " << scene->camera.transform.rotation.x() << " y: " << scene->camera.transform.rotation.y() << " z: " << scene->camera.transform.rotation.z() << std::endl;
   scene->camera.rotate(value.dragTranslationDelta.vec());
+}
+
+- (void)handleAppEvent:(AppEvent)event {
+  switch (event) {
+    case settingsSaved:
+      [self loadSettings];
+      break;
+
+    default:
+      break;
+  }
+  std::cout << "event: " << event << std::endl;
+}
+
+- (void) loadSettings {
+  Settings settings = loadSettings(std::string([self.appPathes.documentPath UTF8String]) + "/settings.json");
 }
 
 @end

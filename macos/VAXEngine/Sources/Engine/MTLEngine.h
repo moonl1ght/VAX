@@ -6,11 +6,13 @@
 #import <MetalKit/MetalKit.h>
 
 #import "DragGestureValue.h"
+#import "AppEvent.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface AppPathes: NSObject
 @property(nonatomic, strong) NSString* bundlePath;
+@property(nonatomic, strong) NSString* documentPath;
 @end
 
 @interface MTLEngine: NSObject
@@ -23,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) drawIn: (MTKView *)view;
 
 - (void) handleDragGesture: (vax::DragGestureValue) value;
+- (void) handleAppEvent: (AppEvent) event;
 
 @end
 
