@@ -34,7 +34,10 @@ Model& Model::operator=(Model&& rhs)
 }
 
 void Model::draw(MTL::RenderCommandEncoder *const renderCommandEncoder) const {
-  renderCommandEncoder->setFragmentTexture(_textures->textureArray, 0);
+  if (_textures) {
+    renderCommandEncoder->setFragmentBuffer(_textures->textureInfosBuffer, 0, 6);
+    renderCommandEncoder->setFragmentTexture(_textures->textureArray, 0);
+  }
   for (auto mesh: _meshes) {
     mesh->draw(renderCommandEncoder);
   }

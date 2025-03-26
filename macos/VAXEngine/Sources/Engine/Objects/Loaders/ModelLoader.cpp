@@ -42,19 +42,27 @@ std::vector<Mesh*> ModelLoader::processNode(aiNode* node,
 Mesh* ModelLoader::processMesh(aiMesh* aiMesh,
                                const aiScene* scene,
                                std::unordered_map<std::string, int> textureIndexMap) {
-  std::vector<Mesh::Vertex> vertices;
+  std::vector<Mesh::Vertex::GPUVertex> vertices;
+  std::vector<Mesh::Vertex::UV> uvs;
   std::vector<uint32_t> indices;
   std::unordered_map<Mesh::Vertex, uint32_t> uniqueVertices;
 //
 //  // Get texture file names
-  aiString diffuseTextureName, specularTextureName, normalTextureName, emissiveTextureName;
+  aiString diffuseTextureName, specularTextureName, normalTextureName, emissiveTextureName,
+  heightTextureName, roughnessTextureName, metallicTextureName, aoTextureName;
 //  aiMesh.nNum
 //  std::cout << "Mat index: " << aiMesh->mMaterialIndex << std::endl;
   aiMaterial* material = scene->mMaterials[aiMesh->mMaterialIndex];
   material->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseTextureName);
-//  material->GetTexture(aiTextureType_SPECULAR, 0, &specularTextureName);
-//  material->GetTexture(aiTextureType_HEIGHT, 0, &normalTextureName);
-//  material->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveTextureName);
+  material->GetTexture(aiTextureType_SPECULAR, 0, &specularTextureName);
+  material->GetTexture(aiTextureType_HEIGHT, 0, &heightTextureName);
+  material->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveTextureName);
+  material->GetTexture(aiTextureType_NORMALS, 0, &normalTextureName);
+  material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessTextureName);
+  material->GetTexture(aiTextureType_METALNESS, 0, &metallicTextureName);
+  material->GetTexture(aiTextureType_AMBIENT, 0, &aoTextureName);
+
+  std::cout << "aoTextureName: " << aoTextureName.C_Str() << std::endl;
 //
   // Extract Per-Vertex Data
   for (unsigned int i = 0; i < aiMesh->mNumFaces; i++) {
@@ -65,16 +73,16 @@ Mesh* ModelLoader::processMesh(aiMesh* aiMesh,
       aiVector3D pos = aiMesh->mVertices[vertexIndex];
       aiVector3D normal = aiMesh->mNormals[vertexIndex];
       aiVector3D texCoord = aiMesh->mTextureCoords[0][vertexIndex];
-//      aiVector3D tangent = aiMesh->mTangents[vertexIndex];
-//      aiVector3D bitangent = aiMesh->mTangents[vertexIndex];
+      aiVector3D tangent = aiMesh->mTangents[vertexIndex];
+      aiVector3D bitangent = aiMesh->mTangents[vertexIndex];
 
       Mesh::Vertex vertex;
       vertex.position = {pos.x, pos.y, pos.z};
       vertex.uv = {texCoord.x, texCoord.y};
       vertex.color = {1, 0, 0};
       vertex.normal = {normal.x, normal.y, normal.z};
-//      vertex.tangent = {tangent.x, tangent.y, tangent.z};
-//      vertex.bitangent = {bitangent.x, bitangent.y, bitangent.z};
+      vertex.tangent = {tangent.x, tangent.y, tangent.z};
+      vertex.bitangent = {bitangent.x, bitangent.y, bitangent.z};
 //      vertex.diffuseTextureIndex = {textureIndexMap[diffuseTextureName.C_Str()]};
 //      vertex.specularTextureIndex = {textureIndexMap[specularTextureName.C_Str()]};
 //      vertex.normalMapIndex = {textureIndexMap[normalTextureName.C_Str()]};
@@ -82,7 +90,8 @@ Mesh* ModelLoader::processMesh(aiMesh* aiMesh,
       // Check if the vertex is unique or not
       if (uniqueVertices.count(vertex) == 0) {
         uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-        vertices.push_back(vertex);
+        vertices.push_back(vertex.getGPUVertex());
+        uvs.push_back(vertex.getUV());
       }
       // Add the index of the vertex to the indices vector
       indices.push_back(uniqueVertices[vertex]);
@@ -92,14 +101,23 @@ Mesh* ModelLoader::processMesh(aiMesh* aiMesh,
   unsigned long vertexCount = vertices.size();
   allvertexCount = allvertexCount + vertexCount;
   std::cout << "Processing mesh: vertexCount " << allvertexCount << std::endl;
-  unsigned long vertexBufferSize = sizeof(Mesh::Vertex) * vertexCount;
+  unsigned long vertexBufferSize = sizeof(Mesh::Vertex::GPUVertex) * vertexCount;
   MTL::Buffer* verticesBuffer = _mtlStack->device().newBuffer(vertices.data(), vertexBufferSize, MTL::ResourceStorageModeShared);
+  unsigned long uvBufferSize = sizeof(Mesh::Vertex::UV) * vertexCount;
+  MTL::Buffer* uvBuffer = _mtlStack->device().newBuffer(uvs.data(), uvBufferSize, MTL::ResourceStorageModeShared);
   unsigned long indexCount = indices.size();
   unsigned long indexBufferSize = sizeof(uint32_t) * indexCount;
   MTL::Buffer* indicesBuffer = _mtlStack->device().newBuffer(indices.data(), indexBufferSize, MTL::ResourceStorageModeShared);
-  
-  Mesh* mesh = new Mesh(MeshBuffer(verticesBuffer), (u_int)vertexCount, indicesBuffer, indexCount);
+  textureIndexMap[""] = -1;
+  Mesh* mesh = new Mesh(MeshBuffer(verticesBuffer), uvBuffer, (u_int)vertexCount, indicesBuffer, indexCount);
   mesh->textureIndices.diffuseTextureIndex = textureIndexMap[diffuseTextureName.C_Str()];
+  mesh->textureIndices.specularTextureIndex = textureIndexMap[specularTextureName.C_Str()];
+  mesh->textureIndices.normalTextureIndex = textureIndexMap[normalTextureName.C_Str()];
+  mesh->textureIndices.emissiveTextureIndex = textureIndexMap[emissiveTextureName.C_Str()];
+  mesh->textureIndices.roughnessTextureIndex = textureIndexMap[roughnessTextureName.C_Str()];
+  mesh->textureIndices.metallicTextureIndex = textureIndexMap[metallicTextureName.C_Str()];
+  mesh->textureIndices.aoTextureIndex = textureIndexMap[aoTextureName.C_Str()];
+  mesh->textureIndices.heightTextureIndex = textureIndexMap[heightTextureName.C_Str()];
 
   return mesh;
 }
@@ -112,9 +130,14 @@ std::tuple<std::unordered_map<std::string, int>, Model::Textures*> ModelLoader::
   for (int i = 0;  i < scene->mNumMaterials; i++) {
     aiMaterial* material = scene->mMaterials[i];
     mapTextureIndices(textureFilePaths, aiTextureType_DIFFUSE, material, textureIndex, textureIndexMap);
-//    mapTextureIndices(textureFilePaths, aiTextureType_SPECULAR, material, textureIndex);
-//    mapTextureIndices(textureFilePaths, aiTextureType_HEIGHT, material, textureIndex);
-//    mapTextureIndices(textureFilePaths, aiTextureType_EMISSIVE, material, textureIndex);
+    mapTextureIndices(textureFilePaths, aiTextureType_SPECULAR, material, textureIndex, textureIndexMap);
+    mapTextureIndices(textureFilePaths, aiTextureType_HEIGHT, material, textureIndex, textureIndexMap);
+    mapTextureIndices(textureFilePaths, aiTextureType_EMISSIVE, material, textureIndex, textureIndexMap);
+    mapTextureIndices(textureFilePaths, aiTextureType_NORMALS, material, textureIndex, textureIndexMap);
+    mapTextureIndices(textureFilePaths, aiTextureType_DIFFUSE_ROUGHNESS, material, textureIndex, textureIndexMap);
+    mapTextureIndices(textureFilePaths, aiTextureType_METALNESS, material, textureIndex, textureIndexMap);
+    mapTextureIndices(textureFilePaths, aiTextureType_AMBIENT, material, textureIndex, textureIndexMap);
+    mapTextureIndices(textureFilePaths, aiTextureType_DISPLACEMENT, material, textureIndex, textureIndexMap);
   }
   if (textureFilePaths.size() == 0) {
     std::cerr << "Texture Files not found..." << std::endl;
@@ -132,14 +155,20 @@ void ModelLoader::mapTextureIndices(std::vector<std::string>& textureFilePaths,
                                     aiMaterial* material,
                                     int& textureIndex,
                                     std::unordered_map<std::string, int>& textureIndexMap) {
+  std::cout << material->GetTextureCount(textureType) << std::endl;
   for (int j = 0; j < material->GetTextureCount(textureType); j++) {
     aiString textureFileName;
     if (material->GetTexture(textureType, 0, &textureFileName) == AI_SUCCESS) {
       if (textureIndexMap[textureFileName.C_Str()] == 0) {
         std::string textureFileNameStr = std::string(textureFileName.C_Str());
 //        textureFileNameStr.substr(textureFileNameStr.find_last_of("/\\"), textureFileNameStr.size() + 1);
-        std::string textureFilePath = bundleResourcesPath +
-        textureFileNameStr.substr(textureFileNameStr.find_last_of("/\\"), textureFileNameStr.size() + 1);
+        std::size_t separator = textureFileNameStr.find_last_of("/\\");
+        if (separator != std::string::npos) {
+          textureFileNameStr = textureFileNameStr.substr(separator, textureFileNameStr.size() + 1);
+        } else {
+          textureFileNameStr = "/" + textureFileNameStr;
+        }
+        std::string textureFilePath = bundleResourcesPath + textureFileNameStr;
         std::cout << textureIndex+1 << ".) " << textureFilePath << std::endl;
         textureIndexMap[textureFileName.C_Str()] = textureIndex++;
         textureFilePaths.push_back(textureFilePath);

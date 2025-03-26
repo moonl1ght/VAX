@@ -16,30 +16,34 @@
 #include "MTLStack.hpp"
 #include "TexturesLoader.hpp"
 
-class ModelLoader {
+class ModelLoader
+{
 public:
   std::string bundleResourcesPath;
 
-  explicit ModelLoader(MTLStack* mtlStack): _mtlStack(mtlStack) { };
-  virtual ~ModelLoader() { };
+  explicit ModelLoader(MTLStack *mtlStack) : _mtlStack(mtlStack) {};
+  virtual ~ModelLoader() {};
 
   Model loadModel(std::string filePath);
 
 private:
-  MTLStack* _mtlStack;
+  MTLStack *_mtlStack;
 
-  std::vector<Mesh*> processNode(aiNode* node,
-                                 const aiScene* scene,
-                                 std::unordered_map<std::string, int> textureIndexMap);
-  Mesh* processMesh(aiMesh* aiMesh,
-                    const aiScene* scene,
-                    std::unordered_map<std::string, int> textureIndexMap);
-  std::tuple<std::unordered_map<std::string, int>, Model::Textures*> loadTextures(const aiScene* scene);
-  void mapTextureIndices(std::vector<std::string>& textureFilePaths,
-                         aiTextureType textureType,
-                         aiMaterial* material,
-                         int& textureIndex,
-                         std::unordered_map<std::string, int>& textureIndexMap);
+  std::vector<Mesh *> processNode(
+    aiNode *node,
+    const aiScene *scene,
+    std::unordered_map<std::string, int> textureIndexMap);
+  Mesh *processMesh(
+    aiMesh *aiMesh,
+    const aiScene *scene,
+    std::unordered_map<std::string, int> textureIndexMap);
+  std::tuple<std::unordered_map<std::string, int>, Model::Textures *> loadTextures(const aiScene *scene);
+  void mapTextureIndices(
+    std::vector<std::string> &textureFilePaths,
+    aiTextureType textureType,
+    aiMaterial *material,
+    int &textureIndex,
+    std::unordered_map<std::string, int> &textureIndexMap);
 };
 
 #endif /* ModelLoader_hpp */

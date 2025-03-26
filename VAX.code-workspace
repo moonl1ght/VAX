@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"sweetpad.build.xcodeWorkspacePath": "macos/VAXEngine/VAXEngine.xcodeproj/project.xcworkspace",
+		"cmake.enabledOutputParsers": [
+			"cmake",
+			"gcc",
+			"gnuld",
+			"msvc",
+			"ghs",
+			"diab",
+			"cmake"
+		]
+	}
+}

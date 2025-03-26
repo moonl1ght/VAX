@@ -16,6 +16,15 @@ typedef enum {
 } LightType;
 
 typedef struct {
+  vector_float3 baseColor;
+  vector_float3 specularColor;
+  float roughness;
+  float metallic;
+  float ambientOcclusion;
+  float shininess;
+} Material;
+
+typedef struct {
   vector_float3 position;
   vector_float3 color;
   vector_float3 specularColor;
@@ -39,6 +48,13 @@ typedef enum VertexAttributes {
 typedef enum BufferIndex {
   kBufferIndexMeshPositions = 0,
 } BufferIndex;
+
+typedef enum {
+  kVertexBufferIndex = 0,
+  kUVBufferIndex = 1,
+  kVertexUniformsBufferIndex = 10,
+  kModelUniformsBufferIndex = 11
+} VertexBufferIndices;
 
 typedef struct VertexUniforms {
   matrix_float4x4 viewMatrix;
@@ -64,8 +80,15 @@ typedef struct {
   int height;
 } TextureInfo;
 
-typedef struct {
-  int diffuseTextureIndex;
+typedef struct TextureIndices {
+  int diffuseTextureIndex = -1;
+  int specularTextureIndex = -1;
+  int normalTextureIndex = -1;
+  int heightTextureIndex = -1;
+  int emissiveTextureIndex = -1;
+  int roughnessTextureIndex = -1;
+  int metallicTextureIndex = -1;
+  int aoTextureIndex = -1;
 } TextureIndices;
 
 #endif /* ShaderTypes_h */

@@ -12,12 +12,16 @@ Mesh::Mesh(MeshBuffer vertexBuffer, u_int vertexCount, DrawingMode drawingMode)
 , _vertexCount(vertexCount)
 { };
 
-Mesh::Mesh(MeshBuffer vertexBuffer,
-           u_int vertexCount,
-           Buffer* indicesBuffer,
-           unsigned long indexCount,
-           DrawingMode drawingMode)
+Mesh::Mesh(
+  MeshBuffer vertexBuffer,
+  MTL::Buffer* uvBuffer,
+  u_int vertexCount,
+  Buffer* indicesBuffer,
+  unsigned long indexCount,
+  DrawingMode drawingMode
+)
 : _vertexBuffer(vertexBuffer)
+, _uvBuffer(uvBuffer)
 , _vertexCount(vertexCount)
 , _indicesBuffer(indicesBuffer)
 , _indexCount(indexCount)
@@ -26,23 +30,27 @@ Mesh::Mesh(MeshBuffer vertexBuffer,
 
 Mesh::Mesh(const Mesh & rhs)
 : _vertexBuffer(rhs._vertexBuffer)
+, _uvBuffer(rhs._uvBuffer->retain())
 , _vertexCount(rhs._vertexCount)
 , _indicesBuffer(rhs._indicesBuffer->retain())
 { };
 
 Mesh::~Mesh() {
+  _uvBuffer->release();
   _indicesBuffer->release();
 };
 
 Mesh& Mesh::operator=(Mesh & rhs) {
+  _uvBuffer->retain();
   _indicesBuffer->retain();
   return *this;
 }
 
 void Mesh::draw(RenderCommandEncoder * const renderCommandEncoder) const {
   ModelUniforms modelUniforms = { transform.modelMatrix() };
-  renderCommandEncoder->setVertexBytes(&modelUniforms, modelUniforms.size(), 11);
-  renderCommandEncoder->setVertexBuffer(&_vertexBuffer.buffer(), _vertexBuffer.offset(), kVertexAttributePosition);
+  renderCommandEncoder->setVertexBuffer(&_vertexBuffer.buffer(), _vertexBuffer.offset(), kVertexBufferIndex);
+  renderCommandEncoder->setVertexBuffer(_uvBuffer, 0, kUVBufferIndex);
+  renderCommandEncoder->setVertexBytes(&modelUniforms, modelUniforms.size(), kModelUniformsBufferIndex);
   renderCommandEncoder->setFragmentBytes(&textureIndices, sizeof(textureIndices), 5);
   switch (drawingMode) {
     case DrawingMode::primitives:
@@ -61,9 +69,11 @@ void Mesh::drawPrimitives(RenderCommandEncoder * const renderCommandEncoder) con
 }
 
 void Mesh::drawIndexedPrimitives(RenderCommandEncoder * const renderCommandEncoder) const {
-  renderCommandEncoder->drawIndexedPrimitives(PrimitiveTypeTriangle,
-                                              _indexCount,
-                                              MTL::IndexTypeUInt32,
-                                              _indicesBuffer,
-                                              0);
+  renderCommandEncoder->drawIndexedPrimitives(
+    PrimitiveTypeTriangle,
+    _indexCount,
+    MTL::IndexTypeUInt32,
+    _indicesBuffer,
+    0
+  );
 }

@@ -20,7 +20,7 @@ void Scene::loadScene(std::string bundleResourcesPath) {
 
   ModelLoader modelLoader = ModelLoader(_mtlStack);
   modelLoader.bundleResourcesPath = bundleResourcesPath;
-  auto model = std::make_unique<Model>(modelLoader.loadModel("/smg.obj"));
+  auto model = std::make_unique<Model>(modelLoader.loadModel("/helmet.obj"));
   addModel(std::move(model));
 
   _lights = {LightBulder::sunlight()};

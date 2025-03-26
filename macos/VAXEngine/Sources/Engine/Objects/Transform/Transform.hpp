@@ -25,9 +25,9 @@ public:
 
   inline matrix_float4x4 modelMatrix() const {
     return matrix_multiply(
-                           matrix_multiply(matrix4x4_translation(position), rotation.rotationMatrix()),
-                           matrix4x4_scale(scale)
-                           );
+      matrix_multiply(matrix4x4_translation(position), rotation.rotationMatrix()),
+      matrix4x4_scale(scale)
+    );
   }
 };
 
