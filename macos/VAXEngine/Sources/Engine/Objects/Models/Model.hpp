@@ -8,9 +8,9 @@
 #include <stdio.h>
 #include <Metal/Metal.hpp>
 
-#include "Mesh.hpp"
+#include "BaseModel.hpp"
 
-class Model {
+class Model: BaseModel {
 public:
   class Textures {
   public:
@@ -30,8 +30,8 @@ public:
   };
 
   Model(std::vector<Mesh*> meshes, Textures* textures)
-  :_meshes(meshes), _textures(textures) { };
-  virtual ~Model();
+  :BaseModel(meshes), _textures(textures) { };
+  ~Model();
 
   Model(const Model& rhs) = delete;
   Model(Model&& rhs);
@@ -39,11 +39,9 @@ public:
   Model & operator=(Model & rhs) = delete;
   Model & operator=(Model && rhs);
 
-  std::vector<Mesh*>& meshes() const noexcept;
-  void draw(MTL::RenderCommandEncoder * const renderCommandEncoder) const;
+  void draw(MTL::RenderCommandEncoder * const renderCommandEncoder, MTL::RenderPipelineState* renderPipelineState) const override;
 
 private:
-  std::vector<Mesh*> _meshes;
   Textures* _textures;
 };
 

@@ -7,6 +7,7 @@
 
 #include "VertexDescriptor.hpp"
 #include "ShaderTypes.h"
+#include "RenderPipelineStateFactory.hpp"
 
 using namespace std;
 using namespace MTL;
@@ -27,6 +28,8 @@ MTLRenderer::~MTLRenderer() {
   _renderPipelineState = nullptr;
   _depthStencilState->release();
   _depthStencilState = nullptr;
+  _gizmoPipelineState->release();
+  _gizmoPipelineState = nullptr;
 };
 
 void MTLRenderer::resize(const vax::Size viewSize, const vax::Size drawableSize) {
@@ -44,17 +47,21 @@ void MTLRenderer::draw(CA::MetalLayer *layer) {
   RenderCommandEncoder* renderCommandEncoder = commandBuffer->renderCommandEncoder(_renderPassDescriptor);
 
   renderCommandEncoder->setDepthStencilState(_depthStencilState);
-  renderCommandEncoder->setRenderPipelineState(_renderPipelineState);
+//  renderCommandEncoder->setRenderPipelineState(_renderPipelineState);
+  
 
   VertexUniforms vertexUniforms = { _scene->camera.viewMatrix(), _scene->camera.projectionMatrix() };
+  renderCommandEncoder->setVertexBytes(&vertexUniforms, vertexUniforms.size(), kVertexUniformsBufferIndex);
+
   auto lights = _scene->lights();
   FragmentUniforms fragmentsUniforms = { _scene->camera.transform.position, (uint)lights.size() };
-  renderCommandEncoder->setVertexBytes(&vertexUniforms, vertexUniforms.size(), kVertexUniformsBufferIndex);
   renderCommandEncoder->setFragmentBytes(&fragmentsUniforms, sizeof(fragmentsUniforms), 3);
   renderCommandEncoder->setFragmentBytes(lights.data(), sizeof(Light) * lights.size(), 4);
   for (auto& model: _scene->models()) {
-    model->draw(renderCommandEncoder);
+    model->draw(renderCommandEncoder, _renderPipelineState);
   }
+
+  _scene->gizmo().draw(renderCommandEncoder, _gizmoPipelineState);
 
   renderCommandEncoder->endEncoding();
 
@@ -79,38 +86,14 @@ void MTLRenderer::updateRenderPassDescriptor(CA::MetalDrawable* drawable) {
 }
 
 void MTLRenderer::createRenderPipeline() {
-  Function* vertexFunction = _mtlStack->library().newFunction(NS::String::string("basicVertex", NS::ASCIIStringEncoding));
-  Function* fragmentFunction = _mtlStack->library().newFunction(NS::String::string("basicFragmentWithPBR", NS::ASCIIStringEncoding));
-
-  RenderPipelineDescriptor* renderPipelineDescriptor = RenderPipelineDescriptor::alloc()->init();
-  renderPipelineDescriptor->setVertexFunction(vertexFunction);
-  renderPipelineDescriptor->setFragmentFunction(fragmentFunction);
-  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createSimpleVertexDescriptor();
-  renderPipelineDescriptor->setVertexDescriptor(&vertexDescriptor.vertexDescriptor());
-  assert(renderPipelineDescriptor);
-  PixelFormat pixelFormat = PixelFormatBGRA8Unorm;
-  renderPipelineDescriptor->colorAttachments()->object(0)->setPixelFormat(pixelFormat);
-//  renderPipelineDescriptor->setSampleCount(4);
-  renderPipelineDescriptor->setLabel(NS::String::string("Render Pipeline", NS::ASCIIStringEncoding));
-  renderPipelineDescriptor->setDepthAttachmentPixelFormat(PixelFormatDepth32Float);
-//  renderPipelineDescriptor->setTessellationOutputWindingOrder(MTL::WindingCounterClockwise);
-
-  NS::Error* error;
-  _renderPipelineState = _mtlStack->device().newRenderPipelineState(renderPipelineDescriptor, &error);
-  if (_renderPipelineState == nullptr) {
-    std::cout << "Error creating render pipeline state: " << error << std::endl;
-    assert(_renderPipelineState);
-  }
-
+  _renderPipelineState = RenderPipelineStateFactory::createBaseRenderPipelineState(_mtlStack);
   DepthStencilDescriptor* depthStencilDescriptor = DepthStencilDescriptor::alloc()->init();
   depthStencilDescriptor->setDepthCompareFunction(CompareFunctionLessEqual);
   depthStencilDescriptor->setDepthWriteEnabled(true);
   _depthStencilState = _mtlStack->device().newDepthStencilState(depthStencilDescriptor);
-
   depthStencilDescriptor->release();
-  renderPipelineDescriptor->release();
-  vertexFunction->release();
-  fragmentFunction->release();
+
+  _gizmoPipelineState = RenderPipelineStateFactory::createGizmoRenderPipelineState(_mtlStack);
 }
 
 void MTLRenderer::createDepthTexture(const vax::Size drawableSize) {

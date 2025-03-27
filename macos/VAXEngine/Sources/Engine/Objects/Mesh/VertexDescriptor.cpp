@@ -57,8 +57,24 @@ vax::VertexDescriptor vax::VertexDescriptor::createSimpleVertexDescriptor() {
   vd->attributes()->object(kVertexAttributeUV)->setBufferIndex(kUVBufferIndex);
   vd->layouts()->object(kUVBufferIndex)->setStride(sizeof(simd_float2));
 
+  return vax::VertexDescriptor(vd);
+}
 
-//  vd->layouts()->object(0)->setStride(offset);
+vax::VertexDescriptor vax::VertexDescriptor::createPrmitiveVertexDescriptor() {
+  MTL::VertexDescriptor* vd = MTL::VertexDescriptor::alloc()->init();
+
+  int offset = 0;
+  vd->attributes()->object(kVertexAttributePosition)->setFormat(MTL::VertexFormatFloat3);
+  vd->attributes()->object(kVertexAttributePosition)->setOffset(0);
+  vd->attributes()->object(kVertexAttributePosition)->setBufferIndex(kVertexBufferIndex);
+  offset += sizeof(simd_float3);
+  vd->layouts()->object(kVertexBufferIndex)->setStride(offset);
+
+  vd->attributes()->object(kVertexAttributeVertexColor)->setFormat(MTL::VertexFormatFloat3);
+  vd->attributes()->object(kVertexAttributeVertexColor)->setOffset(offset);
+  vd->attributes()->object(kVertexAttributeVertexColor)->setBufferIndex(kVertexBufferIndex);
+  offset += sizeof(simd_float3);
+  vd->layouts()->object(kVertexBufferIndex)->setStride(offset);
 
   return vax::VertexDescriptor(vd);
 }

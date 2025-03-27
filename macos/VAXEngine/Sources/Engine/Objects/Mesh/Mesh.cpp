@@ -49,7 +49,9 @@ Mesh& Mesh::operator=(Mesh & rhs) {
 void Mesh::draw(RenderCommandEncoder * const renderCommandEncoder) const {
   ModelUniforms modelUniforms = { transform.modelMatrix() };
   renderCommandEncoder->setVertexBuffer(&_vertexBuffer.buffer(), _vertexBuffer.offset(), kVertexBufferIndex);
-  renderCommandEncoder->setVertexBuffer(_uvBuffer, 0, kUVBufferIndex);
+  if (_uvBuffer) {
+    renderCommandEncoder->setVertexBuffer(_uvBuffer, 0, kUVBufferIndex);
+  }
   renderCommandEncoder->setVertexBytes(&modelUniforms, modelUniforms.size(), kModelUniformsBufferIndex);
   renderCommandEncoder->setFragmentBytes(&textureIndices, sizeof(textureIndices), 5);
   switch (drawingMode) {
@@ -65,7 +67,7 @@ void Mesh::draw(RenderCommandEncoder * const renderCommandEncoder) const {
 }
 
 void Mesh::drawPrimitives(RenderCommandEncoder * const renderCommandEncoder) const {
-  renderCommandEncoder->drawPrimitives(PrimitiveTypeTriangle, NS::UInteger(0), _vertexCount);
+  renderCommandEncoder->drawPrimitives(PrimitiveTypeLine, NS::UInteger(0), _vertexCount);
 }
 
 void Mesh::drawIndexedPrimitives(RenderCommandEncoder * const renderCommandEncoder) const {

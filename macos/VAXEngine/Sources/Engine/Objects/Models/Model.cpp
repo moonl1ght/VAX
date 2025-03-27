@@ -8,13 +8,10 @@
 using namespace std;
 
 Model::~Model() {
-  for (auto mesh : _meshes) {
-    delete mesh;
-  }
   delete _textures;
 }
 
-Model::Model(Model&& rhs): _meshes(rhs._meshes), _textures(rhs._textures) {
+Model::Model(Model&& rhs): BaseModel(rhs._meshes), _textures(rhs._textures) {
   rhs._meshes.clear();
   rhs._textures = nullptr;
 }
@@ -33,7 +30,10 @@ Model& Model::operator=(Model&& rhs)
   return *this;
 }
 
-void Model::draw(MTL::RenderCommandEncoder *const renderCommandEncoder) const {
+void Model::draw(MTL::RenderCommandEncoder *const renderCommandEncoder, MTL::RenderPipelineState* renderPipelineState) const {
+  if (renderPipelineState) {
+    renderCommandEncoder->setRenderPipelineState(renderPipelineState);
+  }
   if (_textures) {
     renderCommandEncoder->setFragmentBuffer(_textures->textureInfosBuffer, 0, 6);
     renderCommandEncoder->setFragmentTexture(_textures->textureArray, 0);
@@ -41,10 +41,6 @@ void Model::draw(MTL::RenderCommandEncoder *const renderCommandEncoder) const {
   for (auto mesh: _meshes) {
     mesh->draw(renderCommandEncoder);
   }
-}
-
-std::vector<Mesh*>& Model::meshes() const noexcept {
-  return const_cast<std::vector<Mesh*>&>(_meshes);
 }
 
 Model::Textures::Textures(MTL::Texture *textureArray,

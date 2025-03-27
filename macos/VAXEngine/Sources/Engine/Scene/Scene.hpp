@@ -9,6 +9,7 @@
 #include "Model.hpp"
 #include "Camera.hpp"
 #include "MTLStack.hpp"
+#include "BaseModel.hpp"
 
 class Scene {
 public:
@@ -27,12 +28,14 @@ public:
   void addModel(std::unique_ptr<Model>);
   const std::vector<std::unique_ptr<Model>>& models() const noexcept;
   const std::vector<Light>& lights() const noexcept;
+  const BaseModel& gizmo() const noexcept;
 
 private:
   MTLStack* _mtlStack;
 
   std::vector<std::unique_ptr<Model>> _models;
   std::vector<Light> _lights;
+  std::unique_ptr<BaseModel> _gizmo;
 };
 
 #endif /* Scene_hpp */

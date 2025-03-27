@@ -52,3 +52,17 @@ Model Primitives::createRGBCube(Device &device) {
   Mesh* mesh = new Mesh(MeshBuffer(buffer), 36);
   return Model({mesh}, nullptr);
 }
+
+std::unique_ptr<PrimitiveModel> Primitives::createGizmo(Device &device) {
+  simd_float3 vertices[] = {
+    { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f },
+    { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f },
+    { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
+    { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
+    { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f },
+    { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 1.0f }
+  };
+  Buffer* buffer = device.newBuffer(&vertices, sizeof(vertices), ResourceStorageModeShared);
+  Mesh* mesh = new Mesh(MeshBuffer(buffer), 6, Mesh::DrawingMode::primitives);
+  return std::make_unique<PrimitiveModel>(PrimitiveModel({mesh}));
+}

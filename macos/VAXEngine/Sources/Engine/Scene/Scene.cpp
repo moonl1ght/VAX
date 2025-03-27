@@ -7,6 +7,7 @@
 
 #include "LightBuilder.hpp"
 #include "ModelLoader.hpp"
+#include "Primitives.hpp"
 
 using namespace std;
 
@@ -24,6 +25,7 @@ void Scene::loadScene(std::string bundleResourcesPath) {
   addModel(std::move(model));
 
   _lights = {LightBulder::sunlight()};
+  _gizmo = Primitives::createGizmo(_mtlStack->device());
 }
 
 void Scene::addModel(unique_ptr<Model> model) {
@@ -36,4 +38,9 @@ const vector<unique_ptr<Model>>& Scene::models() const noexcept {
 
 const vector<Light>& Scene::lights() const noexcept {
   return _lights;
+}
+
+
+const BaseModel& Scene::gizmo() const noexcept {
+  return *_gizmo;
 }

@@ -9,13 +9,15 @@
 #include <Metal/Metal.hpp>
 #include "Mesh.hpp"
 #include "Model.hpp"
+#include "PrimitiveModel.hpp"
 
 namespace Primitives {
 
-Model createRGBTriangle(MTL::Device& device);
+  Model createRGBTriangle(MTL::Device& device);
 
-Model createRGBCube(MTL::Device& device);
+  Model createRGBCube(MTL::Device& device);
 
+  std::unique_ptr<PrimitiveModel> createGizmo(MTL::Device& device);
 }
 
 #endif /* Primitives_hpp */
