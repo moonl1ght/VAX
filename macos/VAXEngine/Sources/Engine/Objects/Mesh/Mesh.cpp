@@ -67,12 +67,12 @@ void Mesh::draw(RenderCommandEncoder * const renderCommandEncoder) const {
 }
 
 void Mesh::drawPrimitives(RenderCommandEncoder * const renderCommandEncoder) const {
-  renderCommandEncoder->drawPrimitives(PrimitiveTypeLine, NS::UInteger(0), _vertexCount);
+  renderCommandEncoder->drawPrimitives(primitiveType, NS::UInteger(0), _vertexCount);
 }
 
 void Mesh::drawIndexedPrimitives(RenderCommandEncoder * const renderCommandEncoder) const {
   renderCommandEncoder->drawIndexedPrimitives(
-    PrimitiveTypeTriangle,
+    primitiveType,
     _indexCount,
     MTL::IndexTypeUInt32,
     _indicesBuffer,

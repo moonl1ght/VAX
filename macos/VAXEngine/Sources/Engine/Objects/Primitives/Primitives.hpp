@@ -18,6 +18,8 @@ namespace Primitives {
   Model createRGBCube(MTL::Device& device);
 
   std::unique_ptr<PrimitiveModel> createGizmo(MTL::Device& device);
+
+  std::unique_ptr<PrimitiveModel> plane(MTL::Device& device);
 }
 
 #endif /* Primitives_hpp */

@@ -58,6 +58,7 @@ public:
   };
 
   Transform transform;
+  MTL::PrimitiveType primitiveType = MTL::PrimitiveTypeTriangle;
   DrawingMode drawingMode;
   TextureIndices textureIndices;
 

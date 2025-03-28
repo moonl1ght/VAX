@@ -12,6 +12,7 @@
 #include "MTLStack.hpp"
 #include "Scene.hpp"
 #include "VAXMathObjects.hpp"
+#include "ForwardRenderPass.hpp"
 
 class MTLRenderer
 {
@@ -30,6 +31,7 @@ private:
   MTL::DepthStencilState* _depthStencilState;
   Scene* _scene;
   MTL::Texture* _depthTexture;
+  ForwardRenderPass* _forwardRenderPass;
 
   void createDepthTexture(const vax::Size drawableSize);
   void updateRenderPassDescriptor(CA::MetalDrawable* drawable);
