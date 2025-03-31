@@ -9,6 +9,21 @@
 
 using namespace metal;
 
+[[host_name("primitiveVertex")]]
+vertex FragmentInPrimitive primitive_vertex(
+  const VertexInPrimitive in [[ stage_in ]],
+                              constant VertexUniforms &uniforms [[ buffer(kVertexUniformsBufferIndex) ]],
+                              constant ModelUniforms &modelUniforms [[ buffer(kModelUniformsBufferIndex) ]]
+                              )
+{
+  float4 position = uniforms.projectionMatrix * uniforms.viewMatrix * modelUniforms.modelMatrix * float4(in.position, 1.0);
+  FragmentInPrimitive out {
+    .position = position,
+    .color = float4(in.color, 1.0),
+  };
+  return out;
+}
+
 [[host_name("basicVertex")]]
 vertex VertexOut basic_vertex(
   const VertexIn in [[ stage_in ]],
@@ -31,7 +46,7 @@ vertex VertexOut basic_vertex(
 }
 
 [[host_name("basicFragment")]]
-fragment float4 basic_fragment(const FragmentIn in [[ stage_in ]]) {
+fragment float4 basic_fragment(const FragmentInPrimitive in [[ stage_in ]]) {
   return in.color;
 }
 

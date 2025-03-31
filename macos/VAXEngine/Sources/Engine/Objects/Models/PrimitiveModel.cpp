@@ -8,6 +8,7 @@ void PrimitiveModel::draw(MTL::RenderCommandEncoder *const renderCommandEncoder,
   if (renderPipelineState) {
     renderCommandEncoder->setRenderPipelineState(renderPipelineState);
   }
+  BaseModel::draw(renderCommandEncoder, renderPipelineState);
   for (auto mesh: _meshes) {
     mesh->draw(renderCommandEncoder);
   }

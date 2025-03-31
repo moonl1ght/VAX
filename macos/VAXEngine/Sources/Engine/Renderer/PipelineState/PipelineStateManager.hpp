@@ -11,14 +11,19 @@
 
 class PipelineStateManager {
 public:
+  enum class RenderPipelineStateType {
+    base, primitive, gizmo
+  };
 
   MTL::RenderPipelineState* renderPipelineState;
+  MTL::RenderPipelineState* primitivePipelineState;
   MTL::RenderPipelineState* gizmoPipelineState;
   MTL::DepthStencilState* depthStencilState;
 
   PipelineStateManager(MTLStack* mtlStack) {
     renderPipelineState = PipelineStateFactory::createBaseRenderPipelineState(mtlStack);
     gizmoPipelineState = PipelineStateFactory::createGizmoRenderPipelineState(mtlStack);
+    primitivePipelineState = PipelineStateFactory::createPrimitveRenderPipelineState(mtlStack);
     depthStencilState = PipelineStateFactory::createDepthStencilState(mtlStack);
   };
   virtual ~PipelineStateManager();
@@ -28,6 +33,8 @@ public:
 
   PipelineStateManager& operator=(PipelineStateManager& rhs) = delete;
   PipelineStateManager& operator=(PipelineStateManager&& rhs) = delete;
+
+  MTL::RenderPipelineState* renderPipelineStateForType(RenderPipelineStateType type) const noexcept;
 };
 
 #endif /* PipelineStateManager_hpp */

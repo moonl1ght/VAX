@@ -7,7 +7,7 @@
 
 using namespace MTL;
 
-Model Primitives::createRGBTriangle(Device &device) {
+std::unique_ptr<PrimitiveModel> Primitives::createRGBTriangle(Device &device) {
   simd_float3 vertices[] = {
     { -0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f },
     { 0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f },
@@ -15,10 +15,12 @@ Model Primitives::createRGBTriangle(Device &device) {
   };
   Buffer* buffer = device.newBuffer(&vertices, sizeof(vertices), ResourceStorageModeShared);
   Mesh* mesh = new Mesh(MeshBuffer(buffer), 3);
-  return Model({mesh}, nullptr);
+  std::unique_ptr<PrimitiveModel> model = std::make_unique<PrimitiveModel>(PrimitiveModel({mesh}));
+  model->renderPipelineStateType = PipelineStateManager::RenderPipelineStateType::base;
+  return model;
 }
 
-Model Primitives::createRGBCube(Device &device) {
+std::unique_ptr<PrimitiveModel> Primitives::createRGBCube(Device &device) {
   simd_float3 A = { -1.0f, 1.0f, 1.0f };
   simd_float3 AC = { 1.0f, 0.0f, 0.0f };
   simd_float3 B = { -1.0f, -1.0f, 1.0f };
@@ -50,7 +52,9 @@ Model Primitives::createRGBCube(Device &device) {
 
   Buffer* buffer = device.newBuffer(&vertices, sizeof(vertices), ResourceStorageModeShared);
   Mesh* mesh = new Mesh(MeshBuffer(buffer), 36);
-  return Model({mesh}, nullptr);
+  std::unique_ptr<PrimitiveModel> model = std::make_unique<PrimitiveModel>(PrimitiveModel({mesh}));
+  model->renderPipelineStateType = PipelineStateManager::RenderPipelineStateType::base;
+  return model;
 }
 
 std::unique_ptr<PrimitiveModel> Primitives::createGizmo(Device &device) {
@@ -65,19 +69,23 @@ std::unique_ptr<PrimitiveModel> Primitives::createGizmo(Device &device) {
   Buffer* buffer = device.newBuffer(&vertices, sizeof(vertices), ResourceStorageModeShared);
   Mesh* mesh = new Mesh(MeshBuffer(buffer), 6, Mesh::DrawingMode::primitives);
   mesh->primitiveType = MTL::PrimitiveTypeLine;
-  return std::make_unique<PrimitiveModel>(PrimitiveModel({mesh}));
+  std::unique_ptr<PrimitiveModel> model = std::make_unique<PrimitiveModel>(PrimitiveModel({mesh}));
+  model->renderPipelineStateType = PipelineStateManager::RenderPipelineStateType::primitive;
+  return model;
 }
 
 std::unique_ptr<PrimitiveModel> Primitives::plane(Device &device) {
   simd_float3 vertices[] = {
-    { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f },
-    { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f },
-    { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
-    { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f },
-    { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f },
-    { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 1.0f }
+    { 1.0f, 0.0f, -1.0f }, { 0.5f, 0.8f, 1.0f },
+    { -1.0f, 0.0f, 1.0f }, { 0.5f, 0.8f, 1.0f },
+    { 1.0f, 0.0f, 1.0f }, { 0.5f, 0.8f, 1.0f },
+    { 1.0f, 0.0f, -1.0f }, { 0.5f, 0.8f, 1.0f },
+    { -1.0f, 0.0f, 1.0f }, { 0.5f, 0.8f, 1.0f },
+    { -1.0f, 0.0f, -1.0f }, { 0.5f, 0.8f, 1.0f }
   };
   Buffer* buffer = device.newBuffer(&vertices, sizeof(vertices), ResourceStorageModeShared);
   Mesh* mesh = new Mesh(MeshBuffer(buffer), 6, Mesh::DrawingMode::primitives);
-  return std::make_unique<PrimitiveModel>(PrimitiveModel({mesh}));
+  std::unique_ptr<PrimitiveModel> model = std::make_unique<PrimitiveModel>(PrimitiveModel({mesh}));
+  model->renderPipelineStateType = PipelineStateManager::RenderPipelineStateType::primitive;
+  return model;
 }

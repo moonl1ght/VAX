@@ -47,12 +47,10 @@ Mesh& Mesh::operator=(Mesh & rhs) {
 }
 
 void Mesh::draw(RenderCommandEncoder * const renderCommandEncoder) const {
-  ModelUniforms modelUniforms = { transform.modelMatrix() };
   renderCommandEncoder->setVertexBuffer(&_vertexBuffer.buffer(), _vertexBuffer.offset(), kVertexBufferIndex);
   if (_uvBuffer) {
     renderCommandEncoder->setVertexBuffer(_uvBuffer, 0, kUVBufferIndex);
   }
-  renderCommandEncoder->setVertexBytes(&modelUniforms, modelUniforms.size(), kModelUniformsBufferIndex);
   renderCommandEncoder->setFragmentBytes(&textureIndices, sizeof(textureIndices), 5);
   switch (drawingMode) {
     case DrawingMode::primitives:

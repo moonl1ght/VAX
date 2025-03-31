@@ -33,11 +33,15 @@ Model& Model::operator=(Model&& rhs)
 void Model::draw(MTL::RenderCommandEncoder *const renderCommandEncoder, MTL::RenderPipelineState* renderPipelineState) const {
   if (renderPipelineState) {
     renderCommandEncoder->setRenderPipelineState(renderPipelineState);
+  } else {
+    static_assert("no render pipeline state");
+    return;
   }
   if (_textures) {
     renderCommandEncoder->setFragmentBuffer(_textures->textureInfosBuffer, 0, 6);
     renderCommandEncoder->setFragmentTexture(_textures->textureArray, 0);
   }
+  BaseModel::draw(renderCommandEncoder, renderPipelineState);
   for (auto mesh: _meshes) {
     mesh->draw(renderCommandEncoder);
   }

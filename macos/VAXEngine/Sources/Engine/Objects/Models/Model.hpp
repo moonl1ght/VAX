@@ -10,7 +10,7 @@
 
 #include "BaseModel.hpp"
 
-class Model: BaseModel {
+class Model: public BaseModel {
 public:
   class Textures {
   public:

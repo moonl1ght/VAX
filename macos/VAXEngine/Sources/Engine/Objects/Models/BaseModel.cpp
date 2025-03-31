@@ -29,3 +29,8 @@ BaseModel& BaseModel::operator=(BaseModel&& rhs)
 std::vector<Mesh*>& BaseModel::meshes() const noexcept {
   return const_cast<std::vector<Mesh*>&>(_meshes);
 }
+
+void BaseModel::draw(MTL::RenderCommandEncoder* const renderCommandEncoder, MTL::RenderPipelineState* renderPipelineState) const {
+  ModelUniforms modelUniforms = { transform.modelMatrix() };
+  renderCommandEncoder->setVertexBytes(&modelUniforms, modelUniforms.size(), kModelUniformsBufferIndex);
+}

@@ -9,9 +9,13 @@
 #include <Metal/Metal.hpp>
 
 #include "Mesh.hpp"
+#include "PipelineStateManager.hpp"
 
 class BaseModel {
 public:
+  Transform transform;
+  PipelineStateManager::RenderPipelineStateType renderPipelineStateType = PipelineStateManager::RenderPipelineStateType::base;
+
   BaseModel(std::vector<Mesh*> meshes)
   :_meshes(meshes) { };
   virtual ~BaseModel();
@@ -23,7 +27,7 @@ public:
   BaseModel & operator=(BaseModel && rhs);
 
   std::vector<Mesh*>& meshes() const noexcept;
-  virtual void draw(MTL::RenderCommandEncoder* const renderCommandEncoder, MTL::RenderPipelineState* renderPipelineState) const = 0;
+  virtual void draw(MTL::RenderCommandEncoder* const renderCommandEncoder, MTL::RenderPipelineState* renderPipelineState) const;
 
 protected:
   std::vector<Mesh*> _meshes;

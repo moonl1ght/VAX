@@ -19,6 +19,11 @@ typedef struct {
 } VertexIn;
 
 typedef struct {
+  float3 position [[ attribute(kVertexAttributePosition) ]];
+  float3 color [[ attribute(kVertexAttributeVertexColor) ]];
+} VertexInPrimitive;
+
+typedef struct {
   float4 position [[ position ]];
   float4 color;
   float4 fragmentWorldPosition;
@@ -28,6 +33,11 @@ typedef struct {
   float3 worldBitangent;
   float2 uv;
 } FragmentIn;
+
+typedef struct {
+  float4 position [[ position ]];
+  float4 color;
+} FragmentInPrimitive;
 
 typedef FragmentIn VertexOut;
 

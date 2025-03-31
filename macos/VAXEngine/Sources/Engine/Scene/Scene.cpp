@@ -22,17 +22,20 @@ void Scene::loadScene(std::string bundleResourcesPath) {
   ModelLoader modelLoader = ModelLoader(_mtlStack);
   modelLoader.bundleResourcesPath = bundleResourcesPath;
   auto model = std::make_unique<Model>(modelLoader.loadModel("/helmet.obj"));
+  auto plane = Primitives::plane(_mtlStack->device());
+  plane->transform.position = {0.0f, -1.0f, 0.0f};
   addModel(std::move(model));
+  addModel(std::move(plane));
 
   _lights = {LightBulder::sunlight()};
   _gizmo = Primitives::createGizmo(_mtlStack->device());
 }
 
-void Scene::addModel(unique_ptr<Model> model) {
+void Scene::addModel(unique_ptr<BaseModel> model) {
   _models.push_back(std::move(model));
 }
 
-const vector<unique_ptr<Model>>& Scene::models() const noexcept {
+const vector<unique_ptr<BaseModel>>& Scene::models() const noexcept {
   return _models;
 }
 

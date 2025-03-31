@@ -24,7 +24,7 @@ void ForwardRenderPass::draw(CommandBuffer *commandBuffer, Scene *scene, Pipelin
   renderCommandEncoder->setFragmentBytes(&fragmentsUniforms, sizeof(fragmentsUniforms), 3);
   renderCommandEncoder->setFragmentBytes(lights.data(), sizeof(Light) * lights.size(), 4);
   for (auto& model: scene->models()) {
-    model->draw(renderCommandEncoder, pipelineStateManager->renderPipelineState);
+    model->draw(renderCommandEncoder, pipelineStateManager->renderPipelineStateForType(model->renderPipelineStateType));
   }
 
   scene->gizmo().draw(renderCommandEncoder, pipelineStateManager->gizmoPipelineState);

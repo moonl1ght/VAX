@@ -25,15 +25,15 @@ public:
   Scene& operator=(Scene&& rhs) = delete;
 
   void loadScene(std::string bundleResourcesPath);
-  void addModel(std::unique_ptr<Model>);
-  const std::vector<std::unique_ptr<Model>>& models() const noexcept;
+  void addModel(std::unique_ptr<BaseModel>);
+  const std::vector<std::unique_ptr<BaseModel>>& models() const noexcept;
   const std::vector<Light>& lights() const noexcept;
   const BaseModel& gizmo() const noexcept;
 
 private:
   MTLStack* _mtlStack;
 
-  std::vector<std::unique_ptr<Model>> _models;
+  std::vector<std::unique_ptr<BaseModel>> _models;
   std::vector<Light> _lights;
   std::unique_ptr<BaseModel> _gizmo;
 };

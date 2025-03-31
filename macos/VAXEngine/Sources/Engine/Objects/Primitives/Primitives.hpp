@@ -13,9 +13,9 @@
 
 namespace Primitives {
 
-  Model createRGBTriangle(MTL::Device& device);
+  std::unique_ptr<PrimitiveModel> createRGBTriangle(MTL::Device& device);
 
-  Model createRGBCube(MTL::Device& device);
+  std::unique_ptr<PrimitiveModel> createRGBCube(MTL::Device& device);
 
   std::unique_ptr<PrimitiveModel> createGizmo(MTL::Device& device);
 
