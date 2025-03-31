@@ -8,23 +8,27 @@
 #include <stdio.h>
 #include <Metal/Metal.hpp>
 
-class Texture {
-public:
-  Texture(MTL::TextureDescriptor* descriptor, MTL::Device* device)
-  : _texture(device->newTexture(descriptor)) { };
-
-  ~Texture();
-
-  Texture(const Texture& rhs);
-  Texture(Texture&& rhs);
-
-  Texture& operator=(Texture& rhs);
-  Texture& operator=(Texture&& rhs);
-
-  MTL::Texture& texture() const noexcept;
-
-private:
-  MTL::Texture *_texture;
-};
+namespace vax {
+  
+  class Texture {
+  public:
+    Texture(MTL::TextureDescriptor* descriptor, MTL::Device& device)
+    : _texture(device.newTexture(descriptor)) { };
+    
+    ~Texture();
+    
+    Texture(const Texture& rhs);
+    Texture(Texture&& rhs);
+    
+    Texture& operator=(Texture& rhs);
+    Texture& operator=(Texture&& rhs);
+    
+    MTL::Texture& texture() const noexcept;
+    
+  private:
+    MTL::Texture *_texture;
+  };
+  
+}
 
 #endif /* Texture_hpp */

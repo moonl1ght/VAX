@@ -2,12 +2,12 @@
 // Created by Alexander Lakhonin on 26.03.2025.
 //
 
-#include "RenderPipelineStateFactory.hpp"
+#include "PipelineStateFactory.hpp"
 #include <iostream>
 
 using namespace MTL;
 
-MTL::RenderPipelineState* RenderPipelineStateFactory::createBaseRenderPipelineState(MTLStack *mtlStack) {
+MTL::RenderPipelineState* PipelineStateFactory::createBaseRenderPipelineState(MTLStack *mtlStack) {
   Function* vertexFunction = mtlStack->library().newFunction(NS::String::string("basicVertex", NS::ASCIIStringEncoding));
   Function* fragmentFunction = mtlStack->library().newFunction(NS::String::string("basicFragmentWithPBR", NS::ASCIIStringEncoding));
 
@@ -36,7 +36,7 @@ MTL::RenderPipelineState* RenderPipelineStateFactory::createBaseRenderPipelineSt
   return renderPipelineState;
 }
 
-MTL::RenderPipelineState* RenderPipelineStateFactory::createGizmoRenderPipelineState(MTLStack *mtlStack) {
+MTL::RenderPipelineState* PipelineStateFactory::createGizmoRenderPipelineState(MTLStack *mtlStack) {
   Function* vertexFunction = mtlStack->library().newFunction(NS::String::string("debugVertex", NS::ASCIIStringEncoding));
   Function* fragmentFunction = mtlStack->library().newFunction(NS::String::string("debugFragment", NS::ASCIIStringEncoding));
 
@@ -63,4 +63,13 @@ MTL::RenderPipelineState* RenderPipelineStateFactory::createGizmoRenderPipelineS
   vertexFunction->release();
   fragmentFunction->release();
   return renderPipelineState;
+}
+
+MTL::DepthStencilState* PipelineStateFactory::createDepthStencilState(MTLStack* mtlStack) {
+  DepthStencilDescriptor* depthStencilDescriptor = DepthStencilDescriptor::alloc()->init();
+  depthStencilDescriptor->setDepthCompareFunction(CompareFunctionLessEqual);
+  depthStencilDescriptor->setDepthWriteEnabled(true);
+  MTL::DepthStencilState* depthStencilState = mtlStack->device().newDepthStencilState(depthStencilDescriptor);
+  depthStencilDescriptor->release();
+  return depthStencilState;
 }

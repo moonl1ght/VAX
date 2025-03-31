@@ -6,6 +6,8 @@
 
 #include <utility>
 
+using namespace vax;
+
 Texture::~Texture() {
   _texture->release();
 }

@@ -11,3 +11,9 @@ RenderPass::~RenderPass() {
 const MTL::RenderPassDescriptor& RenderPass::descriptor() const noexcept {
   return *_descriptor;
 }
+
+void RenderPass::updateRenderPassDescriptor(CA::MetalDrawable* drawable) noexcept { }
+
+void RenderPass::updateRenderPassDescriptor() noexcept { }
+
+void RenderPass::resize(const vax::Size viewSize, const vax::Size drawableSize) noexcept { }

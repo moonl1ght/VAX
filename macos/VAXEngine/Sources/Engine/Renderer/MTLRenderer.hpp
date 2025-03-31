@@ -25,17 +25,9 @@ public:
 
 private:
   MTLStack* _mtlStack;
-  MTL::RenderPassDescriptor* _renderPassDescriptor;
-  MTL::RenderPipelineState* _renderPipelineState;
-  MTL::RenderPipelineState* _gizmoPipelineState;
-  MTL::DepthStencilState* _depthStencilState;
-  Scene* _scene;
-  MTL::Texture* _depthTexture;
+  PipelineStateManager* _pipelineStateManager;
   ForwardRenderPass* _forwardRenderPass;
-
-  void createDepthTexture(const vax::Size drawableSize);
-  void updateRenderPassDescriptor(CA::MetalDrawable* drawable);
-  void createRenderPipeline();
+  Scene* _scene;
 };
 
 #endif /* MTLRenderer_hpp */

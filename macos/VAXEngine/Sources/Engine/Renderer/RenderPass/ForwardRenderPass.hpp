@@ -10,9 +10,15 @@
 
 class ForwardRenderPass: RenderPass {
 public:
-  void draw(MTL::CommandBuffer* commandBuffer, Scene* scene) const noexcept override;
+  using RenderPass::RenderPass;
+  ~ForwardRenderPass();
+
+  void draw(MTL::CommandBuffer* commandBuffer, Scene* scene, PipelineStateManager* pipelineStateManager) const noexcept override;
+  void resize(const vax::Size viewSize, const vax::Size drawableSize) noexcept override;
+  void updateRenderPassDescriptor(CA::MetalDrawable* drawable) noexcept override;
+
 private:
-  Texture* depthTexture;
+  vax::Texture* _depthTexture;
 };
 
 #endif /* ForwardRenderPass_hpp */
