@@ -36,20 +36,20 @@ MTL::RenderPipelineState* PipelineStateFactory::createBaseRenderPipelineState(MT
   return renderPipelineState;
 }
 
-MTL::RenderPipelineState* PipelineStateFactory::createPrimitveRenderPipelineState(MTLStack *mtlStack) {
+MTL::RenderPipelineState* PipelineStateFactory::createPrimitiveRenderPipelineState(MTLStack *mtlStack) {
   Function* vertexFunction = mtlStack->library().newFunction(NS::String::string("primitiveVertex", NS::ASCIIStringEncoding));
   Function* fragmentFunction = mtlStack->library().newFunction(NS::String::string("basicFragment", NS::ASCIIStringEncoding));
 
   RenderPipelineDescriptor* renderPipelineDescriptor = RenderPipelineDescriptor::alloc()->init();
   renderPipelineDescriptor->setVertexFunction(vertexFunction);
   renderPipelineDescriptor->setFragmentFunction(fragmentFunction);
-  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createPrmitiveVertexDescriptor();
+  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createPrimitiveVertexDescriptor();
   renderPipelineDescriptor->setVertexDescriptor(&vertexDescriptor.vertexDescriptor());
   assert(renderPipelineDescriptor);
   PixelFormat pixelFormat = PixelFormatBGRA8Unorm;
   renderPipelineDescriptor->colorAttachments()->object(0)->setPixelFormat(pixelFormat);
   //  renderPipelineDescriptor->setSampleCount(4);
-  renderPipelineDescriptor->setLabel(NS::String::string("Gizmo Render Pipeline", NS::ASCIIStringEncoding));
+  renderPipelineDescriptor->setLabel(NS::String::string("Primitive Render Pipeline", NS::ASCIIStringEncoding));
   renderPipelineDescriptor->setDepthAttachmentPixelFormat(PixelFormatDepth32Float);
   //  renderPipelineDescriptor->setTessellationOutputWindingOrder(MTL::WindingCounterClockwise);
 
@@ -72,7 +72,7 @@ MTL::RenderPipelineState* PipelineStateFactory::createGizmoRenderPipelineState(M
   RenderPipelineDescriptor* renderPipelineDescriptor = RenderPipelineDescriptor::alloc()->init();
   renderPipelineDescriptor->setVertexFunction(vertexFunction);
   renderPipelineDescriptor->setFragmentFunction(fragmentFunction);
-  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createPrmitiveVertexDescriptor();
+  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createPrimitiveVertexDescriptor();
   renderPipelineDescriptor->setVertexDescriptor(&vertexDescriptor.vertexDescriptor());
   assert(renderPipelineDescriptor);
   PixelFormat pixelFormat = PixelFormatBGRA8Unorm;
@@ -101,4 +101,29 @@ MTL::DepthStencilState* PipelineStateFactory::createDepthStencilState(MTLStack* 
   MTL::DepthStencilState* depthStencilState = mtlStack->device().newDepthStencilState(depthStencilDescriptor);
   depthStencilDescriptor->release();
   return depthStencilState;
+}
+
+MTL::RenderPipelineState* PipelineStateFactory::createShadowRenderPipelineState(MTLStack* mtlStack) {
+  Function* vertexFunction = mtlStack->library().newFunction(NS::String::string("depthVertex", NS::ASCIIStringEncoding));
+
+  RenderPipelineDescriptor* renderPipelineDescriptor = RenderPipelineDescriptor::alloc()->init();
+  renderPipelineDescriptor->setVertexFunction(vertexFunction);
+  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createMeshVertexDescriptor();
+  renderPipelineDescriptor->setVertexDescriptor(&vertexDescriptor.vertexDescriptor());
+  assert(renderPipelineDescriptor);
+  renderPipelineDescriptor->colorAttachments()->object(0)->setPixelFormat(PixelFormat::PixelFormatInvalid);
+  //  renderPipelineDescriptor->setSampleCount(4);
+  renderPipelineDescriptor->setLabel(NS::String::string("Shadow Render Pipeline", NS::ASCIIStringEncoding));
+  renderPipelineDescriptor->setDepthAttachmentPixelFormat(PixelFormatDepth32Float);
+  //  renderPipelineDescriptor->setTessellationOutputWindingOrder(MTL::WindingCounterClockwise);
+
+  NS::Error* error;
+  MTL::RenderPipelineState* renderPipelineState = mtlStack->device().newRenderPipelineState(renderPipelineDescriptor, &error);
+  if (renderPipelineState == nullptr) {
+    std::cout << "Error creating shadow render pipeline state: " << error << std::endl;
+    assert(renderPipelineState);
+  }
+  renderPipelineDescriptor->release();
+  vertexFunction->release();
+  return renderPipelineState;
 }

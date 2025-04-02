@@ -5,7 +5,7 @@
 #ifndef LightBuilder_hpp
 #define LightBuilder_hpp
 
-#include "ShaderTypes.h"
+#include "ShadersCommon.h"
 #include "Color.hpp"
 
 namespace LightBulder {

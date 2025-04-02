@@ -3,7 +3,8 @@
 //
 
 #include <metal_stdlib>
-#include "ShaderTypes.h"
+#include "headers/ShadersData.h"
+#include "headers/AttributesAndIndices.h"
 
 using namespace metal;
 

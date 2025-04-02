@@ -13,7 +13,11 @@ class PrimitiveModel: public BaseModel {
 public:
   using BaseModel::BaseModel;
 
-  void draw(MTL::RenderCommandEncoder * const renderCommandEncoder, MTL::RenderPipelineState* renderPipelineState) const override;
+  void draw(
+    MTL::RenderCommandEncoder * const renderCommandEncoder,
+    MTL::RenderPipelineState* renderPipelineState,
+    Mesh::RenderingMode renderingMode = Mesh::RenderingMode::meshWithMaterials
+  ) const override;
 };
 
 #endif /* PrimitiveModel_hpp */

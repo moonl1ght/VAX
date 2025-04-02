@@ -14,9 +14,10 @@
 
 class RenderPass {
 public:
-  RenderPass(MTLStack* mtlStack)
+  RenderPass(MTLStack* mtlStack, PipelineStateManager* pipelineStateManager)
   : _descriptor(MTL::RenderPassDescriptor::alloc()->init())
-  , _mtlStack(mtlStack){ };
+  , _mtlStack(mtlStack)
+  , _pipelineStateManager(pipelineStateManager) { };
   virtual ~RenderPass();
 
   RenderPass(const RenderPass& rhs) = delete;
@@ -27,11 +28,12 @@ public:
 
   const MTL::RenderPassDescriptor& descriptor() const noexcept;
 
-  virtual void draw(MTL::CommandBuffer* commandBuffer, Scene* scene, PipelineStateManager* pipelineStateManager) const noexcept = 0;
+  virtual void draw(MTL::CommandBuffer* commandBuffer, Scene* scene) const noexcept = 0;
   virtual void updateRenderPassDescriptor(CA::MetalDrawable* drawable) noexcept;
   virtual void updateRenderPassDescriptor() noexcept;
   virtual void resize(const vax::Size viewSize, const vax::Size drawableSize) noexcept;
 protected:
+  PipelineStateManager* _pipelineStateManager;
   MTL::RenderPassDescriptor* _descriptor;
   MTLStack* _mtlStack;
 };

@@ -13,6 +13,7 @@
 #include "Scene.hpp"
 #include "VAXMathObjects.hpp"
 #include "ForwardRenderPass.hpp"
+#include "ShadowRenderPass.hpp"
 
 class MTLRenderer
 {
@@ -27,6 +28,7 @@ private:
   MTLStack* _mtlStack;
   PipelineStateManager* _pipelineStateManager;
   ForwardRenderPass* _forwardRenderPass;
+  ShadowRenderPass* _shadowRenderPass;
   Scene* _scene;
 };
 

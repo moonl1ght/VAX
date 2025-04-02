@@ -30,20 +30,21 @@ Model& Model::operator=(Model&& rhs)
   return *this;
 }
 
-void Model::draw(MTL::RenderCommandEncoder *const renderCommandEncoder, MTL::RenderPipelineState* renderPipelineState) const {
+void Model::draw(
+  MTL::RenderCommandEncoder *const renderCommandEncoder,
+  MTL::RenderPipelineState* renderPipelineState,
+  Mesh::RenderingMode renderingMode
+) const {
   if (renderPipelineState) {
     renderCommandEncoder->setRenderPipelineState(renderPipelineState);
-  } else {
-    static_assert("no render pipeline state");
-    return;
   }
-  if (_textures) {
-    renderCommandEncoder->setFragmentBuffer(_textures->textureInfosBuffer, 0, 6);
-    renderCommandEncoder->setFragmentTexture(_textures->textureArray, 0);
+  if (_textures && renderingMode == Mesh::RenderingMode::meshWithMaterials) {
+    renderCommandEncoder->setFragmentBuffer(_textures->textureInfosBuffer, 0, kTextureInfoIndex);
+    renderCommandEncoder->setFragmentTexture(_textures->textureArray, kTextureArrayIndex);
   }
   BaseModel::draw(renderCommandEncoder, renderPipelineState);
   for (auto mesh: _meshes) {
-    mesh->draw(renderCommandEncoder);
+    mesh->draw(renderCommandEncoder, renderingMode);
   }
 }
 

@@ -12,10 +12,11 @@ struct Rotation {
 public:
   simd_float3 angles;
 
+  static matrix_float4x4 yxzRotationMatrix(vector_float3 angles);
+
   Rotation(simd_float3 angles = simd_make_float3(0.0f, 0.0f, 0.0f)): angles(angles) { };
 
   matrix_float4x4 rotationMatrix() const;
-  matrix_float4x4 yxzRotationMatrix(vector_float3 axis) const;
 
   inline float x() const { return angles[0]; };
   inline float y() const { return angles[1]; };

@@ -27,7 +27,11 @@ public:
   BaseModel & operator=(BaseModel && rhs);
 
   std::vector<Mesh*>& meshes() const noexcept;
-  virtual void draw(MTL::RenderCommandEncoder* const renderCommandEncoder, MTL::RenderPipelineState* renderPipelineState) const;
+  virtual void draw(
+    MTL::RenderCommandEncoder* const renderCommandEncoder,
+    MTL::RenderPipelineState* renderPipelineState,
+    Mesh::RenderingMode renderingMode = Mesh::RenderingMode::meshWithMaterials
+  ) const;
 
 protected:
   std::vector<Mesh*> _meshes;

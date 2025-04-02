@@ -8,15 +8,25 @@
 #include <iostream>
 
 matrix_float4x4 Camera::viewMatrix() const {
-  return matrix_look_at_left_hand(transform.position, (vector_float3){0.0f, 0.0f, 0.0f}, (vector_float3){0.0f, 1.0f, 0.0f});
+  if (target.x == transform.position.x && target.y == transform.position.y && target.z == transform.position.z) {
+//    (float4x4(translation: target) * float4x4(rotationYXZ: rotation)).inverse
+
+    return simd_inverse(matrix_multiply(matrix4x4_translation(target), transform.rotation.rotationMatrix()));
+  } else {
+    return matrix_look_at_left_hand(transform.position, (vector_float3){0.0f, 0.0f, 0.0f}, (vector_float3){0.0f, 1.0f, 0.0f});
+  }
 }
 
 matrix_float4x4 Camera::projectionMatrix() const {
   switch (projection) {
-    case Projection::orthographic:
-      return matrix_perspective_left_hand(fov, aspectRatio, nearPlane, farPlane);
+    case Projection::orthographic: {
+      float left = -viewSize * aspectRatio * 0.5;
+      float right = left + viewSize * aspectRatio;
+      float top = viewSize * 0.5;
+      float bottom = top - viewSize;
+      return matrix_ortho_left_hand(left, right, -top, -bottom, nearPlane, farPlane);
       break;
-
+    }
     case Projection::perspective:
       return matrix_perspective_left_hand(fov, aspectRatio, nearPlane, farPlane);
       break;

@@ -18,12 +18,16 @@ public:
   MTL::RenderPipelineState* renderPipelineState;
   MTL::RenderPipelineState* primitivePipelineState;
   MTL::RenderPipelineState* gizmoPipelineState;
+  MTL::RenderPipelineState* shadowPipelineState;
+
   MTL::DepthStencilState* depthStencilState;
 
   PipelineStateManager(MTLStack* mtlStack) {
     renderPipelineState = PipelineStateFactory::createBaseRenderPipelineState(mtlStack);
     gizmoPipelineState = PipelineStateFactory::createGizmoRenderPipelineState(mtlStack);
-    primitivePipelineState = PipelineStateFactory::createPrimitveRenderPipelineState(mtlStack);
+    primitivePipelineState = PipelineStateFactory::createPrimitiveRenderPipelineState(mtlStack);
+    shadowPipelineState = PipelineStateFactory::createShadowRenderPipelineState(mtlStack);
+
     depthStencilState = PipelineStateFactory::createDepthStencilState(mtlStack);
   };
   virtual ~PipelineStateManager();

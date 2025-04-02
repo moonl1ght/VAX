@@ -8,12 +8,15 @@
 #include <stdio.h>
 #include "Model.hpp"
 #include "Camera.hpp"
+#include "ShadowCamera.hpp"
 #include "MTLStack.hpp"
 #include "BaseModel.hpp"
 
 class Scene {
 public:
   Camera camera = Camera();
+  ShadowCamera shadowCamera = ShadowCamera();
+
 
   explicit Scene(MTLStack* mtlStack);
   virtual ~Scene();

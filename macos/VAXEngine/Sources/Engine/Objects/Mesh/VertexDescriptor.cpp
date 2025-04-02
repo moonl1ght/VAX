@@ -3,7 +3,8 @@
 //
 
 #include "VertexDescriptor.hpp"
-#include "ShaderTypes.h"
+#include "ShadersCommon.h"
+
 #include <iostream>
 
 vax::VertexDescriptor::VertexDescriptor(MTL::VertexDescriptor* mtlVertexDescriptor)
@@ -60,7 +61,7 @@ vax::VertexDescriptor vax::VertexDescriptor::createSimpleVertexDescriptor() {
   return vax::VertexDescriptor(vd);
 }
 
-vax::VertexDescriptor vax::VertexDescriptor::createPrmitiveVertexDescriptor() {
+vax::VertexDescriptor vax::VertexDescriptor::createPrimitiveVertexDescriptor() {
   MTL::VertexDescriptor* vd = MTL::VertexDescriptor::alloc()->init();
 
   int offset = 0;
@@ -73,6 +74,19 @@ vax::VertexDescriptor vax::VertexDescriptor::createPrmitiveVertexDescriptor() {
   vd->attributes()->object(kVertexAttributeVertexColor)->setFormat(MTL::VertexFormatFloat3);
   vd->attributes()->object(kVertexAttributeVertexColor)->setOffset(offset);
   vd->attributes()->object(kVertexAttributeVertexColor)->setBufferIndex(kVertexBufferIndex);
+  offset += sizeof(simd_float3);
+  vd->layouts()->object(kVertexBufferIndex)->setStride(offset);
+
+  return vax::VertexDescriptor(vd);
+}
+
+vax::VertexDescriptor vax::VertexDescriptor::createMeshVertexDescriptor() {
+  MTL::VertexDescriptor* vd = MTL::VertexDescriptor::alloc()->init();
+
+  int offset = 0;
+  vd->attributes()->object(kVertexAttributePosition)->setFormat(MTL::VertexFormatFloat3);
+  vd->attributes()->object(kVertexAttributePosition)->setOffset(0);
+  vd->attributes()->object(kVertexAttributePosition)->setBufferIndex(kVertexBufferIndex);
   offset += sizeof(simd_float3);
   vd->layouts()->object(kVertexBufferIndex)->setStride(offset);
 

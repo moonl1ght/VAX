@@ -19,13 +19,20 @@ Scene::~Scene() {
 
 void Scene::loadScene(std::string bundleResourcesPath) {
 
+  camera.setPosition({1.0f, 1.0f, -3.0f});
   ModelLoader modelLoader = ModelLoader(_mtlStack);
   modelLoader.bundleResourcesPath = bundleResourcesPath;
   auto model = std::make_unique<Model>(modelLoader.loadModel("/helmet.obj"));
+  auto lplane = std::make_unique<Model>(modelLoader.loadModel("/large_plane.obj"));
   auto plane = Primitives::plane(_mtlStack->device());
   plane->transform.position = {0.0f, -1.0f, 0.0f};
+  lplane->transform.position = {0.0, -0.3f, 0.0f};
   addModel(std::move(model));
+  addModel(std::move(lplane));
   addModel(std::move(plane));
+
+//  camera.projection = Camera::Projection::orthographic;
+  camera.farPlane = 10;
 
   _lights = {LightBulder::sunlight()};
   _gizmo = Primitives::createGizmo(_mtlStack->device());

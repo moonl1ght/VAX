@@ -39,7 +39,11 @@ public:
   Model & operator=(Model & rhs) = delete;
   Model & operator=(Model && rhs);
 
-  void draw(MTL::RenderCommandEncoder * const renderCommandEncoder, MTL::RenderPipelineState* renderPipelineState) const override;
+  void draw(
+    MTL::RenderCommandEncoder * const renderCommandEncoder,
+    MTL::RenderPipelineState* renderPipelineState,
+    Mesh::RenderingMode renderingMode = Mesh::RenderingMode::meshWithMaterials
+  ) const override;
 
 private:
   Textures* _textures;

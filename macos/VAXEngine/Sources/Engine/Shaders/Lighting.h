@@ -5,25 +5,29 @@
 #ifndef Lighting_h
 #define Lighting_h
 
-#include "ShaderTypes.h"
+#include "headers/ShadersData.h"
+#include "headers/Light.h"
+#include "headers/Material.h"
 
 float3 phongLighting(
-  float3 normal,
-  float3 position,
+  simd_float3 normal,
+  simd_float3 position,
   constant FragmentUniforms &params,
   constant Light *lights,
-  float3 baseColor);
+  simd_float3 baseColor);
 
 float3 computeSpecular(
-  float3 normal,
-  float3 viewDirection,
-  float3 lightDirection,
+  simd_float3 normal,
+  simd_float3 viewDirection,
+  simd_float3 lightDirection,
   float roughness,
-  float3 F0);
+  simd_float3 F0);
 
 float3 computeDiffuse(
   Material material,
-  float3 normal,
-  float3 lightDirection);
+  simd_float3 normal,
+  simd_float3 lightDirection);
+
+float calculateShadow(float4 shadowPosition, depth2d<float> shadowTexture);
 
 #endif /* Lighting_h */

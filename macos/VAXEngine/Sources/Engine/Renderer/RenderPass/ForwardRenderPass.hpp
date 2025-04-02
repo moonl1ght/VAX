@@ -8,12 +8,14 @@
 #include <stdio.h>
 #include "RenderPass.hpp"
 
-class ForwardRenderPass: RenderPass {
+class ForwardRenderPass: public RenderPass {
 public:
+  vax::Texture* shadowTexture;
+
   using RenderPass::RenderPass;
   ~ForwardRenderPass();
 
-  void draw(MTL::CommandBuffer* commandBuffer, Scene* scene, PipelineStateManager* pipelineStateManager) const noexcept override;
+  void draw(MTL::CommandBuffer* commandBuffer, Scene* scene) const noexcept override;
   void resize(const vax::Size viewSize, const vax::Size drawableSize) noexcept override;
   void updateRenderPassDescriptor(CA::MetalDrawable* drawable) noexcept override;
 

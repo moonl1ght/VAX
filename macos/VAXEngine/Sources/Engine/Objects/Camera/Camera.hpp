@@ -10,11 +10,11 @@
 #include "Transform.hpp"
 
 class Camera {
+public:
+
   enum class Projection {
     perspective, orthographic
   };
-
-public:
 
   Projection projection;
   Transform transform;
@@ -23,15 +23,21 @@ public:
   float nearPlane;
   float farPlane;
 
+  simd_float3 target;
+
+  /// only when projection = perspective
+  float viewSize;
+
   Camera(Projection projection = Projection::perspective,
          Transform transform = Transform(), Radian fov = radians_from_degrees(60),
-         float nearPlane = 0.1, float farPlane = 100)
+         float nearPlane = 0.1, float farPlane = 100, float viewSize = 10)
   : projection(projection)
   , transform(transform)
   , fov(fov)
   , aspectRatio(1)
   , nearPlane(nearPlane)
   , farPlane(farPlane)
+  , viewSize(viewSize)
   { };
 
   matrix_float4x4 projectionMatrix() const;

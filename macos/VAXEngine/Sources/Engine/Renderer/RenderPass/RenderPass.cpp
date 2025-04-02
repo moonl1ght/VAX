@@ -6,6 +6,7 @@
 
 RenderPass::~RenderPass() {
   _descriptor->release();
+  _descriptor = nullptr;
 }
 
 const MTL::RenderPassDescriptor& RenderPass::descriptor() const noexcept {

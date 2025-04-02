@@ -8,26 +8,32 @@ using namespace MTL;
 
 ForwardRenderPass::~ForwardRenderPass() {
   delete _depthTexture;
+  _depthTexture = nullptr;
 }
 
-void ForwardRenderPass::draw(CommandBuffer *commandBuffer, Scene *scene, PipelineStateManager* pipelineStateManager) const noexcept {
+void ForwardRenderPass::draw(CommandBuffer *commandBuffer, Scene *scene) const noexcept {
   RenderCommandEncoder* renderCommandEncoder = commandBuffer->renderCommandEncoder(_descriptor);
 
-  renderCommandEncoder->setDepthStencilState(pipelineStateManager->depthStencilState);
-//  renderCommandEncoder->setRenderPipelineState(pipelineStateManager->renderPipelineState);
+  renderCommandEncoder->setDepthStencilState(_pipelineStateManager->depthStencilState);
 
   VertexUniforms vertexUniforms = { scene->camera.viewMatrix(), scene->camera.projectionMatrix() };
   renderCommandEncoder->setVertexBytes(&vertexUniforms, vertexUniforms.size(), kVertexUniformsBufferIndex);
 
+  ShadowVertexUniforms shadowVertexUniforms;
+  renderCommandEncoder->setVertexBytes(&shadowVertexUniforms, shadowVertexUniforms.size(), kShadowUniformsBufferIndex);
+
   auto lights = scene->lights();
   FragmentUniforms fragmentsUniforms = { scene->camera.transform.position, (uint)lights.size() };
-  renderCommandEncoder->setFragmentBytes(&fragmentsUniforms, sizeof(fragmentsUniforms), 3);
-  renderCommandEncoder->setFragmentBytes(lights.data(), sizeof(Light) * lights.size(), 4);
+  renderCommandEncoder->setFragmentBytes(&fragmentsUniforms, sizeof(fragmentsUniforms), kFragmentUniformsIndex);
+  renderCommandEncoder->setFragmentBytes(lights.data(), sizeof(Light) * lights.size(), kLightIndex);
+  if (shadowTexture) {
+    renderCommandEncoder->setFragmentTexture(&shadowTexture->texture(), kTextureShadowIndex);
+  }
   for (auto& model: scene->models()) {
-    model->draw(renderCommandEncoder, pipelineStateManager->renderPipelineStateForType(model->renderPipelineStateType));
+    model->draw(renderCommandEncoder, _pipelineStateManager->renderPipelineStateForType(model->renderPipelineStateType));
   }
 
-  scene->gizmo().draw(renderCommandEncoder, pipelineStateManager->gizmoPipelineState);
+  scene->gizmo().draw(renderCommandEncoder, _pipelineStateManager->gizmoPipelineState);
 
   renderCommandEncoder->endEncoding();
 }

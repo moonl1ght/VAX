@@ -13,6 +13,8 @@ PipelineStateManager::~PipelineStateManager() {
   depthStencilState = nullptr;
   primitivePipelineState->release();
   primitivePipelineState = nullptr;
+  shadowPipelineState->release();
+  shadowPipelineState = nullptr;
 }
 
 MTL::RenderPipelineState* PipelineStateManager::renderPipelineStateForType(RenderPipelineStateType type) const noexcept {

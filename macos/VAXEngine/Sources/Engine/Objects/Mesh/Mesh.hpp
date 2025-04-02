@@ -11,10 +11,14 @@
 #include "MeshBuffer.hpp"
 #include "Transform.hpp"
 #include "simd_utils.h"
-#include "ShaderTypes.h"
+#include "ShadersCommon.h"
 
 class Mesh {
 public:
+  enum class RenderingMode {
+    meshOnly, meshWithMaterials
+  };
+
   enum class DrawingMode {
     primitives, indexedPrimitives
   };
@@ -75,7 +79,10 @@ public:
   Mesh& operator=(Mesh & rhs);
   Mesh& operator=(Mesh && rhs) = delete;
 
-  void draw(MTL::RenderCommandEncoder * const renderCommandEncoder) const;
+  void draw(
+    MTL::RenderCommandEncoder * const renderCommandEncoder,
+    RenderingMode renderingMode = RenderingMode::meshWithMaterials
+  ) const;
 
 private:
   u_int _vertexCount;

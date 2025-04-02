@@ -141,7 +141,7 @@ std::tuple<std::unordered_map<std::string, int>, Model::Textures*> ModelLoader::
   }
   if (textureFilePaths.size() == 0) {
     std::cerr << "Texture Files not found..." << std::endl;
-    exit(1);
+//    exit(1);
   }
   TexturesLoader textureLoader = TexturesLoader(_mtlStack);
   Model::Textures* textures = textureLoader.loadTextures(textureFilePaths);

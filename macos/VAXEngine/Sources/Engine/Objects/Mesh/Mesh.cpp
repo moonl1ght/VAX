@@ -3,7 +3,7 @@
 //
 
 #include "Mesh.hpp"
-#include "ShaderTypes.h"
+#include "ShadersCommon.h"
 
 using namespace MTL;
 
@@ -46,20 +46,27 @@ Mesh& Mesh::operator=(Mesh & rhs) {
   return *this;
 }
 
-void Mesh::draw(RenderCommandEncoder * const renderCommandEncoder) const {
+void Mesh::draw(
+  RenderCommandEncoder * const renderCommandEncoder,
+  RenderingMode renderingMode
+) const {
   renderCommandEncoder->setVertexBuffer(&_vertexBuffer.buffer(), _vertexBuffer.offset(), kVertexBufferIndex);
   if (_uvBuffer) {
     renderCommandEncoder->setVertexBuffer(_uvBuffer, 0, kUVBufferIndex);
   }
-  renderCommandEncoder->setFragmentBytes(&textureIndices, sizeof(textureIndices), 5);
+  switch (renderingMode) {
+    case RenderingMode::meshOnly:
+      break;
+    case RenderingMode::meshWithMaterials:
+      renderCommandEncoder->setFragmentBytes(&textureIndices, sizeof(textureIndices), kTextureIndicesIndex);
+      break;
+  }
   switch (drawingMode) {
     case DrawingMode::primitives:
       drawPrimitives(renderCommandEncoder);
       break;
     case DrawingMode::indexedPrimitives:
       drawIndexedPrimitives(renderCommandEncoder);
-      break;
-    default:
       break;
   }
 }

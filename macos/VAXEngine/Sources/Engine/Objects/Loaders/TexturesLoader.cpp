@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-#include "ShaderTypes.h"
+#include "ShadersCommon.h"
 
 Model::Textures* TexturesLoader::loadTextures(std::vector<std::string> &filePaths) {
   int maxImageWidth = 0, maxImageHeight = 0;
