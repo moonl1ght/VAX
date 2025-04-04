@@ -33,8 +33,14 @@ void Scene::loadScene(std::string bundleResourcesPath) {
 
 //  camera.projection = Camera::Projection::orthographic;
   camera.farPlane = 10;
+  camera.viewSize = 10;
+  camera.setPosition({-2.0f, 1.0f, -2.0f});
+//  camera.projection = Camera::Projection::orthographic;
+  shadowCamera.farPlane = 10;
 
   _lights = {LightBulder::sunlight()};
+  shadowCamera.update(camera, _lights[0].position);
+//  shadowCamera.setPosition({-1.0f, 1.0f, 3.0f});
   _gizmo = Primitives::createGizmo(_mtlStack->device());
 }
 

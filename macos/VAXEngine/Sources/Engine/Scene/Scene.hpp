@@ -17,7 +17,6 @@ public:
   Camera camera = Camera();
   ShadowCamera shadowCamera = ShadowCamera();
 
-
   explicit Scene(MTLStack* mtlStack);
   virtual ~Scene();
 

@@ -38,6 +38,10 @@ void MTLRenderer::draw(CA::MetalLayer *layer) {
 
   CA::MetalDrawable* drawable = layer->nextDrawable();
 
+  _shadowRenderPass->updateRenderPassDescriptor();
+  _shadowRenderPass->draw(commandBuffer, _scene);
+
+  _forwardRenderPass->shadowTexture = &_shadowRenderPass->shadowTexture();
   _forwardRenderPass->updateRenderPassDescriptor(drawable);
   _forwardRenderPass->draw(commandBuffer, _scene);
 

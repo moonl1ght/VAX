@@ -94,6 +94,7 @@ using json = nlohmann::json;
 //  std::cout << "handleDragGesture: " << scene->camera.transform.position.x << " y: " << scene->camera.transform.position.y << " z: " << scene->camera.transform.position.z << std::endl;
 //  std::cout << "rotation: " << scene->camera.transform.rotation.x() << " y: " << scene->camera.transform.rotation.y() << " z: " << scene->camera.transform.rotation.z() << std::endl;
   scene->camera.rotate(value.dragTranslationDelta.vec());
+  scene->shadowCamera.update(scene->camera, scene->lights()[0].position);
 }
 
 - (void)handleAppEvent:(AppEvent)event {

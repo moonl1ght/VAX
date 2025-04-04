@@ -23,6 +23,9 @@ public:
   float nearPlane;
   float farPlane;
 
+  matrix_float4x4 savedProjectionMatrix;
+  matrix_float4x4 savedViewMatrix;
+
   simd_float3 target;
 
   /// only when projection = perspective
@@ -45,6 +48,7 @@ public:
 
   void rotate(simd_float2 delta);
   void setPosition(simd_float3 position);
+  void precalculateMatrices();
 
 private:
   void updateRotationForPosition();

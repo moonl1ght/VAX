@@ -19,7 +19,10 @@ void ForwardRenderPass::draw(CommandBuffer *commandBuffer, Scene *scene) const n
   VertexUniforms vertexUniforms = { scene->camera.viewMatrix(), scene->camera.projectionMatrix() };
   renderCommandEncoder->setVertexBytes(&vertexUniforms, vertexUniforms.size(), kVertexUniformsBufferIndex);
 
-  ShadowVertexUniforms shadowVertexUniforms;
+  ShadowVertexUniforms shadowVertexUniforms = {
+    .shadowProjectionMatrix = scene->shadowCamera.projectionMatrix(),
+    .shadowViewMatrix = scene->shadowCamera.viewMatrix(),
+  };
   renderCommandEncoder->setVertexBytes(&shadowVertexUniforms, shadowVertexUniforms.size(), kShadowUniformsBufferIndex);
 
   auto lights = scene->lights();

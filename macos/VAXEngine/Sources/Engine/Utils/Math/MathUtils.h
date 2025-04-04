@@ -8,5 +8,6 @@
 #include "AAPLMathUtilities.h"
 #include "Angles.h"
 #include "VAXMathObjects.hpp"
+#include "FrustumPoints.h"
 
 #endif /* MathUtils_h */

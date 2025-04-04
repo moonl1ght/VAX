@@ -14,7 +14,7 @@ struct VertexIn {
 
 vertex float4 depthVertex(
   const VertexIn in [[stage_in]],
-  constant ShadowVertexUniforms &uniforms [[ buffer(kVertexUniformsBufferIndex) ]],
+  constant ShadowVertexUniforms &uniforms [[ buffer(kShadowUniformsBufferIndex) ]],
   constant ModelUniforms &modelUniforms [[ buffer(kModelUniformsBufferIndex) ]])
 {
   matrix_float4x4 mvp = uniforms.shadowProjectionMatrix * uniforms.shadowViewMatrix * modelUniforms.modelMatrix;

@@ -4,6 +4,10 @@
 
 #include "ShadowRenderPass.hpp"
 
+vax::Texture& ShadowRenderPass::shadowTexture() const noexcept {
+  return *_shadowTexture;
+}
+
 ShadowRenderPass::~ShadowRenderPass() {
   delete _shadowTexture;
   _shadowTexture = nullptr;
@@ -15,8 +19,14 @@ void ShadowRenderPass::draw(MTL::CommandBuffer *commandBuffer, Scene *scene) con
   renderCommandEncoder->setDepthStencilState(_pipelineStateManager->depthStencilState);
   renderCommandEncoder->setRenderPipelineState(_pipelineStateManager->shadowPipelineState);
 
-  VertexUniforms vertexUniforms = { scene->camera.viewMatrix(), scene->camera.projectionMatrix() };
-  renderCommandEncoder->setVertexBytes(&vertexUniforms, vertexUniforms.size(), kVertexUniformsBufferIndex);
+  ShadowVertexUniforms shadowVertexUniforms = {
+    .shadowProjectionMatrix = scene->shadowCamera.projectionMatrix(),
+    .shadowViewMatrix = scene->shadowCamera.viewMatrix(),
+  };
+  renderCommandEncoder->setVertexBytes(&shadowVertexUniforms, shadowVertexUniforms.size(), kShadowUniformsBufferIndex);
+
+//  VertexUniforms vertexUniforms = { scene->camera.viewMatrix(), scene->shadowCamera.projectionMatrix() };
+//  renderCommandEncoder->setVertexBytes(&vertexUniforms, vertexUniforms.size(), kVertexUniformsBufferIndex);
 
   for (auto& model: scene->models()) {
     model->draw(renderCommandEncoder, nullptr, Mesh::RenderingMode::meshOnly);

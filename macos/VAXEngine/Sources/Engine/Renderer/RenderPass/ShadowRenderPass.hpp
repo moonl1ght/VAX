@@ -10,13 +10,15 @@
 
 class ShadowRenderPass: public RenderPass {
 public:
+  vax::Texture& shadowTexture() const noexcept;
+
   ShadowRenderPass(MTLStack* mtlStack, PipelineStateManager* pipelineStateManager): RenderPass(mtlStack, pipelineStateManager) {
     MTL::TextureDescriptor* shadowTextureDescriptor = MTL::TextureDescriptor::alloc()->init();
     shadowTextureDescriptor->setTextureType(MTL::TextureType2D);
     shadowTextureDescriptor->setPixelFormat(MTL::PixelFormatDepth32Float);
     shadowTextureDescriptor->setWidth(2048);
     shadowTextureDescriptor->setHeight(2048);
-    shadowTextureDescriptor->setUsage(MTL::TextureUsageRenderTarget);
+    shadowTextureDescriptor->setUsage(MTL::TextureUsageRenderTarget & MTL::TextureUsageShaderRead);
 
     _shadowTexture = new vax::Texture(shadowTextureDescriptor, mtlStack->device());
 

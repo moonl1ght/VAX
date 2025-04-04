@@ -9,11 +9,9 @@
 
 matrix_float4x4 Camera::viewMatrix() const {
   if (target.x == transform.position.x && target.y == transform.position.y && target.z == transform.position.z) {
-//    (float4x4(translation: target) * float4x4(rotationYXZ: rotation)).inverse
-
     return simd_inverse(matrix_multiply(matrix4x4_translation(target), transform.rotation.rotationMatrix()));
   } else {
-    return matrix_look_at_left_hand(transform.position, (vector_float3){0.0f, 0.0f, 0.0f}, (vector_float3){0.0f, 1.0f, 0.0f});
+    return matrix_look_at_left_hand(transform.position, target, (vector_float3){0.0f, 1.0f, 0.0f});
   }
 }
 
@@ -31,6 +29,11 @@ matrix_float4x4 Camera::projectionMatrix() const {
       return matrix_perspective_left_hand(fov, aspectRatio, nearPlane, farPlane);
       break;
   }
+}
+
+void Camera::precalculateMatrices() {
+  savedViewMatrix = viewMatrix();
+  savedProjectionMatrix = projectionMatrix();
 }
 
 void Camera::rotate(simd_float2 delta) {

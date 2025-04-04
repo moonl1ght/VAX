@@ -11,7 +11,7 @@
 namespace LightBulder {
   Light sunlight() {
     Light light = Light();
-    light.position = {1.0f, 2.0f, -2.0f};
+    light.position = {-2.0f, 2.0f, -2.0f};
     light.color = Color::white().simd_vec();
     light.specularColor = {0.6f, 0.6f, 0.6f};
     light.attenuation = {1.0f, 0.0f, 0.0f};

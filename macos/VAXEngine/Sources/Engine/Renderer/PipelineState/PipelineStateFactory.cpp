@@ -9,7 +9,7 @@ using namespace MTL;
 
 MTL::RenderPipelineState* PipelineStateFactory::createBaseRenderPipelineState(MTLStack *mtlStack) {
   Function* vertexFunction = mtlStack->library().newFunction(NS::String::string("basicVertex", NS::ASCIIStringEncoding));
-  Function* fragmentFunction = mtlStack->library().newFunction(NS::String::string("basicFragmentWithPBR", NS::ASCIIStringEncoding));
+  Function* fragmentFunction = mtlStack->library().newFunction(NS::String::string("basicFragmentWithPhongLight", NS::ASCIIStringEncoding));
 
   RenderPipelineDescriptor* renderPipelineDescriptor = RenderPipelineDescriptor::alloc()->init();
   renderPipelineDescriptor->setVertexFunction(vertexFunction);
@@ -108,7 +108,7 @@ MTL::RenderPipelineState* PipelineStateFactory::createShadowRenderPipelineState(
 
   RenderPipelineDescriptor* renderPipelineDescriptor = RenderPipelineDescriptor::alloc()->init();
   renderPipelineDescriptor->setVertexFunction(vertexFunction);
-  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createMeshVertexDescriptor();
+  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createSimpleVertexDescriptor();
   renderPipelineDescriptor->setVertexDescriptor(&vertexDescriptor.vertexDescriptor());
   assert(renderPipelineDescriptor);
   renderPipelineDescriptor->colorAttachments()->object(0)->setPixelFormat(PixelFormat::PixelFormatInvalid);

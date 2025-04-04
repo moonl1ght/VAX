@@ -64,8 +64,13 @@ fragment float4 basic_fragment_phong_lighting(
   texture2d_array<float> textureArray [[ texture(kTextureArrayIndex) ]],
   depth2d<float> shadowTexture [[ texture(kTextureShadowIndex) ]]
 ) {
+  float3 color;
   if (textureIndices.diffuseTextureIndex < 0 || textureIndices.diffuseTextureIndex >= int(textureArray.get_array_size())) {
-    return in.color;//float4(1.0, 0.0, 0.0, 1.0); // Return red color for invalid texture index
+    if (!is_null_texture(shadowTexture)) {
+      return in.color * calculateShadow(in.shadowPosition, shadowTexture);
+    } else {
+      return in.color;//float4(1.0, 0.0, 0.0, 1.0); // Return red color for invalid texture index
+    }
   }
   constexpr sampler textureSampler(filter::linear,
                                    mip_filter::linear,
@@ -79,14 +84,21 @@ fragment float4 basic_fragment_phong_lighting(
                                                      textureIndices.diffuseTextureIndex).rgb;
 //    float3 baseColor = baseColorTexture.sample(textureSampler,
 //                                               in.uv * params.tiling).rgb;
-    float3 color = phongLighting(normalize(in.worldNormal),
+    color = phongLighting(normalize(in.worldNormal),
                                  in.fragmentWorldPosition.xyz,
                                  uniforms,
                                  lights,
                                  diffuseColor);
+    if (!is_null_texture(shadowTexture)) {
+      color *= calculateShadow(in.shadowPosition, shadowTexture);
+    }
     return float4(color, 1.0f);
   } else {
-    return float4(0.0, 1.0, 0.0, 1.0);
+    color = float3(1.0, 1.0, 1.0);
+    if (!is_null_texture(shadowTexture)) {
+      color *= calculateShadow(in.shadowPosition, shadowTexture);
+    }
+    return float4(color, 1.0);
   }
 //  return in.color;
 }
