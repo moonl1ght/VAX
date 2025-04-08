@@ -16,8 +16,8 @@ public:
     MTL::TextureDescriptor* shadowTextureDescriptor = MTL::TextureDescriptor::alloc()->init();
     shadowTextureDescriptor->setTextureType(MTL::TextureType2D);
     shadowTextureDescriptor->setPixelFormat(MTL::PixelFormatDepth32Float);
-    shadowTextureDescriptor->setWidth(2048);
-    shadowTextureDescriptor->setHeight(2048);
+    shadowTextureDescriptor->setWidth(4048);
+    shadowTextureDescriptor->setHeight(4048);
     shadowTextureDescriptor->setUsage(MTL::TextureUsageRenderTarget & MTL::TextureUsageShaderRead);
 
     _shadowTexture = new vax::Texture(shadowTextureDescriptor, mtlStack->device());
@@ -27,7 +27,6 @@ public:
   ~ShadowRenderPass();
 
   void draw(MTL::CommandBuffer* commandBuffer, Scene* scene) const noexcept override;
-  void resize(const vax::Size viewSize, const vax::Size drawableSize) noexcept override;
   void updateRenderPassDescriptor() noexcept override;
 
 private:

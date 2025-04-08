@@ -15,6 +15,8 @@ namespace PipelineStateFactory {
   MTL::RenderPipelineState* createGizmoRenderPipelineState(MTLStack* mtlStack);
   MTL::RenderPipelineState* createPrimitiveRenderPipelineState(MTLStack* mtlStack);
   MTL::RenderPipelineState* createShadowRenderPipelineState(MTLStack* mtlStack);
+  MTL::RenderPipelineState* createGBufferRenderPipelineState(MTLStack* mtlStack);
+  MTL::RenderPipelineState* createSunlightRenderPipelineState(MTLStack* mtlStack);
 
   MTL::DepthStencilState* createDepthStencilState(MTLStack* mtlStack);
 }

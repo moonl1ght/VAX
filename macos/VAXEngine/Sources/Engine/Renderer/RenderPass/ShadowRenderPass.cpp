@@ -18,6 +18,7 @@ void ShadowRenderPass::draw(MTL::CommandBuffer *commandBuffer, Scene *scene) con
 
   renderCommandEncoder->setDepthStencilState(_pipelineStateManager->depthStencilState);
   renderCommandEncoder->setRenderPipelineState(_pipelineStateManager->shadowPipelineState);
+  renderCommandEncoder->setLabel(NS::String::string("shadow render pass command encoder", NS::ASCIIStringEncoding));
 
   ShadowVertexUniforms shadowVertexUniforms = {
     .shadowProjectionMatrix = scene->shadowCamera.projectionMatrix(),
@@ -25,17 +26,12 @@ void ShadowRenderPass::draw(MTL::CommandBuffer *commandBuffer, Scene *scene) con
   };
   renderCommandEncoder->setVertexBytes(&shadowVertexUniforms, shadowVertexUniforms.size(), kShadowUniformsBufferIndex);
 
-//  VertexUniforms vertexUniforms = { scene->camera.viewMatrix(), scene->shadowCamera.projectionMatrix() };
-//  renderCommandEncoder->setVertexBytes(&vertexUniforms, vertexUniforms.size(), kVertexUniformsBufferIndex);
-
   for (auto& model: scene->models()) {
     model->draw(renderCommandEncoder, nullptr, Mesh::RenderingMode::meshOnly);
   }
 
   renderCommandEncoder->endEncoding();
 }
-
-void ShadowRenderPass::resize(const vax::Size viewSize, const vax::Size drawableSize) noexcept { }
 
 void ShadowRenderPass::updateRenderPassDescriptor() noexcept {
   MTL::RenderPassDepthAttachmentDescriptor* depthAttachment = _descriptor->depthAttachment();

@@ -26,12 +26,22 @@ typedef enum {
   kFragmentUniformsIndex = 3,
   kLightIndex = 4,
   kTextureIndicesIndex = 5,
-  kTextureInfoIndex = 6
+  kTextureInfoIndex = 6,
+  kFragmentMaterialIndex = 7,
 } FragmentBufferIndices;
 
 typedef enum {
   kTextureArrayIndex = 0,
-  kTextureShadowIndex = 1
+  kTextureShadowIndex = 1,
+  kBaseColorTextureIndex = 2,
+  kNormalTextureIndex = 3,
+  kPositionTextureIndex = 4,
 } FragmentTexturesIndices;
+
+typedef enum {
+  kRenderTargetAlbedo = 1,
+  kRenderTargetNormal = 2,
+  kRenderTargetPosition = 3
+} GBufferAttributes;
 
 #endif /* AttributesAndIndices_h */

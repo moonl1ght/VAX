@@ -19,6 +19,8 @@ public:
   MTL::RenderPipelineState* primitivePipelineState;
   MTL::RenderPipelineState* gizmoPipelineState;
   MTL::RenderPipelineState* shadowPipelineState;
+  MTL::RenderPipelineState* gBufferPipelineState;
+  MTL::RenderPipelineState* sunlightPipelineState;
 
   MTL::DepthStencilState* depthStencilState;
 
@@ -27,6 +29,8 @@ public:
     gizmoPipelineState = PipelineStateFactory::createGizmoRenderPipelineState(mtlStack);
     primitivePipelineState = PipelineStateFactory::createPrimitiveRenderPipelineState(mtlStack);
     shadowPipelineState = PipelineStateFactory::createShadowRenderPipelineState(mtlStack);
+    gBufferPipelineState = PipelineStateFactory::createGBufferRenderPipelineState(mtlStack);
+    sunlightPipelineState = PipelineStateFactory::createSunlightRenderPipelineState(mtlStack);
 
     depthStencilState = PipelineStateFactory::createDepthStencilState(mtlStack);
   };
@@ -38,7 +42,7 @@ public:
   PipelineStateManager& operator=(PipelineStateManager& rhs) = delete;
   PipelineStateManager& operator=(PipelineStateManager&& rhs) = delete;
 
-  MTL::RenderPipelineState* renderPipelineStateForType(RenderPipelineStateType type) const noexcept;
+  MTL::RenderPipelineState* renderPipelineStateForType(RenderPipelineStateType type, bool gBufferRendering) const noexcept;
 };
 
 #endif /* PipelineStateManager_hpp */

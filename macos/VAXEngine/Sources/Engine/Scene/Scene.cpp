@@ -29,7 +29,7 @@ void Scene::loadScene(std::string bundleResourcesPath) {
   lplane->transform.position = {0.0, -0.3f, 0.0f};
   addModel(std::move(model));
   addModel(std::move(lplane));
-  addModel(std::move(plane));
+//  addModel(std::move(plane));
 
 //  camera.projection = Camera::Projection::orthographic;
   camera.farPlane = 10;

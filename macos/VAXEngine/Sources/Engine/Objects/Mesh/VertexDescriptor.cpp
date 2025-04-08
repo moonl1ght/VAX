@@ -19,7 +19,7 @@ const MTL::VertexDescriptor& vax::VertexDescriptor::vertexDescriptor() {
   return *_mtlVertexDescriptor;
 }
 
-vax::VertexDescriptor vax::VertexDescriptor::createSimpleVertexDescriptor() {
+vax::VertexDescriptor vax::VertexDescriptor::createBaseVertexDescriptor() {
   MTL::VertexDescriptor* vd = MTL::VertexDescriptor::alloc()->init();
 
   int offset = 0;

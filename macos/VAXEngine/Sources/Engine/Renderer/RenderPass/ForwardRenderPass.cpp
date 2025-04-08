@@ -18,6 +18,7 @@ void ForwardRenderPass::draw(CommandBuffer *commandBuffer, Scene *scene) const n
 
   VertexUniforms vertexUniforms = { scene->camera.viewMatrix(), scene->camera.projectionMatrix() };
   renderCommandEncoder->setVertexBytes(&vertexUniforms, vertexUniforms.size(), kVertexUniformsBufferIndex);
+  renderCommandEncoder->setLabel(NS::String::string("forward render pass command encoder", NS::ASCIIStringEncoding));
 
   ShadowVertexUniforms shadowVertexUniforms = {
     .shadowProjectionMatrix = scene->shadowCamera.projectionMatrix(),
@@ -33,7 +34,7 @@ void ForwardRenderPass::draw(CommandBuffer *commandBuffer, Scene *scene) const n
     renderCommandEncoder->setFragmentTexture(&shadowTexture->texture(), kTextureShadowIndex);
   }
   for (auto& model: scene->models()) {
-    model->draw(renderCommandEncoder, _pipelineStateManager->renderPipelineStateForType(model->renderPipelineStateType));
+    model->draw(renderCommandEncoder, _pipelineStateManager->renderPipelineStateForType(model->renderPipelineStateType, false));
   }
 
   scene->gizmo().draw(renderCommandEncoder, _pipelineStateManager->gizmoPipelineState);
@@ -45,16 +46,16 @@ void ForwardRenderPass::resize(const vax::Size viewSize, const vax::Size drawabl
   if (_depthTexture != nullptr) {
     delete _depthTexture;
   }
-  TextureDescriptor* depthTextureDescriptor = TextureDescriptor::alloc()->init();
-  depthTextureDescriptor->setTextureType(TextureType2D);
-  depthTextureDescriptor->setPixelFormat(PixelFormatDepth32Float);
-  depthTextureDescriptor->setWidth(drawableSize.width);
-  depthTextureDescriptor->setHeight(drawableSize.height);
-  depthTextureDescriptor->setUsage(TextureUsageRenderTarget);
+//  TextureDescriptor* depthTextureDescriptor = TextureDescriptor::alloc()->init();
+//  depthTextureDescriptor->setTextureType(TextureType2D);
+//  depthTextureDescriptor->setPixelFormat(PixelFormatDepth32Float);
+//  depthTextureDescriptor->setWidth(drawableSize.width);
+//  depthTextureDescriptor->setHeight(drawableSize.height);
+//  depthTextureDescriptor->setUsage(TextureUsageRenderTarget);
 
-  _depthTexture = new vax::Texture(depthTextureDescriptor, _mtlStack->device());
+  _depthTexture = new vax::Texture(viewSize, MTL::PixelFormatDepth32Float, _mtlStack->device());
 
-  depthTextureDescriptor->release();
+//  depthTextureDescriptor->release();
 }
 
 void ForwardRenderPass::updateRenderPassDescriptor(CA::MetalDrawable* drawable) noexcept {

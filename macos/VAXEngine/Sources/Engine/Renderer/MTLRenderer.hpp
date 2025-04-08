@@ -14,6 +14,8 @@
 #include "VAXMathObjects.hpp"
 #include "ForwardRenderPass.hpp"
 #include "ShadowRenderPass.hpp"
+#include "GBufferRenderPass.hpp"
+#include "LightingRenderPass.hpp"
 
 class MTLRenderer
 {
@@ -29,6 +31,8 @@ private:
   PipelineStateManager* _pipelineStateManager;
   ForwardRenderPass* _forwardRenderPass;
   ShadowRenderPass* _shadowRenderPass;
+  GBufferRenderPass* _gBufferRenderPass;
+  LightingRenderPass* _lightingRenderPass;
   Scene* _scene;
 };
 

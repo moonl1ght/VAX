@@ -12,11 +12,12 @@ using namespace metal;
 [[host_name("basicFragmentWithPBR")]]
 fragment float4 basic_fragment_pbr(
   const FragmentIn in [[ stage_in ]],
-  constant FragmentUniforms &uniforms [[ buffer(3) ]],
-  constant Light* lights [[ buffer(4) ]],
-  constant TextureIndices& textureIndices [[ buffer(5) ]],
-  constant TextureInfo* textureInfoBuffer [[ buffer(6) ]],
-  texture2d_array<float> textureArray [[ texture(0) ]]
+  constant FragmentUniforms &uniforms [[ buffer(kFragmentUniformsIndex) ]],
+  constant Light* lights [[ buffer(kLightIndex) ]],
+  constant TextureIndices& textureIndices [[ buffer(kTextureIndicesIndex) ]],
+  constant TextureInfo* textureInfoBuffer [[ buffer(kTextureInfoIndex) ]],
+  texture2d_array<float> textureArray [[ texture(kTextureArrayIndex) ]],
+  depth2d<float> shadowTexture [[ texture(kTextureShadowIndex) ]]
 ) {
   constexpr sampler textureSampler(
     filter::linear,
@@ -25,7 +26,11 @@ fragment float4 basic_fragment_pbr(
     address::repeat);
   if (!is_null_texture(textureArray)) {
     if (textureIndices.diffuseTextureIndex < 0 || textureIndices.diffuseTextureIndex >= int(textureArray.get_array_size())) {
-      return in.color;//float4(1.0, 0.0, 0.0, 1.0); // Return red color for invalid texture index
+      float3 color = float3(0.5, 0.5, 0.5);
+      if (!is_null_texture(shadowTexture)) {
+        color *= calculateShadow(in.shadowPosition, shadowTexture);
+      }
+      return float4(color, 1.0f);//float4(1.0, 0.0, 0.0, 1.0); // Return red color for invalid texture index
     }
     Material material;
     int idx = textureIndices.diffuseTextureIndex;
@@ -79,29 +84,31 @@ fragment float4 basic_fragment_pbr(
     }
 
     float3 viewDirection = normalize(uniforms.cameraPosition);
-    Light light = lights[0];
-    float3 lightDirection = normalize(light.position);
+    float3 specularColor = 0;
+    float3 finalDiffuseColor = 0;
     float3 F0 = mix(0.04, material.baseColor, material.metallic);
 
-    float3 specularColor = computeSpecular(
-                                           normal,
-                                           viewDirection,
-                                           lightDirection,
-                                           material.roughness,
-                                           F0);
+    for (uint i = 0; i < uniforms.lightCount; i++) {
+      Light light = lights[i];
+      float3 lightDirection = normalize(light.position);
+//      float3 F0 = mix(0.04, material.baseColor, material.metallic);
+      specularColor += saturate(
+        computeSpecular(normal, viewDirection, lightDirection, material.roughness, F0)
+      );
+      finalDiffuseColor += saturate(
+        computeDiffuse(material, normal,lightDirection) * light.color
+      );
+    }
 
-    float3 finalDiffuseColor = computeDiffuse(
-                                              material,
-                                              normal,
-                                              lightDirection);
-
-    //    float3 color = phongLighting(in.worldNormal,
-    //                                 in.fragmentWorldPosition.xyz,
-    //                                 uniforms,
-    //                                 lights,
-    //                                 diffuseColor);
+    if (!is_null_texture(shadowTexture)) {
+      finalDiffuseColor *= calculateShadow(in.shadowPosition, shadowTexture);
+    }
     return float4(finalDiffuseColor + specularColor, 1.0f);
   } else {
-    return float4(1.0, 0.0, 0.0, 1.0);
+    float3 color = float3(0.5, 0.5, 0.5);
+    if (!is_null_texture(shadowTexture)) {
+      color *= calculateShadow(in.shadowPosition, shadowTexture);
+    }
+    return float4(color, 1.0f);
   }
 }

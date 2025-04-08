@@ -5,24 +5,24 @@
 #include "PipelineStateFactory.hpp"
 #include <iostream>
 
+#include "AttributesAndIndices.h"
+
 using namespace MTL;
 
 MTL::RenderPipelineState* PipelineStateFactory::createBaseRenderPipelineState(MTLStack *mtlStack) {
   Function* vertexFunction = mtlStack->library().newFunction(NS::String::string("basicVertex", NS::ASCIIStringEncoding));
-  Function* fragmentFunction = mtlStack->library().newFunction(NS::String::string("basicFragmentWithPhongLight", NS::ASCIIStringEncoding));
+  Function* fragmentFunction = mtlStack->library().newFunction(NS::String::string("basicFragmentWithPBR", NS::ASCIIStringEncoding));
 
   RenderPipelineDescriptor* renderPipelineDescriptor = RenderPipelineDescriptor::alloc()->init();
   renderPipelineDescriptor->setVertexFunction(vertexFunction);
   renderPipelineDescriptor->setFragmentFunction(fragmentFunction);
-  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createSimpleVertexDescriptor();
+  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createBaseVertexDescriptor();
   renderPipelineDescriptor->setVertexDescriptor(&vertexDescriptor.vertexDescriptor());
   assert(renderPipelineDescriptor);
   PixelFormat pixelFormat = PixelFormatBGRA8Unorm;
   renderPipelineDescriptor->colorAttachments()->object(0)->setPixelFormat(pixelFormat);
-  //  renderPipelineDescriptor->setSampleCount(4);
   renderPipelineDescriptor->setLabel(NS::String::string("Render Pipeline", NS::ASCIIStringEncoding));
   renderPipelineDescriptor->setDepthAttachmentPixelFormat(PixelFormatDepth32Float);
-  //  renderPipelineDescriptor->setTessellationOutputWindingOrder(MTL::WindingCounterClockwise);
 
   NS::Error* error;
   MTL::RenderPipelineState* renderPipelineState = mtlStack->device().newRenderPipelineState(renderPipelineDescriptor, &error);
@@ -108,12 +108,72 @@ MTL::RenderPipelineState* PipelineStateFactory::createShadowRenderPipelineState(
 
   RenderPipelineDescriptor* renderPipelineDescriptor = RenderPipelineDescriptor::alloc()->init();
   renderPipelineDescriptor->setVertexFunction(vertexFunction);
-  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createSimpleVertexDescriptor();
+  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createBaseVertexDescriptor();
   renderPipelineDescriptor->setVertexDescriptor(&vertexDescriptor.vertexDescriptor());
   assert(renderPipelineDescriptor);
   renderPipelineDescriptor->colorAttachments()->object(0)->setPixelFormat(PixelFormat::PixelFormatInvalid);
   //  renderPipelineDescriptor->setSampleCount(4);
   renderPipelineDescriptor->setLabel(NS::String::string("Shadow Render Pipeline", NS::ASCIIStringEncoding));
+  renderPipelineDescriptor->setDepthAttachmentPixelFormat(PixelFormatDepth32Float);
+  //  renderPipelineDescriptor->setTessellationOutputWindingOrder(MTL::WindingCounterClockwise);
+
+  NS::Error* error;
+  MTL::RenderPipelineState* renderPipelineState = mtlStack->device().newRenderPipelineState(renderPipelineDescriptor, &error);
+  if (renderPipelineState == nullptr) {
+    std::cout << "Error creating shadow render pipeline state: " << error << std::endl;
+    assert(renderPipelineState);
+  }
+  renderPipelineDescriptor->release();
+  vertexFunction->release();
+  return renderPipelineState;
+}
+
+MTL::RenderPipelineState* PipelineStateFactory::createGBufferRenderPipelineState(MTLStack* mtlStack) {
+  Function* vertexFunction = mtlStack->library().newFunction(NS::String::string("basicVertex", NS::ASCIIStringEncoding));
+  Function* fragmentFunction = mtlStack->library().newFunction(NS::String::string("fragment_gBuffer", NS::ASCIIStringEncoding));
+
+  RenderPipelineDescriptor* renderPipelineDescriptor = RenderPipelineDescriptor::alloc()->init();
+  renderPipelineDescriptor->setVertexFunction(vertexFunction);
+  renderPipelineDescriptor->setFragmentFunction(fragmentFunction);
+  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createBaseVertexDescriptor();
+  renderPipelineDescriptor->setVertexDescriptor(&vertexDescriptor.vertexDescriptor());
+  assert(renderPipelineDescriptor);
+  renderPipelineDescriptor->colorAttachments()->object(0)->setPixelFormat(PixelFormat::PixelFormatInvalid);
+  renderPipelineDescriptor->colorAttachments()->object(kRenderTargetAlbedo)->setPixelFormat(PixelFormat::PixelFormatBGRA8Unorm);
+  renderPipelineDescriptor->colorAttachments()->object(kRenderTargetNormal)->setPixelFormat(PixelFormat::PixelFormatRGBA16Float);
+  renderPipelineDescriptor->colorAttachments()->object(kRenderTargetPosition)->setPixelFormat(PixelFormat::PixelFormatRGBA16Float);
+  //  renderPipelineDescriptor->setSampleCount(4);
+  renderPipelineDescriptor->setLabel(NS::String::string("GBuffer Render Pipeline", NS::ASCIIStringEncoding));
+  renderPipelineDescriptor->setDepthAttachmentPixelFormat(PixelFormatDepth32Float);
+  //  renderPipelineDescriptor->setTessellationOutputWindingOrder(MTL::WindingCounterClockwise);
+
+  NS::Error* error;
+  MTL::RenderPipelineState* renderPipelineState = mtlStack->device().newRenderPipelineState(renderPipelineDescriptor, &error);
+  if (renderPipelineState == nullptr) {
+    std::cout << "Error creating shadow render pipeline state: " << error << std::endl;
+    assert(renderPipelineState);
+  }
+  renderPipelineDescriptor->release();
+  vertexFunction->release();
+  return renderPipelineState;
+}
+
+MTL::RenderPipelineState* PipelineStateFactory::createSunlightRenderPipelineState(MTLStack* mtlStack) {
+  Function* vertexFunction = mtlStack->library().newFunction(NS::String::string("vertex_quad", NS::ASCIIStringEncoding));
+  Function* fragmentFunction = mtlStack->library().newFunction(NS::String::string("fragment_deferredSun", NS::ASCIIStringEncoding));
+
+  RenderPipelineDescriptor* renderPipelineDescriptor = RenderPipelineDescriptor::alloc()->init();
+  renderPipelineDescriptor->setVertexFunction(vertexFunction);
+  renderPipelineDescriptor->setFragmentFunction(fragmentFunction);
+//  vax::VertexDescriptor vertexDescriptor = vax::VertexDescriptor::createBaseVertexDescriptor();
+//  renderPipelineDescriptor->setVertexDescriptor(&vertexDescriptor.vertexDescriptor());
+  assert(renderPipelineDescriptor);
+  renderPipelineDescriptor->colorAttachments()->object(0)->setPixelFormat(PixelFormat::PixelFormatBGRA8Unorm);
+//  renderPipelineDescriptor->colorAttachments()->object(kRenderTargetAlbedo)->setPixelFormat(PixelFormat::PixelFormatBGRA8Unorm);
+//  renderPipelineDescriptor->colorAttachments()->object(kRenderTargetNormal)->setPixelFormat(PixelFormat::PixelFormatRGBA16Float);
+//  renderPipelineDescriptor->colorAttachments()->object(kRenderTargetPosition)->setPixelFormat(PixelFormat::PixelFormatRGBA16Float);
+  //  renderPipelineDescriptor->setSampleCount(4);
+  renderPipelineDescriptor->setLabel(NS::String::string("sunlight Render Pipeline", NS::ASCIIStringEncoding));
   renderPipelineDescriptor->setDepthAttachmentPixelFormat(PixelFormatDepth32Float);
   //  renderPipelineDescriptor->setTessellationOutputWindingOrder(MTL::WindingCounterClockwise);
 

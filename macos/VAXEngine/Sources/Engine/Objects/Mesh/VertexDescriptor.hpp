@@ -14,7 +14,7 @@ namespace vax {
     virtual ~VertexDescriptor();
     const MTL::VertexDescriptor& vertexDescriptor();
 
-    static VertexDescriptor createSimpleVertexDescriptor();
+    static VertexDescriptor createBaseVertexDescriptor();
     static VertexDescriptor createPrimitiveVertexDescriptor();
     static VertexDescriptor createMeshVertexDescriptor();
 
