@@ -17,7 +17,8 @@
 		],
 		"cmake.configureSettings": {
         "CMAKE_TOOLCHAIN_FILE": "build/conan_toolchain.cmake"
-    }
+    },
+	// "cmake.sourceDirectory": ["${workspaceFolder}/src/"]
 	},
 	"launch": {
 		"version": "0.2.0",
