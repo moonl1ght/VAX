@@ -9,7 +9,7 @@
     ],
     "configurePresets": [
         {
-            "name": "lun",
+            "name": "luna",
             "displayName": "Custom configure preset",
             "description": "Sets Ninja generator, build and install directory",
             "binaryDir": "${sourceDir}/out/build/${presetName}",

@@ -19,6 +19,11 @@ find_package(glfw3 REQUIRED FATAL_ERROR)
 find_package(assimp REQUIRED FATAL_ERROR)
 find_package(nlohmann_json REQUIRED FATAL_ERROR)
 # find_package(glm REQUIRED FATAL_ERROR)
+message($ENV{VULKAN_SDK})
+
+add_compile_definitions(PROJ_DIR="${PROJECT_SOURCE_DIR}")
+
+find_program(GLSL_VALIDATOR glslangValidator HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
 
 # add_subdirectory(src/)
 # target_sources(src/**.cpp)
@@ -29,7 +34,31 @@ file(GLOB_RECURSE all_SRCS
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
     "${PROJECT_SOURCE_DIR}/src/*.h"
     "${PROJECT_SOURCE_DIR}/src/*.c"
+    "${PROJECT_SOURCE_DIR}/src/*.spv"
 )
+
+file(GLOB_RECURSE GLSL_SOURCE_FILES
+    "${PROJECT_SOURCE_DIR}/src/shaders/*.frag"
+    "${PROJECT_SOURCE_DIR}/src/shaders/*.vert"
+    "${PROJECT_SOURCE_DIR}/src/shaders/*.comp"
+    )
+
+foreach(GLSL ${GLSL_SOURCE_FILES})
+    message(STATUS "BUILDING SHADER")
+    get_filename_component(FILE_NAME ${GLSL} NAME)
+    set(SPIRV "${PROJECT_SOURCE_DIR}/src/shaders/out/${FILE_NAME}.spv")
+    message(STATUS ${GLSL})
+    add_custom_command(
+      OUTPUT ${SPIRV}
+      COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
+      DEPENDS ${GLSL})
+    list(APPEND SPIRV_BINARY_FILES ${SPIRV})
+endforeach(GLSL)
+  
+  add_custom_target(
+      Shaders 
+      DEPENDS ${SPIRV_BINARY_FILES}
+      )
 
 add_executable(Luna main.cpp ${all_SRCS})
 # target_link_libraries(Luna)
