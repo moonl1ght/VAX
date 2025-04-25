@@ -334,7 +334,7 @@ void App::createLogicalDevice()
     // std::vector<const char *> deviceExtensions;
     if (enableValidationLayers)
     {
-        deviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME); // needed for macOS
+        // deviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME); // needed for macOS
     }
 
 

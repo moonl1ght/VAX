@@ -1,0 +1,23 @@
+{
+    "version": 8,
+    "buildPresets": [
+        {
+            "name": "luna1",
+            "description": "",
+            "displayName": ""
+        }
+    ],
+    "configurePresets": [
+        {
+            "name": "lun",
+            "displayName": "Custom configure preset",
+            "description": "Sets Ninja generator, build and install directory",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "generator": "MinGW Makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+            }
+        }
+    ]
+}

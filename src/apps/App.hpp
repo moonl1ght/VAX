@@ -11,6 +11,11 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_beta.h>
 #include <set>
+#include <optional>
+#include <vector>
+#include <algorithm>
+#include <cstring>
+#include <limits>
 
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;

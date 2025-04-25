@@ -12,6 +12,7 @@
 #include "src/apps/SimpleApp.hpp"
 
 int main() {
+    std::cout << "run main" << std::endl;
     SimpleApp app = SimpleApp();
     try {
         app.run();
