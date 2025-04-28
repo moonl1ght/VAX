@@ -23,6 +23,8 @@ public:
 
     VKStack(GLFWwindow *window) : window(window) {};
 
+    const int MAX_FRAMES_IN_FLIGHT = 2;
+
     const bool enableValidationLayers = true;
     const std::vector<const char *> validationLayers = {
         "VK_LAYER_KHRONOS_validation"};
@@ -50,14 +52,17 @@ public:
     VkPipeline graphicsPipeline;
 
     VkCommandPool commandPool;
-    VkCommandBuffer commandBuffer;
 
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
-    VkFence inFlightFence;
+    std::vector<VkCommandBuffer> commandBuffers;
+
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence> inFlightFences;
 
     void setup();
     void cleanup();
+    void recreateSwapChain();
+    void cleanupSwapChain();
 
 protected:
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -94,7 +99,6 @@ protected:
     void createFramebuffers();
     void createCommandPool();
     void createCommandBuffer();
-    void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
     void createSyncObjects();
 };
 

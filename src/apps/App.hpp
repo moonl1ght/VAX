@@ -1,23 +1,24 @@
 #ifndef App_hpp
 #define App_hpp
 
-#include "luna.h"
+#include "../renderer/Renderer.hpp"
 #include "../vk/stack/VKStack.hpp"
+#include "luna.h"
 
 class App {
-    public:
+public:
+    bool framebufferResized = false;
+
+    App() { renderer = Renderer(); };
+    virtual ~App() {};
 
     virtual void run();
 
-    protected:
+protected:
 
-    const bool enableValidationLayers = true;
-    const std::vector<const char*> validationLayers = {
-        "VK_LAYER_KHRONOS_validation"
-    };
-
-    GLFWwindow* window = nullptr;
-    VKStack* vkStack = nullptr;
+    GLFWwindow *window = nullptr;
+    VKStack *vkStack = nullptr;
+    Renderer renderer;
 
     virtual void initWindow();
     virtual void mainLoop();

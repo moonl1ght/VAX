@@ -1,5 +1,10 @@
 #include "App.hpp"
 
+static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+    auto app = reinterpret_cast<App*>(glfwGetWindowUserPointer(window));
+    app->framebufferResized = true;
+}
+
 void App::run() {
     initWindow();
     vkStack = new VKStack(window);
@@ -14,9 +19,11 @@ void App::initWindow() {
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan App", nullptr, nullptr);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
 
 void App::cleanup() {
@@ -89,34 +96,46 @@ void App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex
     }
 }
 
+uint32_t currentFrame = 0;
+
 void App::drawFrame() {
     // std::cout << "Drawing frame..." << std::endl;
-    vkWaitForFences(vkStack->device, 1, &vkStack->inFlightFence, VK_TRUE, UINT64_MAX);
-    vkResetFences(vkStack->device, 1, &vkStack->inFlightFence);
+    vkWaitForFences(vkStack->device, 1, &vkStack->inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(vkStack->device, vkStack->swapChain, UINT64_MAX, vkStack->imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(
+        vkStack->device, vkStack->swapChain, UINT64_MAX, vkStack->imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex
+    );
 
-    vkResetCommandBuffer(vkStack->commandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
-    recordCommandBuffer(vkStack->commandBuffer, imageIndex);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        vkStack->recreateSwapChain();
+        return;
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
+
+    vkResetFences(vkStack->device, 1, &vkStack->inFlightFences[currentFrame]);
+
+    vkResetCommandBuffer(vkStack->commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+    recordCommandBuffer(vkStack->commandBuffers[currentFrame], imageIndex);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {vkStack->imageAvailableSemaphore};
+    VkSemaphore waitSemaphores[] = {vkStack->imageAvailableSemaphores[currentFrame]};
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &vkStack->commandBuffer;
+    submitInfo.pCommandBuffers = &vkStack->commandBuffers[currentFrame];
 
-    VkSemaphore signalSemaphores[] = {vkStack->renderFinishedSemaphore};
+    VkSemaphore signalSemaphores[] = {vkStack->renderFinishedSemaphores[currentFrame]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(vkStack->graphicsQueue, 1, &submitInfo, vkStack->inFlightFence) != VK_SUCCESS) {
+    if (vkQueueSubmit(vkStack->graphicsQueue, 1, &submitInfo, vkStack->inFlightFences[currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
@@ -132,5 +151,14 @@ void App::drawFrame() {
 
     presentInfo.pImageIndices = &imageIndex;
 
-    vkQueuePresentKHR(vkStack->presentQueue, &presentInfo);
+    result = vkQueuePresentKHR(vkStack->presentQueue, &presentInfo);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+        framebufferResized = false;
+        vkStack->recreateSwapChain();
+        return;
+    } else if (result != VK_SUCCESS) {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
+
+    currentFrame = (currentFrame + 1) % vkStack->MAX_FRAMES_IN_FLIGHT;
 }
