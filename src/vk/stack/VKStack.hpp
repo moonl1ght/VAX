@@ -2,6 +2,7 @@
 #define VKStack_hpp
 
 #include "luna.h"
+#include "Vertex.h"
 #include <iostream>
 
 class VKStack {

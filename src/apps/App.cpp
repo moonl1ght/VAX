@@ -9,6 +9,8 @@ void App::run() {
     initWindow();
     vkStack = new VKStack(window);
     vkStack->setup();
+    mesh = Primitives2D::createTriangle();
+    mesh->prepareForRender(vkStack);
     mainLoop();
     cleanup();
 }
@@ -28,6 +30,11 @@ void App::initWindow() {
 
 void App::cleanup() {
     std::cout << "Cleaning up..." << std::endl;
+
+    mesh->cleanup(vkStack);
+    delete mesh;
+    mesh = nullptr;
+    
     vkStack->cleanup();
 
     if (window != nullptr) {
@@ -87,7 +94,11 @@ void App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex
     scissor.extent = vkStack->swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    VkBuffer vertexBuffers[] = {mesh->vertexBuffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdDraw(commandBuffer, static_cast<uint32_t>(mesh->vertices.size()), 1, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 

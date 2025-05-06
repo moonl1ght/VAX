@@ -14,6 +14,7 @@
 #include <cstring>
 #include <limits>
 #include <fstream>
+#include <array>
 
 #define RELATIVE_PATH(val) std::string(PROJ_DIR) + "/" + val
 #define SRC_PATH(val) std::string(PROJ_DIR) + "/src/" + val

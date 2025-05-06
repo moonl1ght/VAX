@@ -1,8 +1,9 @@
 #ifndef App_hpp
 #define App_hpp
 
-#include "../renderer/Renderer.hpp"
-#include "../vk/stack/VKStack.hpp"
+#include "Renderer.hpp"
+#include "VKStack.hpp"
+#include "Primitives2D.hpp"
 #include "luna.h"
 
 class App {
@@ -16,6 +17,7 @@ public:
 
 protected:
 
+    Mesh* mesh;
     GLFWwindow *window = nullptr;
     VKStack *vkStack = nullptr;
     Renderer renderer;
