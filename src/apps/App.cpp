@@ -9,7 +9,7 @@ void App::run() {
     initWindow();
     vkStack = new VKStack(window);
     vkStack->setup();
-    mesh = Primitives2D::createTriangle();
+    mesh = Primitives2D::createPlane();
     mesh->prepareForRender(vkStack);
     mainLoop();
     cleanup();
@@ -99,7 +99,10 @@ void App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-    vkCmdDraw(commandBuffer, static_cast<uint32_t>(mesh->vertices.size()), 1, 0, 0);
+    vkCmdBindIndexBuffer(commandBuffer, mesh->indexBuffer->vkBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+    // vkCmdDraw(commandBuffer, static_cast<uint32_t>(mesh->vertices.size()), 1, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(mesh->indices.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 

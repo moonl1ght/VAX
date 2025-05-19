@@ -10,7 +10,9 @@
 class Mesh {
 public:
     Buffer* vertexBuffer;
+    Buffer* indexBuffer;
     std::vector<Vertex> vertices;
+    std::vector<uint16_t> indices;
 
     Mesh() {};
     ~Mesh() {};
