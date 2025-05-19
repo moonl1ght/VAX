@@ -19,7 +19,11 @@ find_package(glfw3 REQUIRED FATAL_ERROR)
 find_package(assimp REQUIRED FATAL_ERROR)
 find_package(nlohmann_json REQUIRED FATAL_ERROR)
 # find_package(glm REQUIRED FATAL_ERROR)
-message($ENV{VULKAN_SDK})
+if(DEFINED ENV{VULKAN_SDK})
+    message(STATUS "VULKAN_SDK is set to: $ENV{VULKAN_SDK}")
+else()
+    message(WARNING "VULKAN_SDK environment variable is not set.")
+endif()
 
 add_compile_definitions(PROJ_DIR="${PROJECT_SOURCE_DIR}")
 

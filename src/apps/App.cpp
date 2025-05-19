@@ -94,7 +94,8 @@ void App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex
     scissor.extent = vkStack->swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    VkBuffer vertexBuffers[] = {mesh->vertexBuffer};
+    // std::cout << "--->> draw mesh" << std::endl;
+    VkBuffer vertexBuffers[] = {mesh->vertexBuffer->vkBuffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 

@@ -290,8 +290,8 @@ void VKStack::createLogicalDevice() {
     VkPhysicalDeviceFeatures deviceFeatures{};
 
     // std::vector<const char *> deviceExtensions;
-    if (enableValidationLayers) {
-        // deviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME); // needed for macOS
+    if (enableValidationLayers && MACOS) {
+        deviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME); // needed for macOS
     }
 
     VkDeviceCreateInfo createInfo{};
