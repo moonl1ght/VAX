@@ -48,11 +48,14 @@ public:
     std::vector<VkImageView> swapChainImageViews;
     std::vector<VkFramebuffer> swapChainFramebuffers;
 
+    VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
     VkRenderPass renderPass;
     VkPipeline graphicsPipeline;
 
     VkCommandPool commandPool;
+
+    VkDescriptorPool descriptorPool;
 
     std::vector<VkCommandBuffer> commandBuffers;
 
@@ -101,6 +104,7 @@ protected:
     void createCommandPool();
     void createCommandBuffer();
     void createSyncObjects();
+    void createDescriptorPool();
 };
 
 #endif

@@ -10,6 +10,7 @@ class Buffer {
 public:
     VkBuffer vkBuffer;
     VkDeviceMemory vkBufferMemory;
+    VkDeviceSize size;
 
     Buffer(
         VKStack *vkStack,
@@ -29,7 +30,6 @@ public:
 
 private:
     VkDevice &device;
-    VkDeviceSize size;
 };
 
 #endif

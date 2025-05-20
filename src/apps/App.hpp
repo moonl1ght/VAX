@@ -5,6 +5,8 @@
 #include "VKStack.hpp"
 #include "Primitives2D.hpp"
 #include "luna.h"
+#include "Buffer.hpp"
+#include "../shaders/VertexUniforms.h"
 
 class App {
 public:
@@ -22,11 +24,18 @@ protected:
     VKStack *vkStack = nullptr;
     Renderer renderer;
 
+    std::vector<Buffer*> uniformBuffers;
+    std::vector<void*> uniformBuffersMapped;
+
+    std::vector<VkDescriptorSet> descriptorSets;
+
     virtual void initWindow();
     virtual void mainLoop();
     virtual void cleanup();
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
     void drawFrame();
+    void updateUniformBuffer(uint32_t currentImage);
+    void createDescriptorSets();
 };
 
 #endif
