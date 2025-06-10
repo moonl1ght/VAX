@@ -1,27 +1,14 @@
 #ifndef VKStack_hpp
 #define VKStack_hpp
 
-#include "luna.h"
 #include "Vertex.h"
+#include "luna.h"
+#include "VKUtils.hpp"
+#include "Device.hpp"
 #include <iostream>
 
 class VKStack {
 public:
-    struct QueueFamilyIndices {
-        std::optional<uint32_t> graphicsFamily;
-        std::optional<uint32_t> presentFamily;
-
-        bool isComplete() {
-            return graphicsFamily.has_value() && presentFamily.has_value();
-        }
-    };
-
-    struct SwapChainSupportDetails {
-        VkSurfaceCapabilitiesKHR capabilities;
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
-    };
-
     VKStack(GLFWwindow *window) : window(window) {};
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -30,13 +17,13 @@ public:
     const std::vector<const char *> validationLayers = {
         "VK_LAYER_KHRONOS_validation"};
 
+    VkImageView textureImageView;
     GLFWwindow *window;
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkSurfaceKHR surface;
 
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    VkDevice device;
+    vax::Device* device;
 
     VkQueue graphicsQueue;
     VkQueue presentQueue;
@@ -68,6 +55,9 @@ public:
     void recreateSwapChain();
     void cleanupSwapChain();
 
+    VkCommandBuffer beginSingleTimeCommands();
+    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
 protected:
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -85,16 +75,10 @@ protected:
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
     void setupDebugMessenger();
     void createSurface();
-    void pickPhysicalDevice();
-    void createLogicalDevice();
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-    bool isDeviceSuitable(VkPhysicalDevice device);
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
-    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
     void createSwapChain();
-    bool checkDeviceExtensionSupport(VkPhysicalDevice device);
     void createImageViews();
     void createGraphicsPipeline();
     VkShaderModule createShaderModule(const std::vector<char> &code);

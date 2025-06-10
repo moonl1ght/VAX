@@ -1,3 +1,6 @@
+#ifndef luna_h
+#define luna_h
+
 #include <iostream>
 
 #define GLFW_INCLUDE_VULKAN
@@ -15,6 +18,7 @@
 #include <limits>
 #include <fstream>
 #include <array>
+#include <utility>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -24,5 +28,8 @@
 
 #define RELATIVE_PATH(val) std::string(PROJ_DIR) + "/" + val
 #define SRC_PATH(val) std::string(PROJ_DIR) + "/src/" + val
+#define RES_PATH(val) std::string(PROJ_DIR) + "/res/" + val
 
-#define MACOS false
+#define MACOS true
+
+#endif

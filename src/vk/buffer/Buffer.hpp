@@ -3,8 +3,9 @@
 
 #include <iostream>
 
-#include "luna.h"
 #include "VKStack.hpp"
+#include "VKUtils.hpp"
+#include "luna.h"
 
 class Buffer {
 public:
@@ -14,7 +15,7 @@ public:
 
     Buffer(
         VKStack *vkStack,
-        VkDeviceSize size, 
+        VkDeviceSize size,
         VkBufferUsageFlags usage,
         VkMemoryPropertyFlags properties);
 
@@ -26,10 +27,10 @@ public:
     Buffer &operator=(Buffer &&rhs) = delete;
 
     void fill(const void *fillData);
-    void copyBufferTo(VKStack *vkStack, Buffer& dstBuffer, VkDeviceSize size);
+    void copyBufferTo(VKStack *vkStack, Buffer &dstBuffer, VkDeviceSize size);
 
 private:
-    VkDevice &device;
+    VkDevice device;
 };
 
 #endif

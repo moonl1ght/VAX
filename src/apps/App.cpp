@@ -28,7 +28,7 @@ void App::run() {
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-        vkMapMemory(vkStack->device, uniformBuffers[i]->vkBufferMemory, 0, bufferSize, 0, &uniformBuffersMapped[i]);
+        vkMapMemory(vkStack->device->vkDevice, uniformBuffers[i]->vkBufferMemory, 0, bufferSize, 0, &uniformBuffersMapped[i]);
         // uniformBuffers[i]->fill(uniformBuffersMapped[i]);
     }
 
@@ -86,7 +86,7 @@ void App::createDescriptorSets() {
 
     descriptorSets.resize(vkStack->MAX_FRAMES_IN_FLIGHT);
     // std::cout << "createDescriptorSets 2" << std::endl;
-    if (vkAllocateDescriptorSets(vkStack->device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+    if (vkAllocateDescriptorSets(vkStack->device->vkDevice, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
         // std::cout << "createDescriptorSets error" << std::endl;
         throw std::runtime_error("failed to allocate descriptor sets!");
     }
@@ -113,7 +113,7 @@ void App::createDescriptorSets() {
         descriptorWrite.pBufferInfo = &bufferInfo;
 
         // std::cout << "vkUpdateDescriptorSets" << std::endl;
-        vkUpdateDescriptorSets(vkStack->device, 1, &descriptorWrite, 0, nullptr);
+        vkUpdateDescriptorSets(vkStack->device->vkDevice, 1, &descriptorWrite, 0, nullptr);
     }
     // std::cout << "createDescriptorSets end" << std::endl;
 }
@@ -141,7 +141,7 @@ void App::mainLoop() {
         glfwPollEvents();
         drawFrame();
     }
-    vkDeviceWaitIdle(vkStack->device);
+    vkDeviceWaitIdle(vkStack->device->vkDevice);
 }
 
 uint32_t currentFrame = 0;
@@ -205,11 +205,11 @@ void App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex
 
 void App::drawFrame() {
     // std::cout << "Drawing frame..." << std::endl;
-    vkWaitForFences(vkStack->device, 1, &vkStack->inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+    vkWaitForFences(vkStack->device->vkDevice, 1, &vkStack->inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(
-        vkStack->device, vkStack->swapChain, UINT64_MAX, vkStack->imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+        vkStack->device->vkDevice, vkStack->swapChain, UINT64_MAX, vkStack->imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         vkStack->recreateSwapChain();
@@ -220,7 +220,7 @@ void App::drawFrame() {
 
     updateUniformBuffer(currentFrame);
 
-    vkResetFences(vkStack->device, 1, &vkStack->inFlightFences[currentFrame]);
+    vkResetFences(vkStack->device->vkDevice, 1, &vkStack->inFlightFences[currentFrame]);
 
     vkResetCommandBuffer(vkStack->commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
     recordCommandBuffer(vkStack->commandBuffers[currentFrame], imageIndex);

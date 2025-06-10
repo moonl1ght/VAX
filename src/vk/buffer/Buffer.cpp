@@ -1,49 +1,37 @@
 #include "Buffer.hpp"
 
-uint32_t findMemoryType(VKStack *vkStack, uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(vkStack->physicalDevice, &memProperties);
-
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-            return i;
-        }
-    }
-
-    throw std::runtime_error("failed to find suitable memory type!");
-}
-
 Buffer::Buffer(
-    VKStack *vkStack,
+    VKStack* vkStack,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
-    VkMemoryPropertyFlags properties)
-    : device(vkStack->device)
-    , size(size) {
+    VkMemoryPropertyFlags properties
+)
+    : device(vkStack->device->vkDevice), size(size)
+{
     VkBufferCreateInfo bufferInfo{};
-    
+
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateBuffer(vkStack->device, &bufferInfo, nullptr, &vkBuffer) != VK_SUCCESS) {
+    if (vkCreateBuffer(vkStack->device->vkDevice, &bufferInfo, nullptr, &vkBuffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to create buffer!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(vkStack->device, vkBuffer, &memRequirements);
+    vkGetBufferMemoryRequirements(vkStack->device->vkDevice, vkBuffer, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(vkStack, memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = VKUtils::findMemoryType(vkStack->device->vkPhysicalDevice, memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(vkStack->device, &allocInfo, nullptr, &vkBufferMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(vkStack->device->vkDevice, &allocInfo, nullptr, &vkBufferMemory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate buffer memory!");
     }
 
-    vkBindBufferMemory(vkStack->device, vkBuffer, vkBufferMemory, 0);
+    vkBindBufferMemory(vkStack->device->vkDevice, vkBuffer, vkBufferMemory, 0);
 }
 
 Buffer::~Buffer() {
@@ -51,14 +39,14 @@ Buffer::~Buffer() {
     vkFreeMemory(device, vkBufferMemory, nullptr);
 }
 
-void Buffer::fill(const void *fillData) {
-    void *data;
+void Buffer::fill(const void* fillData) {
+    void* data;
     vkMapMemory(device, vkBufferMemory, 0, size, 0, &data);
     memcpy(data, fillData, (size_t)size);
     vkUnmapMemory(device, vkBufferMemory);
 }
 
-void Buffer::copyBufferTo(VKStack *vkStack, Buffer &dstBuffer, VkDeviceSize size) {
+void Buffer::copyBufferTo(VKStack* vkStack, Buffer& dstBuffer, VkDeviceSize size) {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -66,7 +54,7 @@ void Buffer::copyBufferTo(VKStack *vkStack, Buffer &dstBuffer, VkDeviceSize size
     allocInfo.commandBufferCount = 1;
 
     VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(vkStack->device, &allocInfo, &commandBuffer);
+    vkAllocateCommandBuffers(vkStack->device->vkDevice, &allocInfo, &commandBuffer);
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -88,5 +76,5 @@ void Buffer::copyBufferTo(VKStack *vkStack, Buffer &dstBuffer, VkDeviceSize size
     vkQueueSubmit(vkStack->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(vkStack->graphicsQueue);
 
-    vkFreeCommandBuffers(vkStack->device, vkStack->commandPool, 1, &commandBuffer);
+    vkFreeCommandBuffers(vkStack->device->vkDevice, vkStack->commandPool, 1, &commandBuffer);
 }

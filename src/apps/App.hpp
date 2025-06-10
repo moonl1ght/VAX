@@ -6,7 +6,9 @@
 #include "Primitives2D.hpp"
 #include "luna.h"
 #include "Buffer.hpp"
+#include "Sampler.hpp"
 #include "../shaders/VertexUniforms.h"
+#include "TextureLoader.hpp"
 
 class App {
 public:
