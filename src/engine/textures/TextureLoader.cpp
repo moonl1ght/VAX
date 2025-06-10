@@ -1,4 +1,6 @@
 #include "TextureLoader.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include "./deps/stb_image.h"
 
 void transitionImageLayout(
     VKStack* vkStack, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout

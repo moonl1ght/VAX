@@ -5,8 +5,6 @@
 
 #include "Buffer.hpp"
 #include "luna.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "./deps/stb_image.h"
 #include "VKUtils.hpp"
 #include "Texture.hpp"
 
