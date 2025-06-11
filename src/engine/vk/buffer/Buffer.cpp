@@ -6,7 +6,7 @@ Buffer::Buffer(
     VkBufferUsageFlags usage,
     VkMemoryPropertyFlags properties
 )
-    : device(vkStack->device->vkDevice), size(size)
+    : _device(vkStack->device->vkDevice), size(size)
 {
     VkBufferCreateInfo bufferInfo{};
 
@@ -35,15 +35,15 @@ Buffer::Buffer(
 }
 
 Buffer::~Buffer() {
-    vkDestroyBuffer(device, vkBuffer, nullptr);
-    vkFreeMemory(device, vkBufferMemory, nullptr);
+    vkDestroyBuffer(_device, vkBuffer, nullptr);
+    vkFreeMemory(_device, vkBufferMemory, nullptr);
 }
 
 void Buffer::fill(const void* fillData) {
     void* data;
-    vkMapMemory(device, vkBufferMemory, 0, size, 0, &data);
+    vkMapMemory(_device, vkBufferMemory, 0, size, 0, &data);
     memcpy(data, fillData, (size_t)size);
-    vkUnmapMemory(device, vkBufferMemory);
+    vkUnmapMemory(_device, vkBufferMemory);
 }
 
 void Buffer::copyBufferTo(VKStack* vkStack, Buffer& dstBuffer, VkDeviceSize size) {

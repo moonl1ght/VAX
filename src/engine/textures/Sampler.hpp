@@ -10,7 +10,7 @@ class Sampler final {
 public:
     VkSampler vkSampler;
 
-    static std::optional<Sampler> createSampler(vax::Device* device) {
+    static std::optional<std::unique_ptr<Sampler>> createSampler(vax::Device* device) {
         VkPhysicalDeviceProperties properties{};
         vkGetPhysicalDeviceProperties(device->vkPhysicalDevice, &properties);
 
@@ -35,31 +35,34 @@ public:
             std::cerr << "failed to create texture sampler!" << std::endl;
             return std::nullopt;
         }
-        return Sampler(vkSampler);
+        return std::make_unique<Sampler>(vkSampler, device);
     }
 
-    Sampler(VkSampler vkSampler) : vkSampler(vkSampler) {}
+    Sampler(VkSampler vkSampler, vax::Device* device) : vkSampler(vkSampler), _device(device) {}
     Sampler(const Sampler& other) = delete;
     Sampler(Sampler&& other) {
-        if (this != &other) {
-            vkSampler = other.vkSampler;
-            device = other.device;
-        }
+        std::swap(vkSampler, other.vkSampler);
+        std::swap(_device, other._device);
     }
 
     Sampler& operator=(const Sampler& other) = delete;
     Sampler& operator=(Sampler&& other) {
         if (this != &other) {
+            if (vkSampler != VK_NULL_HANDLE) {
+                vkDestroySampler(_device->vkDevice, vkSampler, nullptr);
+                vkSampler = VK_NULL_HANDLE;
+            }
+            _device = other._device;
             std::swap(vkSampler, other.vkSampler);
-            std::swap(device, other.device);
+            other._device = VK_NULL_HANDLE;
         }
         return *this;
     }
 
-    ~Sampler() { vkDestroySampler(device->vkDevice, vkSampler, nullptr); }
+    ~Sampler() { vkDestroySampler(_device->vkDevice, vkSampler, nullptr); }
 
 private:
-    vax::Device* device;
+    vax::Device* _device;
 };
 
 #endif

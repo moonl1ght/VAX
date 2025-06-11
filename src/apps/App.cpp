@@ -1,7 +1,7 @@
 #include "App.hpp"
 
-static void framebufferResizeCallback(GLFWwindow *window, int width, int height) {
-    auto app = reinterpret_cast<App *>(glfwGetWindowUserPointer(window));
+static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+    auto app = reinterpret_cast<App*>(glfwGetWindowUserPointer(window));
     app->framebufferResized = true;
 }
 
@@ -15,6 +15,7 @@ void App::run() {
     // std::cout << "--->>> did createDescriptorSets" << std::endl;
     mesh = Primitives2D::createPlane();
     mesh->prepareForRender(vkStack);
+    texture = TextureLoader::loadTexture(vkStack, RES_PATH("images/texture.jpg"));
 
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
@@ -26,7 +27,8 @@ void App::run() {
             vkStack,
             bufferSize,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        );
 
         vkMapMemory(vkStack->device->vkDevice, uniformBuffers[i]->vkBufferMemory, 0, bufferSize, 0, &uniformBuffersMapped[i]);
         // uniformBuffers[i]->fill(uniformBuffersMapped[i]);
@@ -58,6 +60,9 @@ void App::cleanup() {
     mesh->cleanup(vkStack);
     delete mesh;
     mesh = nullptr;
+
+    delete texture;
+    texture = nullptr;
 
     for (size_t i = 0; i < vkStack->MAX_FRAMES_IN_FLIGHT; i++) {
         delete uniformBuffers[i];
@@ -101,19 +106,36 @@ void App::createDescriptorSets() {
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
-        VkWriteDescriptorSet descriptorWrite{};
-        descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        // std::cout << "createDescriptorSets loop 3" << std::endl;
-        descriptorWrite.dstSet = descriptorSets[i];
-        // std::cout << "createDescriptorSets loop 4" << std::endl;
-        descriptorWrite.dstBinding = 0;
-        descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrite.descriptorCount = 1;
-        descriptorWrite.pBufferInfo = &bufferInfo;
+        VkDescriptorImageInfo imageInfo{};
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = texture->textureImageView;
+        imageInfo.sampler = texture->sampler->vkSampler;
 
-        // std::cout << "vkUpdateDescriptorSets" << std::endl;
-        vkUpdateDescriptorSets(vkStack->device->vkDevice, 1, &descriptorWrite, 0, nullptr);
+        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+
+        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[0].dstSet = descriptorSets[i];
+        descriptorWrites[0].dstBinding = 0;
+        descriptorWrites[0].dstArrayElement = 0;
+        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[0].descriptorCount = 1;
+        descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[1].dstSet = descriptorSets[i];
+        descriptorWrites[1].dstBinding = 1;
+        descriptorWrites[1].dstArrayElement = 0;
+        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrites[1].descriptorCount = 1;
+        descriptorWrites[1].pImageInfo = &imageInfo;
+
+        vkUpdateDescriptorSets(
+            vkStack->device->vkDevice,
+            static_cast<uint32_t>(descriptorWrites.size()),
+            descriptorWrites.data(),
+            0,
+            nullptr
+        );
     }
     // std::cout << "createDescriptorSets end" << std::endl;
 }
@@ -158,10 +180,10 @@ void App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = vkStack->renderPass;
     renderPassInfo.framebuffer = vkStack->swapChainFramebuffers[imageIndex];
-    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = vkStack->swapChainExtent;
 
-    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
@@ -179,13 +201,13 @@ void App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
     VkRect2D scissor{};
-    scissor.offset = {0, 0};
+    scissor.offset = { 0, 0 };
     scissor.extent = vkStack->swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     // std::cout << "--->> draw mesh" << std::endl;
-    VkBuffer vertexBuffers[] = {mesh->vertexBuffer->vkBuffer};
-    VkDeviceSize offsets[] = {0};
+    VkBuffer vertexBuffers[] = { mesh->vertexBuffer->vkBuffer };
+    VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
     vkCmdBindIndexBuffer(commandBuffer, mesh->indexBuffer->vkBuffer, 0, VK_INDEX_TYPE_UINT16);
@@ -214,7 +236,8 @@ void App::drawFrame() {
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         vkStack->recreateSwapChain();
         return;
-    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+    }
+    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
@@ -228,8 +251,8 @@ void App::drawFrame() {
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {vkStack->imageAvailableSemaphores[currentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    VkSemaphore waitSemaphores[] = { vkStack->imageAvailableSemaphores[currentFrame] };
+    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
@@ -237,7 +260,7 @@ void App::drawFrame() {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &vkStack->commandBuffers[currentFrame];
 
-    VkSemaphore signalSemaphores[] = {vkStack->renderFinishedSemaphores[currentFrame]};
+    VkSemaphore signalSemaphores[] = { vkStack->renderFinishedSemaphores[currentFrame] };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -251,7 +274,7 @@ void App::drawFrame() {
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    VkSwapchainKHR swapChains[] = {vkStack->swapChain};
+    VkSwapchainKHR swapChains[] = { vkStack->swapChain };
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
 
@@ -262,7 +285,8 @@ void App::drawFrame() {
         framebufferResized = false;
         vkStack->recreateSwapChain();
         return;
-    } else if (result != VK_SUCCESS) {
+    }
+    else if (result != VK_SUCCESS) {
         throw std::runtime_error("failed to present swap chain image!");
     }
 

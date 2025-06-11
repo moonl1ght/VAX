@@ -187,5 +187,8 @@ Texture* TextureLoader::loadTexture(VKStack* vkStack, std::string path, bool isA
     if (isAutoLoadImageView) {
         texture->loadImageView();
     }
+    if (auto sampler = Sampler::createSampler(vkStack->device)) {
+        texture->sampler = std::move(*sampler);
+    }
     return texture;
 }

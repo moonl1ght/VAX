@@ -17,7 +17,8 @@ public:
     Mesh() {};
     ~Mesh() {};
 
-    void prepareForRender(VKStack *vkStack);
-    void cleanup(VKStack *vkStack);
+    void prepareForRender(VKStack* vkStack);
+    void cleanup(VKStack* vkStack);
 };
+
 #endif

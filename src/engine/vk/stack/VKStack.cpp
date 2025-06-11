@@ -2,19 +2,20 @@
 
 VkResult CreateDebugUtilsMessengerEXT(
     VkInstance instance,
-    const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-    const VkAllocationCallbacks *pAllocator,
-    VkDebugUtilsMessengerEXT *pDebugMessenger) {
+    const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+    const VkAllocationCallbacks* pAllocator,
+    VkDebugUtilsMessengerEXT* pDebugMessenger) {
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-    } else {
+    }
+    else {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     }
 }
 
 void DestroyDebugUtilsMessengerEXT(
-    VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks *pAllocator) {
+    VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debugMessenger, pAllocator);
@@ -22,7 +23,7 @@ void DestroyDebugUtilsMessengerEXT(
 }
 
 void validationLayersDestroyDebugUtilsMessengerEXT(
-    VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks *pAllocator) {
+    VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debugMessenger, pAllocator);
@@ -134,8 +135,9 @@ void VKStack::createInstance() {
         createInfo.ppEnabledLayerNames = validationLayers.data();
 
         populateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *)&debugCreateInfo;
-    } else {
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+    }
+    else {
         createInfo.enabledLayerCount = 0;
 
         createInfo.pNext = nullptr;
@@ -153,10 +155,10 @@ bool VKStack::checkValidationLayerSupport() {
     std::vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-    for (const char *layerName : validationLayers) {
+    for (const char* layerName : validationLayers) {
         bool layerFound = false;
 
-        for (const auto &layerProperties : availableLayers) {
+        for (const auto& layerProperties : availableLayers) {
             if (strcmp(layerName, layerProperties.layerName) == 0) {
                 layerFound = true;
                 break;
@@ -171,12 +173,12 @@ bool VKStack::checkValidationLayerSupport() {
     return true;
 }
 
-std::vector<const char *> VKStack::getRequiredExtensions() {
+std::vector<const char*> VKStack::getRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
-    const char **glfwExtensions;
+    const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-    std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
     if (enableValidationLayers) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -188,7 +190,7 @@ std::vector<const char *> VKStack::getRequiredExtensions() {
     return extensions;
 }
 
-void VKStack::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
+void VKStack::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -214,8 +216,8 @@ void VKStack::createSurface() {
     }
 }
 
-VkSurfaceFormatKHR VKStack::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
-    for (const auto &availableFormat : availableFormats) {
+VkSurfaceFormatKHR VKStack::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+    for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return availableFormat;
         }
@@ -224,8 +226,8 @@ VkSurfaceFormatKHR VKStack::chooseSwapSurfaceFormat(const std::vector<VkSurfaceF
     return availableFormats[0];
 }
 
-VkPresentModeKHR VKStack::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
-    for (const auto &availablePresentMode : availablePresentModes) {
+VkPresentModeKHR VKStack::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+    for (const auto& availablePresentMode : availablePresentModes) {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
             return availablePresentMode;
         }
@@ -234,16 +236,17 @@ VkPresentModeKHR VKStack::chooseSwapPresentMode(const std::vector<VkPresentModeK
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D VKStack::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+VkExtent2D VKStack::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
-    } else {
+    }
+    else {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
 
         VkExtent2D actualExtent = {
             static_cast<uint32_t>(width),
-            static_cast<uint32_t>(height)};
+            static_cast<uint32_t>(height) };
 
         actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
         actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
@@ -276,13 +279,14 @@ void VKStack::createSwapChain() {
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     VKUtils::QueueFamilyIndices indices = VKUtils::findQueueFamilies(device->vkPhysicalDevice, surface);
-    uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+    uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
     if (indices.graphicsFamily != indices.presentFamily) {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;
         createInfo.pQueueFamilyIndices = queueFamilyIndices;
-    } else {
+    }
+    else {
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.queueFamilyIndexCount = 0;     // Optional
         createInfo.pQueueFamilyIndices = nullptr; // Optional
@@ -308,14 +312,16 @@ void VKStack::createSwapChain() {
 }
 
 void VKStack::createDescriptorPool() {
-    VkDescriptorPoolSize poolSize{};
-    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    std::array<VkDescriptorPoolSize, 2> poolSizes{};
+    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = 1;
-    poolInfo.pPoolSizes = &poolSize;
+    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+    poolInfo.pPoolSizes = poolSizes.data();
     poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
     if (vkCreateDescriptorPool(device->vkDevice, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
@@ -333,8 +339,8 @@ void VKStack::createImageViews() {
 
 void VKStack::createGraphicsPipeline() {
     std::cout << PROJ_DIR << std::endl;
-    auto vertShaderCode = readFile(SRC_PATH("shaders/out/shader.vert.spv"));
-    auto fragShaderCode = readFile(SRC_PATH("shaders/out/shader.frag.spv"));
+    auto vertShaderCode = readFile(SRC_PATH("engine/shaders/out/shader.vert.spv"));
+    auto fragShaderCode = readFile(SRC_PATH("engine/shaders/out/shader.frag.spv"));
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -351,7 +357,7 @@ void VKStack::createGraphicsPipeline() {
     fragShaderStageInfo.module = fragShaderModule;
     fragShaderStageInfo.pName = "main";
 
-    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+    VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 
@@ -408,7 +414,7 @@ void VKStack::createGraphicsPipeline() {
 
     std::vector<VkDynamicState> dynamicStates = {
         VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR};
+        VK_DYNAMIC_STATE_SCISSOR };
     VkPipelineDynamicStateCreateInfo dynamicState{};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
@@ -421,10 +427,19 @@ void VKStack::createGraphicsPipeline() {
     uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
+    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+    samplerLayoutBinding.binding = 1;
+    samplerLayoutBinding.descriptorCount = 1;
+    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    samplerLayoutBinding.pImmutableSamplers = nullptr;
+    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = 1;
-    layoutInfo.pBindings = &uboLayoutBinding;
+    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+    layoutInfo.pBindings = bindings.data();
 
     if (vkCreateDescriptorSetLayout(device->vkDevice, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor set layout!");
@@ -463,11 +478,11 @@ void VKStack::createGraphicsPipeline() {
     vkDestroyShaderModule(device->vkDevice, vertShaderModule, nullptr);
 }
 
-VkShaderModule VKStack::createShaderModule(const std::vector<char> &code) {
+VkShaderModule VKStack::createShaderModule(const std::vector<char>& code) {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
     VkShaderModule shaderModule;
     if (vkCreateShaderModule(device->vkDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
@@ -477,7 +492,7 @@ VkShaderModule VKStack::createShaderModule(const std::vector<char> &code) {
     return shaderModule;
 }
 
-std::vector<char> VKStack::readFile(const std::string &filename) {
+std::vector<char> VKStack::readFile(const std::string& filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
@@ -542,7 +557,7 @@ void VKStack::createFramebuffers() {
 
     for (size_t i = 0; i < swapChainImageViews.size(); i++) {
         VkImageView attachments[] = {
-            swapChainImageViews[i]};
+            swapChainImageViews[i] };
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

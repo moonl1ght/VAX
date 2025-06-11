@@ -20,6 +20,7 @@ public:
     virtual void run();
 
 protected:
+    Texture* texture = nullptr;
 
     Mesh* mesh;
     GLFWwindow *window = nullptr;
