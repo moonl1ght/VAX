@@ -1,7 +1,9 @@
 #ifndef Renderer_hpp
 #define Renderer_hpp
 
-#include <iostream>
+#include "luna.h"
+#include "VKStack.hpp"
+#include "DescriptorSetManager.hpp"
 
 class Renderer {
 public:

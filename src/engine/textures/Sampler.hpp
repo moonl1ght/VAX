@@ -30,9 +30,8 @@ public:
         samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
         VkSampler vkSampler;
-        if (vkCreateSampler(device->vkDevice, &samplerInfo, nullptr, &vkSampler) !=
-            VK_SUCCESS) {
-            std::cerr << "failed to create texture sampler!" << std::endl;
+        if (vkCreateSampler(device->vkDevice, &samplerInfo, nullptr, &vkSampler) != VK_SUCCESS) {
+            Logger::getInstance().error("failed to create texture sampler!");
             return std::nullopt;
         }
         return std::make_unique<Sampler>(vkSampler, device);
@@ -40,13 +39,13 @@ public:
 
     Sampler(VkSampler vkSampler, vax::Device* device) : vkSampler(vkSampler), _device(device) {}
     Sampler(const Sampler& other) = delete;
-    Sampler(Sampler&& other) {
+    Sampler(Sampler&& other) noexcept {
         std::swap(vkSampler, other.vkSampler);
         std::swap(_device, other._device);
     }
 
     Sampler& operator=(const Sampler& other) = delete;
-    Sampler& operator=(Sampler&& other) {
+    Sampler& operator=(Sampler&& other) noexcept {
         if (this != &other) {
             if (vkSampler != VK_NULL_HANDLE) {
                 vkDestroySampler(_device->vkDevice, vkSampler, nullptr);

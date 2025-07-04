@@ -1,3 +1,6 @@
+#ifndef VertexUniforms_h
+#define VertexUniforms_h
+
 #ifdef __cplusplus
 
 #include <glm/glm.hpp>
@@ -13,3 +16,5 @@ struct UniformBufferObject {
     mat4 view;
     mat4 proj;
 };
+
+#endif  // VertexUniforms_h

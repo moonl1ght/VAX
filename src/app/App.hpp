@@ -3,28 +3,34 @@
 
 #include "Renderer.hpp"
 #include "VKStack.hpp"
+// #include "DescriptorSetManager.hpp"
+// #include "PipelineManager.hpp"
 #include "Primitives2D.hpp"
 #include "luna.h"
 #include "Buffer.hpp"
 #include "Sampler.hpp"
 #include "../shaders/VertexUniforms.h"
 #include "TextureLoader.hpp"
+#include "Logger.hpp"
 
-class App {
+class App final {
 public:
     bool framebufferResized = false;
 
     App() { renderer = Renderer(); };
-    virtual ~App() {};
+    ~App() {};
 
-    virtual void run();
+    void run();
 
 protected:
+    GLFWwindow* window = nullptr;
+    VKStack* vkStack = nullptr;
+    // DescriptorSetManager* descriptorSetManager = nullptr;
+    // PipelineManager* pipelineManager = nullptr;
+
     Texture* texture = nullptr;
 
     Mesh* mesh;
-    GLFWwindow *window = nullptr;
-    VKStack *vkStack = nullptr;
     Renderer renderer;
 
     std::vector<Buffer*> uniformBuffers;
@@ -32,9 +38,10 @@ protected:
 
     std::vector<VkDescriptorSet> descriptorSets;
 
-    virtual void initWindow();
-    virtual void mainLoop();
-    virtual void cleanup();
+    void setup();
+    void initWindow();
+    void mainLoop();
+    void cleanup();
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
     void drawFrame();
     void updateUniformBuffer(uint32_t currentImage);

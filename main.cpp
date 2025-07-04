@@ -9,7 +9,7 @@
 #include <vulkan/vulkan.h>
 #include <nlohmann/json.hpp>
 
-#include "src/apps/SimpleApp.hpp"
+#include "src/app/App.hpp"
 
 #include <thread>
 #include <functional>
@@ -103,20 +103,12 @@ void main2() {
 }
 
 int main() {
-    // main2();
-    // std::thread t1(task1);
-    // std::thread t2(task2);
-
-    // std::cout << "join Task 1\n";
-    // t1.join();
-    // std::cout << "join Task 2\n";
-    // t2.join();
-    std::cout << "run main" << std::endl;
-    SimpleApp app = SimpleApp();
+    Logger::getInstance().log("Run application");
+    App app = App();
     try {
         app.run();
     } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        Logger::getInstance().error(e.what());
         return EXIT_FAILURE;
     }
 

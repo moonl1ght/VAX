@@ -6,15 +6,11 @@ static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 }
 
 void App::run() {
-    // std::cout << "--->>> will run" << std::endl;
     initWindow();
     vkStack = new VKStack(window);
-    // std::cout << "--->>> setup" << std::endl;
     vkStack->setup();
-    // std::cout << "--->>> createDescriptorSets" << std::endl;
-    // std::cout << "--->>> did createDescriptorSets" << std::endl;
     mesh = Primitives2D::createPlane();
-    mesh->prepareForRender(vkStack);
+    mesh->loadBuffers(vkStack);
     texture = TextureLoader::loadTexture(vkStack, RES_PATH("images/texture.jpg"));
 
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
@@ -25,6 +21,7 @@ void App::run() {
     for (size_t i = 0; i < vkStack->MAX_FRAMES_IN_FLIGHT; i++) {
         uniformBuffers[i] = new Buffer(
             vkStack,
+            nullptr,
             bufferSize,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -39,6 +36,16 @@ void App::run() {
     std::cout << "--->>> main loop" << std::endl;
     mainLoop();
     cleanup();
+}
+
+void App::setup() {
+    initWindow();
+    vkStack = new VKStack(window);
+    vkStack->setup();
+    // descriptorSetManager = new DescriptorSetManager(vkStack);
+    // descriptorSetManager->initialize();
+    // pipelineManager = new PipelineManager(vkStack, descriptorSetManager);
+    // pipelineManager->initialize();
 }
 
 void App::initWindow() {
@@ -57,7 +64,6 @@ void App::initWindow() {
 void App::cleanup() {
     std::cout << "Cleaning up..." << std::endl;
 
-    mesh->cleanup(vkStack);
     delete mesh;
     mesh = nullptr;
 
@@ -169,6 +175,7 @@ void App::mainLoop() {
 uint32_t currentFrame = 0;
 
 void App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+    // Logger::getInstance().debugPrint("recordCommandBuffer");
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -206,11 +213,11 @@ void App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     // std::cout << "--->> draw mesh" << std::endl;
-    VkBuffer vertexBuffers[] = { mesh->vertexBuffer->vkBuffer };
+    VkBuffer vertexBuffers[] = { mesh->vertexBuffer.vkBuffer };
     VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-    vkCmdBindIndexBuffer(commandBuffer, mesh->indexBuffer->vkBuffer, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindIndexBuffer(commandBuffer, mesh->indexBuffer.vkBuffer, 0, VK_INDEX_TYPE_UINT16);
 
     // vkCmdDraw(commandBuffer, static_cast<uint32_t>(mesh->vertices.size()), 1, 0, 0);
     vkCmdBindDescriptorSets(

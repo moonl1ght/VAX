@@ -9,19 +9,22 @@
 
 class Buffer final {
 public:
-    VkBuffer vkBuffer;
-    VkDeviceMemory vkBufferMemory;
-    VkDeviceSize size;
+    VkBuffer vkBuffer = VK_NULL_HANDLE;
+    VkDeviceMemory vkBufferMemory = VK_NULL_HANDLE;
+    VkDeviceSize size = 0;
+
+    Buffer() {}
 
     Buffer(
         VKStack* vkStack,
+        const void* data,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
         VkMemoryPropertyFlags properties
     );
 
     Buffer(const Buffer& other) = delete;
-    Buffer(Buffer&& other) {
+    Buffer(Buffer&& other) noexcept {
         std::swap(vkBuffer, other.vkBuffer);
         std::swap(vkBufferMemory, other.vkBufferMemory);
         std::swap(size, other.size);
@@ -29,8 +32,8 @@ public:
     }
     ~Buffer();
 
-    Buffer& operator=(Buffer& other) = delete;
-    Buffer& operator=(Buffer&& other) {
+    Buffer& operator=(const Buffer& other) = delete;
+    Buffer& operator=(Buffer&& other) noexcept {
         if (this != &other) {
             if (vkBuffer != VK_NULL_HANDLE) {
                 vkDestroyBuffer(_device, vkBuffer, nullptr);
@@ -49,14 +52,38 @@ public:
             other.size = 0;
             other._device = VK_NULL_HANDLE;
         }
-        return *this;   
+        return *this;
     }
 
+    void load(
+        VKStack* vkStack,
+        const void* data,
+        VkDeviceSize size,
+        VkBufferUsageFlags usage,
+        VkMemoryPropertyFlags properties
+    );
+    void reload(
+        VKStack* vkStack,
+        const void* data,
+        VkDeviceSize size,
+        VkBufferUsageFlags usage,
+        VkMemoryPropertyFlags properties
+    );
     void fill(const void* fillData);
-    void copyBufferTo(VKStack* vkStack, Buffer& dstBuffer, VkDeviceSize size);
+    void copyBufferTo(VKStack* vkStack, Buffer& dstBuffer, VkDeviceSize size) const;
+    bool isEmpty() const;
+    bool isLoaded() const;
 
 private:
     VkDevice _device;
+
+    void load(
+        VKStack* vkStack,
+        VkBufferUsageFlags usage,
+        VkMemoryPropertyFlags properties
+    );
+
+    void cleanup();
 };
 
 #endif

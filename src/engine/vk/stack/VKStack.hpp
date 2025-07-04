@@ -9,16 +9,17 @@
 
 class VKStack {
 public:
-    VKStack(GLFWwindow *window) : window(window) {};
+    VKStack(GLFWwindow* window) : window(window) {};
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
 
     const bool enableValidationLayers = true;
-    const std::vector<const char *> validationLayers = {
-        "VK_LAYER_KHRONOS_validation"};
+    const std::vector<const char*> validationLayers = {
+        "VK_LAYER_KHRONOS_validation"
+    };
 
     VkImageView textureImageView;
-    GLFWwindow *window;
+    GLFWwindow* window;
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkSurfaceKHR surface;
@@ -62,8 +63,8 @@ protected:
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-        void *pUserData) {
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+        void* pUserData) {
         std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
         return VK_FALSE;
@@ -71,18 +72,18 @@ protected:
 
     void createInstance();
     bool checkValidationLayerSupport();
-    std::vector<const char *> getRequiredExtensions();
-    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
+    std::vector<const char*> getRequiredExtensions();
+    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
     void setupDebugMessenger();
     void createSurface();
-    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
-    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
-    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
     void createSwapChain();
     void createImageViews();
     void createGraphicsPipeline();
-    VkShaderModule createShaderModule(const std::vector<char> &code);
-    static std::vector<char> readFile(const std::string &filename);
+    VkShaderModule createShaderModule(const std::vector<char>& code);
+    static std::vector<char> readFile(const std::string& filename);
     void createRenderPass();
     void createFramebuffers();
     void createCommandPool();

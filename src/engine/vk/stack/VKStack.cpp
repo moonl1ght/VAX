@@ -67,7 +67,6 @@ void VKStack::cleanup() {
     vkDestroyPipeline(device->vkDevice, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device->vkDevice, pipelineLayout, nullptr);
     vkDestroyRenderPass(device->vkDevice, renderPass, nullptr);
-    ;
 
     if (enableValidationLayers) {
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
@@ -557,7 +556,8 @@ void VKStack::createFramebuffers() {
 
     for (size_t i = 0; i < swapChainImageViews.size(); i++) {
         VkImageView attachments[] = {
-            swapChainImageViews[i] };
+            swapChainImageViews[i]
+        };
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

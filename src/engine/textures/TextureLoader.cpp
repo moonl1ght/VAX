@@ -137,12 +137,11 @@ Texture* TextureLoader::loadTexture(VKStack* vkStack, std::string path, bool isA
 
     Buffer stagingBuffer = Buffer(
         vkStack,
+        pixels,
         imageSize,
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
     );
-
-    stagingBuffer.fill(pixels);
 
     stbi_image_free(pixels);
 
@@ -183,7 +182,13 @@ Texture* TextureLoader::loadTexture(VKStack* vkStack, std::string path, bool isA
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     );
 
-    auto texture = new Texture(vkStack->device->vkDevice, textureImage, imageSize, vax::Size(texWidth, texHeight));
+    auto texture = new Texture(
+        vkStack->device->vkDevice,
+        textureImage,
+        textureImageMemory,
+        imageSize,
+        vax::Size(texWidth, texHeight)
+    );
     if (isAutoLoadImageView) {
         texture->loadImageView();
     }
