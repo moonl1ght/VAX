@@ -36,14 +36,9 @@ public:
     std::vector<VkImageView> swapChainImageViews;
     std::vector<VkFramebuffer> swapChainFramebuffers;
 
-    VkDescriptorSetLayout descriptorSetLayout;
-    VkPipelineLayout pipelineLayout;
     VkRenderPass renderPass;
-    VkPipeline graphicsPipeline;
 
     VkCommandPool commandPool;
-
-    VkDescriptorPool descriptorPool;
 
     std::vector<VkCommandBuffer> commandBuffers;
 
@@ -81,15 +76,11 @@ protected:
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
     void createSwapChain();
     void createImageViews();
-    void createGraphicsPipeline();
-    VkShaderModule createShaderModule(const std::vector<char>& code);
-    static std::vector<char> readFile(const std::string& filename);
     void createRenderPass();
     void createFramebuffers();
     void createCommandPool();
     void createCommandBuffer();
     void createSyncObjects();
-    void createDescriptorPool();
 };
 
 #endif

@@ -3,8 +3,8 @@
 
 #include "Renderer.hpp"
 #include "VKStack.hpp"
-// #include "DescriptorSetManager.hpp"
-// #include "PipelineManager.hpp"
+#include "DescriptorSetManager.hpp"
+#include "PipelineManager.hpp"
 #include "Primitives2D.hpp"
 #include "luna.h"
 #include "Buffer.hpp"
@@ -23,10 +23,10 @@ public:
     void run();
 
 protected:
-    GLFWwindow* window = nullptr;
-    VKStack* vkStack = nullptr;
-    // DescriptorSetManager* descriptorSetManager = nullptr;
-    // PipelineManager* pipelineManager = nullptr;
+    GLFWwindow* _window = nullptr;
+    VKStack* _vkStack = nullptr;
+    DescriptorSetManager* _descriptorSetManager = nullptr;
+    PipelineManager* _pipelineManager = nullptr;
 
     Texture* texture = nullptr;
 
@@ -36,7 +36,7 @@ protected:
     std::vector<Buffer*> uniformBuffers;
     std::vector<void*> uniformBuffersMapped;
 
-    std::vector<VkDescriptorSet> descriptorSets;
+    // std::vector<VkDescriptorSet> descriptorSets;
 
     void setup();
     void initWindow();
@@ -45,7 +45,7 @@ protected:
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
     void drawFrame();
     void updateUniformBuffer(uint32_t currentImage);
-    void createDescriptorSets();
+    // void createDescriptorSets();
 };
 
 #endif

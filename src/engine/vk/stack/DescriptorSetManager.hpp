@@ -37,6 +37,7 @@ private:
 
     bool createGlobalDescriptorSetLayout();
     bool createObjectDescriptorSetLayout();
+    void createDescriptorPool();
 };
 
 #endif // DescriptorSetManager_hpp

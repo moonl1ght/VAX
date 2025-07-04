@@ -17,6 +17,7 @@ public:
 
     bool initialize();
     VkPipeline getPipeline() const { return _pipeline; }
+    VkPipelineLayout getPipelineLayout() const { return _pipelineLayout; }
 
 private:
     VKStack* _vkStack;
