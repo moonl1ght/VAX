@@ -131,6 +131,7 @@ void Buffer::load(
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
     if (vkCreateBuffer(vkStack->device->vkDevice, &bufferInfo, nullptr, &vkBuffer) != VK_SUCCESS) {
+        Logger::getInstance().error("failed to create buffer!");
         throw std::runtime_error("failed to create buffer!");
     }
 
@@ -143,6 +144,7 @@ void Buffer::load(
     allocInfo.memoryTypeIndex = VKUtils::findMemoryType(vkStack->device->vkPhysicalDevice, memRequirements.memoryTypeBits, properties);
 
     if (vkAllocateMemory(vkStack->device->vkDevice, &allocInfo, nullptr, &vkBufferMemory) != VK_SUCCESS) {
+        Logger::getInstance().error("failed to allocate buffer memory!");
         throw std::runtime_error("failed to allocate buffer memory!");
     }
 

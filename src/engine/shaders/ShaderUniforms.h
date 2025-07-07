@@ -1,5 +1,5 @@
-#ifndef VertexUniforms_h
-#define VertexUniforms_h
+#ifndef ShaderUniforms_h
+#define ShaderUniforms_h
 
 #ifdef __cplusplus
 
@@ -17,4 +17,8 @@ struct UniformBufferObject {
     mat4 proj;
 };
 
-#endif  // VertexUniforms_h
+struct ObjectUniforms {
+    mat4 model;
+};
+
+#endif  // ShaderUniforms_h

@@ -6,8 +6,24 @@
 #include "VKStack.hpp"
 #include "Buffer.hpp"
 #include "Texture.hpp"
-#include "VertexUniforms.h"
+#include "ShaderUniforms.h"
 
+class DescriptorWriter {
+public:
+    DescriptorWriter() {}
+    ~DescriptorWriter() {}
+
+    void writeBuffer(Buffer* buffer, uint32_t binding, uint32_t offset = 0);
+    void writeTexture(Texture* texture, uint32_t binding, uint32_t offset = 0);
+
+    void updateSet(VkDevice device, VkDescriptorSet descriptorSet);
+    void clear();
+
+private:
+    std::vector<VkWriteDescriptorSet> _writes;
+    std::vector<VkDescriptorBufferInfo> _bufferInfos;
+    std::vector<VkDescriptorImageInfo> _imageInfos;
+};
 
 class DescriptorSetManager {
 public:
@@ -21,6 +37,7 @@ public:
     std::optional<VkDescriptorSet> getGlobalDescriptorSet(
         uint32_t frameIndex, Buffer* uniformBuffer, Texture* texture
     );
+    std::optional<VkDescriptorSet> getObjectDescriptorSet(uint32_t frameIndex);
 
     VkDescriptorSetLayout getGlobalDescriptorSetLayout() const { return _globalDescriptorSetLayout; }
     VkDescriptorSetLayout getObjectDescriptorSetLayout() const { return _objectDescriptorSetLayout; }
@@ -34,10 +51,11 @@ private:
     VkDescriptorPool _descriptorPool = VK_NULL_HANDLE;
 
     std::vector<VkDescriptorSet> _globalDescriptorSets;
+    std::vector<VkDescriptorSet> _objectDescriptorSets;
 
     bool createGlobalDescriptorSetLayout();
     bool createObjectDescriptorSetLayout();
-    void createDescriptorPool();
+    bool createDescriptorPool();
 };
 
 #endif // DescriptorSetManager_hpp

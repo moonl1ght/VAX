@@ -3,14 +3,13 @@
 
 #include "luna.h"
 #include "Transform.hpp"
-#include "Mesh.hpp"
 
 class Model {
 public:
     Transform transform;
 
-    Model();
-    ~Model();
+    Model() { };
+    virtual ~Model() { };
 };
 
 #endif

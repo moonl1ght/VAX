@@ -120,7 +120,8 @@ bool PipelineManager::initialize() {
 
     std::vector<VkDynamicState> dynamicStates = {
         VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR };
+        VK_DYNAMIC_STATE_SCISSOR
+    };
     VkPipelineDynamicStateCreateInfo dynamicState{};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
@@ -128,9 +129,16 @@ bool PipelineManager::initialize() {
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
+    // pipelineLayoutInfo.setLayoutCount = 1;
     auto globalDescriptorSetLayout = _descriptorSetManager->getGlobalDescriptorSetLayout();
-    pipelineLayoutInfo.pSetLayouts = &globalDescriptorSetLayout;
+    auto objectDescriptorSetLayout = _descriptorSetManager->getObjectDescriptorSetLayout();
+    // pipelineLayoutInfo.pSetLayouts = &globalDescriptorSetLayout;
+    pipelineLayoutInfo.setLayoutCount = 2;
+    std::vector<VkDescriptorSetLayout> setLayouts = {
+        globalDescriptorSetLayout,
+        objectDescriptorSetLayout
+    };
+    pipelineLayoutInfo.pSetLayouts = setLayouts.data(); // TODO: fix this
 
     auto result = vkCreatePipelineLayout(
         _vkStack->device->vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout

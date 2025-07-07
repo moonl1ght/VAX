@@ -9,9 +9,10 @@
 #include "luna.h"
 #include "Buffer.hpp"
 #include "Sampler.hpp"
-#include "../shaders/VertexUniforms.h"
+#include "../shaders/ShaderUniforms.h"
 #include "TextureLoader.hpp"
 #include "Logger.hpp"
+#include "DrawableModel.hpp"
 
 class App final {
 public:
@@ -28,15 +29,16 @@ protected:
     DescriptorSetManager* _descriptorSetManager = nullptr;
     PipelineManager* _pipelineManager = nullptr;
 
-    Texture* texture = nullptr;
 
-    Mesh* mesh;
+    Texture* texture = nullptr;
+    DrawableModel* model = nullptr;
     Renderer renderer;
+    Buffer* buffer = nullptr;
 
     std::vector<Buffer*> uniformBuffers;
+    std::vector<Buffer*> objectUniformBuffers;
     std::vector<void*> uniformBuffersMapped;
-
-    // std::vector<VkDescriptorSet> descriptorSets;
+    std::vector<void*> objectUniformBuffersMapped;
 
     void setup();
     void initWindow();
@@ -45,7 +47,6 @@ protected:
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
     void drawFrame();
     void updateUniformBuffer(uint32_t currentImage);
-    // void createDescriptorSets();
 };
 
 #endif

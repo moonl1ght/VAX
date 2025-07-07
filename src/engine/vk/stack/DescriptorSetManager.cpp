@@ -14,26 +14,60 @@ bool DescriptorSetManager::initialize() {
 
     createDescriptorPool();
 
-    // result = createObjectDescriptorSetLayout();
+    result = createObjectDescriptorSetLayout();
     return true;
 }
 
-void DescriptorSetManager::createDescriptorPool() {
-    std::array<VkDescriptorPoolSize, 2> poolSizes{};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(_vkStack->MAX_FRAMES_IN_FLIGHT);
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(_vkStack->MAX_FRAMES_IN_FLIGHT);
+bool DescriptorSetManager::createDescriptorPool() {
+    uint32_t uniformBufferCount = 2;
+    uint32_t imageSamplerCount = 1;
+    uint32_t maxUniformBufferSets = static_cast<uint32_t>(_vkStack->MAX_FRAMES_IN_FLIGHT) * uniformBufferCount;
+    uint32_t maxImageSamplerSets = static_cast<uint32_t>(_vkStack->MAX_FRAMES_IN_FLIGHT) * imageSamplerCount;
+
+    std::vector<VkDescriptorPoolSize> poolSizes = {
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBufferSets },
+        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxImageSamplerSets }
+    };
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(_vkStack->MAX_FRAMES_IN_FLIGHT);
+    poolInfo.maxSets = maxUniformBufferSets + maxImageSamplerSets;
 
     if (vkCreateDescriptorPool(_vkStack->device->vkDevice, &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create descriptor pool!");
+        Logger::getInstance().error("failed to create descriptor pool!");
+        return false;
     }
+
+    return true;
+}
+
+std::optional<VkDescriptorSet> DescriptorSetManager::getObjectDescriptorSet(uint32_t frameIndex) {
+    if (_objectDescriptorSets.size() == _vkStack->MAX_FRAMES_IN_FLIGHT) {
+        // std::cout << "Returning existing descriptor set" << std::endl;
+        return std::make_optional(_objectDescriptorSets[frameIndex]);
+    }
+
+    // std::cout << "Allocating new descriptor set" << std::endl;
+
+    std::vector<VkDescriptorSetLayout> layouts(_vkStack->MAX_FRAMES_IN_FLIGHT, _objectDescriptorSetLayout);
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = _descriptorPool;
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(_vkStack->MAX_FRAMES_IN_FLIGHT);
+    allocInfo.pSetLayouts = layouts.data();
+
+    _objectDescriptorSets.resize(_vkStack->MAX_FRAMES_IN_FLIGHT);
+    auto result = vkAllocateDescriptorSets(
+        _vkStack->device->vkDevice, &allocInfo, _objectDescriptorSets.data()
+    );
+    if (result != VK_SUCCESS) {
+        Logger::getInstance().error("Failed to allocate descriptor set!");
+        return std::nullopt;
+    }
+
+    return std::make_optional(_objectDescriptorSets[frameIndex]);
 }
 
 std::optional<VkDescriptorSet> DescriptorSetManager::getGlobalDescriptorSet(
@@ -117,7 +151,7 @@ bool DescriptorSetManager::createGlobalDescriptorSetLayout() {
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     samplerLayoutBinding.pImmutableSamplers = nullptr;
 
-    std::vector<VkDescriptorSetLayoutBinding> bindings = {
+    std::array<VkDescriptorSetLayoutBinding, 2> bindings = {
         uboLayoutBinding, samplerLayoutBinding
     };
 
@@ -130,6 +164,7 @@ bool DescriptorSetManager::createGlobalDescriptorSetLayout() {
         _vkStack->device->vkDevice, &layoutInfo, nullptr, &_globalDescriptorSetLayout
     );
     if (result != VK_SUCCESS) {
+        Logger::getInstance().error("Failed to create global descriptor set layout!");
         return false;
     }
 
@@ -137,12 +172,11 @@ bool DescriptorSetManager::createGlobalDescriptorSetLayout() {
 }
 
 bool DescriptorSetManager::createObjectDescriptorSetLayout() {
-    // Binding 0: Object Data Buffer (per-object data)
     VkDescriptorSetLayoutBinding objectDataBinding{};
     objectDataBinding.binding = 0;
-    objectDataBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    objectDataBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     objectDataBinding.descriptorCount = 1;
-    objectDataBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    objectDataBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     objectDataBinding.pImmutableSamplers = nullptr;
 
     std::vector<VkDescriptorSetLayoutBinding> bindings = { objectDataBinding };
@@ -156,8 +190,69 @@ bool DescriptorSetManager::createObjectDescriptorSetLayout() {
         _vkStack->device->vkDevice, &layoutInfo, nullptr, &_objectDescriptorSetLayout
     );
     if (result != VK_SUCCESS) {
+        Logger::getInstance().error("Failed to create object descriptor set layout!");
         return false;
     }
 
     return true;
+}
+
+// MARK: - DescriptorWriter
+
+void DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t offset) {
+    VkDescriptorBufferInfo& bufferInfo = _bufferInfos.emplace_back(
+        VkDescriptorBufferInfo {
+            .buffer = buffer->vkBuffer,
+            .offset = offset,
+            .range = buffer->size
+        }
+    );
+
+    VkWriteDescriptorSet write{
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = VK_NULL_HANDLE,
+        .dstBinding = binding,
+        .dstArrayElement = 0,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .descriptorCount = 1,
+        .pBufferInfo = &bufferInfo
+    };
+
+    _writes.push_back(write);
+}
+
+void DescriptorWriter::writeTexture(Texture* texture, uint32_t binding, uint32_t offset) {
+    VkDescriptorImageInfo& imageInfo = _imageInfos.emplace_back(
+        VkDescriptorImageInfo {
+            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            .imageView = texture->textureImageView,
+            .sampler = texture->sampler->vkSampler
+        }
+    );
+
+    VkWriteDescriptorSet write{
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = VK_NULL_HANDLE,
+        .dstBinding = binding,
+        .dstArrayElement = 0,
+        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .descriptorCount = 1,
+        .pImageInfo = &imageInfo
+    };
+
+    _writes.push_back(write);
+}
+
+void DescriptorWriter::updateSet(VkDevice device, VkDescriptorSet descriptorSet) {
+    for (auto& write : _writes) {
+        write.dstSet = descriptorSet;
+    }
+
+    vkUpdateDescriptorSets(device, static_cast<uint32_t>(_writes.size()), _writes.data(), 0, nullptr);
+}
+
+void DescriptorWriter::clear() {
+    _writes.clear();
+    _imageInfos.clear();
+    _bufferInfos.clear();
 }

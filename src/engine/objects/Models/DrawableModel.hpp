@@ -3,19 +3,19 @@
 
 #include "luna.h"
 #include "Model.hpp"
+#include "Mesh.hpp"
 
 class DrawableModel : public Model {
 public:
-    DrawableModel();
-    ~DrawableModel();
+    std::unique_ptr<Mesh> mesh;
+
+    DrawableModel(std::unique_ptr<Mesh> mesh): mesh(std::move(mesh)) {};
+    ~DrawableModel() { };
 
     DrawableModel(const DrawableModel& other) = delete;
     DrawableModel& operator=(const DrawableModel& other) = delete;
 
     void draw(VKStack* vkStack);
-
-private:
-    Mesh _mesh;
 };
 
 #endif
