@@ -17,8 +17,8 @@ void App::run() {
 
     uniformBuffers.resize(_vkStack->MAX_FRAMES_IN_FLIGHT);
     uniformBuffersMapped.resize(_vkStack->MAX_FRAMES_IN_FLIGHT);
-    objectUniformBuffers.resize(_vkStack->MAX_FRAMES_IN_FLIGHT);
-    objectUniformBuffersMapped.resize(_vkStack->MAX_FRAMES_IN_FLIGHT);
+    // objectUniformBuffers.resize(_vkStack->MAX_FRAMES_IN_FLIGHT);
+    // objectUniformBuffersMapped.resize(_vkStack->MAX_FRAMES_IN_FLIGHT);
 
     for (size_t i = 0; i < _vkStack->MAX_FRAMES_IN_FLIGHT; i++) {
         uniformBuffers[i] = new Buffer(
@@ -31,19 +31,19 @@ void App::run() {
 
         vkMapMemory(_vkStack->device->vkDevice, uniformBuffers[i]->vkBufferMemory, 0, bufferSize, 0, &uniformBuffersMapped[i]);
 
-        VkDeviceSize bufferSize1 = sizeof(ObjectUniforms);
+        // VkDeviceSize bufferSize1 = sizeof(ObjectUniforms);
 
-        objectUniformBuffers[i] = new Buffer(
-            _vkStack,
-            nullptr,
-            bufferSize1,
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-        );
-        std::cout << "Object uniform buffer size: " << (objectUniformBuffers[i]->vkBufferMemory == VK_NULL_HANDLE) << std::endl;
+        // objectUniformBuffers[i] = new Buffer(
+        //     _vkStack,
+        //     nullptr,
+        //     bufferSize1,
+        //     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        //     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        // );
+        // std::cout << "Object uniform buffer size: " << (objectUniformBuffers[i]->vkBufferMemory == VK_NULL_HANDLE) << std::endl;
         // objectUniformBuffers.push_back(buffer);
 
-        vkMapMemory(_vkStack->device->vkDevice, objectUniformBuffers[i]->vkBufferMemory, 0, bufferSize1, 0, &objectUniformBuffersMapped[i]);
+        // vkMapMemory(_vkStack->device->vkDevice, objectUniformBuffers[i]->vkBufferMemory, 0, bufferSize1, 0, &objectUniformBuffersMapped[i]);
 
         // uniformBuffers[i]->fill(uniformBuffersMapped[i]);
     }
@@ -107,7 +107,7 @@ void App::cleanup() {
     _vkStack = nullptr;
 }
 
-void App::updateUniformBuffer(uint32_t currentImage) {
+void App::updateUniformBuffer(VkCommandBuffer commandBuffer, uint32_t currentImage) {
     static auto startTime = std::chrono::high_resolution_clock::now();
 
     auto currentTime = std::chrono::high_resolution_clock::now();
@@ -120,36 +120,46 @@ void App::updateUniformBuffer(uint32_t currentImage) {
     ubo.proj[1][1] *= -1;
     memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 
+    DrawPushConstants drawPushConstants{};
+    drawPushConstants.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
+    vkCmdPushConstants(
+        commandBuffer,
+        _pipelineManager->getPipelineLayout(),
+        VK_SHADER_STAGE_VERTEX_BIT,
+        0,
+        sizeof(DrawPushConstants),
+        &drawPushConstants
+    );
 
-    ObjectUniforms objectUniforms{};
-    objectUniforms.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
+    // ObjectUniforms objectUniforms{};
+    // objectUniforms.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
 
-    VkDeviceSize bufferSize = sizeof(ObjectUniforms);
+    // VkDeviceSize bufferSize = sizeof(ObjectUniforms);
 
-    if (buffer == nullptr) {
-        buffer = new Buffer(
-            _vkStack,
-            nullptr,
-            bufferSize,
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-        );
-    }
-    buffer->fill(&objectUniforms);
+    // if (buffer == nullptr) {
+    //     buffer = new Buffer(
+    //         _vkStack,
+    //         nullptr,
+    //         bufferSize,
+    //         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+    //         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+    //     );
+    // }
+    // buffer->fill(&objectUniforms);
 
     // objectUniformBuffers[currentImage]->fill(&objectUniforms);
 
     // std::cout << "Updating object uniform buffer" << std::endl;
     // memcpy(objectUniformBuffersMapped[currentImage], &objectUniforms, sizeof(objectUniforms));
 
-    auto descriptorSet = _descriptorSetManager->getObjectDescriptorSet(currentImage);
-    DescriptorWriter writer = DescriptorWriter();
-    // std::cout << "Object uniform buffer size: " << (objectUniformBuffers[currentImage]->vkBufferMemory) << std::endl;
-    // VkMemoryRequirements memRequirements;
-    // vkGetBufferMemoryRequirements(_vkStack->device->vkDevice, objectUniformBuffers[currentImage]->vkBuffer, &memRequirements);
-    // std::cout << "Object uniform buffer size memRequirements: " << memRequirements.size << std::endl;
-    writer.writeBuffer(buffer, 0);
-    writer.updateSet(_vkStack->device->vkDevice, descriptorSet.value());
+    // auto descriptorSet = _descriptorSetManager->getObjectDescriptorSet(currentImage);
+    // DescriptorWriter writer = DescriptorWriter();
+    // // std::cout << "Object uniform buffer size: " << (objectUniformBuffers[currentImage]->vkBufferMemory) << std::endl;
+    // // VkMemoryRequirements memRequirements;
+    // // vkGetBufferMemoryRequirements(_vkStack->device->vkDevice, objectUniformBuffers[currentImage]->vkBuffer, &memRequirements);
+    // // std::cout << "Object uniform buffer size memRequirements: " << memRequirements.size << std::endl;
+    // writer.writeBuffer(buffer, 0);
+    // writer.updateSet(_vkStack->device->vkDevice, descriptorSet.value());
 
     // VkDescriptorBufferInfo bufferInfo{
     //     .buffer = buffer->vkBuffer,
@@ -231,14 +241,21 @@ void App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex
 
     vkCmdBindIndexBuffer(commandBuffer, model->mesh->indexBuffer.vkBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-    updateUniformBuffer(currentFrame);
+    updateUniformBuffer(_vkStack->commandBuffers[currentFrame], currentFrame);
     // vkCmdDraw(commandBuffer, static_cast<uint32_t>(mesh->vertices.size()), 1, 0, 0);
     auto descriptorSet = _descriptorSetManager->getGlobalDescriptorSet(currentFrame, uniformBuffers[currentFrame], texture).value();
     // updateUniformBuffer(currentFrame);
-    auto descriptorSet1 = _descriptorSetManager->getObjectDescriptorSet(currentFrame);
-    std::vector<VkDescriptorSet> descriptorSets = { descriptorSet, descriptorSet1.value() };
+    // auto descriptorSet1 = _descriptorSetManager->getObjectDescriptorSet(currentFrame);
+    std::vector<VkDescriptorSet> descriptorSets = { descriptorSet };
     vkCmdBindDescriptorSets(
-        commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineManager->getPipelineLayout(), 0, 2, descriptorSets.data(), 0, nullptr
+        commandBuffer, 
+        VK_PIPELINE_BIND_POINT_GRAPHICS, 
+        _pipelineManager->getPipelineLayout(), 
+        0,
+        static_cast<uint32_t>(descriptorSets.size()),
+        descriptorSets.data(),
+        0,
+        nullptr
     );
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(model->mesh->indices.size()), 1, 0, 0, 0);
 

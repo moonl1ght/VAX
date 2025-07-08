@@ -37,24 +37,24 @@ public:
     std::optional<VkDescriptorSet> getGlobalDescriptorSet(
         uint32_t frameIndex, Buffer* uniformBuffer, Texture* texture
     );
-    std::optional<VkDescriptorSet> getObjectDescriptorSet(uint32_t frameIndex);
+    // std::optional<VkDescriptorSet> getObjectDescriptorSet(uint32_t frameIndex);
 
     VkDescriptorSetLayout getGlobalDescriptorSetLayout() const { return _globalDescriptorSetLayout; }
-    VkDescriptorSetLayout getObjectDescriptorSetLayout() const { return _objectDescriptorSetLayout; }
+    // VkDescriptorSetLayout getObjectDescriptorSetLayout() const { return _objectDescriptorSetLayout; }
 
 private:
     VKStack* _vkStack;
 
     VkDescriptorSetLayout _globalDescriptorSetLayout = VK_NULL_HANDLE;
-    VkDescriptorSetLayout _objectDescriptorSetLayout = VK_NULL_HANDLE;
+    // VkDescriptorSetLayout _objectDescriptorSetLayout = VK_NULL_HANDLE;
 
     VkDescriptorPool _descriptorPool = VK_NULL_HANDLE;
 
     std::vector<VkDescriptorSet> _globalDescriptorSets;
-    std::vector<VkDescriptorSet> _objectDescriptorSets;
+    // std::vector<VkDescriptorSet> _objectDescriptorSets;
 
     bool createGlobalDescriptorSetLayout();
-    bool createObjectDescriptorSetLayout();
+    // bool createObjectDescriptorSetLayout();
     bool createDescriptorPool();
 };
 

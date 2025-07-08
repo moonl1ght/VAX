@@ -17,8 +17,8 @@ struct UniformBufferObject {
     mat4 proj;
 };
 
-struct ObjectUniforms {
-    mat4 model;
+struct DrawPushConstants {
+    mat4 model; // 64 bytes
 };
 
 #endif  // ShaderUniforms_h

@@ -3,19 +3,16 @@
 DescriptorSetManager::~DescriptorSetManager() {
     vkDestroyDescriptorPool(_vkStack->device->vkDevice, _descriptorPool, nullptr);
     vkDestroyDescriptorSetLayout(_vkStack->device->vkDevice, _globalDescriptorSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(_vkStack->device->vkDevice, _objectDescriptorSetLayout, nullptr);
+    // vkDestroyDescriptorSetLayout(_vkStack->device->vkDevice, _objectDescriptorSetLayout, nullptr);
 }
 
 bool DescriptorSetManager::initialize() {
-    auto result = createGlobalDescriptorSetLayout();
-    if (!result) {
+    if (!createGlobalDescriptorSetLayout()) {
         return false;
     }
 
-    createDescriptorPool();
-
-    result = createObjectDescriptorSetLayout();
-    return true;
+    // result = createObjectDescriptorSetLayout();
+    return createDescriptorPool();
 }
 
 bool DescriptorSetManager::createDescriptorPool() {
@@ -43,32 +40,32 @@ bool DescriptorSetManager::createDescriptorPool() {
     return true;
 }
 
-std::optional<VkDescriptorSet> DescriptorSetManager::getObjectDescriptorSet(uint32_t frameIndex) {
-    if (_objectDescriptorSets.size() == _vkStack->MAX_FRAMES_IN_FLIGHT) {
-        // std::cout << "Returning existing descriptor set" << std::endl;
-        return std::make_optional(_objectDescriptorSets[frameIndex]);
-    }
+// std::optional<VkDescriptorSet> DescriptorSetManager::getObjectDescriptorSet(uint32_t frameIndex) {
+//     if (_objectDescriptorSets.size() == _vkStack->MAX_FRAMES_IN_FLIGHT) {
+//         // std::cout << "Returning existing descriptor set" << std::endl;
+//         return std::make_optional(_objectDescriptorSets[frameIndex]);
+//     }
 
-    // std::cout << "Allocating new descriptor set" << std::endl;
+//     // std::cout << "Allocating new descriptor set" << std::endl;
 
-    std::vector<VkDescriptorSetLayout> layouts(_vkStack->MAX_FRAMES_IN_FLIGHT, _objectDescriptorSetLayout);
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = _descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(_vkStack->MAX_FRAMES_IN_FLIGHT);
-    allocInfo.pSetLayouts = layouts.data();
+//     std::vector<VkDescriptorSetLayout> layouts(_vkStack->MAX_FRAMES_IN_FLIGHT, _objectDescriptorSetLayout);
+//     VkDescriptorSetAllocateInfo allocInfo{};
+//     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+//     allocInfo.descriptorPool = _descriptorPool;
+//     allocInfo.descriptorSetCount = static_cast<uint32_t>(_vkStack->MAX_FRAMES_IN_FLIGHT);
+//     allocInfo.pSetLayouts = layouts.data();
 
-    _objectDescriptorSets.resize(_vkStack->MAX_FRAMES_IN_FLIGHT);
-    auto result = vkAllocateDescriptorSets(
-        _vkStack->device->vkDevice, &allocInfo, _objectDescriptorSets.data()
-    );
-    if (result != VK_SUCCESS) {
-        Logger::getInstance().error("Failed to allocate descriptor set!");
-        return std::nullopt;
-    }
+//     _objectDescriptorSets.resize(_vkStack->MAX_FRAMES_IN_FLIGHT);
+//     auto result = vkAllocateDescriptorSets(
+//         _vkStack->device->vkDevice, &allocInfo, _objectDescriptorSets.data()
+//     );
+//     if (result != VK_SUCCESS) {
+//         Logger::getInstance().error("Failed to allocate descriptor set!");
+//         return std::nullopt;
+//     }
 
-    return std::make_optional(_objectDescriptorSets[frameIndex]);
-}
+//     return std::make_optional(_objectDescriptorSets[frameIndex]);
+// }
 
 std::optional<VkDescriptorSet> DescriptorSetManager::getGlobalDescriptorSet(
     uint32_t frameIndex, Buffer* uniformBuffer, Texture* texture
@@ -171,31 +168,31 @@ bool DescriptorSetManager::createGlobalDescriptorSetLayout() {
     return true;
 }
 
-bool DescriptorSetManager::createObjectDescriptorSetLayout() {
-    VkDescriptorSetLayoutBinding objectDataBinding{};
-    objectDataBinding.binding = 0;
-    objectDataBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    objectDataBinding.descriptorCount = 1;
-    objectDataBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    objectDataBinding.pImmutableSamplers = nullptr;
+// bool DescriptorSetManager::createObjectDescriptorSetLayout() {
+//     VkDescriptorSetLayoutBinding objectDataBinding{};
+//     objectDataBinding.binding = 0;
+//     objectDataBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+//     objectDataBinding.descriptorCount = 1;
+//     objectDataBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+//     objectDataBinding.pImmutableSamplers = nullptr;
 
-    std::vector<VkDescriptorSetLayoutBinding> bindings = { objectDataBinding };
+//     std::vector<VkDescriptorSetLayoutBinding> bindings = { objectDataBinding };
 
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-    layoutInfo.pBindings = bindings.data();
+//     VkDescriptorSetLayoutCreateInfo layoutInfo{};
+//     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+//     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+//     layoutInfo.pBindings = bindings.data();
 
-    auto result = vkCreateDescriptorSetLayout(
-        _vkStack->device->vkDevice, &layoutInfo, nullptr, &_objectDescriptorSetLayout
-    );
-    if (result != VK_SUCCESS) {
-        Logger::getInstance().error("Failed to create object descriptor set layout!");
-        return false;
-    }
+//     auto result = vkCreateDescriptorSetLayout(
+//         _vkStack->device->vkDevice, &layoutInfo, nullptr, &_objectDescriptorSetLayout
+//     );
+//     if (result != VK_SUCCESS) {
+//         Logger::getInstance().error("Failed to create object descriptor set layout!");
+//         return false;
+//     }
 
-    return true;
-}
+//     return true;
+// }
 
 // MARK: - DescriptorWriter
 

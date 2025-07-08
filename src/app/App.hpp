@@ -36,9 +36,9 @@ protected:
     Buffer* buffer = nullptr;
 
     std::vector<Buffer*> uniformBuffers;
-    std::vector<Buffer*> objectUniformBuffers;
+    // std::vector<Buffer*> objectUniformBuffers;
     std::vector<void*> uniformBuffersMapped;
-    std::vector<void*> objectUniformBuffersMapped;
+    // std::vector<void*> objectUniformBuffersMapped;
 
     void setup();
     void initWindow();
@@ -46,7 +46,7 @@ protected:
     void cleanup();
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
     void drawFrame();
-    void updateUniformBuffer(uint32_t currentImage);
+    void updateUniformBuffer(VkCommandBuffer commandBuffer, uint32_t currentImage);
 };
 
 #endif

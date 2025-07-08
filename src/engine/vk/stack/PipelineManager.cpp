@@ -131,14 +131,22 @@ bool PipelineManager::initialize() {
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     // pipelineLayoutInfo.setLayoutCount = 1;
     auto globalDescriptorSetLayout = _descriptorSetManager->getGlobalDescriptorSetLayout();
-    auto objectDescriptorSetLayout = _descriptorSetManager->getObjectDescriptorSetLayout();
+    // auto objectDescriptorSetLayout = _descriptorSetManager->getObjectDescriptorSetLayout();
     // pipelineLayoutInfo.pSetLayouts = &globalDescriptorSetLayout;
-    pipelineLayoutInfo.setLayoutCount = 2;
+    pipelineLayoutInfo.setLayoutCount = 1;
     std::vector<VkDescriptorSetLayout> setLayouts = {
-        globalDescriptorSetLayout,
-        objectDescriptorSetLayout
+        globalDescriptorSetLayout
+        // objectDescriptorSetLayout
     };
-    pipelineLayoutInfo.pSetLayouts = setLayouts.data(); // TODO: fix this
+    pipelineLayoutInfo.pSetLayouts = setLayouts.data();
+
+    VkPushConstantRange pushConstantRange{};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = sizeof(DrawPushConstants);
+
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
     auto result = vkCreatePipelineLayout(
         _vkStack->device->vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout
