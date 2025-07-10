@@ -5,6 +5,8 @@
 #include "Vertex.h"
 #include "Buffer.hpp"
 #include "luna.h"
+#include "ShaderUniforms.h"
+#include "PipelineManager.hpp"
 
 class Mesh {
 public:
@@ -35,7 +37,7 @@ public:
         return *this;
     }
 
-    void draw(VKStack* vkStack);
+    void draw(VKStack* vkStack, VkCommandBuffer commandBuffer, PipelineManager* pipelineManager, float time);
     void loadBuffers(VKStack* vkStack);
 
 private:

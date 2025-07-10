@@ -1,9 +1,29 @@
 #include "Mesh.hpp"
 
-void Mesh::draw(VKStack* vkStack) {
+void Mesh::draw(
+    VKStack* vkStack,
+    VkCommandBuffer commandBuffer,
+    PipelineManager* pipelineManager,
+    float time
+) {
     if (!_isLoaded) {
         loadBuffers(vkStack);
     }
+    VkBuffer vertexBuffers[] = { vertexBuffer.vkBuffer };
+    VkDeviceSize offsets[] = { 0 };
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, indexBuffer.vkBuffer, 0, VK_INDEX_TYPE_UINT16);
+    DrawPushConstants drawPushConstants{};
+    drawPushConstants.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
+    vkCmdPushConstants(
+        commandBuffer,
+        pipelineManager->getPipelineLayout(),
+        VK_SHADER_STAGE_VERTEX_BIT,
+        0,
+        sizeof(DrawPushConstants),
+        &drawPushConstants
+    );
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 }
 
 void Mesh::loadBuffers(VKStack* vkStack) {

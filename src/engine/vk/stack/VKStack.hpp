@@ -18,6 +18,8 @@ public:
         "VK_LAYER_KHRONOS_validation"
     };
 
+    bool framebufferResized = false;
+
     VkImageView textureImageView;
     GLFWwindow* window;
     VkInstance instance;

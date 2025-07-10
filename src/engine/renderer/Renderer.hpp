@@ -4,13 +4,44 @@
 #include "luna.h"
 #include "VKStack.hpp"
 #include "DescriptorSetManager.hpp"
+#include "PipelineManager.hpp"
+#include "Scene.hpp"
+#include "Buffer.hpp"
 
 class Renderer {
 public:
-    Renderer();
-    ~Renderer();
+    Renderer(
+        VKStack* vkStack, 
+        PipelineManager* pipelineManager,
+        DescriptorSetManager* descriptorSetManager
+    )
+    : _vkStack(vkStack)
+    , _pipelineManager(pipelineManager)
+    , _descriptorSetManager(descriptorSetManager) {};
 
-    void render();
+    ~Renderer() {
+        for (size_t i = 0; i < _vkStack->MAX_FRAMES_IN_FLIGHT; i++) {
+            delete _sceneUniformBuffers[i];
+            _sceneUniformBuffers[i] = nullptr;
+        }
+        _sceneUniformBuffers.clear();
+        _sceneUniformBuffersMapped.clear();
+    };
+
+    bool render(Scene* scene, float deltaTime);
+    void prepare();
+
+private:
+    VKStack* _vkStack;
+    PipelineManager* _pipelineManager;
+    DescriptorSetManager* _descriptorSetManager;
+
+    std::vector<Buffer*> _sceneUniformBuffers;
+    std::vector<void*> _sceneUniformBuffersMapped;
+
+    uint32_t _currentFrame = 0;
+
+    bool recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime);
 };
 
 #endif

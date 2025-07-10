@@ -4,6 +4,7 @@
 #include "luna.h"
 #include "Model.hpp"
 #include "Mesh.hpp"
+#include "PipelineManager.hpp"
 
 class DrawableModel : public Model {
 public:
@@ -15,7 +16,7 @@ public:
     DrawableModel(const DrawableModel& other) = delete;
     DrawableModel& operator=(const DrawableModel& other) = delete;
 
-    void draw(VKStack* vkStack);
+    void draw(VKStack* vkStack, VkCommandBuffer commandBuffer, PipelineManager* pipelineManager, float time);
 };
 
 #endif

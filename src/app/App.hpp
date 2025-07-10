@@ -16,36 +16,36 @@
 
 class App final {
 public:
-    bool framebufferResized = false;
-
-    App() { renderer = Renderer(); };
-    ~App() {};
+    App() { };
+    ~App() { };
 
     void run();
+    VKStack* getVKStack() const {
+        return _vkStack;
+    }
 
-protected:
+private:
     GLFWwindow* _window = nullptr;
     VKStack* _vkStack = nullptr;
     DescriptorSetManager* _descriptorSetManager = nullptr;
     PipelineManager* _pipelineManager = nullptr;
+    Renderer* _renderer = nullptr;
+    Scene* _scene = nullptr;
 
-
-    Texture* texture = nullptr;
     DrawableModel* model = nullptr;
-    Renderer renderer;
-    Buffer* buffer = nullptr;
+    // Buffer* buffer = nullptr;
 
-    std::vector<Buffer*> uniformBuffers;
+    // std::vector<Buffer*> uniformBuffers;
     // std::vector<Buffer*> objectUniformBuffers;
-    std::vector<void*> uniformBuffersMapped;
+    // std::vector<void*> uniformBuffersMapped;
     // std::vector<void*> objectUniformBuffersMapped;
 
     void setup();
     void initWindow();
     void mainLoop();
     void cleanup();
-    void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-    void drawFrame();
+    void loopUpdate();
+
     void updateUniformBuffer(VkCommandBuffer commandBuffer, uint32_t currentImage);
 };
 
