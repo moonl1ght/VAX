@@ -5,7 +5,8 @@
 #include "luna.h"
 #include "VKUtils.hpp"
 #include "Device.hpp"
-#include <iostream>
+
+class Texture;
 
 class VKStack {
 public:
@@ -39,6 +40,8 @@ public:
     std::vector<VkFramebuffer> swapChainFramebuffers;
 
     VkRenderPass renderPass;
+
+    Texture* depthTexture;
 
     VkCommandPool commandPool;
 
@@ -83,6 +86,7 @@ protected:
     void createCommandPool();
     void createCommandBuffer();
     void createSyncObjects();
+    void createDepthResources();
 };
 
 #endif

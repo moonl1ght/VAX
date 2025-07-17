@@ -5,6 +5,7 @@
 #include "Model.hpp"
 #include "Mesh.hpp"
 #include "PipelineManager.hpp"
+#include "ShaderUniforms.h"
 
 class DrawableModel : public Model {
 public:

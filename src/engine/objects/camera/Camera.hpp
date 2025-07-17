@@ -6,8 +6,8 @@
 
 class Camera {
 public:
-    Camera();
-    ~Camera();
+    Camera() { };
+    ~Camera() { };
 };
 
 #endif  

@@ -17,6 +17,8 @@ void Scene::load() {
     _ubo.view = glm::mat4(1.0f);
     _ubo.proj = glm::mat4(1.0f);
     _drawableModels.emplace_back(Primitives2D::createPlane());
+    _drawableModels.emplace_back(Primitives2D::createPlane());
+    _drawableModels[1]->transform.position = glm::vec3(0.0f, 0.0f, -0.5f);
     for (auto model : _drawableModels) {
         model->mesh->loadBuffers(_vkStack);
     }

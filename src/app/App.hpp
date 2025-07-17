@@ -32,21 +32,11 @@ private:
     Renderer* _renderer = nullptr;
     Scene* _scene = nullptr;
 
-    DrawableModel* model = nullptr;
-    // Buffer* buffer = nullptr;
-
-    // std::vector<Buffer*> uniformBuffers;
-    // std::vector<Buffer*> objectUniformBuffers;
-    // std::vector<void*> uniformBuffersMapped;
-    // std::vector<void*> objectUniformBuffersMapped;
-
     void setup();
     void initWindow();
     void mainLoop();
     void cleanup();
     void loopUpdate();
-
-    void updateUniformBuffer(VkCommandBuffer commandBuffer, uint32_t currentImage);
 };
 
 #endif

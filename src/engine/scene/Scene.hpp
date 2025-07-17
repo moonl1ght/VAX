@@ -13,6 +13,8 @@ public:
 
     Scene(VKStack* vkStack) : _vkStack(vkStack) { };
     ~Scene() {
+        delete texture;
+        texture = nullptr;
         for (auto model : _drawableModels) {
             delete model;
         }

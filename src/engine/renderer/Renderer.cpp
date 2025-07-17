@@ -15,11 +15,11 @@ void Renderer::prepare() {
         );
 
         vkMapMemory(
-            _vkStack->device->vkDevice, 
-            _sceneUniformBuffers[i]->vkBufferMemory, 
-            0, 
-            bufferSize, 
-            0, 
+            _vkStack->device->vkDevice,
+            _sceneUniformBuffers[i]->vkBufferMemory,
+            0,
+            bufferSize,
+            0,
             &_sceneUniformBuffersMapped[i]
         );
     }
@@ -117,9 +117,12 @@ bool Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = _vkStack->swapChainExtent;
 
-    VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearColor;
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+    clearValues[1].depthStencil = { 1.0f, 0 };
+
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -150,9 +153,9 @@ bool Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
     }
     std::vector<VkDescriptorSet> descriptorSets = { descriptorSet.value() };
     vkCmdBindDescriptorSets(
-        commandBuffer, 
-        VK_PIPELINE_BIND_POINT_GRAPHICS, 
-        _pipelineManager->getPipelineLayout(), 
+        commandBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        _pipelineManager->getPipelineLayout(),
         0,
         static_cast<uint32_t>(descriptorSets.size()),
         descriptorSets.data(),

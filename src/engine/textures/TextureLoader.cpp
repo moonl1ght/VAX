@@ -3,7 +3,12 @@
 #include "./deps/stb_image.h"
 
 void transitionImageLayout(
-    VKStack* vkStack, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout
+    VKStack* vkStack,
+    VkImage image,
+    VkFormat format,
+    VkImageLayout oldLayout,
+    VkImageLayout newLayout,
+    VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
 ) {
     VkCommandBuffer commandBuffer = vkStack->beginSingleTimeCommands();
 
@@ -14,7 +19,7 @@ void transitionImageLayout(
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.image = image;
-    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.aspectMask = aspectMask;
     barrier.subresourceRange.baseMipLevel = 0;
     barrier.subresourceRange.levelCount = 1;
     barrier.subresourceRange.baseArrayLayer = 0;
@@ -37,7 +42,15 @@ void transitionImageLayout(
         sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     }
+    else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    }
     else {
+        Logger::getInstance().error("Unsupported layout transition!");
         throw std::invalid_argument("unsupported layout transition!");
     }
 
@@ -117,7 +130,9 @@ void createImage(
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = VKUtils::findMemoryType(vkStack->device->vkPhysicalDevice, memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = VKUtils::findMemoryType(
+        vkStack->device->vkPhysicalDevice, memRequirements.memoryTypeBits, properties
+    );
 
     if (vkAllocateMemory(vkStack->device->vkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate image memory!");
@@ -187,7 +202,8 @@ Texture* TextureLoader::loadTexture(VKStack* vkStack, std::string path, bool isA
         textureImage,
         textureImageMemory,
         imageSize,
-        vax::Size(texWidth, texHeight)
+        vax::Size(texWidth, texHeight),
+        VK_FORMAT_R8G8B8A8_SRGB
     );
     if (isAutoLoadImageView) {
         texture->loadImageView();
@@ -195,5 +211,41 @@ Texture* TextureLoader::loadTexture(VKStack* vkStack, std::string path, bool isA
     if (auto sampler = Sampler::createSampler(vkStack->device)) {
         texture->sampler = std::move(*sampler);
     }
+    return texture;
+}
+
+Texture* TextureLoader::createDepthTexture(VKStack* vkStack, VkFormat format) {
+    VkImage depthImage;
+    VkDeviceMemory depthImageMemory;
+
+    createImage(
+        vkStack,
+        vkStack->swapChainExtent.width,
+        vkStack->swapChainExtent.height,
+        format,
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        depthImage,
+        depthImageMemory
+    );
+    auto texture = new Texture(
+        vkStack->device->vkDevice,
+        depthImage,
+        depthImageMemory,
+        0,
+        vax::Size(vkStack->swapChainExtent.width, vkStack->swapChainExtent.height),
+        format,
+        VK_IMAGE_ASPECT_DEPTH_BIT
+    );
+    transitionImageLayout(
+        vkStack,
+        depthImage,
+        format,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_ASPECT_DEPTH_BIT
+    );
+    texture->loadImageView();
     return texture;
 }
