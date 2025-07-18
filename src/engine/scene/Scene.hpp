@@ -3,15 +3,20 @@
 
 #include "luna.h"
 #include "DrawableModel.hpp"
-#include "VKStack.hpp"
 #include "Texture.hpp"
 #include "ShaderUniforms.h"
+#include "ModelLoader.hpp"
+#include "VKObject.hpp"
 
-class Scene {
+class Scene final : public VKObject {
 public:
     Texture* texture = nullptr;
 
-    Scene(VKStack* vkStack) : _vkStack(vkStack) { };
+    Scene(VKStack* stack)
+        : VKObject(stack)
+        , _modelLoader(ModelLoader(stack)) {
+    };
+
     ~Scene() {
         delete texture;
         texture = nullptr;
@@ -33,8 +38,7 @@ public:
     }
 
 private:
-    VKStack* _vkStack;
-
+    ModelLoader _modelLoader;
     UniformBufferObject _ubo;
     std::vector<DrawableModel*> _drawableModels; // TODO: change to value type
 };
