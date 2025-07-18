@@ -13,6 +13,7 @@
 
 #include <thread>
 #include <functional>
+#include "src/population/population.hpp"
 
 void doSomething(std::function<void()> callback) {
     callback();
@@ -103,6 +104,7 @@ void main2() {
 }
 
 int main() {
+    std::srand(std::time(0));
     Logger::getInstance().log("Run application");
     App app = App();
     try {
@@ -111,6 +113,9 @@ int main() {
         Logger::getInstance().error(e.what());
         return EXIT_FAILURE;
     }
+
+    // Game game = Game();
+    // game.run();
 
     return EXIT_SUCCESS;
 }

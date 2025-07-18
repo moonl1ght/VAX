@@ -42,8 +42,8 @@ bool PipelineManager::initialize() {
         return false;
     }
 
-    auto vertShaderModule = createShaderModule(_vkStack, vertShaderCode);
-    auto fragShaderModule = createShaderModule(_vkStack, fragShaderCode);
+    auto vertShaderModule = createShaderModule(stack, vertShaderCode);
+    auto fragShaderModule = createShaderModule(stack, fragShaderCode);
 
     if (!vertShaderModule.has_value() || !fragShaderModule.has_value()) {
         Logger::getInstance().error("failed to create shader module!");
@@ -157,7 +157,7 @@ bool PipelineManager::initialize() {
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
     auto result = vkCreatePipelineLayout(
-        _vkStack->device->vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout
+        stack->device->vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout
     );
     if (result != VK_SUCCESS) {
         Logger::getInstance().error("failed to create pipeline layout!");
@@ -177,19 +177,19 @@ bool PipelineManager::initialize() {
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = _pipelineLayout;
-    pipelineInfo.renderPass = _vkStack->renderPass;
+    pipelineInfo.renderPass = stack->renderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     auto pipelineResult = vkCreateGraphicsPipelines(
-        _vkStack->device->vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline
+        stack->device->vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline
     );
     if (pipelineResult != VK_SUCCESS) {
         Logger::getInstance().error("failed to create graphics pipeline!");
         return false;
     }
 
-    vkDestroyShaderModule(_vkStack->device->vkDevice, fragShaderModule.value(), nullptr);
-    vkDestroyShaderModule(_vkStack->device->vkDevice, vertShaderModule.value(), nullptr);
+    vkDestroyShaderModule(stack->device->vkDevice, fragShaderModule.value(), nullptr);
+    vkDestroyShaderModule(stack->device->vkDevice, vertShaderModule.value(), nullptr);
     return true;
 }

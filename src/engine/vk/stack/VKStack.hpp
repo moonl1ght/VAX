@@ -1,14 +1,13 @@
 #ifndef VKStack_hpp
 #define VKStack_hpp
 
-#include "Vertex.h"
 #include "luna.h"
 #include "VKUtils.hpp"
 #include "Device.hpp"
 
 class Texture;
 
-class VKStack {
+class VKStack final{
 public:
     VKStack(GLFWwindow* window) : window(window) {};
 

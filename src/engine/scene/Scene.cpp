@@ -12,7 +12,7 @@ void Scene::update(float deltaTime) {
 }
 
 void Scene::load() {
-    texture = TextureLoader::loadTexture(_vkStack, RES_PATH("images/texture.jpg"));
+    texture = TextureLoader::loadTexture(_vkStack, RES_PATH("assets/models/room/viking_room.png"));
     _ubo.model = glm::mat4(1.0f);
     _ubo.view = glm::mat4(1.0f);
     _ubo.proj = glm::mat4(1.0f);

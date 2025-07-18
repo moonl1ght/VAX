@@ -493,7 +493,4 @@ void VKStack::createDepthResources() {
     VkFormat depthFormat = VKUtils::findDepthFormat(device->vkPhysicalDevice);
 
     depthTexture = TextureLoader::createDepthTexture(this, depthFormat);
-
-    // createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
-    // depthImageView = VKUtils::createImageView(device->vkDevice, depthImage, depthFormat);
 }

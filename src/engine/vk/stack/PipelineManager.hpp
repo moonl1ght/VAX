@@ -2,17 +2,20 @@
 #define PipelineManager_hpp
 
 #include "luna.h"
-#include "VKStack.hpp"
+#include "VKObject.hpp"
+#include "Vertex.h"
 #include "DescriptorSetManager.hpp"
 
-class PipelineManager {
+class PipelineManager final : public VKObject {
 public:
-    PipelineManager(VKStack* vkStack, DescriptorSetManager* descriptorSetManager)
-    : _vkStack(vkStack)
-    , _descriptorSetManager(descriptorSetManager) { };
+    PipelineManager(VKStack* stack, DescriptorSetManager* descriptorSetManager)
+        : VKObject(stack)
+        , _descriptorSetManager(descriptorSetManager) {
+    };
+
     ~PipelineManager() {
-        vkDestroyPipelineLayout(_vkStack->device->vkDevice, _pipelineLayout, nullptr);
-        vkDestroyPipeline(_vkStack->device->vkDevice, _pipeline, nullptr);
+        vkDestroyPipelineLayout(stack->device->vkDevice, _pipelineLayout, nullptr);
+        vkDestroyPipeline(stack->device->vkDevice, _pipeline, nullptr);
     };
 
     bool initialize();
@@ -20,9 +23,7 @@ public:
     VkPipelineLayout getPipelineLayout() const { return _pipelineLayout; }
 
 private:
-    VKStack* _vkStack;
     DescriptorSetManager* _descriptorSetManager;
-
     VkPipelineLayout _pipelineLayout = VK_NULL_HANDLE;
     VkPipeline _pipeline = VK_NULL_HANDLE;
 };

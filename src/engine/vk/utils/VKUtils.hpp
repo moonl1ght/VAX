@@ -23,9 +23,9 @@ namespace VKUtils {
     uint32_t findMemoryType(VkPhysicalDevice& physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     VkImageView createImageView(
-        VkDevice& device, 
-        VkImage image, 
-        VkFormat format, 
+        VkDevice& device,
+        VkImage image,
+        VkFormat format,
         VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
     );
 
@@ -34,12 +34,12 @@ namespace VKUtils {
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device, const VkSurfaceKHR& surface);
 
     VkFormat findSupportedFormat(
-        VkPhysicalDevice physicalDevice, 
-        const std::vector<VkFormat>& candidates, 
-        VkImageTiling tiling, 
+        VkPhysicalDevice physicalDevice,
+        const std::vector<VkFormat>& candidates,
+        VkImageTiling tiling,
         VkFormatFeatureFlags features
     );
-    
+
     VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
 
 } // namespace VKUtils

@@ -3,7 +3,6 @@
 
 #include "luna.h"
 #include "VKStack.hpp"
-#include <iostream>
 #include "VAXMath.hpp"
 #include "VKUtils.hpp"
 #include "Sampler.hpp"
