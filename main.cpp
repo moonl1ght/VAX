@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vulkan/vulkan.h>
 #include <nlohmann/json.hpp>
+#include <SDL2/SDL.h>
 
 #include "src/app/App.hpp"
 
@@ -53,7 +54,8 @@ void trasnfrom_if(Iterator1 begin, Iterator1 end, Iterator2 result, Condition co
         std::cout << *begin << std::endl;
         if (condition(*begin)) {
             *result = transformer(*begin);
-        } else {
+        }
+        else {
             *result = *begin;
         }
         result++;
@@ -62,10 +64,11 @@ void trasnfrom_if(Iterator1 begin, Iterator1 end, Iterator2 result, Condition co
 
 template<template<typename...> class Container, typename T, template<typename...> class Container2, typename T2, typename Condition, typename Transformer>
 void trasnfrom_if1(const Container<T>& v1, Container2<T2>& v2, Condition condition, Transformer transformer) {
-    for (const auto& value: v1) {
+    for (const auto& value : v1) {
         if (condition(value)) {
             v2.push_back(transformer(value));
-        } else {
+        }
+        else {
             v2.push_back(value);
         }
     }
@@ -81,7 +84,7 @@ void processContainer(const Container<T>& container) {
 }
 
 void main2() {
-    std::vector<int> v1 { 1, 2, 3, 4, 5, 6};
+    std::vector<int> v1{ 1, 2, 3, 4, 5, 6 };
     std::vector<int> v2;
     v2.resize(v1.size());
 
@@ -89,7 +92,7 @@ void main2() {
 
     // trasnfrom_if(v1.begin(), v1.end(), v2.begin(), [](int a) { return a % 2 == 0; }, [](int a) { return a*a; });
 
-    trasnfrom_if1(v1, v2, [](int a) { return a % 2 == 0; }, [](int a) { return a*a; });
+    trasnfrom_if1(v1, v2, [](int a) { return a % 2 == 0; }, [](int a) { return a * a; });
 
 
     std::for_each(v2.begin(), v2.end(), [](int n) {
@@ -99,20 +102,55 @@ void main2() {
         }
         std::cout << n;
         first = false;
-    });
+        });
     std::cout << '\n';
 }
 
 int main() {
     std::srand(std::time(0));
-    Logger::getInstance().log("Run application");
-    App app = App();
-    try {
-        app.run();
-    } catch (const std::exception& e) {
-        Logger::getInstance().error(e.what());
-        return EXIT_FAILURE;
+    // Logger::getInstance().log("Run application");
+    // App app = App();
+    // try {
+    //     app.run();
+    // } catch (const std::exception& e) {
+    //     Logger::getInstance().error(e.what());
+    //     return EXIT_FAILURE;
+    // }
+
+    SDL_Window* window = SDL_CreateWindow(
+        "Hello, SDL2 on macOS 🍎",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        640,
+        480,
+        0
+    );
+
+    if (!window)
+    {
+        printf("error creating window: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 1;
     }
+
+    // Keep the window open, in this case SDL_Delay(5000); statement won't work.
+    bool running = true;
+    while (running)
+    {
+        SDL_Event e;
+        while (SDL_PollEvent(&e) != 0)
+        {
+            if (e.type == SDL_QUIT)
+            {
+                running = false;
+                break;
+            }
+        }
+    }
+
+    // clean up resources before exiting.
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 
     // Game game = Game();
     // game.run();

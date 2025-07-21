@@ -22,6 +22,8 @@ find_package(assimp REQUIRED FATAL_ERROR)
 find_package(nlohmann_json REQUIRED FATAL_ERROR)
 find_package(vk-bootstrap REQUIRED FATAL_ERROR)
 find_package(tinyobjloader REQUIRED FATAL_ERROR)
+find_package(SDL2 REQUIRED CONFIG)
+find_package(imgui REQUIRED CONFIG)
 
 # find_package(glm REQUIRED FATAL_ERROR)
 if(DEFINED ENV{VULKAN_SDK})
@@ -102,5 +104,7 @@ if(VULKAN_FOUND)
         assimp::assimp
         vk-bootstrap::vk-bootstrap
         tinyobjloader::tinyobjloader
+        SDL2::SDL2
+        imgui::imgui
     )
 endif(VULKAN_FOUND)

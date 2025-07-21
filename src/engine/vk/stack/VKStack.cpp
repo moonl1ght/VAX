@@ -44,20 +44,15 @@ void VKStack::setup() {
     createSwapChain();
     createImageViews();
     createRenderPass();
-    // createGraphicsPipeline();
     createCommandPool();
     createDepthResources();
     createFramebuffers();
-    // createDescriptorPool();
     createCommandBuffer();
     createSyncObjects();
 }
 
 void VKStack::cleanup() {
     cleanupSwapChain();
-
-    // vkDestroyDescriptorPool(device->vkDevice, descriptorPool, nullptr);
-    // vkDestroyDescriptorSetLayout(device->vkDevice, descriptorSetLayout, nullptr);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(device->vkDevice, renderFinishedSemaphores[i], nullptr);
@@ -66,9 +61,6 @@ void VKStack::cleanup() {
     }
 
     vkDestroyCommandPool(device->vkDevice, commandPool, nullptr);
-
-    // vkDestroyPipeline(device->vkDevice, graphicsPipeline, nullptr);
-    // vkDestroyPipelineLayout(device->vkDevice, pipelineLayout, nullptr);
     vkDestroyRenderPass(device->vkDevice, renderPass, nullptr);
 
     if (enableValidationLayers) {
@@ -120,9 +112,9 @@ void VKStack::createInstance() {
 
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Luna starter";
+    appInfo.pApplicationName = "Luna";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.pEngineName = "No Engine";
+    appInfo.pEngineName = "Luna Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_2;
 

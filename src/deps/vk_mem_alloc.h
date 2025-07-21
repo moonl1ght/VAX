@@ -20,7 +20,6 @@
 // THE SOFTWARE.
 //
 
-#pragma once
 #ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
 #define AMD_VULKAN_MEMORY_ALLOCATOR_H
 

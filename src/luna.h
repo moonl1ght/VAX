@@ -1,5 +1,4 @@
-#ifndef luna_h
-#define luna_h
+#pragma once
 
 #include <iostream>
 
@@ -21,6 +20,7 @@
 #include <utility>
 
 #include "Logger.hpp"
+#include "vma.hpp"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -33,5 +33,3 @@
 #define RES_PATH(val) std::string(PROJ_DIR) + "/resources/" + val
 
 #define MACOS true
-
-#endif
