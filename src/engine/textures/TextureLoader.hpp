@@ -7,12 +7,12 @@
 #include "luna.h"
 #include "VKUtils.hpp"
 #include "Texture.hpp"
-#include "VKStack.hpp"
+#include "VKEngine.hpp"
 
 namespace TextureLoader {
 
-    Texture* loadTexture(VKStack* vkStack, std::string path, bool isAutoLoadImageView = true);
-    Texture* createDepthTexture(VKStack* vkStack, VkFormat format);
+    Texture* loadTexture(VKEngine* vkEngine, std::string path, bool isAutoLoadImageView = true);
+    Texture* createDepthTexture(VKEngine* vkEngine, VkFormat format);
 
 }  // namespace TextureLoader
 

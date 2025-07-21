@@ -19,14 +19,14 @@ std::vector<char> readFile(const std::string& filename) {
     return buffer;
 }
 
-std::optional<VkShaderModule> createShaderModule(VKStack* vkStack, const std::vector<char>& code) {
+std::optional<VkShaderModule> createShaderModule(VKEngine* vkEngine, const std::vector<char>& code) {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();
     createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
     VkShaderModule shaderModule;
-    if (vkCreateShaderModule(vkStack->device->vkDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+    if (vkCreateShaderModule(vkEngine->device->vkDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
         Logger::getInstance().error("failed to create shader module!");
         return std::nullopt;
     }

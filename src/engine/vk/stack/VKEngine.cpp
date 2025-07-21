@@ -1,4 +1,4 @@
-#include "VKStack.hpp"
+#include "VKEngine.hpp"
 #include "TextureLoader.hpp"
 #include "Texture.hpp"
 
@@ -32,7 +32,7 @@ void validationLayersDestroyDebugUtilsMessengerEXT(
     }
 }
 
-void VKStack::setup() {
+void VKEngine::setup() {
     createInstance();
     setupDebugMessenger();
     createSurface();
@@ -51,7 +51,7 @@ void VKStack::setup() {
     createSyncObjects();
 }
 
-void VKStack::cleanup() {
+void VKEngine::cleanup() {
     cleanupSwapChain();
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -76,7 +76,7 @@ void VKStack::cleanup() {
     vkDestroyInstance(instance, nullptr);
 }
 
-void VKStack::cleanupSwapChain() {
+void VKEngine::cleanupSwapChain() {
     for (auto framebuffer : swapChainFramebuffers) {
         vkDestroyFramebuffer(device->vkDevice, framebuffer, nullptr);
     }
@@ -88,7 +88,7 @@ void VKStack::cleanupSwapChain() {
     vkDestroySwapchainKHR(device->vkDevice, swapChain, nullptr);
 }
 
-void VKStack::recreateSwapChain() {
+void VKEngine::recreateSwapChain() {
     int width = 0, height = 0;
     glfwGetFramebufferSize(window, &width, &height);
     while (width == 0 || height == 0) {
@@ -105,7 +105,7 @@ void VKStack::recreateSwapChain() {
     createFramebuffers();
 }
 
-void VKStack::createInstance() {
+void VKEngine::createInstance() {
     if (enableValidationLayers && !checkValidationLayerSupport()) {
         throw std::runtime_error("validation layers requested, but not available!");
     }
@@ -146,7 +146,7 @@ void VKStack::createInstance() {
     }
 }
 
-bool VKStack::checkValidationLayerSupport() {
+bool VKEngine::checkValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -171,7 +171,7 @@ bool VKStack::checkValidationLayerSupport() {
     return true;
 }
 
-std::vector<const char*> VKStack::getRequiredExtensions() {
+std::vector<const char*> VKEngine::getRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -188,7 +188,7 @@ std::vector<const char*> VKStack::getRequiredExtensions() {
     return extensions;
 }
 
-void VKStack::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+void VKEngine::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -196,7 +196,7 @@ void VKStack::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEX
     createInfo.pfnUserCallback = debugCallback;
 }
 
-void VKStack::setupDebugMessenger() {
+void VKEngine::setupDebugMessenger() {
     if (!enableValidationLayers)
         return;
 
@@ -208,13 +208,13 @@ void VKStack::setupDebugMessenger() {
     }
 }
 
-void VKStack::createSurface() {
+void VKEngine::createSurface() {
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
     }
 }
 
-VkSurfaceFormatKHR VKStack::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+VkSurfaceFormatKHR VKEngine::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
     for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return availableFormat;
@@ -224,7 +224,7 @@ VkSurfaceFormatKHR VKStack::chooseSwapSurfaceFormat(const std::vector<VkSurfaceF
     return availableFormats[0];
 }
 
-VkPresentModeKHR VKStack::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+VkPresentModeKHR VKEngine::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
     for (const auto& availablePresentMode : availablePresentModes) {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
             return availablePresentMode;
@@ -234,7 +234,7 @@ VkPresentModeKHR VKStack::chooseSwapPresentMode(const std::vector<VkPresentModeK
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D VKStack::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+VkExtent2D VKEngine::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
     }
@@ -253,7 +253,7 @@ VkExtent2D VKStack::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilitie
     }
 }
 
-void VKStack::createSwapChain() {
+void VKEngine::createSwapChain() {
     VKUtils::SwapChainSupportDetails swapChainSupport = VKUtils::querySwapChainSupport(device->vkPhysicalDevice, surface);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -309,7 +309,7 @@ void VKStack::createSwapChain() {
     swapChainExtent = extent;
 }
 
-void VKStack::createImageViews() {
+void VKEngine::createImageViews() {
     swapChainImageViews.resize(swapChainImages.size());
 
     for (uint32_t i = 0; i < swapChainImages.size(); i++) {
@@ -317,7 +317,7 @@ void VKStack::createImageViews() {
     }
 }
 
-void VKStack::createRenderPass() {
+void VKEngine::createRenderPass() {
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = swapChainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -377,7 +377,7 @@ void VKStack::createRenderPass() {
     }
 }
 
-void VKStack::createFramebuffers() {
+void VKEngine::createFramebuffers() {
     swapChainFramebuffers.resize(swapChainImageViews.size());
 
     for (size_t i = 0; i < swapChainImageViews.size(); i++) {
@@ -401,7 +401,7 @@ void VKStack::createFramebuffers() {
     }
 }
 
-void VKStack::createCommandPool() {
+void VKEngine::createCommandPool() {
     VKUtils::QueueFamilyIndices queueFamilyIndices = VKUtils::findQueueFamilies(device->vkPhysicalDevice, surface);
 
     VkCommandPoolCreateInfo poolInfo{};
@@ -414,7 +414,7 @@ void VKStack::createCommandPool() {
     }
 }
 
-void VKStack::createCommandBuffer() {
+void VKEngine::createCommandBuffer() {
     commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -427,7 +427,7 @@ void VKStack::createCommandBuffer() {
     }
 }
 
-void VKStack::createSyncObjects() {
+void VKEngine::createSyncObjects() {
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
@@ -448,7 +448,7 @@ void VKStack::createSyncObjects() {
     }
 }
 
-VkCommandBuffer VKStack::beginSingleTimeCommands() {
+VkCommandBuffer VKEngine::beginSingleTimeCommands() {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -467,7 +467,7 @@ VkCommandBuffer VKStack::beginSingleTimeCommands() {
     return commandBuffer;
 }
 
-void VKStack::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+void VKEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     vkEndCommandBuffer(commandBuffer);
 
     VkSubmitInfo submitInfo{};
@@ -481,7 +481,7 @@ void VKStack::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     vkFreeCommandBuffers(device->vkDevice, commandPool, 1, &commandBuffer);
 }
 
-void VKStack::createDepthResources() {
+void VKEngine::createDepthResources() {
     VkFormat depthFormat = VKUtils::findDepthFormat(device->vkPhysicalDevice);
 
     depthTexture = TextureLoader::createDepthTexture(this, depthFormat);

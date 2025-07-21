@@ -2,7 +2,7 @@
 
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
     auto app = reinterpret_cast<App*>(glfwGetWindowUserPointer(window));
-    app->getVKStack()->framebufferResized = true;
+    app->getVKEngine()->framebufferResized = true;
 }
 
 void App::run() {
@@ -13,15 +13,15 @@ void App::run() {
 
 void App::setup() {
     initWindow();
-    _vkStack = new VKStack(_window);
-    _vkStack->setup();
-    _descriptorSetManager = new DescriptorSetManager(_vkStack);
+    _vkEngine = new VKEngine(_window);
+    _vkEngine->setup();
+    _descriptorSetManager = new DescriptorSetManager(_vkEngine);
     _descriptorSetManager->initialize();
-    _pipelineManager = new PipelineManager(_vkStack, _descriptorSetManager);
+    _pipelineManager = new PipelineManager(_vkEngine, _descriptorSetManager);
     _pipelineManager->initialize();
-    _renderer = new Renderer(_vkStack, _pipelineManager, _descriptorSetManager);
+    _renderer = new Renderer(_vkEngine, _pipelineManager, _descriptorSetManager);
     _renderer->prepare();
-    _scene = new Scene(_vkStack);
+    _scene = new Scene(_vkEngine);
     _scene->load();
 }
 
@@ -50,15 +50,15 @@ void App::cleanup() {
     delete _scene;
     _scene = nullptr;
 
-    _vkStack->cleanup();
+    _vkEngine->cleanup();
 
     if (_window != nullptr) {
         glfwDestroyWindow(_window);
         _window = nullptr;
     }
     glfwTerminate();
-    delete _vkStack;
-    _vkStack = nullptr;
+    delete _vkEngine;
+    _vkEngine = nullptr;
 }
 
 void App::mainLoop() {
@@ -69,7 +69,7 @@ void App::mainLoop() {
         glfwPollEvents();
         loopUpdate();
     }
-    vkDeviceWaitIdle(_vkStack->device->vkDevice);
+    vkDeviceWaitIdle(_vkEngine->device->vkDevice);
 }
 
 void App::loopUpdate() {

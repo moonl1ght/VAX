@@ -8,7 +8,7 @@
 
 class PipelineManager final : public VKObject {
 public:
-    PipelineManager(VKStack* stack, DescriptorSetManager* descriptorSetManager)
+    PipelineManager(VKEngine* stack, DescriptorSetManager* descriptorSetManager)
         : VKObject(stack)
         , _descriptorSetManager(descriptorSetManager) {
     };

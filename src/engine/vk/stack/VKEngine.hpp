@@ -1,5 +1,5 @@
-#ifndef VKStack_hpp
-#define VKStack_hpp
+#ifndef VKEngine_hpp
+#define VKEngine_hpp
 
 #include "luna.h"
 #include "VKUtils.hpp"
@@ -7,9 +7,9 @@
 
 class Texture;
 
-class VKStack final{
+class VKEngine final {
 public:
-    VKStack(GLFWwindow* window) : window(window) {};
+    VKEngine(GLFWwindow* window) : window(window) {};
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
 

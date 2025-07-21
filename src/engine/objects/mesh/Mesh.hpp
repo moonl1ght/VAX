@@ -1,7 +1,7 @@
 #ifndef Mesh_hpp
 #define Mesh_hpp
 
-#include "VKStack.hpp"
+#include "VKEngine.hpp"
 #include "Vertex.h"
 #include "Buffer.hpp"
 #include "luna.h"
@@ -35,8 +35,8 @@ public:
         return *this;
     }
 
-    void draw(VKStack* vkStack, VkCommandBuffer commandBuffer);
-    void loadBuffers(VKStack* vkStack);
+    void draw(VKEngine* vkEngine, VkCommandBuffer commandBuffer);
+    void loadBuffers(VKEngine* vkEngine);
 
 private:
     bool _isLoaded = false;

@@ -2,7 +2,7 @@
 #define Renderer_hpp
 
 #include "luna.h"
-#include "VKStack.hpp"
+#include "VKEngine.hpp"
 #include "DescriptorSetManager.hpp"
 #include "PipelineManager.hpp"
 #include "Scene.hpp"
@@ -11,16 +11,16 @@
 class Renderer {
 public:
     Renderer(
-        VKStack* vkStack, 
+        VKEngine* vkEngine, 
         PipelineManager* pipelineManager,
         DescriptorSetManager* descriptorSetManager
     )
-    : _vkStack(vkStack)
+    : _vkEngine(vkEngine)
     , _pipelineManager(pipelineManager)
     , _descriptorSetManager(descriptorSetManager) {};
 
     ~Renderer() {
-        for (size_t i = 0; i < _vkStack->MAX_FRAMES_IN_FLIGHT; i++) {
+        for (size_t i = 0; i < _vkEngine->MAX_FRAMES_IN_FLIGHT; i++) {
             delete _sceneUniformBuffers[i];
             _sceneUniformBuffers[i] = nullptr;
         }
@@ -32,7 +32,7 @@ public:
     void prepare();
 
 private:
-    VKStack* _vkStack;
+    VKEngine* _vkEngine;
     PipelineManager* _pipelineManager;
     DescriptorSetManager* _descriptorSetManager;
 

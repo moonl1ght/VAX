@@ -3,14 +3,14 @@
 #include "./deps/stb_image.h"
 
 void transitionImageLayout(
-    VKStack* vkStack,
+    VKEngine* vkEngine,
     VkImage image,
     VkFormat format,
     VkImageLayout oldLayout,
     VkImageLayout newLayout,
     VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
 ) {
-    VkCommandBuffer commandBuffer = vkStack->beginSingleTimeCommands();
+    VkCommandBuffer commandBuffer = vkEngine->beginSingleTimeCommands();
 
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -62,17 +62,17 @@ void transitionImageLayout(
         0, nullptr,
         1, &barrier);
 
-    vkStack->endSingleTimeCommands(commandBuffer);
+    vkEngine->endSingleTimeCommands(commandBuffer);
 }
 
 void copyBufferToImage(
-    VKStack* vkStack,
+    VKEngine* vkEngine,
     VkBuffer buffer,
     VkImage image,
     uint32_t width,
     uint32_t height
 ) {
-    VkCommandBuffer commandBuffer = vkStack->beginSingleTimeCommands();
+    VkCommandBuffer commandBuffer = vkEngine->beginSingleTimeCommands();
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
@@ -91,11 +91,11 @@ void copyBufferToImage(
 
     vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-    vkStack->endSingleTimeCommands(commandBuffer);
+    vkEngine->endSingleTimeCommands(commandBuffer);
 }
 
 void createImage(
-    VKStack* vkStack,
+    VKEngine* vkEngine,
     uint32_t width,
     uint32_t height,
     VkFormat format,
@@ -120,28 +120,28 @@ void createImage(
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateImage(vkStack->device->vkDevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+    if (vkCreateImage(vkEngine->device->vkDevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
         throw std::runtime_error("failed to create image!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(vkStack->device->vkDevice, image, &memRequirements);
+    vkGetImageMemoryRequirements(vkEngine->device->vkDevice, image, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = VKUtils::findMemoryType(
-        vkStack->device->vkPhysicalDevice, memRequirements.memoryTypeBits, properties
+        vkEngine->device->vkPhysicalDevice, memRequirements.memoryTypeBits, properties
     );
 
-    if (vkAllocateMemory(vkStack->device->vkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(vkEngine->device->vkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate image memory!");
     }
 
-    vkBindImageMemory(vkStack->device->vkDevice, image, imageMemory, 0);
+    vkBindImageMemory(vkEngine->device->vkDevice, image, imageMemory, 0);
 }
 
-Texture* TextureLoader::loadTexture(VKStack* vkStack, std::string path, bool isAutoLoadImageView) {
+Texture* TextureLoader::loadTexture(VKEngine* vkEngine, std::string path, bool isAutoLoadImageView) {
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize imageSize = texWidth * texHeight * 4;
@@ -151,7 +151,7 @@ Texture* TextureLoader::loadTexture(VKStack* vkStack, std::string path, bool isA
     }
 
     Buffer stagingBuffer = Buffer(
-        vkStack,
+        vkEngine,
         pixels,
         imageSize,
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -164,7 +164,7 @@ Texture* TextureLoader::loadTexture(VKStack* vkStack, std::string path, bool isA
     VkDeviceMemory textureImageMemory;
 
     createImage(
-        vkStack,
+        vkEngine,
         texWidth,
         texHeight,
         VK_FORMAT_R8G8B8A8_SRGB,
@@ -176,21 +176,21 @@ Texture* TextureLoader::loadTexture(VKStack* vkStack, std::string path, bool isA
     );
 
     transitionImageLayout(
-        vkStack,
+        vkEngine,
         textureImage,
         VK_FORMAT_R8G8B8A8_SRGB,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
     );
     copyBufferToImage(
-        vkStack,
+        vkEngine,
         stagingBuffer.vkBuffer,
         textureImage,
         static_cast<uint32_t>(texWidth),
         static_cast<uint32_t>(texHeight)
     );
     transitionImageLayout(
-        vkStack,
+        vkEngine,
         textureImage,
         VK_FORMAT_R8G8B8A8_SRGB,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -198,7 +198,7 @@ Texture* TextureLoader::loadTexture(VKStack* vkStack, std::string path, bool isA
     );
 
     auto texture = new Texture(
-        vkStack->device->vkDevice,
+        vkEngine->device->vkDevice,
         textureImage,
         textureImageMemory,
         imageSize,
@@ -208,20 +208,20 @@ Texture* TextureLoader::loadTexture(VKStack* vkStack, std::string path, bool isA
     if (isAutoLoadImageView) {
         texture->loadImageView();
     }
-    if (auto sampler = Sampler::createSampler(vkStack->device)) {
+    if (auto sampler = Sampler::createSampler(vkEngine->device)) {
         texture->sampler = std::move(*sampler);
     }
     return texture;
 }
 
-Texture* TextureLoader::createDepthTexture(VKStack* vkStack, VkFormat format) {
+Texture* TextureLoader::createDepthTexture(VKEngine* vkEngine, VkFormat format) {
     VkImage depthImage;
     VkDeviceMemory depthImageMemory;
 
     createImage(
-        vkStack,
-        vkStack->swapChainExtent.width,
-        vkStack->swapChainExtent.height,
+        vkEngine,
+        vkEngine->swapChainExtent.width,
+        vkEngine->swapChainExtent.height,
         format,
         VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -230,16 +230,16 @@ Texture* TextureLoader::createDepthTexture(VKStack* vkStack, VkFormat format) {
         depthImageMemory
     );
     auto texture = new Texture(
-        vkStack->device->vkDevice,
+        vkEngine->device->vkDevice,
         depthImage,
         depthImageMemory,
         0,
-        vax::Size(vkStack->swapChainExtent.width, vkStack->swapChainExtent.height),
+        vax::Size(vkEngine->swapChainExtent.width, vkEngine->swapChainExtent.height),
         format,
         VK_IMAGE_ASPECT_DEPTH_BIT
     );
     transitionImageLayout(
-        vkStack,
+        vkEngine,
         depthImage,
         format,
         VK_IMAGE_LAYOUT_UNDEFINED,

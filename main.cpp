@@ -108,49 +108,49 @@ void main2() {
 
 int main() {
     std::srand(std::time(0));
-    // Logger::getInstance().log("Run application");
-    // App app = App();
-    // try {
-    //     app.run();
-    // } catch (const std::exception& e) {
-    //     Logger::getInstance().error(e.what());
-    //     return EXIT_FAILURE;
+    Logger::getInstance().log("Run application");
+    App app = App();
+    try {
+        app.run();
+    } catch (const std::exception& e) {
+        Logger::getInstance().error(e.what());
+        return EXIT_FAILURE;
+    }
+
+    // SDL_Window* window = SDL_CreateWindow(
+    //     "Hello, SDL2 on macOS 🍎",
+    //     SDL_WINDOWPOS_CENTERED,
+    //     SDL_WINDOWPOS_CENTERED,
+    //     640,
+    //     480,
+    //     0
+    // );
+
+    // if (!window)
+    // {
+    //     printf("error creating window: %s\n", SDL_GetError());
+    //     SDL_Quit();
+    //     return 1;
     // }
 
-    SDL_Window* window = SDL_CreateWindow(
-        "Hello, SDL2 on macOS 🍎",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        640,
-        480,
-        0
-    );
+    // // Keep the window open, in this case SDL_Delay(5000); statement won't work.
+    // bool running = true;
+    // while (running)
+    // {
+    //     SDL_Event e;
+    //     while (SDL_PollEvent(&e) != 0)
+    //     {
+    //         if (e.type == SDL_QUIT)
+    //         {
+    //             running = false;
+    //             break;
+    //         }
+    //     }
+    // }
 
-    if (!window)
-    {
-        printf("error creating window: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
-
-    // Keep the window open, in this case SDL_Delay(5000); statement won't work.
-    bool running = true;
-    while (running)
-    {
-        SDL_Event e;
-        while (SDL_PollEvent(&e) != 0)
-        {
-            if (e.type == SDL_QUIT)
-            {
-                running = false;
-                break;
-            }
-        }
-    }
-
-    // clean up resources before exiting.
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+    // // clean up resources before exiting.
+    // SDL_DestroyWindow(window);
+    // SDL_Quit();
 
     // Game game = Game();
     // game.run();

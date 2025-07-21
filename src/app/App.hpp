@@ -2,7 +2,7 @@
 #define App_hpp
 
 #include "Renderer.hpp"
-#include "VKStack.hpp"
+#include "VKEngine.hpp"
 #include "DescriptorSetManager.hpp"
 #include "PipelineManager.hpp"
 #include "Primitives2D.hpp"
@@ -20,13 +20,13 @@ public:
     ~App() { };
 
     void run();
-    VKStack* getVKStack() const {
-        return _vkStack;
+    VKEngine* getVKEngine() const {
+        return _vkEngine;
     }
 
 private:
     GLFWwindow* _window = nullptr;
-    VKStack* _vkStack = nullptr;
+    VKEngine* _vkEngine = nullptr;
     DescriptorSetManager* _descriptorSetManager = nullptr;
     PipelineManager* _pipelineManager = nullptr;
     Renderer* _renderer = nullptr;

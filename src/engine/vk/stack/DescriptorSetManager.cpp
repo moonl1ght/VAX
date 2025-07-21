@@ -1,9 +1,9 @@
 #include "DescriptorSetManager.hpp"
 
 DescriptorSetManager::~DescriptorSetManager() {
-    vkDestroyDescriptorPool(_vkStack->device->vkDevice, _descriptorPool, nullptr);
-    vkDestroyDescriptorSetLayout(_vkStack->device->vkDevice, _globalDescriptorSetLayout, nullptr);
-    // vkDestroyDescriptorSetLayout(_vkStack->device->vkDevice, _objectDescriptorSetLayout, nullptr);
+    vkDestroyDescriptorPool(_vkEngine->device->vkDevice, _descriptorPool, nullptr);
+    vkDestroyDescriptorSetLayout(_vkEngine->device->vkDevice, _globalDescriptorSetLayout, nullptr);
+    // vkDestroyDescriptorSetLayout(_vkEngine->device->vkDevice, _objectDescriptorSetLayout, nullptr);
 }
 
 bool DescriptorSetManager::initialize() {
@@ -18,8 +18,8 @@ bool DescriptorSetManager::initialize() {
 bool DescriptorSetManager::createDescriptorPool() {
     uint32_t uniformBufferCount = 2;
     uint32_t imageSamplerCount = 1;
-    uint32_t maxUniformBufferSets = static_cast<uint32_t>(_vkStack->MAX_FRAMES_IN_FLIGHT) * uniformBufferCount;
-    uint32_t maxImageSamplerSets = static_cast<uint32_t>(_vkStack->MAX_FRAMES_IN_FLIGHT) * imageSamplerCount;
+    uint32_t maxUniformBufferSets = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT) * uniformBufferCount;
+    uint32_t maxImageSamplerSets = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT) * imageSamplerCount;
 
     std::vector<VkDescriptorPoolSize> poolSizes = {
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBufferSets },
@@ -32,7 +32,7 @@ bool DescriptorSetManager::createDescriptorPool() {
     poolInfo.pPoolSizes = poolSizes.data();
     poolInfo.maxSets = maxUniformBufferSets + maxImageSamplerSets;
 
-    if (vkCreateDescriptorPool(_vkStack->device->vkDevice, &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS) {
+    if (vkCreateDescriptorPool(_vkEngine->device->vkDevice, &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS) {
         Logger::getInstance().error("failed to create descriptor pool!");
         return false;
     }
@@ -41,23 +41,23 @@ bool DescriptorSetManager::createDescriptorPool() {
 }
 
 // std::optional<VkDescriptorSet> DescriptorSetManager::getObjectDescriptorSet(uint32_t frameIndex) {
-//     if (_objectDescriptorSets.size() == _vkStack->MAX_FRAMES_IN_FLIGHT) {
+//     if (_objectDescriptorSets.size() == _vkEngine->MAX_FRAMES_IN_FLIGHT) {
 //         // std::cout << "Returning existing descriptor set" << std::endl;
 //         return std::make_optional(_objectDescriptorSets[frameIndex]);
 //     }
 
 //     // std::cout << "Allocating new descriptor set" << std::endl;
 
-//     std::vector<VkDescriptorSetLayout> layouts(_vkStack->MAX_FRAMES_IN_FLIGHT, _objectDescriptorSetLayout);
+//     std::vector<VkDescriptorSetLayout> layouts(_vkEngine->MAX_FRAMES_IN_FLIGHT, _objectDescriptorSetLayout);
 //     VkDescriptorSetAllocateInfo allocInfo{};
 //     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 //     allocInfo.descriptorPool = _descriptorPool;
-//     allocInfo.descriptorSetCount = static_cast<uint32_t>(_vkStack->MAX_FRAMES_IN_FLIGHT);
+//     allocInfo.descriptorSetCount = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT);
 //     allocInfo.pSetLayouts = layouts.data();
 
-//     _objectDescriptorSets.resize(_vkStack->MAX_FRAMES_IN_FLIGHT);
+//     _objectDescriptorSets.resize(_vkEngine->MAX_FRAMES_IN_FLIGHT);
 //     auto result = vkAllocateDescriptorSets(
-//         _vkStack->device->vkDevice, &allocInfo, _objectDescriptorSets.data()
+//         _vkEngine->device->vkDevice, &allocInfo, _objectDescriptorSets.data()
 //     );
 //     if (result != VK_SUCCESS) {
 //         Logger::getInstance().error("Failed to allocate descriptor set!");
@@ -70,27 +70,27 @@ bool DescriptorSetManager::createDescriptorPool() {
 std::optional<VkDescriptorSet> DescriptorSetManager::getGlobalDescriptorSet(
     uint32_t frameIndex, Buffer* uniformBuffer, Texture* texture
 ) {
-    if (_globalDescriptorSets.size() == _vkStack->MAX_FRAMES_IN_FLIGHT) {
+    if (_globalDescriptorSets.size() == _vkEngine->MAX_FRAMES_IN_FLIGHT) {
         return std::make_optional(_globalDescriptorSets[frameIndex]);
     }
 
-    std::vector<VkDescriptorSetLayout> layouts(_vkStack->MAX_FRAMES_IN_FLIGHT, _globalDescriptorSetLayout);
+    std::vector<VkDescriptorSetLayout> layouts(_vkEngine->MAX_FRAMES_IN_FLIGHT, _globalDescriptorSetLayout);
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = _descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(_vkStack->MAX_FRAMES_IN_FLIGHT);
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT);
     allocInfo.pSetLayouts = layouts.data();
 
-    _globalDescriptorSets.resize(_vkStack->MAX_FRAMES_IN_FLIGHT);
+    _globalDescriptorSets.resize(_vkEngine->MAX_FRAMES_IN_FLIGHT);
     auto result = vkAllocateDescriptorSets(
-        _vkStack->device->vkDevice, &allocInfo, _globalDescriptorSets.data()
+        _vkEngine->device->vkDevice, &allocInfo, _globalDescriptorSets.data()
     );
     if (result != VK_SUCCESS) {
         Logger::getInstance().error("Failed to allocate descriptor set!");
         return std::nullopt;
     }
 
-    for (size_t i = 0; i < _vkStack->MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < _vkEngine->MAX_FRAMES_IN_FLIGHT; i++) {
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = uniformBuffer->vkBuffer;
         bufferInfo.offset = 0;
@@ -120,7 +120,7 @@ std::optional<VkDescriptorSet> DescriptorSetManager::getGlobalDescriptorSet(
         descriptorWrites[1].pImageInfo = &imageInfo;
 
         vkUpdateDescriptorSets(
-            _vkStack->device->vkDevice,
+            _vkEngine->device->vkDevice,
             static_cast<uint32_t>(descriptorWrites.size()),
             descriptorWrites.data(),
             0,
@@ -158,7 +158,7 @@ bool DescriptorSetManager::createGlobalDescriptorSetLayout() {
     layoutInfo.pBindings = bindings.data();
 
     auto result = vkCreateDescriptorSetLayout(
-        _vkStack->device->vkDevice, &layoutInfo, nullptr, &_globalDescriptorSetLayout
+        _vkEngine->device->vkDevice, &layoutInfo, nullptr, &_globalDescriptorSetLayout
     );
     if (result != VK_SUCCESS) {
         Logger::getInstance().error("Failed to create global descriptor set layout!");
@@ -184,7 +184,7 @@ bool DescriptorSetManager::createGlobalDescriptorSetLayout() {
 //     layoutInfo.pBindings = bindings.data();
 
 //     auto result = vkCreateDescriptorSetLayout(
-//         _vkStack->device->vkDevice, &layoutInfo, nullptr, &_objectDescriptorSetLayout
+//         _vkEngine->device->vkDevice, &layoutInfo, nullptr, &_objectDescriptorSetLayout
 //     );
 //     if (result != VK_SUCCESS) {
 //         Logger::getInstance().error("Failed to create object descriptor set layout!");

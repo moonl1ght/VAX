@@ -1,11 +1,11 @@
 #include "Mesh.hpp"
 
 void Mesh::draw(
-    VKStack* vkStack,
+    VKEngine* vkEngine,
     VkCommandBuffer commandBuffer
 ) {
     if (!_isLoaded) {
-        loadBuffers(vkStack);
+        loadBuffers(vkEngine);
     }
     VkBuffer vertexBuffers[] = { vertexBuffer.vkBuffer };
     VkDeviceSize offsets[] = { 0 };
@@ -14,12 +14,12 @@ void Mesh::draw(
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 }
 
-void Mesh::loadBuffers(VKStack* vkStack) {
+void Mesh::loadBuffers(VKEngine* vkEngine) {
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
     VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
     if (MACOS) {
         vertexBuffer = Buffer(
-            vkStack,
+            vkEngine,
             vertices.data(),
             bufferSize,
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -27,7 +27,7 @@ void Mesh::loadBuffers(VKStack* vkStack) {
         );
 
         indexBuffer = Buffer(
-            vkStack,
+            vkEngine,
             indices.data(),
             indexBufferSize,
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
@@ -36,37 +36,37 @@ void Mesh::loadBuffers(VKStack* vkStack) {
     }
     else {
         Buffer stagingBuffer = Buffer(
-            vkStack,
+            vkEngine,
             vertices.data(),
             bufferSize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
         );
         vertexBuffer = Buffer(
-            vkStack,
+            vkEngine,
             nullptr,
             bufferSize,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
         );
-        stagingBuffer.copyBufferTo(vkStack, vertexBuffer, bufferSize);
+        stagingBuffer.copyBufferTo(vkEngine, vertexBuffer, bufferSize);
 
         if (!indices.empty()) {
             Buffer stagingIndexBuffer = Buffer(
-                vkStack,
+                vkEngine,
                 indices.data(),
                 indexBufferSize,
                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
             );
             indexBuffer = Buffer(
-                vkStack,
+                vkEngine,
                 nullptr,
                 indexBufferSize,
                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
             );
-            stagingIndexBuffer.copyBufferTo(vkStack, indexBuffer, indexBufferSize);
+            stagingIndexBuffer.copyBufferTo(vkEngine, indexBuffer, indexBufferSize);
         }
     }
     _isLoaded = true;

@@ -1,13 +1,13 @@
 #pragma once
 
 #include "luna.h"
-#include "VKStack.hpp"
+#include "VKEngine.hpp"
 
 class VKObject {
 protected:
-    VKStack* stack = nullptr;
+    VKEngine* stack = nullptr;
 
-    VKObject(VKStack* stack) : stack(stack) {}
+    VKObject(VKEngine* stack) : stack(stack) {}
 
     virtual ~VKObject() = default;
 };

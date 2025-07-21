@@ -3,7 +3,7 @@
 
 #include "luna.h"
 #include "Device.hpp"
-#include "VKStack.hpp"
+#include "VKEngine.hpp"
 #include "Buffer.hpp"
 #include "Texture.hpp"
 #include "ShaderUniforms.h"
@@ -27,7 +27,7 @@ private:
 
 class DescriptorSetManager {
 public:
-    DescriptorSetManager(VKStack* vkStack): _vkStack(vkStack) {};
+    DescriptorSetManager(VKEngine* vkEngine): _vkEngine(vkEngine) {};
     ~DescriptorSetManager();
 
     DescriptorSetManager(const DescriptorSetManager&) = delete;
@@ -43,7 +43,7 @@ public:
     // VkDescriptorSetLayout getObjectDescriptorSetLayout() const { return _objectDescriptorSetLayout; }
 
 private:
-    VKStack* _vkStack;
+    VKEngine* _vkEngine;
 
     VkDescriptorSetLayout _globalDescriptorSetLayout = VK_NULL_HANDLE;
     // VkDescriptorSetLayout _objectDescriptorSetLayout = VK_NULL_HANDLE;
