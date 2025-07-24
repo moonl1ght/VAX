@@ -1,5 +1,7 @@
-#ifndef VKEngine_hpp
-#define VKEngine_hpp
+#pragma once
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_vulkan.h>
 
 #include "luna.h"
 #include "VKUtils.hpp"
@@ -9,7 +11,7 @@ class Texture;
 
 class VKEngine final {
 public:
-    VKEngine(GLFWwindow* window) : window(window) {};
+    VKEngine(SDL_Window* window) : window(window) {};
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -21,7 +23,7 @@ public:
     bool framebufferResized = false;
 
     VkImageView textureImageView;
-    GLFWwindow* window;
+    SDL_Window* window;
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkSurfaceKHR surface;
@@ -64,7 +66,7 @@ protected:
         VkDebugUtilsMessageTypeFlagsEXT messageType,
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData) {
-        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+        Logger::getInstance().error("validation layer: {}", pCallbackData->pMessage);
 
         return VK_FALSE;
     }
@@ -87,5 +89,3 @@ protected:
     void createSyncObjects();
     void createDepthResources();
 };
-
-#endif

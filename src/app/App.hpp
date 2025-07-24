@@ -1,42 +1,37 @@
-#ifndef App_hpp
-#define App_hpp
+#pragma once
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_vulkan.h>
 
 #include "Renderer.hpp"
 #include "VKEngine.hpp"
 #include "DescriptorSetManager.hpp"
 #include "PipelineManager.hpp"
-#include "Primitives2D.hpp"
 #include "luna.h"
-#include "Buffer.hpp"
-#include "Sampler.hpp"
-#include "../shaders/ShaderUniforms.h"
-#include "TextureLoader.hpp"
 #include "Logger.hpp"
-#include "DrawableModel.hpp"
 
 class App final {
 public:
-    App() { };
-    ~App() { };
+    App() {};
+    ~App() {};
 
     void run();
-    VKEngine* getVKEngine() const {
-        return _vkEngine;
+
+    VKEngine* getEngine() const {
+        return _engine;
     }
 
 private:
-    GLFWwindow* _window = nullptr;
-    VKEngine* _vkEngine = nullptr;
+    SDL_Window* _window = nullptr;
+    VKEngine* _engine = nullptr;
     DescriptorSetManager* _descriptorSetManager = nullptr;
     PipelineManager* _pipelineManager = nullptr;
     Renderer* _renderer = nullptr;
     Scene* _scene = nullptr;
 
-    void setup();
-    void initWindow();
+    bool setup();
+    bool initWindow();
     void mainLoop();
     void cleanup();
     void loopUpdate();
 };
-
-#endif

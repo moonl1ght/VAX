@@ -33,9 +33,13 @@ void validationLayersDestroyDebugUtilsMessengerEXT(
 }
 
 void VKEngine::setup() {
+    std::cout << "Setting up Vulkan engine" << std::endl;
     createInstance();
-    setupDebugMessenger();
     createSurface();
+    std::cout << "Instance created" << std::endl;
+    setupDebugMessenger();
+    // createSurface();
+    std::cout << "Surface created" << std::endl;
     device = new vax::Device();
     device->load(instance, surface, enableValidationLayers);
     VKUtils::QueueFamilyIndices indices = VKUtils::findQueueFamilies(device->vkPhysicalDevice, surface); // fix, unify
@@ -90,10 +94,10 @@ void VKEngine::cleanupSwapChain() {
 
 void VKEngine::recreateSwapChain() {
     int width = 0, height = 0;
-    glfwGetFramebufferSize(window, &width, &height);
+    SDL_GetWindowSizeInPixels(window, &width, &height);
     while (width == 0 || height == 0) {
-        glfwGetFramebufferSize(window, &width, &height);
-        glfwWaitEvents();
+        SDL_GetWindowSizeInPixels(window, &width, &height);
+        SDL_Delay(100);
     }
     vkDeviceWaitIdle(device->vkDevice);
 
@@ -140,10 +144,12 @@ void VKEngine::createInstance() {
 
         createInfo.pNext = nullptr;
     }
+    std::cout << "Creating instance" << std::endl;
 
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
         throw std::runtime_error("failed to create instance!");
     }
+    std::cout << "Instance created" << (instance == VK_NULL_HANDLE ? "false" : "true") << std::endl;
 }
 
 bool VKEngine::checkValidationLayerSupport() {
@@ -172,18 +178,18 @@ bool VKEngine::checkValidationLayerSupport() {
 }
 
 std::vector<const char*> VKEngine::getRequiredExtensions() {
-    uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions;
-    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    unsigned int sdl_extensions_count;
+    SDL_Vulkan_GetInstanceExtensions(window, &sdl_extensions_count, NULL);
+    const char** sdl_extensions;
+    SDL_Vulkan_GetInstanceExtensions(window, &sdl_extensions_count, sdl_extensions);
 
-    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+    std::vector<const char*> extensions(sdl_extensions, sdl_extensions + sdl_extensions_count);
 
     if (enableValidationLayers) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
     extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
     extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-    // extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
     return extensions;
 }
@@ -209,9 +215,12 @@ void VKEngine::setupDebugMessenger() {
 }
 
 void VKEngine::createSurface() {
-    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create window surface!");
+    if (!SDL_Vulkan_LoadLibrary(NULL)) {
+        printf("Vulkan load failed: %s\n", SDL_GetError());
     }
+    SDL_Vulkan_CreateSurface(window, instance, &surface);
+    std::cout << "Surface created: " << (surface == VK_NULL_HANDLE ? "false" : "true") << std::endl;
+    printf("Surface: ", SDL_GetError());
 }
 
 VkSurfaceFormatKHR VKEngine::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
@@ -240,7 +249,7 @@ VkExtent2D VKEngine::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabiliti
     }
     else {
         int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
+        SDL_GetWindowSizeInPixels(window, &width, &height);
 
         VkExtent2D actualExtent = {
             static_cast<uint32_t>(width),

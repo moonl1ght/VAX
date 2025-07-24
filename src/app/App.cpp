@@ -2,7 +2,7 @@
 
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
     auto app = reinterpret_cast<App*>(glfwGetWindowUserPointer(window));
-    app->getVKEngine()->framebufferResized = true;
+    app->getEngine()->framebufferResized = true;
 }
 
 void App::run() {
@@ -11,35 +11,47 @@ void App::run() {
     cleanup();
 }
 
-void App::setup() {
-    initWindow();
-    _vkEngine = new VKEngine(_window);
-    _vkEngine->setup();
-    _descriptorSetManager = new DescriptorSetManager(_vkEngine);
+bool App::setup() {
+    if (!initWindow()) {
+        return false;
+    }
+    _engine = new VKEngine(_window);
+    _engine->setup();
+    _descriptorSetManager = new DescriptorSetManager(_engine);
     _descriptorSetManager->initialize();
-    _pipelineManager = new PipelineManager(_vkEngine, _descriptorSetManager);
+    _pipelineManager = new PipelineManager(_engine, _descriptorSetManager);
     _pipelineManager->initialize();
-    _renderer = new Renderer(_vkEngine, _pipelineManager, _descriptorSetManager);
+    _renderer = new Renderer(_engine, _pipelineManager, _descriptorSetManager);
     _renderer->prepare();
-    _scene = new Scene(_vkEngine);
+    _scene = new Scene(_engine);
     _scene->load();
+    return true;
 }
 
-void App::initWindow() {
+bool App::initWindow() {
     const uint32_t WIDTH = 800;
     const uint32_t HEIGHT = 600;
-    glfwInit();
-
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-    _window = glfwCreateWindow(WIDTH, HEIGHT, "Luna App", nullptr, nullptr);
-    glfwSetWindowUserPointer(_window, this);
-    glfwSetFramebufferSizeCallback(_window, framebufferResizeCallback);
+    // SDL_Init(SDL_INIT_VIDEO);
+    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    _window = SDL_CreateWindow(
+        "Luna",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        WIDTH,
+        HEIGHT,
+        window_flags
+    );
+    if (_window == nullptr) {
+        Logger::getInstance().error("Failed to create window");
+        return false;
+    }
+    return true;
 }
 
 void App::cleanup() {
     Logger::getInstance().log("Cleaning up...");
+
+    vkDeviceWaitIdle(_engine->device->vkDevice);
 
     delete _descriptorSetManager;
     _descriptorSetManager = nullptr;
@@ -50,26 +62,32 @@ void App::cleanup() {
     delete _scene;
     _scene = nullptr;
 
-    _vkEngine->cleanup();
+    _engine->cleanup();
 
     if (_window != nullptr) {
-        glfwDestroyWindow(_window);
+        SDL_DestroyWindow(_window);
         _window = nullptr;
     }
-    glfwTerminate();
-    delete _vkEngine;
-    _vkEngine = nullptr;
+    SDL_Quit();
+    delete _engine;
+    _engine = nullptr;
 }
 
 void App::mainLoop() {
     if (_window == nullptr) {
         throw std::runtime_error("Window not initialized");
     }
-    while (!glfwWindowShouldClose(_window)) {
-        glfwPollEvents();
-        loopUpdate();
+    bool running = true;
+    while (running) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = false;
+                break;
+            }
+            loopUpdate();
+        }
     }
-    vkDeviceWaitIdle(_vkEngine->device->vkDevice);
 }
 
 void App::loopUpdate() {
