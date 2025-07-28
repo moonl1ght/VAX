@@ -2,110 +2,73 @@
 #define Texture_hpp
 
 #include "luna.h"
-#include "VKEngine.hpp"
 #include "VAXMath.hpp"
-#include "VKUtils.hpp"
 #include "Sampler.hpp"
+#include "VKObject.hpp"
 
-class Texture final {
+class Texture final : public VKObject {
 public:
     VkImage textureImage = VK_NULL_HANDLE;
-    VkDeviceMemory vkBufferMemory = VK_NULL_HANDLE;
-    VkDeviceSize dSize = 0;
     VkImageView textureImageView = VK_NULL_HANDLE;
+    VmaAllocation allocation = VK_NULL_HANDLE;
     vax::Size size = vax::Size::zero();
     std::unique_ptr<Sampler> sampler = nullptr;
     VkFormat format = VK_FORMAT_UNDEFINED;
     VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_NONE;
 
+    Texture() = default;
+
     Texture(
-        VkDevice device,
+        VKEngine* vkEngine,
         VkImage textureImage,
-        VkDeviceMemory vkBufferMemory,
-        VkDeviceSize dSize,
+        VmaAllocation allocation,
         vax::Size size,
         VkFormat format,
         VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
     )
-        : _device(device)
+        : VKObject(vkEngine)
         , textureImage(textureImage)
-        , vkBufferMemory(vkBufferMemory)
-        , dSize(dSize)
+        , allocation(allocation)
         , size(size)
         , format(format)
         , aspectMask(aspectMask) {
     }
 
     Texture(const Texture& other) = delete;
+
     Texture(Texture&& other) noexcept {
-        _device = other._device;
         std::swap(textureImage, other.textureImage);
-        std::swap(vkBufferMemory, other.vkBufferMemory);
-        std::swap(dSize, other.dSize);
+        std::swap(allocation, other.allocation);
         std::swap(size, other.size);
         std::swap(textureImageView, other.textureImageView);
         std::swap(format, other.format);
         std::swap(aspectMask, other.aspectMask);
-        other._device = VK_NULL_HANDLE;
+        std::swap(sampler, other.sampler);
+        std::swap(vkEngine, other.vkEngine);
     }
+
     ~Texture() {
-        if (_device != VK_NULL_HANDLE) {
-            if (textureImage != VK_NULL_HANDLE) {
-                vkDestroyImage(_device, textureImage, nullptr);
-                textureImage = VK_NULL_HANDLE;
-            }
-            if (vkBufferMemory != VK_NULL_HANDLE) {
-                vkFreeMemory(_device, vkBufferMemory, nullptr);
-                vkBufferMemory = VK_NULL_HANDLE;
-            }
-            if (textureImageView != VK_NULL_HANDLE) {
-                vkDestroyImageView(_device, textureImageView, nullptr);
-                textureImageView = VK_NULL_HANDLE;
-            }
-            if (format != VK_FORMAT_UNDEFINED) {
-                format = VK_FORMAT_UNDEFINED;
-            }
-            if (aspectMask != VK_IMAGE_ASPECT_NONE) {
-                aspectMask = VK_IMAGE_ASPECT_NONE;
-            }
-        }
+        destroy();
     }
 
     Texture& operator=(Texture& other) = delete;
+
     Texture& operator=(Texture&& other) noexcept {
         if (this != &other) {
-            // Clean up current resources
-            if (_device != VK_NULL_HANDLE) {
-                if (textureImage != VK_NULL_HANDLE) {
-                    vkDestroyImage(_device, textureImage, nullptr);
-                    textureImage = VK_NULL_HANDLE;
-                }
-                if (vkBufferMemory != VK_NULL_HANDLE) {
-                    vkFreeMemory(_device, vkBufferMemory, nullptr);
-                    vkBufferMemory = VK_NULL_HANDLE;
-                }
-                if (textureImageView != VK_NULL_HANDLE) {
-                    vkDestroyImageView(_device, textureImageView, nullptr);
-                    textureImageView = VK_NULL_HANDLE;
-                }
-            }
+            destroy();
 
-            // Move resources from other
-            _device = other._device;
-            dSize = other.dSize;
+            vkEngine = other.vkEngine;
             size = other.size;
             textureImage = other.textureImage;
-            vkBufferMemory = other.vkBufferMemory;
+            allocation = other.allocation;
             textureImageView = other.textureImageView;
             format = other.format;
             aspectMask = other.aspectMask;
 
-            // Reset other
-            other._device = VK_NULL_HANDLE;
+            other.vkEngine = VK_NULL_HANDLE;
             other.textureImage = VK_NULL_HANDLE;
-            other.vkBufferMemory = VK_NULL_HANDLE;
+            other.allocation = VK_NULL_HANDLE;
             other.textureImageView = VK_NULL_HANDLE;
-            other.dSize = 0;
             other.size = vax::Size::zero();
             other.format = VK_FORMAT_UNDEFINED;
             other.aspectMask = VK_IMAGE_ASPECT_NONE;
@@ -113,10 +76,12 @@ public:
         return *this;
     }
 
+    bool isValid() const;
     void loadImageView();
+    void destroy();
 
-private:
-    VkDevice _device;
+    std::optional<Texture*> makeCopy(VkCommandBuffer commandBuffer) const;
+    bool copyTo(Texture& other, VkCommandBuffer commandBuffer) const;
 };
 
 #endif

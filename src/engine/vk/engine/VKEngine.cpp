@@ -68,12 +68,13 @@ void VKEngine::cleanup() {
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
     }
 
-    vmaDestroyAllocator(allocator);
-
     delete depthTexture;
     depthTexture = nullptr;
 
+    vmaDestroyAllocator(allocator);
+
     delete device;
+    device = nullptr;
 
     vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyInstance(instance, nullptr);

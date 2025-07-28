@@ -4,7 +4,6 @@
 #include "luna.h"
 #include "VKUtils.hpp"
 #include "Texture.hpp"
-#include "VKEngine.hpp"
 #include "VKObjectBuilder.hpp"
 
 class TextureLoader final : public VKObjectBuilder {
@@ -18,10 +17,10 @@ public:
 
     Texture* loadTexture(std::string path, bool isAutoLoadImageView = true);
     Texture* createDepthTexture(VkFormat format);
-    Texture* createRenderDesctinationTexture(VkExtent2D windowExtent);
+    std::optional<Texture*> createRenderDesctinationTexture(VkExtent2D windowExtent);
 
 private:
-    void createImage(
+    std::optional<std::pair<VkImage, VmaAllocation>> createImage(
         VkExtent3D extent,
         VkFormat format,
         VkImageTiling tiling,
