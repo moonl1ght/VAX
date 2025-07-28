@@ -8,14 +8,14 @@
 
 class PipelineManager final : public VKObject {
 public:
-    PipelineManager(VKEngine* stack, DescriptorSetManager* descriptorSetManager)
-        : VKObject(stack)
+    PipelineManager(VKEngine* engine, DescriptorSetManager* descriptorSetManager)
+        : VKObject(engine)
         , _descriptorSetManager(descriptorSetManager) {
     };
 
     ~PipelineManager() {
-        vkDestroyPipelineLayout(stack->device->vkDevice, _pipelineLayout, nullptr);
-        vkDestroyPipeline(stack->device->vkDevice, _pipeline, nullptr);
+        vkDestroyPipelineLayout(vkEngine->device->vkDevice, _pipelineLayout, nullptr);
+        vkDestroyPipeline(vkEngine->device->vkDevice, _pipeline, nullptr);
     };
 
     bool initialize();

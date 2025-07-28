@@ -33,18 +33,15 @@ void validationLayersDestroyDebugUtilsMessengerEXT(
 }
 
 void VKEngine::setup() {
-    std::cout << "Setting up Vulkan engine" << std::endl;
     createInstance();
-    createSurface();
-    std::cout << "Instance created" << std::endl;
     setupDebugMessenger();
-    // createSurface();
-    std::cout << "Surface created" << std::endl;
+    SDL_Vulkan_CreateSurface(window, instance, &surface);
     device = new vax::Device();
     device->load(instance, surface, enableValidationLayers);
-    VKUtils::QueueFamilyIndices indices = VKUtils::findQueueFamilies(device->vkPhysicalDevice, surface); // fix, unify
+    VKUtils::QueueFamilyIndices indices = device->getQueueFamilyIndices();
     vkGetDeviceQueue(device->vkDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
     vkGetDeviceQueue(device->vkDevice, indices.presentFamily.value(), 0, &presentQueue);
+    createAllocator();
     createSwapChain();
     createImageViews();
     createRenderPass();
@@ -70,6 +67,8 @@ void VKEngine::cleanup() {
     if (enableValidationLayers) {
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
     }
+
+    vmaDestroyAllocator(allocator);
 
     delete depthTexture;
     depthTexture = nullptr;
@@ -120,7 +119,7 @@ void VKEngine::createInstance() {
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "Luna Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_2;
+    appInfo.apiVersion = vulkanApiVersion;
 
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -144,12 +143,10 @@ void VKEngine::createInstance() {
 
         createInfo.pNext = nullptr;
     }
-    std::cout << "Creating instance" << std::endl;
 
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
         throw std::runtime_error("failed to create instance!");
     }
-    std::cout << "Instance created" << (instance == VK_NULL_HANDLE ? "false" : "true") << std::endl;
 }
 
 bool VKEngine::checkValidationLayerSupport() {
@@ -198,7 +195,8 @@ void VKEngine::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoE
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     createInfo.pfnUserCallback = debugCallback;
 }
 
@@ -212,15 +210,6 @@ void VKEngine::setupDebugMessenger() {
     if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
         throw std::runtime_error("failed to set up debug messenger!");
     }
-}
-
-void VKEngine::createSurface() {
-    if (!SDL_Vulkan_LoadLibrary(NULL)) {
-        printf("Vulkan load failed: %s\n", SDL_GetError());
-    }
-    SDL_Vulkan_CreateSurface(window, instance, &surface);
-    std::cout << "Surface created: " << (surface == VK_NULL_HANDLE ? "false" : "true") << std::endl;
-    printf("Surface: ", SDL_GetError());
 }
 
 VkSurfaceFormatKHR VKEngine::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
@@ -285,7 +274,7 @@ void VKEngine::createSwapChain() {
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    VKUtils::QueueFamilyIndices indices = VKUtils::findQueueFamilies(device->vkPhysicalDevice, surface);
+    VKUtils::QueueFamilyIndices indices = device->getQueueFamilyIndices();
     uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
     if (indices.graphicsFamily != indices.presentFamily) {
@@ -322,7 +311,9 @@ void VKEngine::createImageViews() {
     swapChainImageViews.resize(swapChainImages.size());
 
     for (uint32_t i = 0; i < swapChainImages.size(); i++) {
-        swapChainImageViews[i] = VKUtils::createImageView(device->vkDevice, swapChainImages[i], swapChainImageFormat);
+        swapChainImageViews[i] = TextureLoader::createImageView(
+            device->vkDevice, swapChainImages[i], swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT
+        ).value();
     }
 }
 
@@ -411,7 +402,7 @@ void VKEngine::createFramebuffers() {
 }
 
 void VKEngine::createCommandPool() {
-    VKUtils::QueueFamilyIndices queueFamilyIndices = VKUtils::findQueueFamilies(device->vkPhysicalDevice, surface);
+    VKUtils::QueueFamilyIndices queueFamilyIndices = device->getQueueFamilyIndices();
 
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -493,5 +484,15 @@ void VKEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
 void VKEngine::createDepthResources() {
     VkFormat depthFormat = VKUtils::findDepthFormat(device->vkPhysicalDevice);
 
-    depthTexture = TextureLoader::createDepthTexture(this, depthFormat);
+    depthTexture = TextureLoader(this).createDepthTexture(depthFormat);
+}
+
+void VKEngine::createAllocator() {
+    VmaAllocatorCreateInfo allocatorInfo{};
+    allocatorInfo.physicalDevice = device->vkPhysicalDevice;
+    allocatorInfo.device = device->vkDevice;
+    allocatorInfo.instance = instance;
+    allocatorInfo.vulkanApiVersion = vulkanApiVersion;
+    allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+    vmaCreateAllocator(&allocatorInfo, &allocator);
 }

@@ -17,31 +17,6 @@ uint32_t VKUtils::findMemoryType(
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-VkImageView VKUtils::createImageView(
-    VkDevice& device,
-    VkImage image,
-    VkFormat format,
-    VkImageAspectFlags aspectMask
-) {
-    VkImageViewCreateInfo viewInfo{};
-    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewInfo.image = image;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.format = format;
-    viewInfo.subresourceRange.aspectMask = aspectMask;
-    viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = 1;
-    viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = 1;
-
-    VkImageView imageView;
-    if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create texture image view!");
-    }
-
-    return imageView;
-}
-
 VKUtils::SwapChainSupportDetails VKUtils::querySwapChainSupport(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
     VKUtils::SwapChainSupportDetails details;
 
@@ -87,13 +62,18 @@ VKUtils::QueueFamilyIndices VKUtils::findQueueFamilies(const VkPhysicalDevice& d
         if (presentSupport) {
             indices.presentFamily = i;
         }
+        std::cout << "queueFlags: " << queueFamily.queueFlags << std::endl;
 
         if (indices.isComplete()) {
+            std::cout << "indices.isComplete(): " << indices.isComplete() << std::endl;
             break;
         }
 
         i++;
     }
+
+    std::cout << "indices.graphicsFamily: " << indices.graphicsFamily.value() << std::endl;
+    std::cout << "indices.presentFamily: " << indices.presentFamily.value() << std::endl;
 
     return indices;
 }

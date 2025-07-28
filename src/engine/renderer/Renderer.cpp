@@ -71,7 +71,9 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(_vkEngine->graphicsQueue, 1, &submitInfo, _vkEngine->inFlightFences[_currentFrame]) != VK_SUCCESS) {
+    if (
+        vkQueueSubmit(_vkEngine->graphicsQueue, 1, &submitInfo, _vkEngine->inFlightFences[_currentFrame]) != VK_SUCCESS
+    ) {
         Logger::getInstance().error("failed to submit draw command buffer!");
         return false;
     }
@@ -101,7 +103,9 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     return true;
 }
 
-bool Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime) {
+bool Renderer::recordCommandBuffer(
+    VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime
+) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 

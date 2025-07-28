@@ -85,17 +85,17 @@ void App::mainLoop() {
                 running = false;
                 break;
             }
-            loopUpdate();
         }
+        loopUpdate();
     }
 }
 
 void App::loopUpdate() {
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
-    float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-    _scene->update(deltaTime);
-    if (!_renderer->render(_scene, deltaTime)) {
+    float timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    _scene->update(timestamp);
+    if (!_renderer->render(_scene, timestamp)) {
         Logger::getInstance().error("Failed to render scene!");
     }
 }

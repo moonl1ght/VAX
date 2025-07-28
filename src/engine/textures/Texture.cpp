@@ -1,5 +1,6 @@
 #include "Texture.hpp"
+#include "TextureLoader.hpp"
 
 void Texture::loadImageView() {
-    textureImageView = VKUtils::createImageView(_device, textureImage, format, aspectMask);
+    textureImageView = TextureLoader::createImageView(_device, textureImage, format, aspectMask).value();
 }

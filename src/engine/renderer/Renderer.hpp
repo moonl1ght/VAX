@@ -11,13 +11,14 @@
 class Renderer {
 public:
     Renderer(
-        VKEngine* vkEngine, 
+        VKEngine* vkEngine,
         PipelineManager* pipelineManager,
         DescriptorSetManager* descriptorSetManager
     )
-    : _vkEngine(vkEngine)
-    , _pipelineManager(pipelineManager)
-    , _descriptorSetManager(descriptorSetManager) {};
+        : _vkEngine(vkEngine)
+        , _pipelineManager(pipelineManager)
+        , _descriptorSetManager(descriptorSetManager) {
+    };
 
     ~Renderer() {
         for (size_t i = 0; i < _vkEngine->MAX_FRAMES_IN_FLIGHT; i++) {

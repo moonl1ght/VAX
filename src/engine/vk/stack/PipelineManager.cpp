@@ -19,14 +19,14 @@ std::vector<char> readFile(const std::string& filename) {
     return buffer;
 }
 
-std::optional<VkShaderModule> createShaderModule(VKEngine* vkEngine, const std::vector<char>& code) {
+std::optional<VkShaderModule> createShaderModule(VKEngine* engine, const std::vector<char>& code) {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();
     createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
     VkShaderModule shaderModule;
-    if (vkCreateShaderModule(vkEngine->device->vkDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+    if (vkCreateShaderModule(engine->device->vkDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
         Logger::getInstance().error("failed to create shader module!");
         return std::nullopt;
     }
@@ -42,8 +42,8 @@ bool PipelineManager::initialize() {
         return false;
     }
 
-    auto vertShaderModule = createShaderModule(stack, vertShaderCode);
-    auto fragShaderModule = createShaderModule(stack, fragShaderCode);
+    auto vertShaderModule = createShaderModule(vkEngine, vertShaderCode);
+    auto fragShaderModule = createShaderModule(vkEngine, fragShaderCode);
 
     if (!vertShaderModule.has_value() || !fragShaderModule.has_value()) {
         Logger::getInstance().error("failed to create shader module!");
@@ -157,7 +157,7 @@ bool PipelineManager::initialize() {
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
     auto result = vkCreatePipelineLayout(
-        stack->device->vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout
+        vkEngine->device->vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout
     );
     if (result != VK_SUCCESS) {
         Logger::getInstance().error("failed to create pipeline layout!");
@@ -177,19 +177,19 @@ bool PipelineManager::initialize() {
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = _pipelineLayout;
-    pipelineInfo.renderPass = stack->renderPass;
+    pipelineInfo.renderPass = vkEngine->renderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     auto pipelineResult = vkCreateGraphicsPipelines(
-        stack->device->vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline
+        vkEngine->device->vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline
     );
     if (pipelineResult != VK_SUCCESS) {
         Logger::getInstance().error("failed to create graphics pipeline!");
         return false;
     }
 
-    vkDestroyShaderModule(stack->device->vkDevice, fragShaderModule.value(), nullptr);
-    vkDestroyShaderModule(stack->device->vkDevice, vertShaderModule.value(), nullptr);
+    vkDestroyShaderModule(vkEngine->device->vkDevice, fragShaderModule.value(), nullptr);
+    vkDestroyShaderModule(vkEngine->device->vkDevice, vertShaderModule.value(), nullptr);
     return true;
 }

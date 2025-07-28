@@ -5,9 +5,9 @@
 
 class VKObject {
 protected:
-    VKEngine* stack = nullptr;
+    VKEngine* vkEngine = nullptr;
 
-    VKObject(VKEngine* stack) : stack(stack) {}
+    VKObject(VKEngine* vkEngine) : vkEngine(vkEngine) {}
 
     virtual ~VKObject() = default;
 };

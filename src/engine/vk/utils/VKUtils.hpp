@@ -3,6 +3,17 @@
 
 #include "luna.h"
 
+#define VK_CHECK(x)                                                     \
+    ({                                                                  \
+        VkResult err = (x);                                             \
+        if (err != VK_SUCCESS) {                                        \
+            Logger::getInstance().error(                                \
+                "Detected Vulkan error: {}", err                        \
+            );                                                          \
+        }                                                               \
+        (err == VK_SUCCESS); /* Returns `true` if success */            \
+    })
+
 namespace VKUtils {
 
     struct SwapChainSupportDetails {
@@ -21,13 +32,6 @@ namespace VKUtils {
     };
 
     uint32_t findMemoryType(VkPhysicalDevice& physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
-
-    VkImageView createImageView(
-        VkDevice& device,
-        VkImage image,
-        VkFormat format,
-        VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
-    );
 
     SwapChainSupportDetails querySwapChainSupport(const VkPhysicalDevice& device, const VkSurfaceKHR& surface);
 

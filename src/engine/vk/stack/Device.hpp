@@ -1,9 +1,8 @@
-#ifndef Device_hpp
-#define Device_hpp
+#pragma once
 
 #include "luna.h"
 #include "VKUtils.hpp"
-#include <iostream>
+#include "Logger.hpp"
 
 namespace vax {
 class Device final {
@@ -36,9 +35,17 @@ public:
     bool load(VkInstance instance, VkSurfaceKHR surface, bool enableValidationLayers);
     bool isReady() { return _isReady; }
 
+    VKUtils::QueueFamilyIndices getQueueFamilyIndices() const { return _indices; }
+
 private:
+    VKUtils::QueueFamilyIndices _indices;
     bool _isReady = false;
+
+    int createLogicalDevice(
+        const VkPhysicalDevice& physicalDevice,
+        const VkSurfaceKHR& surface,
+        VkDevice& device,
+        bool enableValidationLayers
+    );
 };
 } // namespace vax
-
-#endif

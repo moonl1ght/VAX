@@ -20,19 +20,25 @@ public:
     Logger& operator=(Logger&&) = delete;
 
     template<typename... Args>
-    void log(const Args&... args) {
+    void log(const Args&... args) const {
         std::cout << "[LOG 📝] ";
         (std::cout << ... << args) << std::endl;
     }
 
     template<typename... Args>
-    void error(const Args&... args) {
+    void error(const Args&... args) const {
         std::cout << "[ERROR 💥] ";
         (std::cerr << ... << args) << std::endl;
     }
 
     template<typename... Args>
-    void debugPrint(const Args&... args) {
+    void warning(const Args&... args) const {
+        std::cout << "[WARNING ⚠️] ";
+        (std::cout << ... << args) << std::endl;
+    }
+
+    template<typename... Args>
+    void debugPrint(const Args&... args) const {
         std::cout << "[DEBUG 🐛] ";
         (std::cout << ... << args) << std::endl;
     }

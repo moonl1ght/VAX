@@ -2,7 +2,7 @@
 
 using namespace vax;
 
-std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
     uint32_t extensionCount;
@@ -13,24 +13,25 @@ bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
 
     std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
-    for (const auto &extension : availableExtensions) {
+    for (const auto& extension : availableExtensions) {
         requiredExtensions.erase(extension.extensionName);
     }
 
     return requiredExtensions.empty();
 }
 
-int createLogicalDevice(
-    const VkPhysicalDevice &physicalDevice,
-    const VkSurfaceKHR &surface,
-    VkDevice &device,
-    bool enableValidationLayers) {
-    VKUtils::QueueFamilyIndices indices = VKUtils::findQueueFamilies(physicalDevice, surface);
+int Device::createLogicalDevice(
+    const VkPhysicalDevice& physicalDevice,
+    const VkSurfaceKHR& surface,
+    VkDevice& device,
+    bool enableValidationLayers
+) {
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies{
-        indices.graphicsFamily.value(),
-        indices.presentFamily.value()};
+        _indices.graphicsFamily.value(),
+        _indices.presentFamily.value()
+    };
 
     float queuePriority = 1.0f;
     for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -64,17 +65,14 @@ int createLogicalDevice(
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
     if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
-        std::cerr << "failed to create logical device!" << std::endl;
+        Logger::getInstance().error("failed to create logical device!");
         return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;
-
-    // vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
-    // vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
 }
 
-bool isDeviceSuitable(const VkPhysicalDevice &device, const VkSurfaceKHR &surface) {
+bool isDeviceSuitable(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
     VKUtils::QueueFamilyIndices indices = VKUtils::findQueueFamilies(device, surface);
 
     bool extensionsSupported = checkDeviceExtensionSupport(device);
@@ -91,19 +89,19 @@ bool isDeviceSuitable(const VkPhysicalDevice &device, const VkSurfaceKHR &surfac
     return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
 }
 
-int pickPhysicalDevice(const VkInstance &instance, const VkSurfaceKHR &surface, VkPhysicalDevice &physicalDevice) {
+int pickPhysicalDevice(const VkInstance& instance, const VkSurfaceKHR& surface, VkPhysicalDevice& physicalDevice) {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
     if (deviceCount == 0) {
-        std::cerr << "failed to find GPUs with Vulkan support!" << std::endl;
+        Logger::getInstance().error("failed to find GPUs with Vulkan support!");
         return EXIT_FAILURE;
     }
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-    for (const auto &device : devices) {
+    for (const auto& device : devices) {
         if (isDeviceSuitable(device, surface)) {
             physicalDevice = device;
             break;
@@ -111,7 +109,7 @@ int pickPhysicalDevice(const VkInstance &instance, const VkSurfaceKHR &surface, 
     }
 
     if (physicalDevice == VK_NULL_HANDLE) {
-        std::cerr << "failed to find a suitable GPU!" << std::endl;
+        Logger::getInstance().error("failed to find a suitable GPU!");
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
@@ -119,6 +117,7 @@ int pickPhysicalDevice(const VkInstance &instance, const VkSurfaceKHR &surface, 
 
 bool Device::load(VkInstance instance, VkSurfaceKHR surface, bool enableValidationLayers) {
     if (pickPhysicalDevice(instance, surface, vkPhysicalDevice) == EXIT_SUCCESS) {
+        _indices = VKUtils::findQueueFamilies(vkPhysicalDevice, surface);
         if (createLogicalDevice(vkPhysicalDevice, surface, vkDevice, enableValidationLayers) == EXIT_SUCCESS) {
             _isReady = true;
             return true;
