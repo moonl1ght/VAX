@@ -3,6 +3,11 @@
 
 #include <iostream>
 
+#define LOG_INFO(message) Logger::getInstance().log(message)
+#define LOG_ERROR(message) Logger::getInstance().error(message)
+#define LOG_WARNING(message) Logger::getInstance().warning(message)
+#define LOG_DEBUG(message) Logger::getInstance().debugPrint(message)
+
 class Logger {
 public:
     static Logger& getInstance() {

@@ -62,26 +62,21 @@ VKUtils::QueueFamilyIndices VKUtils::findQueueFamilies(const VkPhysicalDevice& d
         if (presentSupport) {
             indices.presentFamily = i;
         }
-        std::cout << "queueFlags: " << queueFamily.queueFlags << std::endl;
 
         if (indices.isComplete()) {
-            std::cout << "indices.isComplete(): " << indices.isComplete() << std::endl;
             break;
         }
 
         i++;
     }
 
-    std::cout << "indices.graphicsFamily: " << indices.graphicsFamily.value() << std::endl;
-    std::cout << "indices.presentFamily: " << indices.presentFamily.value() << std::endl;
-
     return indices;
 }
 
 VkFormat VKUtils::findSupportedFormat(
     VkPhysicalDevice physicalDevice,
-    const std::vector<VkFormat>& candidates, 
-    VkImageTiling tiling, 
+    const std::vector<VkFormat>& candidates,
+    VkImageTiling tiling,
     VkFormatFeatureFlags features
 ) {
     for (VkFormat format : candidates) {
@@ -90,7 +85,8 @@ VkFormat VKUtils::findSupportedFormat(
 
         if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
             return format;
-        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+        }
+        else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
             return format;
         }
     }
@@ -101,7 +97,7 @@ VkFormat VKUtils::findSupportedFormat(
 VkFormat VKUtils::findDepthFormat(VkPhysicalDevice physicalDevice) {
     return findSupportedFormat(
         physicalDevice,
-        {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+        { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
         VK_IMAGE_TILING_OPTIMAL,
         VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
     );

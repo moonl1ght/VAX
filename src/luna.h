@@ -22,6 +22,9 @@
 #include "Logger.hpp"
 #include "vma.hpp"
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_vulkan.h>
+
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

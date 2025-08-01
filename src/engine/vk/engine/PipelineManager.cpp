@@ -34,7 +34,7 @@ std::optional<VkShaderModule> createShaderModule(VKEngine* engine, const std::ve
     return shaderModule;
 }
 
-bool PipelineManager::initialize() {
+bool PipelineManager::setup() {
     auto vertShaderCode = readFile(SRC_PATH("engine/shaders/out/shader.vert.spv"));
     auto fragShaderCode = readFile(SRC_PATH("engine/shaders/out/shader.frag.spv"));
     if (vertShaderCode.empty() || fragShaderCode.empty()) {
@@ -177,7 +177,8 @@ bool PipelineManager::initialize() {
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = _pipelineLayout;
-    pipelineInfo.renderPass = vkEngine->renderPass;
+    pipelineInfo.renderPass = vkEngine->renderPassManager->getRenderPass();
+    // pipelineInfo.renderPass = vkEngine->renderPassManager->getRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 

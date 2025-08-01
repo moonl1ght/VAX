@@ -1,8 +1,9 @@
 #include "Texture.hpp"
 #include "TextureLoader.hpp"
+#include "ImageUtils.hpp"
 
 void Texture::loadImageView() {
-    textureImageView = TextureLoader::createImageView(
+    textureImageView = vax::createImageView(
         vkEngine->device->vkDevice, textureImage, format, aspectMask
     ).value();
 }

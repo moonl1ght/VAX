@@ -1,6 +1,10 @@
 #include "VKEngine.hpp"
 #include "TextureLoader.hpp"
 #include "Texture.hpp"
+#include "SwapchainManager.hpp"
+#include "RenderingDestination.hpp"
+#include "DescriptorSetManager.hpp"
+#include "PipelineManager.hpp"
 
 VkResult CreateDebugUtilsMessengerEXT(
     VkInstance instance,
@@ -32,86 +36,125 @@ void validationLayersDestroyDebugUtilsMessengerEXT(
     }
 }
 
-void VKEngine::setup() {
-    createInstance();
-    setupDebugMessenger();
-    SDL_Vulkan_CreateSurface(window, instance, &surface);
+bool VKEngine::setup() {
+    if (!createInstance()) return false;
+
+    if (!setupDebugMessenger()) return false;
+
+    LOG_INFO("Creating surface...");
+    if (!SDL_Vulkan_CreateSurface(window, instance, &surface)) {
+        LOG_ERROR("Failed to create surface!");
+        return false;
+    }
+
+    deletionQueue.push_function(
+        [&]() {
+            LOG_INFO("Destroying surface...");
+            vkDestroySurfaceKHR(instance, surface, nullptr);
+        }
+    );
+
+    LOG_INFO("Creating device...");
     device = new vax::Device();
-    device->load(instance, surface, enableValidationLayers);
+    if (!device->load(instance, surface, enableValidationLayers)) {
+        LOG_ERROR("Failed to create device!");
+        return false;
+    }
+
+    deletionQueue.push_function(
+        [&]() {
+            LOG_INFO("Destroying device...");
+            delete device;
+            device = nullptr;
+        }
+    );
+
+    LOG_INFO("Getting device queues...");
     VKUtils::QueueFamilyIndices indices = device->getQueueFamilyIndices();
     vkGetDeviceQueue(device->vkDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
     vkGetDeviceQueue(device->vkDevice, indices.presentFamily.value(), 0, &presentQueue);
-    createAllocator();
-    createSwapChain();
-    createImageViews();
-    createRenderPass();
-    createCommandPool();
-    createDepthResources();
-    createFramebuffers();
-    createCommandBuffer();
-    createSyncObjects();
+
+    LOG_INFO("Creating allocator...");
+    if (!VK_CHECK(createAllocator())) {
+        LOG_ERROR("Failed to create allocator!");
+        return false;
+    }
+
+    deletionQueue.push_function(
+        [&]() {
+            LOG_INFO("Destroying allocator...");
+            vmaDestroyAllocator(allocator);
+        }
+    );
+
+    if (!createCommandPool()) return false;
+
+    if (!createCommandBuffer()) return false;
+
+    if (!createSyncObjects()) return false;
+
+    swapchainManager = new SwapchainManager(window, surface, device);
+    if (!swapchainManager->setup()) return false;
+    deletionQueue.push_function(
+        [&]() {
+            swapchainManager->cleanup();
+            delete swapchainManager;
+            swapchainManager = nullptr;
+        }
+    );
+
+    renderPassManager = new RenderPassManager(swapchainManager, device);
+    if (!renderPassManager->setup()) return false;
+    deletionQueue.push_function(
+        [&]() {
+            renderPassManager->cleanup();
+            delete renderPassManager;
+            renderPassManager = nullptr;
+        }
+    );
+
+    renderingDestination = new RenderingDestination(this, swapchainManager, renderPassManager);
+    renderingDestination->setup();
+    deletionQueue.push_function(
+        [&]() {
+            renderingDestination->cleanup();
+            delete renderingDestination;
+            renderingDestination = nullptr;
+        }
+    );
+
+    descriptorSetManager = new DescriptorSetManager(this);
+    if (!descriptorSetManager->setup()) return false;
+    deletionQueue.push_function(
+        [&]() {
+            delete descriptorSetManager;
+            descriptorSetManager = nullptr;
+        }
+    );
+
+    pipelineManager = new PipelineManager(this, descriptorSetManager);
+    pipelineManager->setup();
+    deletionQueue.push_function(
+        [&]() {
+            delete pipelineManager;
+            pipelineManager = nullptr;
+        }
+    );
+
+    LOG_INFO("✅ Engine setup complete!");
+    return true;
 }
 
 void VKEngine::cleanup() {
-    cleanupSwapChain();
-
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroySemaphore(device->vkDevice, renderFinishedSemaphores[i], nullptr);
-        vkDestroySemaphore(device->vkDevice, imageAvailableSemaphores[i], nullptr);
-        vkDestroyFence(device->vkDevice, inFlightFences[i], nullptr);
-    }
-
-    vkDestroyCommandPool(device->vkDevice, commandPool, nullptr);
-    vkDestroyRenderPass(device->vkDevice, renderPass, nullptr);
-
-    if (enableValidationLayers) {
-        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-    }
-
-    delete depthTexture;
-    depthTexture = nullptr;
-
-    vmaDestroyAllocator(allocator);
-
-    delete device;
-    device = nullptr;
-
-    vkDestroySurfaceKHR(instance, surface, nullptr);
-    vkDestroyInstance(instance, nullptr);
+    deletionQueue.flush();
+    LOG_INFO("🧹 Engine cleanup complete!");
 }
 
-void VKEngine::cleanupSwapChain() {
-    for (auto framebuffer : swapChainFramebuffers) {
-        vkDestroyFramebuffer(device->vkDevice, framebuffer, nullptr);
-    }
-
-    for (auto imageView : swapChainImageViews) {
-        vkDestroyImageView(device->vkDevice, imageView, nullptr);
-    }
-
-    vkDestroySwapchainKHR(device->vkDevice, swapChain, nullptr);
-}
-
-void VKEngine::recreateSwapChain() {
-    int width = 0, height = 0;
-    SDL_GetWindowSizeInPixels(window, &width, &height);
-    while (width == 0 || height == 0) {
-        SDL_GetWindowSizeInPixels(window, &width, &height);
-        SDL_Delay(100);
-    }
-    vkDeviceWaitIdle(device->vkDevice);
-
-    cleanupSwapChain();
-
-    createSwapChain();
-    createImageViews();
-    createDepthResources();
-    createFramebuffers();
-}
-
-void VKEngine::createInstance() {
+bool VKEngine::createInstance() {
+    LOG_INFO("Creating instance...");
     if (enableValidationLayers && !checkValidationLayerSupport()) {
-        throw std::runtime_error("validation layers requested, but not available!");
+        LOG_ERROR("Validation layers requested, but not available!");
+        return false;
     }
 
     VkApplicationInfo appInfo{};
@@ -141,13 +184,22 @@ void VKEngine::createInstance() {
     }
     else {
         createInfo.enabledLayerCount = 0;
-
         createInfo.pNext = nullptr;
     }
 
-    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create instance!");
+    if (!VK_CHECK(vkCreateInstance(&createInfo, nullptr, &instance))) {
+        LOG_ERROR("Failed to create instance!");
+        return false;
     }
+
+    deletionQueue.push_function(
+        [&]() {
+            LOG_INFO("Destroying instance...");
+            vkDestroyInstance(instance, nullptr);
+        }
+    );
+
+    return true;
 }
 
 bool VKEngine::checkValidationLayerSupport() {
@@ -195,214 +247,39 @@ std::vector<const char*> VKEngine::getRequiredExtensions() {
 void VKEngine::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     createInfo.pfnUserCallback = debugCallback;
 }
 
-void VKEngine::setupDebugMessenger() {
-    if (!enableValidationLayers)
-        return;
+bool VKEngine::setupDebugMessenger() {
+    LOG_INFO("Setting up debug messenger...");
+    if (!enableValidationLayers) return false;
 
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
 
-    if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
-        throw std::runtime_error("failed to set up debug messenger!");
+    if (!VK_CHECK(CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger))) {
+        LOG_ERROR("Failed to set up debug messenger!");
+        return false;
     }
-}
 
-VkSurfaceFormatKHR VKEngine::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
-    for (const auto& availableFormat : availableFormats) {
-        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-            return availableFormat;
+    deletionQueue.push_function(
+        [&]() {
+            LOG_INFO("Destroying debug messenger...");
+            DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
         }
-    }
+    );
 
-    return availableFormats[0];
+    return true;
 }
 
-VkPresentModeKHR VKEngine::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
-    for (const auto& availablePresentMode : availablePresentModes) {
-        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-            return availablePresentMode;
-        }
-    }
-
-    return VK_PRESENT_MODE_FIFO_KHR;
-}
-
-VkExtent2D VKEngine::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
-    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
-        return capabilities.currentExtent;
-    }
-    else {
-        int width, height;
-        SDL_GetWindowSizeInPixels(window, &width, &height);
-
-        VkExtent2D actualExtent = {
-            static_cast<uint32_t>(width),
-            static_cast<uint32_t>(height) };
-
-        actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-        actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-
-        return actualExtent;
-    }
-}
-
-void VKEngine::createSwapChain() {
-    VKUtils::SwapChainSupportDetails swapChainSupport = VKUtils::querySwapChainSupport(device->vkPhysicalDevice, surface);
-
-    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-    VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-    VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
-
-    uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-    if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
-        imageCount = swapChainSupport.capabilities.maxImageCount;
-    }
-
-    VkSwapchainCreateInfoKHR createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = surface;
-
-    createInfo.minImageCount = imageCount;
-    createInfo.imageFormat = surfaceFormat.format;
-    createInfo.imageColorSpace = surfaceFormat.colorSpace;
-    createInfo.imageExtent = extent;
-    createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-    VKUtils::QueueFamilyIndices indices = device->getQueueFamilyIndices();
-    uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
-
-    if (indices.graphicsFamily != indices.presentFamily) {
-        createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-        createInfo.queueFamilyIndexCount = 2;
-        createInfo.pQueueFamilyIndices = queueFamilyIndices;
-    }
-    else {
-        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.queueFamilyIndexCount = 0;     // Optional
-        createInfo.pQueueFamilyIndices = nullptr; // Optional
-    }
-
-    createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    createInfo.presentMode = presentMode;
-    createInfo.clipped = VK_TRUE;
-
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
-
-    if (vkCreateSwapchainKHR(device->vkDevice, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create swap chain!");
-    }
-
-    vkGetSwapchainImagesKHR(device->vkDevice, swapChain, &imageCount, nullptr);
-    swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(device->vkDevice, swapChain, &imageCount, swapChainImages.data());
-
-    swapChainImageFormat = surfaceFormat.format;
-    swapChainExtent = extent;
-}
-
-void VKEngine::createImageViews() {
-    swapChainImageViews.resize(swapChainImages.size());
-
-    for (uint32_t i = 0; i < swapChainImages.size(); i++) {
-        swapChainImageViews[i] = TextureLoader::createImageView(
-            device->vkDevice, swapChainImages[i], swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT
-        ).value();
-    }
-}
-
-void VKEngine::createRenderPass() {
-    VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = swapChainImageFormat;
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-    VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = VKUtils::findDepthFormat(device->vkPhysicalDevice);
-    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-    VkAttachmentReference colorAttachmentRef{};
-    colorAttachmentRef.attachment = 0;
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    VkAttachmentReference depthAttachmentRef{};
-    depthAttachmentRef.attachment = 1;
-    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-    VkSubpassDescription subpass{};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
-    subpass.pDepthStencilAttachment = &depthAttachmentRef;
-
-    VkSubpassDependency dependency{};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependency.dstSubpass = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.srcAccessMask = 0;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-    std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
-    VkRenderPassCreateInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    renderPassInfo.pAttachments = attachments.data();
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpass;
-    renderPassInfo.dependencyCount = 1;
-    renderPassInfo.pDependencies = &dependency;
-
-    if (vkCreateRenderPass(device->vkDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create render pass!");
-    }
-}
-
-void VKEngine::createFramebuffers() {
-    swapChainFramebuffers.resize(swapChainImageViews.size());
-
-    for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-        std::array<VkImageView, 2> attachments = {
-            swapChainImageViews[i],
-            depthTexture->textureImageView
-        };
-
-        VkFramebufferCreateInfo framebufferInfo{};
-        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = renderPass;
-        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        framebufferInfo.pAttachments = attachments.data();
-        framebufferInfo.width = swapChainExtent.width;
-        framebufferInfo.height = swapChainExtent.height;
-        framebufferInfo.layers = 1;
-
-        if (vkCreateFramebuffer(device->vkDevice, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create framebuffer!");
-        }
-    }
-}
-
-void VKEngine::createCommandPool() {
+bool VKEngine::createCommandPool() {
+    LOG_INFO("Creating command pool...");
     VKUtils::QueueFamilyIndices queueFamilyIndices = device->getQueueFamilyIndices();
 
     VkCommandPoolCreateInfo poolInfo{};
@@ -410,12 +287,23 @@ void VKEngine::createCommandPool() {
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-    if (vkCreateCommandPool(device->vkDevice, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create command pool!");
+    if (!VK_CHECK(vkCreateCommandPool(device->vkDevice, &poolInfo, nullptr, &commandPool))) {
+        LOG_ERROR("Failed to create command pool!");
+        return false;
     }
+
+    deletionQueue.push_function(
+        [&]() {
+            LOG_INFO("Destroying command pool...");
+            vkDestroyCommandPool(device->vkDevice, commandPool, nullptr);
+        }
+    );
+
+    return true;
 }
 
-void VKEngine::createCommandBuffer() {
+bool VKEngine::createCommandBuffer() {
+    LOG_INFO("Creating command buffer...");
     commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -423,12 +311,16 @@ void VKEngine::createCommandBuffer() {
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-    if (vkAllocateCommandBuffers(device->vkDevice, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate command buffers!");
+    if (!VK_CHECK(vkAllocateCommandBuffers(device->vkDevice, &allocInfo, commandBuffers.data()))) {
+        LOG_ERROR("Failed to allocate command buffers!");
+        return false;
     }
+
+    return true;
 }
 
-void VKEngine::createSyncObjects() {
+bool VKEngine::createSyncObjects() {
+    LOG_INFO("Creating synchronization objects...");
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
@@ -440,13 +332,27 @@ void VKEngine::createSyncObjects() {
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        if (vkCreateSemaphore(device->vkDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(device->vkDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
-            vkCreateFence(device->vkDevice, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
+        if (!VK_CHECK(vkCreateSemaphore(device->vkDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i])) ||
+            !VK_CHECK(vkCreateSemaphore(device->vkDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i])) ||
+            !VK_CHECK(vkCreateFence(device->vkDevice, &fenceInfo, nullptr, &inFlightFences[i]))) {
 
-            throw std::runtime_error("failed to create synchronization objects for a frame!");
+            LOG_ERROR("Failed to create synchronization objects for a frame!");
+            return false;
         }
     }
+
+    deletionQueue.push_function(
+        [&]() {
+            LOG_INFO("Destroying synchronization objects...");
+            for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                vkDestroySemaphore(device->vkDevice, imageAvailableSemaphores[i], nullptr);
+                vkDestroySemaphore(device->vkDevice, renderFinishedSemaphores[i], nullptr);
+                vkDestroyFence(device->vkDevice, inFlightFences[i], nullptr);
+            }
+        }
+    );
+
+    return true;
 }
 
 VkCommandBuffer VKEngine::beginSingleTimeCommands() {
@@ -482,18 +388,12 @@ void VKEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     vkFreeCommandBuffers(device->vkDevice, commandPool, 1, &commandBuffer);
 }
 
-void VKEngine::createDepthResources() {
-    VkFormat depthFormat = VKUtils::findDepthFormat(device->vkPhysicalDevice);
-
-    depthTexture = TextureLoader(this).createDepthTexture(depthFormat);
-}
-
-void VKEngine::createAllocator() {
+VkResult VKEngine::createAllocator() {
     VmaAllocatorCreateInfo allocatorInfo{};
     allocatorInfo.physicalDevice = device->vkPhysicalDevice;
     allocatorInfo.device = device->vkDevice;
     allocatorInfo.instance = instance;
     allocatorInfo.vulkanApiVersion = vulkanApiVersion;
     allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
-    vmaCreateAllocator(&allocatorInfo, &allocator);
+    return vmaCreateAllocator(&allocatorInfo, &allocator);
 }

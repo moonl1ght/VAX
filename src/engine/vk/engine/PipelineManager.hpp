@@ -18,7 +18,7 @@ public:
         vkDestroyPipeline(vkEngine->device->vkDevice, _pipeline, nullptr);
     };
 
-    bool initialize();
+    bool setup();
     VkPipeline getPipeline() const { return _pipeline; }
     VkPipelineLayout getPipelineLayout() const { return _pipelineLayout; }
 

@@ -1,0 +1,33 @@
+#pragma once
+
+#include "SwapchainManager.hpp"
+#include "Device.hpp"
+
+class RenderPassManager final {
+public:
+    RenderPassManager() = default;
+
+    RenderPassManager(
+        SwapchainManager* swapchainManager,
+        vax::Device* device
+    )
+        : _swapchainManager(swapchainManager)
+        , _device(device) {
+    };
+
+    ~RenderPassManager() {};
+
+    VkRenderPass getRenderPass() const {
+        return _renderPass;
+    }
+
+    bool setup();
+    void cleanup();
+
+private:
+    SwapchainManager* _swapchainManager;
+    vax::Device* _device;
+    VkRenderPass _renderPass = VK_NULL_HANDLE;
+
+    bool createRenderPass();
+};

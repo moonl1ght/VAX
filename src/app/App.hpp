@@ -5,8 +5,6 @@
 
 #include "Renderer.hpp"
 #include "VKEngine.hpp"
-#include "DescriptorSetManager.hpp"
-#include "PipelineManager.hpp"
 #include "luna.h"
 #include "Logger.hpp"
 
@@ -24,8 +22,6 @@ public:
 private:
     SDL_Window* _window = nullptr;
     VKEngine* _engine = nullptr;
-    DescriptorSetManager* _descriptorSetManager = nullptr;
-    PipelineManager* _pipelineManager = nullptr;
     Renderer* _renderer = nullptr;
     Scene* _scene = nullptr;
 

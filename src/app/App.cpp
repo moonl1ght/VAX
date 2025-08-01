@@ -17,11 +17,7 @@ bool App::setup() {
     }
     _engine = new VKEngine(_window);
     _engine->setup();
-    _descriptorSetManager = new DescriptorSetManager(_engine);
-    _descriptorSetManager->initialize();
-    _pipelineManager = new PipelineManager(_engine, _descriptorSetManager);
-    _pipelineManager->initialize();
-    _renderer = new Renderer(_engine, _pipelineManager, _descriptorSetManager);
+    _renderer = new Renderer(_engine);
     _renderer->prepare();
     _scene = new Scene(_engine);
     _scene->load();
@@ -31,7 +27,6 @@ bool App::setup() {
 bool App::initWindow() {
     const uint32_t WIDTH = 800;
     const uint32_t HEIGHT = 600;
-    // SDL_Init(SDL_INIT_VIDEO);
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     _window = SDL_CreateWindow(
         "Luna",
@@ -52,11 +47,6 @@ void App::cleanup() {
     Logger::getInstance().log("Cleaning up...");
 
     vkDeviceWaitIdle(_engine->device->vkDevice);
-
-    delete _descriptorSetManager;
-    _descriptorSetManager = nullptr;
-    delete _pipelineManager;
-    _pipelineManager = nullptr;
     delete _renderer;
     _renderer = nullptr;
     delete _scene;

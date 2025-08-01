@@ -1,4 +1,5 @@
 #include "Renderer.hpp"
+#include "RenderingDestination.hpp"
 
 void Renderer::prepare() {
     Logger::getInstance().log("Preparing renderer...");
@@ -31,7 +32,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(
         _vkEngine->device->vkDevice,
-        _vkEngine->swapChain,
+        _vkEngine->swapchainManager->swapchain,
         UINT64_MAX,
         _vkEngine->imageAvailableSemaphores[_currentFrame],
         VK_NULL_HANDLE,
@@ -39,7 +40,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     );
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        _vkEngine->recreateSwapChain();
+        _vkEngine->renderingDestination->recreate();
         return false;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -83,7 +84,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    VkSwapchainKHR swapChains[] = { _vkEngine->swapChain };
+    VkSwapchainKHR swapChains[] = { _vkEngine->swapchainManager->swapchain };
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
@@ -91,7 +92,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     result = vkQueuePresentKHR(_vkEngine->presentQueue, &presentInfo);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _vkEngine->framebufferResized) {
         _vkEngine->framebufferResized = false;
-        _vkEngine->recreateSwapChain();
+        _vkEngine->renderingDestination->recreate();
         return false;
     }
     else if (result != VK_SUCCESS) {
@@ -116,10 +117,10 @@ bool Renderer::recordCommandBuffer(
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = _vkEngine->renderPass;
-    renderPassInfo.framebuffer = _vkEngine->swapChainFramebuffers[imageIndex];
+    renderPassInfo.renderPass = _vkEngine->renderPassManager->getRenderPass();
+    renderPassInfo.framebuffer = _vkEngine->renderingDestination->swapchainFramebuffers[imageIndex];
     renderPassInfo.renderArea.offset = { 0, 0 };
-    renderPassInfo.renderArea.extent = _vkEngine->swapChainExtent;
+    renderPassInfo.renderArea.extent = _vkEngine->swapchainManager->swapchainExtent;
 
     std::array<VkClearValue, 2> clearValues{};
     clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
@@ -130,25 +131,25 @@ bool Renderer::recordCommandBuffer(
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineManager->getPipeline());
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _vkEngine->pipelineManager->getPipeline());
 
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float)_vkEngine->swapChainExtent.width;
-    viewport.height = (float)_vkEngine->swapChainExtent.height;
+    viewport.width = (float)_vkEngine->swapchainManager->swapchainExtent.width;
+    viewport.height = (float)_vkEngine->swapchainManager->swapchainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = { 0, 0 };
-    scissor.extent = _vkEngine->swapChainExtent;
+    scissor.extent = _vkEngine->swapchainManager->swapchainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     memcpy(_sceneUniformBuffersMapped[_currentFrame], &scene->getUBO(), sizeof(scene->getUBO()));
 
-    auto descriptorSet = _descriptorSetManager->getGlobalDescriptorSet(
+    auto descriptorSet = _vkEngine->descriptorSetManager->getGlobalDescriptorSet(
         _currentFrame, _sceneUniformBuffers[_currentFrame], scene->texture
     );
     if (!descriptorSet.has_value()) {
@@ -159,7 +160,7 @@ bool Renderer::recordCommandBuffer(
     vkCmdBindDescriptorSets(
         commandBuffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
-        _pipelineManager->getPipelineLayout(),
+        _vkEngine->pipelineManager->getPipelineLayout(),
         0,
         static_cast<uint32_t>(descriptorSets.size()),
         descriptorSets.data(),
@@ -168,7 +169,7 @@ bool Renderer::recordCommandBuffer(
     );
 
     for (auto& drawableModel : scene->getDrawableModels()) {
-        drawableModel->draw(_vkEngine, commandBuffer, _pipelineManager, deltaTime);
+        drawableModel->draw(_vkEngine, commandBuffer, _vkEngine->pipelineManager, deltaTime);
     }
 
     vkCmdEndRenderPass(commandBuffer);

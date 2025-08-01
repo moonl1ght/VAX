@@ -1,13 +1,15 @@
 #pragma once
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_vulkan.h>
-
 #include "luna.h"
 #include "VKUtils.hpp"
 #include "Device.hpp"
+#include "RenderPassManager.hpp"
+#include "DeletionQueue.hpp"
 
-class Texture;
+class SwapchainManager;
+class RenderingDestination;
+class DescriptorSetManager;
+class PipelineManager;
 
 class VKEngine final {
 public:
@@ -27,24 +29,18 @@ public:
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkSurfaceKHR surface;
-
     vax::Device* device;
-
     VmaAllocator allocator;
+    DeletionQueue deletionQueue;
 
     VkQueue graphicsQueue;
     VkQueue presentQueue;
 
-    VkSwapchainKHR swapChain;
-    std::vector<VkImage> swapChainImages;
-    VkFormat swapChainImageFormat;
-    VkExtent2D swapChainExtent;
-    std::vector<VkImageView> swapChainImageViews;
-    std::vector<VkFramebuffer> swapChainFramebuffers;
-
-    VkRenderPass renderPass;
-
-    Texture* depthTexture;
+    SwapchainManager* swapchainManager = nullptr;
+    RenderPassManager* renderPassManager = nullptr;
+    RenderingDestination* renderingDestination = nullptr;
+    DescriptorSetManager* descriptorSetManager = nullptr;
+    PipelineManager* pipelineManager = nullptr;
 
     VkCommandPool commandPool;
     std::vector<VkCommandBuffer> commandBuffers;
@@ -53,15 +49,13 @@ public:
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
 
-    void setup();
+    bool setup();
     void cleanup();
-    void recreateSwapChain();
-    void cleanupSwapChain();
 
     VkCommandBuffer beginSingleTimeCommands();
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
-protected:
+private:
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -85,21 +79,13 @@ protected:
         return VK_FALSE;
     }
 
-    void createInstance();
+    bool createInstance();
     bool checkValidationLayerSupport();
     std::vector<const char*> getRequiredExtensions();
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-    void setupDebugMessenger();
-    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-    void createSwapChain();
-    void createImageViews();
-    void createRenderPass();
-    void createFramebuffers();
-    void createCommandPool();
-    void createCommandBuffer();
-    void createSyncObjects();
-    void createDepthResources();
-    void createAllocator();
+    bool setupDebugMessenger();
+    bool createCommandPool();
+    bool createCommandBuffer();
+    bool createSyncObjects();
+    VkResult createAllocator();
 };

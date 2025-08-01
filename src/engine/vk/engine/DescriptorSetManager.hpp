@@ -33,7 +33,7 @@ public:
     DescriptorSetManager(const DescriptorSetManager&) = delete;
     DescriptorSetManager& operator=(const DescriptorSetManager&) = delete;
 
-    bool initialize();
+    bool setup();
     std::optional<VkDescriptorSet> getGlobalDescriptorSet(
         uint32_t frameIndex, Buffer* uniformBuffer, Texture* texture
     );

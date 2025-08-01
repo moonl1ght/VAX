@@ -6,7 +6,7 @@ DescriptorSetManager::~DescriptorSetManager() {
     // vkDestroyDescriptorSetLayout(_vkEngine->device->vkDevice, _objectDescriptorSetLayout, nullptr);
 }
 
-bool DescriptorSetManager::initialize() {
+bool DescriptorSetManager::setup() {
     if (!createGlobalDescriptorSetLayout()) {
         return false;
     }

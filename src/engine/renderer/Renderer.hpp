@@ -3,21 +3,15 @@
 
 #include "luna.h"
 #include "VKEngine.hpp"
-#include "DescriptorSetManager.hpp"
-#include "PipelineManager.hpp"
 #include "Scene.hpp"
 #include "Buffer.hpp"
 
 class Renderer {
 public:
     Renderer(
-        VKEngine* vkEngine,
-        PipelineManager* pipelineManager,
-        DescriptorSetManager* descriptorSetManager
+        VKEngine* vkEngine
     )
-        : _vkEngine(vkEngine)
-        , _pipelineManager(pipelineManager)
-        , _descriptorSetManager(descriptorSetManager) {
+        : _vkEngine(vkEngine) {
     };
 
     ~Renderer() {
@@ -34,8 +28,6 @@ public:
 
 private:
     VKEngine* _vkEngine;
-    PipelineManager* _pipelineManager;
-    DescriptorSetManager* _descriptorSetManager;
 
     std::vector<Buffer*> _sceneUniformBuffers;
     std::vector<void*> _sceneUniformBuffersMapped;
