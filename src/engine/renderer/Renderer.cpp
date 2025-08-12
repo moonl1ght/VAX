@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 #include "RenderingDestination.hpp"
+#include "ImageUtils.hpp"
 
 void Renderer::prepare() {
     Logger::getInstance().log("Preparing renderer...");
@@ -74,7 +75,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
 
     if (
         vkQueueSubmit(_vkEngine->graphicsQueue, 1, &submitInfo, _vkEngine->inFlightFences[_currentFrame]) != VK_SUCCESS
-    ) {
+        ) {
         Logger::getInstance().error("failed to submit draw command buffer!");
         return false;
     }
@@ -104,78 +105,158 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     return true;
 }
 
+void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
+    VkClearColorValue clearValue;
+    float flash = std::abs(std::sin(_currentFrame / 120.f));
+    clearValue = { { 1.0f, 1.0f, 1.0f, 1.0f } };
+
+    VkImageSubresourceRange clearRange = vax::imageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
+
+    vkCmdClearColorImage(
+        commandBuffer,
+        _vkEngine->renderingDestination->drawImage->textureImage,
+        VK_IMAGE_LAYOUT_GENERAL,
+        &clearValue,
+        1,
+        &clearRange
+    );
+
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, _vkEngine->pipelineManager->getPipelineDrawBackground());
+
+    auto drawBackgroundDescriptorSet = _vkEngine->descriptorSetManager->getDrawBackgroundDescriptorSet(_currentFrame);
+    DescriptorWriter descriptorWriter;
+    descriptorWriter.writeTexture(_vkEngine->renderingDestination->drawImage.get(), 1, 0);
+    descriptorWriter.updateSet(_vkEngine->device->vkDevice, drawBackgroundDescriptorSet.value());
+
+    if (!drawBackgroundDescriptorSet.has_value()) {
+        LOG_ERROR("Failed to get draw background descriptor set!");
+        return;
+    }
+    vkCmdBindDescriptorSets(
+        commandBuffer,
+        VK_PIPELINE_BIND_POINT_COMPUTE,
+        _vkEngine->pipelineManager->getPipelineDrawBackgroundLayout(),
+        0,
+        1,
+        &drawBackgroundDescriptorSet.value(),
+        0,
+        nullptr
+    );
+
+    vkCmdDispatch(commandBuffer, std::ceil(_vkEngine->renderingDestination->drawImage->size.width / 16.0), std::ceil(_vkEngine->renderingDestination->drawImage->size.height / 16.0), 1);
+}
+
 bool Renderer::recordCommandBuffer(
     VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime
 ) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-        Logger::getInstance().error("failed to begin recording command buffer!");
+    if (!VK_CHECK(vkBeginCommandBuffer(commandBuffer, &beginInfo))) {
+        LOG_ERROR("Failed to begin recording command buffer!");
         return false;
     }
 
-    VkRenderPassBeginInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = _vkEngine->renderPassManager->getRenderPass();
-    renderPassInfo.framebuffer = _vkEngine->renderingDestination->swapchainFramebuffers[imageIndex];
-    renderPassInfo.renderArea.offset = { 0, 0 };
-    renderPassInfo.renderArea.extent = _vkEngine->swapchainManager->swapchainExtent;
-
-    std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-    clearValues[1].depthStencil = { 1.0f, 0 };
-
-    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    renderPassInfo.pClearValues = clearValues.data();
-
-    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _vkEngine->pipelineManager->getPipeline());
-
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float)_vkEngine->swapchainManager->swapchainExtent.width;
-    viewport.height = (float)_vkEngine->swapchainManager->swapchainExtent.height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = _vkEngine->swapchainManager->swapchainExtent;
-    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-    memcpy(_sceneUniformBuffersMapped[_currentFrame], &scene->getUBO(), sizeof(scene->getUBO()));
-
-    auto descriptorSet = _vkEngine->descriptorSetManager->getGlobalDescriptorSet(
-        _currentFrame, _sceneUniformBuffers[_currentFrame], scene->texture
-    );
-    if (!descriptorSet.has_value()) {
-        Logger::getInstance().error("Failed to get global descriptor set!");
-        return false;
-    }
-    std::vector<VkDescriptorSet> descriptorSets = { descriptorSet.value() };
-    vkCmdBindDescriptorSets(
+    vax::transitionImage(
         commandBuffer,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        _vkEngine->pipelineManager->getPipelineLayout(),
-        0,
-        static_cast<uint32_t>(descriptorSets.size()),
-        descriptorSets.data(),
-        0,
-        nullptr
+        _vkEngine->renderingDestination->drawImage->textureImage,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_GENERAL
     );
 
-    for (auto& drawableModel : scene->getDrawableModels()) {
-        drawableModel->draw(_vkEngine, commandBuffer, _vkEngine->pipelineManager, deltaTime);
-    }
+    drawBackground(commandBuffer);
 
-    vkCmdEndRenderPass(commandBuffer);
+    vax::transitionImage(
+        commandBuffer,
+        _vkEngine->renderingDestination->drawImage->textureImage,
+        VK_IMAGE_LAYOUT_GENERAL,
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+    );
+    vax::transitionImage(
+        commandBuffer,
+        _vkEngine->swapchainManager->swapchainImages[imageIndex],
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+    );
 
-    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-        Logger::getInstance().error("failed to record command buffer!");
+    vax::copyImageToImage(
+        commandBuffer,
+        _vkEngine->renderingDestination->drawImage->textureImage,
+        _vkEngine->swapchainManager->swapchainImages[imageIndex],
+        _vkEngine->renderingDestination->drawImage->size.toExtent2D(),
+        _vkEngine->swapchainManager->swapchainExtent
+    );
+    // std::cout << "Image size: " << _vkEngine->renderingDestination->drawImage->size.toExtent2D().width << "x" << _vkEngine->renderingDestination->drawImage->size.toExtent2D().height << std::endl;
+    // std::cout << "Swapchain size: " << _vkEngine->swapchainManager->swapchainExtent.width << "x" << _vkEngine->swapchainManager->swapchainExtent.height << std::endl;
+
+    vax::transitionImage(
+        commandBuffer,
+        _vkEngine->swapchainManager->swapchainImages[imageIndex],
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+    );
+
+    // VkRenderPassBeginInfo renderPassInfo{};
+    // renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    // renderPassInfo.renderPass = _vkEngine->renderPassManager->getRenderPass();
+    // renderPassInfo.framebuffer = _vkEngine->renderingDestination->swapchainFramebuffers[imageIndex];
+    // renderPassInfo.renderArea.offset = { 0, 0 };
+    // renderPassInfo.renderArea.extent = _vkEngine->swapchainManager->swapchainExtent;
+
+    // std::array<VkClearValue, 2> clearValues{};
+    // clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+    // clearValues[1].depthStencil = { 1.0f, 0 };
+
+    // renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    // renderPassInfo.pClearValues = clearValues.data();
+
+    // vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    // vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _vkEngine->pipelineManager->getPipeline());
+
+    // VkViewport viewport{};
+    // viewport.x = 0.0f;
+    // viewport.y = 0.0f;
+    // viewport.width = (float)_vkEngine->swapchainManager->swapchainExtent.width;
+    // viewport.height = (float)_vkEngine->swapchainManager->swapchainExtent.height;
+    // viewport.minDepth = 0.0f;
+    // viewport.maxDepth = 1.0f;
+    // vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+    // VkRect2D scissor{};
+    // scissor.offset = { 0, 0 };
+    // scissor.extent = _vkEngine->swapchainManager->swapchainExtent;
+    // vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    // memcpy(_sceneUniformBuffersMapped[_currentFrame], &scene->getUBO(), sizeof(scene->getUBO()));
+
+    // auto descriptorSet = _vkEngine->descriptorSetManager->getGlobalDescriptorSet(
+    //     _currentFrame, _sceneUniformBuffers[_currentFrame], scene->texture
+    // );
+    // if (!descriptorSet.has_value()) {
+    //     Logger::getInstance().error("Failed to get global descriptor set!");
+    //     return false;
+    // }
+    // std::vector<VkDescriptorSet> descriptorSets = { descriptorSet.value() };
+    // vkCmdBindDescriptorSets(
+    //     commandBuffer,
+    //     VK_PIPELINE_BIND_POINT_GRAPHICS,
+    //     _vkEngine->pipelineManager->getPipelineLayout(),
+    //     0,
+    //     static_cast<uint32_t>(descriptorSets.size()),
+    //     descriptorSets.data(),
+    //     0,
+    //     nullptr
+    // );
+
+    // for (auto& drawableModel : scene->getDrawableModels()) {
+    //     drawableModel->draw(_vkEngine, commandBuffer, _vkEngine->pipelineManager, deltaTime);
+    // }
+
+    // vkCmdEndRenderPass(commandBuffer);
+
+    if (!VK_CHECK(vkEndCommandBuffer(commandBuffer))) {
+        LOG_ERROR("Failed to end command buffer!");
         return false;
     }
     return true;

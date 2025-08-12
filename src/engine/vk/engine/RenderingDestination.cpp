@@ -6,6 +6,7 @@
 bool RenderingDestination::setup() {
     if (!createDepthResources()) return false;
     if (!createFramebuffers()) return false;
+    if (!createRenderDesctinationTexture(_swapchainManager->swapchainExtent)) return false;
     return true;
 }
 
@@ -16,6 +17,7 @@ void RenderingDestination::cleanup() {
 
     delete depthTexture;
     depthTexture = nullptr;
+    drawImage = nullptr;
 }
 
 void RenderingDestination::recreate() {
@@ -31,6 +33,7 @@ void RenderingDestination::recreate() {
     _swapchainManager->recreate();
     if (!createDepthResources()) return;
     if (!createFramebuffers()) return;
+    if (!createRenderDesctinationTexture(_swapchainManager->swapchainExtent)) return;
 }
 
 bool RenderingDestination::createFramebuffers() {
@@ -89,6 +92,7 @@ std::optional<Texture*> RenderingDestination::createDepthTexture(VkFormat format
     auto [depthImage, allocation] = imageResult.value();
     auto texture = new Texture(
         _vkEngine,
+        "depth_texture",
         depthImage,
         allocation,
         vax::Size(_swapchainManager->swapchainExtent.width, _swapchainManager->swapchainExtent.height),
@@ -107,7 +111,7 @@ std::optional<Texture*> RenderingDestination::createDepthTexture(VkFormat format
     return std::make_optional(texture);
 }
 
-std::optional<Texture*> RenderingDestination::createRenderDesctinationTexture(VkExtent2D windowExtent) {
+bool RenderingDestination::createRenderDesctinationTexture(VkExtent2D windowExtent) {
     VkImageUsageFlags drawImageUsages{};
     drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -121,19 +125,21 @@ std::optional<Texture*> RenderingDestination::createRenderDesctinationTexture(Vk
         drawImageUsages,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
     );
-    if (!imageResult) {
-        return std::nullopt;
-    }
-    else {
+    if (imageResult) {
         auto [image, allocation] = imageResult.value();
-        auto texture = new Texture(
-            _vkEngine,
-            image,
-            allocation,
-            vax::Size(windowExtent.width, windowExtent.height),
-            VK_FORMAT_R16G16B16A16_SFLOAT
+        drawImage = std::make_unique<Texture>(
+            Texture(
+                _vkEngine,
+                "render_destination",
+                image,
+                allocation,
+                vax::Size(windowExtent.width, windowExtent.height),
+                VK_FORMAT_R16G16B16A16_SFLOAT
+            )
         );
-        texture->loadImageView();
-        return std::make_optional(texture);
+        drawImage->loadImageView();
+        return true;
     }
+    LOG_ERROR("Failed to create render destination texture!");
+    return false;
 }

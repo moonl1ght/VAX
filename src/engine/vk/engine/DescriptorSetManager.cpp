@@ -3,10 +3,14 @@
 DescriptorSetManager::~DescriptorSetManager() {
     vkDestroyDescriptorPool(_vkEngine->device->vkDevice, _descriptorPool, nullptr);
     vkDestroyDescriptorSetLayout(_vkEngine->device->vkDevice, _globalDescriptorSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(_vkEngine->device->vkDevice, _drawBackgroundDescriptorSetLayout, nullptr);
     // vkDestroyDescriptorSetLayout(_vkEngine->device->vkDevice, _objectDescriptorSetLayout, nullptr);
 }
 
 bool DescriptorSetManager::setup() {
+    if (!createDrawBackgroundDescriptorSetLayout()) {
+        return false;
+    }
     if (!createGlobalDescriptorSetLayout()) {
         return false;
     }
@@ -20,24 +24,52 @@ bool DescriptorSetManager::createDescriptorPool() {
     uint32_t imageSamplerCount = 1;
     uint32_t maxUniformBufferSets = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT) * uniformBufferCount;
     uint32_t maxImageSamplerSets = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT) * imageSamplerCount;
+    uint32_t maxDrawBackgroundSets = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT) * 1;
 
     std::vector<VkDescriptorPoolSize> poolSizes = {
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBufferSets },
-        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxImageSamplerSets }
+        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxImageSamplerSets },
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, maxDrawBackgroundSets }
     };
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = maxUniformBufferSets + maxImageSamplerSets;
+    poolInfo.maxSets = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT);
 
-    if (vkCreateDescriptorPool(_vkEngine->device->vkDevice, &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS) {
-        Logger::getInstance().error("failed to create descriptor pool!");
+    if (VK_CHECK(vkCreateDescriptorPool(_vkEngine->device->vkDevice, &poolInfo, nullptr, &_descriptorPool))) {
+        LOG_ERROR("Failed to create descriptor pool!");
         return false;
     }
 
     return true;
+}
+
+std::optional<VkDescriptorSet> DescriptorSetManager::getDrawBackgroundDescriptorSet(uint32_t frameIndex) {
+    if (_drawBackgroundDescriptorSets.size() == _vkEngine->MAX_FRAMES_IN_FLIGHT) {
+        return std::make_optional(_drawBackgroundDescriptorSets[frameIndex]);
+    }
+
+    std::vector<VkDescriptorSetLayout> layouts(
+        _vkEngine->MAX_FRAMES_IN_FLIGHT, _drawBackgroundDescriptorSetLayout
+    );
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = _descriptorPool;
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT);
+    allocInfo.pSetLayouts = layouts.data();
+
+    _drawBackgroundDescriptorSets.resize(_vkEngine->MAX_FRAMES_IN_FLIGHT);
+    auto result = vkAllocateDescriptorSets(
+        _vkEngine->device->vkDevice, &allocInfo, _drawBackgroundDescriptorSets.data()
+    );
+    if (VK_CHECK(result)) {
+        LOG_ERROR("Failed to allocate descriptor set!");
+        return std::nullopt;
+    }
+
+    return std::make_optional(_drawBackgroundDescriptorSets[frameIndex]);
 }
 
 // std::optional<VkDescriptorSet> DescriptorSetManager::getObjectDescriptorSet(uint32_t frameIndex) {
@@ -131,6 +163,20 @@ std::optional<VkDescriptorSet> DescriptorSetManager::getGlobalDescriptorSet(
     return std::make_optional(_globalDescriptorSets[frameIndex]);
 }
 
+bool DescriptorSetManager::createDrawBackgroundDescriptorSetLayout() {
+    DescriptorLayoutBuilder builder;
+    builder.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+    auto drawBackgroundDescriptorSetLayout = builder.build(
+        _vkEngine->device->vkDevice, VK_SHADER_STAGE_COMPUTE_BIT
+    );
+    if (!drawBackgroundDescriptorSetLayout) {
+        LOG_ERROR("Failed to create draw background descriptor set layout!");
+        return false;
+    }
+    _drawBackgroundDescriptorSetLayout = drawBackgroundDescriptorSetLayout.value();
+    return true;
+}
+
 bool DescriptorSetManager::createGlobalDescriptorSetLayout() {
     // Binding 0: Uniform Buffer Object (UBO)
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -198,7 +244,7 @@ bool DescriptorSetManager::createGlobalDescriptorSetLayout() {
 
 void DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t offset) {
     VkDescriptorBufferInfo& bufferInfo = _bufferInfos.emplace_back(
-        VkDescriptorBufferInfo {
+        VkDescriptorBufferInfo{
             .buffer = buffer->vkBuffer,
             .offset = offset,
             .range = buffer->size
@@ -220,7 +266,7 @@ void DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t of
 
 void DescriptorWriter::writeTexture(Texture* texture, uint32_t binding, uint32_t offset) {
     VkDescriptorImageInfo& imageInfo = _imageInfos.emplace_back(
-        VkDescriptorImageInfo {
+        VkDescriptorImageInfo{
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             .imageView = texture->textureImageView,
             .sampler = texture->sampler->vkSampler
@@ -252,4 +298,43 @@ void DescriptorWriter::clear() {
     _writes.clear();
     _imageInfos.clear();
     _bufferInfos.clear();
+}
+
+// MARK: - DescriptorLayoutBuilder
+
+void DescriptorLayoutBuilder::addBinding(uint32_t binding, VkDescriptorType type) {
+    VkDescriptorSetLayoutBinding layoutBinding{};
+    layoutBinding.binding = binding;
+    layoutBinding.descriptorType = type;
+    layoutBinding.descriptorCount = 1;
+    layoutBinding.pImmutableSamplers = nullptr;
+}
+
+void DescriptorLayoutBuilder::clear() {
+    bindings.clear();
+}
+
+std::optional<VkDescriptorSetLayout> DescriptorLayoutBuilder::build(
+    VkDevice device, VkShaderStageFlags shaderStages, void* pNext, VkDescriptorSetLayoutCreateFlags flags
+) {
+    for (auto& b : bindings) {
+        b.stageFlags |= shaderStages;
+    }
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+    layoutInfo.pBindings = bindings.data();
+    layoutInfo.flags = flags;
+    layoutInfo.pNext = pNext;
+
+    VkDescriptorSetLayout descriptorSetLayout;
+    auto result = vkCreateDescriptorSetLayout(
+        device, &layoutInfo, nullptr, &descriptorSetLayout
+    );
+    if (VK_CHECK(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout))) {
+        LOG_ERROR("Failed to create global descriptor set layout!");
+        return std::nullopt;
+    }
+
+    return std::make_optional(descriptorSetLayout);
 }

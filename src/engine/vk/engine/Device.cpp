@@ -2,7 +2,9 @@
 
 using namespace vax;
 
-std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+std::vector<const char*> deviceExtensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME
+};
 
 bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
     uint32_t extensionCount;
@@ -46,6 +48,12 @@ int Device::createLogicalDevice(
     VkPhysicalDeviceFeatures deviceFeatures{};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
 
+    // Enable synchronization2 feature
+    VkPhysicalDeviceSynchronization2Features synchronization2Features{};
+    synchronization2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
+    synchronization2Features.synchronization2 = VK_TRUE;
+    synchronization2Features.pNext = nullptr;
+
     if (enableValidationLayers && MACOS) {
         deviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME); // needed for macOS
     }
@@ -57,11 +65,11 @@ int Device::createLogicalDevice(
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
     createInfo.pEnabledFeatures = &deviceFeatures;
+    createInfo.pNext = &synchronization2Features;
 
     createInfo.enabledExtensionCount = 0;
 
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-    ;
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
     if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {

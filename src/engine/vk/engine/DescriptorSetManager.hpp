@@ -8,7 +8,20 @@
 #include "Texture.hpp"
 #include "ShaderUniforms.h"
 
-class DescriptorWriter {
+struct DescriptorLayoutBuilder {
+    std::vector<VkDescriptorSetLayoutBinding> bindings;
+
+    void addBinding(uint32_t binding, VkDescriptorType type);
+    void clear();
+    std::optional<VkDescriptorSetLayout> build(
+        VkDevice device,
+        VkShaderStageFlags shaderStages,
+        void* pNext = nullptr,
+        VkDescriptorSetLayoutCreateFlags flags = 0
+    );
+};
+
+struct DescriptorWriter {
 public:
     DescriptorWriter() {}
     ~DescriptorWriter() {}
@@ -27,7 +40,7 @@ private:
 
 class DescriptorSetManager {
 public:
-    DescriptorSetManager(VKEngine* vkEngine): _vkEngine(vkEngine) {};
+    DescriptorSetManager(VKEngine* vkEngine) : _vkEngine(vkEngine) {};
     ~DescriptorSetManager();
 
     DescriptorSetManager(const DescriptorSetManager&) = delete;
@@ -37,23 +50,31 @@ public:
     std::optional<VkDescriptorSet> getGlobalDescriptorSet(
         uint32_t frameIndex, Buffer* uniformBuffer, Texture* texture
     );
+
+    std::optional<VkDescriptorSet> getDrawBackgroundDescriptorSet(uint32_t frameIndex);
     // std::optional<VkDescriptorSet> getObjectDescriptorSet(uint32_t frameIndex);
 
     VkDescriptorSetLayout getGlobalDescriptorSetLayout() const { return _globalDescriptorSetLayout; }
+    VkDescriptorSetLayout getDrawBackgroundDescriptorSetLayout() const {
+        return _drawBackgroundDescriptorSetLayout;
+    }
     // VkDescriptorSetLayout getObjectDescriptorSetLayout() const { return _objectDescriptorSetLayout; }
 
 private:
     VKEngine* _vkEngine;
 
+    VkDescriptorSetLayout _drawBackgroundDescriptorSetLayout = VK_NULL_HANDLE;
     VkDescriptorSetLayout _globalDescriptorSetLayout = VK_NULL_HANDLE;
     // VkDescriptorSetLayout _objectDescriptorSetLayout = VK_NULL_HANDLE;
 
     VkDescriptorPool _descriptorPool = VK_NULL_HANDLE;
 
+    std::vector<VkDescriptorSet> _drawBackgroundDescriptorSets;
     std::vector<VkDescriptorSet> _globalDescriptorSets;
     // std::vector<VkDescriptorSet> _objectDescriptorSets;
 
     bool createGlobalDescriptorSetLayout();
+    bool createDrawBackgroundDescriptorSetLayout();
     // bool createObjectDescriptorSetLayout();
     bool createDescriptorPool();
 };

@@ -54,6 +54,7 @@ Texture* TextureLoader::loadTexture(std::string path, bool isAutoLoadImageView) 
     );
     auto texture = new Texture(
         vkEngine,
+        path,
         textureImage,
         allocation,
         vax::Size(texWidth, texHeight),

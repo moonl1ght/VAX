@@ -57,10 +57,15 @@ VkExtent2D SwapchainManager::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& ca
 
         VkExtent2D actualExtent = {
             static_cast<uint32_t>(width),
-            static_cast<uint32_t>(height) };
+            static_cast<uint32_t>(height)
+        };
 
-        actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-        actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+        actualExtent.width = std::clamp(
+            actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width
+        );
+        actualExtent.height = std::clamp(
+            actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height
+        );
 
         return actualExtent;
     }
@@ -90,6 +95,7 @@ bool SwapchainManager::createSwapchain() {
     createInfo.imageExtent = extent;
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
     VKUtils::QueueFamilyIndices indices = _device->getQueueFamilyIndices();
     if (!indices.isComplete()) {

@@ -15,6 +15,14 @@ namespace vax {
         VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
     );
 
+    void copyImageToImage(
+        VkCommandBuffer commandBuffer, VkImage source, VkImage destination, VkExtent2D srcSize, VkExtent2D dstSize
+    );
+
+    void transitionImage(
+        VkCommandBuffer commandBuffer, VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout
+    );
+
     void copyBufferToImage(
         VKEngine* vkEngine,
         VkBuffer buffer,
@@ -38,4 +46,6 @@ namespace vax {
         VkImageUsageFlags usage,
         VkMemoryPropertyFlags properties
     );
+
+    VkImageSubresourceRange imageSubresourceRange(VkImageAspectFlags aspectMask);
 };

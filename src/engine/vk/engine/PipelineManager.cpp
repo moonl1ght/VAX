@@ -1,54 +1,49 @@
 #include "PipelineManager.hpp"
 
-std::vector<char> readFile(const std::string& filename) {
-    std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-    if (!file.is_open()) {
-        Logger::getInstance().error("failed to open file!");
-        return std::vector<char>();
-    }
-
-    size_t fileSize = (size_t)file.tellg();
-    std::vector<char> buffer(fileSize);
-
-    file.seekg(0);
-    file.read(buffer.data(), fileSize);
-
-    file.close();
-
-    return buffer;
-}
-
-std::optional<VkShaderModule> createShaderModule(VKEngine* engine, const std::vector<char>& code) {
-    VkShaderModuleCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-    VkShaderModule shaderModule;
-    if (vkCreateShaderModule(engine->device->vkDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-        Logger::getInstance().error("failed to create shader module!");
-        return std::nullopt;
-    }
-
-    return shaderModule;
-}
-
 bool PipelineManager::setup() {
-    auto vertShaderCode = readFile(SRC_PATH("engine/shaders/out/shader.vert.spv"));
-    auto fragShaderCode = readFile(SRC_PATH("engine/shaders/out/shader.frag.spv"));
-    if (vertShaderCode.empty() || fragShaderCode.empty()) {
-        Logger::getInstance().error("failed to read shader code!");
+    ShaderModuleBuilder shaderBuilder;
+    shaderBuilder.readFile(SRC_PATH("engine/shaders/out/shader.vert.spv"));
+    auto vertShaderModule = shaderBuilder.build(vkEngine->device->vkDevice);
+
+    shaderBuilder.readFile(SRC_PATH("engine/shaders/out/shader.frag.spv"));
+    auto fragShaderModule = shaderBuilder.build(vkEngine->device->vkDevice);
+
+    shaderBuilder.readFile(SRC_PATH("engine/shaders/out/background.comp.spv"));
+    auto backgroundShaderModule = shaderBuilder.build(vkEngine->device->vkDevice);
+
+    if (!vertShaderModule || !fragShaderModule || !backgroundShaderModule) {
+        LOG_ERROR("Failed to build shader module!");
         return false;
     }
 
-    auto vertShaderModule = createShaderModule(vkEngine, vertShaderCode);
-    auto fragShaderModule = createShaderModule(vkEngine, fragShaderCode);
-
-    if (!vertShaderModule.has_value() || !fragShaderModule.has_value()) {
-        Logger::getInstance().error("failed to create shader module!");
+    VkPipelineLayoutCreateInfo computeLayout{};
+    computeLayout.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    computeLayout.pNext = nullptr;
+    auto drawBackgroundDescriptorSetLayout = _descriptorSetManager->getDrawBackgroundDescriptorSetLayout();
+    computeLayout.pSetLayouts = &drawBackgroundDescriptorSetLayout;
+    computeLayout.setLayoutCount = 1;
+    auto pipelineDrawBackgroundLayoutResult = vkCreatePipelineLayout(
+        vkEngine->device->vkDevice, &computeLayout, nullptr, &_pipelineDrawBackgroundLayout
+    );
+    if (!VK_CHECK(pipelineDrawBackgroundLayoutResult)) {
+        LOG_ERROR("Failed to create pipeline layout!");
         return false;
     }
+
+    PipelineBuilder backgroundPipelineBuilder(_pipelineDrawBackgroundLayout);
+    backgroundPipelineBuilder.addShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, backgroundShaderModule.value(), "background");
+    auto pipelineDrawBackground = backgroundPipelineBuilder.build(
+        vkEngine->device->vkDevice, PipelineBuilder::PipelineType::COMPUTE
+    );
+
+    if (pipelineDrawBackground) {
+        _pipelineDrawBackground = *pipelineDrawBackground;
+    }
+    else {
+        LOG_ERROR("Failed to create background pipeline!");
+        return false;
+    }
+
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -193,4 +188,95 @@ bool PipelineManager::setup() {
     vkDestroyShaderModule(vkEngine->device->vkDevice, fragShaderModule.value(), nullptr);
     vkDestroyShaderModule(vkEngine->device->vkDevice, vertShaderModule.value(), nullptr);
     return true;
+}
+
+// MARK: - PipelineBuilder
+
+void PipelineBuilder::addShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name) {
+    VkPipelineShaderStageCreateInfo shaderStageInfo{};
+    shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStageInfo.stage = stage;
+    shaderStageInfo.module = module;
+    shaderStageInfo.pName = name;
+    shaderStages.push_back(shaderStageInfo);
+}
+
+std::optional<VkPipeline> PipelineBuilder::build(VkDevice device, PipelineType pipelineType) {
+    if (shaderStages.empty()) {
+        LOG_ERROR("No shader stages added!");
+        return std::nullopt;
+    }
+
+    switch (pipelineType) {
+    case PipelineType::RENDER:
+        return std::nullopt;
+    case PipelineType::COMPUTE:
+        auto it = std::find_if(
+            shaderStages.begin(),
+            shaderStages.end(),
+            [](const VkPipelineShaderStageCreateInfo& stage) {
+                return stage.stage == VK_SHADER_STAGE_COMPUTE_BIT;
+            }
+        );
+        if (it == shaderStages.end()) {
+            LOG_ERROR("Compute pipeline requires exactly one compute shader stage!");
+            return std::nullopt;
+        }
+
+        VkComputePipelineCreateInfo computePipelineCreateInfo{};
+        computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+        computePipelineCreateInfo.pNext = nullptr;
+        computePipelineCreateInfo.layout = pipelineLayout;
+        computePipelineCreateInfo.stage = *it;
+
+        VkPipeline pipeline;
+        auto result = vkCreateComputePipelines(
+            device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &pipeline
+        );
+        if (VK_CHECK(result)) {
+            LOG_ERROR("Failed to create compute pipeline!");
+            return std::nullopt;
+        }
+
+        return pipeline;
+    }
+}
+
+// MARK: - ShaderModuleBuilder
+
+void ShaderModuleBuilder::readFile(const std::string& filename) {
+    std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+    if (!file.is_open()) {
+        LOG_ERROR("failed to open file!");
+        code = std::vector<char>();
+        return;
+    }
+
+    size_t fileSize = (size_t)file.tellg();
+    code.resize(fileSize);
+
+    file.seekg(0);
+    file.read(code.data(), fileSize);
+
+    file.close();
+}
+
+std::optional<VkShaderModule> ShaderModuleBuilder::build(VkDevice device) {
+    if (code.empty()) {
+        LOG_ERROR("Failed to build shader code!");
+        return std::nullopt;
+    }
+    VkShaderModuleCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = code.size();
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+    VkShaderModule shaderModule;
+    if (VK_CHECK(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule))) {
+        LOG_ERROR("Failed to build shader module!");
+        return std::nullopt;
+    }
+
+    return shaderModule;
 }

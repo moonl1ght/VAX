@@ -8,6 +8,7 @@
 
 class Texture final : public VKObject {
 public:
+    std::string name;
     VkImage textureImage = VK_NULL_HANDLE;
     VkImageView textureImageView = VK_NULL_HANDLE;
     VmaAllocation allocation = VK_NULL_HANDLE;
@@ -20,6 +21,7 @@ public:
 
     Texture(
         VKEngine* vkEngine,
+        std::string name,
         VkImage textureImage,
         VmaAllocation allocation,
         vax::Size size,
@@ -27,6 +29,7 @@ public:
         VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
     )
         : VKObject(vkEngine)
+        , name(name)
         , textureImage(textureImage)
         , allocation(allocation)
         , size(size)
@@ -37,6 +40,7 @@ public:
     Texture(const Texture& other) = delete;
 
     Texture(Texture&& other) noexcept {
+        std::swap(name, other.name);
         std::swap(textureImage, other.textureImage);
         std::swap(allocation, other.allocation);
         std::swap(size, other.size);
@@ -58,6 +62,7 @@ public:
             destroy();
 
             vkEngine = other.vkEngine;
+            name = other.name;
             size = other.size;
             textureImage = other.textureImage;
             allocation = other.allocation;
@@ -66,6 +71,7 @@ public:
             aspectMask = other.aspectMask;
 
             other.vkEngine = VK_NULL_HANDLE;
+            other.name.clear();
             other.textureImage = VK_NULL_HANDLE;
             other.allocation = VK_NULL_HANDLE;
             other.textureImageView = VK_NULL_HANDLE;

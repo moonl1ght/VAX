@@ -34,6 +34,7 @@ private:
 
     uint32_t _currentFrame = 0;
 
+    void drawBackground(VkCommandBuffer commandBuffer);
     bool recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime);
 };
 

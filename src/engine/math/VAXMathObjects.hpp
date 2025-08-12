@@ -19,6 +19,10 @@ namespace vax {
 
         double whRatio() const noexcept { return static_cast<double>(width) / static_cast<double>(height); }
         double hwRatio() const noexcept { return static_cast<double>(height) / static_cast<double>(width); }
+
+        VkExtent2D toExtent2D() const noexcept { 
+            return VkExtent2D{ static_cast<uint32_t>(width), static_cast<uint32_t>(height) }; 
+        }
     };
 
     typedef Size_t<uint32_t> SizeUI;

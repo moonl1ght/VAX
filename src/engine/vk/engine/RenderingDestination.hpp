@@ -10,6 +10,7 @@ class VKEngine;
 class RenderingDestination final {
 public:
     Texture* depthTexture;
+    std::unique_ptr<Texture> drawImage;
     std::vector<VkFramebuffer> swapchainFramebuffers;
 
     RenderingDestination(
@@ -34,8 +35,8 @@ private:
     RenderPassManager* _renderPassManager;
 
     std::optional<Texture*> createDepthTexture(VkFormat format);
-    std::optional<Texture*> createRenderDesctinationTexture(VkExtent2D windowExtent);
 
+    bool createRenderDesctinationTexture(VkExtent2D windowExtent);
     bool createFramebuffers();
     bool createDepthResources();
 };

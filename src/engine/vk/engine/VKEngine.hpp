@@ -16,7 +16,7 @@ public:
     VKEngine(SDL_Window* window) : window(window) {};
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
-    const uint32_t vulkanApiVersion = VK_API_VERSION_1_2;
+    const uint32_t vulkanApiVersion = VK_API_VERSION_1_3;
 
     const bool enableValidationLayers = true;
     const std::vector<const char*> validationLayers = {
