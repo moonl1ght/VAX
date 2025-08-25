@@ -1,121 +1,31 @@
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-// #include <glm/vec4.hpp>
-// #include <glm/mat4x4.hpp>
-
-#include <iostream>
-#include <vulkan/vulkan.h>
-#include <nlohmann/json.hpp>
-#include <SDL2/SDL.h>
+#include <luna.h>
 
 #include "src/app/App.hpp"
 
-#include <thread>
-#include <functional>
-#include "src/population/population.hpp"
-
-void doSomething(std::function<void()> callback) {
-    callback();
-}
-
-class Buf {
-    Buf();
-    Buf(const Buf& other);
-    Buf& operator=(const Buf& other);
-
-    Buf(Buf&& other) noexcept;
-    Buf& operator=(Buf&& other) noexcept;
-
-    virtual ~Buf();
-};
-
-int i = 0;
-std::mutex mutex;
-
-void task1() {
-    std::lock_guard<std::mutex> lock(mutex);
-    i++;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    std::cout << "Task 1 completed" << i << std::endl;
-}
-
-void task2() {
-    std::lock_guard<std::mutex> lock(mutex);
-    i++;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    std::cout << "Task 2 completed" << i << std::endl;
-}
-
-template<typename Iterator1, typename Iterator2, typename Condition, typename Transformer>
-void trasnfrom_if(Iterator1 begin, Iterator1 end, Iterator2 result, Condition condition, Transformer transformer) {
-    for (; begin != end; begin++) {
-        std::cout << *begin << std::endl;
-        if (condition(*begin)) {
-            *result = transformer(*begin);
-        }
-        else {
-            *result = *begin;
-        }
-        result++;
-    }
-}
-
-template<template<typename...> class Container, typename T, template<typename...> class Container2, typename T2, typename Condition, typename Transformer>
-void trasnfrom_if1(const Container<T>& v1, Container2<T2>& v2, Condition condition, Transformer transformer) {
-    for (const auto& value : v1) {
-        if (condition(value)) {
-            v2.push_back(transformer(value));
-        }
-        else {
-            v2.push_back(value);
-        }
-    }
-}
-
-template <template <typename...> class Container, typename T>
-void processContainer(const Container<T>& container) {
-    std::cout << "Processing container with " << container.size() << " elements:\n";
-    for (const auto& item : container) {
-        std::cout << item << " ";
-    }
-    std::cout << "\n";
-}
-
-void main2() {
-    std::vector<int> v1{ 1, 2, 3, 4, 5, 6 };
-    std::vector<int> v2;
-    v2.resize(v1.size());
-
-    doSomething([]() { std::cout << "callback" << std::endl; });
-
-    // trasnfrom_if(v1.begin(), v1.end(), v2.begin(), [](int a) { return a % 2 == 0; }, [](int a) { return a*a; });
-
-    trasnfrom_if1(v1, v2, [](int a) { return a % 2 == 0; }, [](int a) { return a * a; });
-
-
-    std::for_each(v2.begin(), v2.end(), [](int n) {
-        static bool first = true;
-        if (!first) {
-            std::cout << " , ";
-        }
-        std::cout << n;
-        first = false;
-        });
-    std::cout << '\n';
-}
-
 int main() {
+    printf("SDL version: %d.%d.%d\n", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
+    // SDL_SetMainReady(); // Required before SDL_Init when skipping SDL's main
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        SDL_Log("SDL_Init failed: %s", SDL_GetError());
+        return 1;
+    }
+    std::cout << "Hello, World!" << std::endl;
+    // return 0;
     std::srand(std::time(0));
     Logger::getInstance().log("Run application");
-    App app = App();
+    static App app = App();
     try {
         app.run();
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e) {
         Logger::getInstance().error(e.what());
         return EXIT_FAILURE;
     }
+    // SDL_SetMainReady(); // Required before SDL_Init when skipping SDL's main
+    // if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
+    //     SDL_Log("SDL_Init failed: %s", SDL_GetError());
+    //     return 1;
+    // }
 
     // SDL_Window* window = SDL_CreateWindow(
     //     "Hello, SDL2 on macOS 🍎",
@@ -133,19 +43,33 @@ int main() {
     //     return 1;
     // }
 
+    // // SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
     // // Keep the window open, in this case SDL_Delay(5000); statement won't work.
-    // bool running = true;
+    // static bool running = true;
+    // SDL_Event e;
     // while (running)
     // {
-    //     SDL_Event e;
+    //     // std::cout << "SDL_PollEvent" << SDL_GetError() << std::endl;
+    //     // SDL_Event e;
     //     while (SDL_PollEvent(&e) != 0)
     //     {
+    //         std::cout << "SDL_PollEvent " << e.type << " " << (running ? "true" : "false") << std::endl;
     //         if (e.type == SDL_QUIT)
     //         {
+    //             std::cout << "SDL_QUIT" << std::endl;
     //             running = false;
     //             break;
+    //         } else {
+    //             // std::cout << "SDL_PollEvent" << e.type << std::endl;
     //         }
     //     }
+    //     // std::cout << "SDL_PollEvent" << SDL_GetError() << std::endl;
+    //     // SDL_SetRenderDrawColor(renderer, 255, 255, 255 , 255);
+    //     // SDL_RenderClear(renderer);
+    //     // SDL_RenderPresent(renderer);
+
+    // // SDL_Delay(16);
     // }
 
     // // clean up resources before exiting.

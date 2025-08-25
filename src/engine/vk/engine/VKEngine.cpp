@@ -41,9 +41,10 @@ bool VKEngine::setup() {
 
     if (!setupDebugMessenger()) return false;
 
+    printf("SDL version: %d.%d.%d\n", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
     LOG_INFO("Creating surface...");
-    if (!SDL_Vulkan_CreateSurface(window, instance, &surface)) {
-        LOG_ERROR("Failed to create surface!");
+    if (!SDL_Vulkan_CreateSurface(window, instance, nullptr, &surface)) {
+        std::cout << "Failed to create surface! Error: " << SDL_GetError() << std::endl;
         return false;
     }
 
@@ -156,7 +157,6 @@ bool VKEngine::createInstance() {
         LOG_ERROR("Validation layers requested, but not available!");
         return false;
     }
-
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = "Luna";
@@ -198,7 +198,6 @@ bool VKEngine::createInstance() {
             vkDestroyInstance(instance, nullptr);
         }
     );
-
     return true;
 }
 
@@ -228,10 +227,11 @@ bool VKEngine::checkValidationLayerSupport() {
 }
 
 std::vector<const char*> VKEngine::getRequiredExtensions() {
-    unsigned int sdl_extensions_count;
-    SDL_Vulkan_GetInstanceExtensions(window, &sdl_extensions_count, NULL);
-    const char** sdl_extensions;
-    SDL_Vulkan_GetInstanceExtensions(window, &sdl_extensions_count, sdl_extensions);
+    std::cout << "Getting required extensions..." << std::endl;
+    unsigned int sdl_extensions_count = 0;
+    SDL_Vulkan_GetInstanceExtensions(&sdl_extensions_count);
+    const char* const* sdl_extensions = SDL_Vulkan_GetInstanceExtensions(&sdl_extensions_count);
+    std::cout << "SDL extensions count: " << sdl_extensions_count << std::endl;
 
     std::vector<const char*> extensions(sdl_extensions, sdl_extensions + sdl_extensions_count);
 
@@ -240,6 +240,8 @@ std::vector<const char*> VKEngine::getRequiredExtensions() {
     }
     extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
     extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+    // extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 
     return extensions;
 }

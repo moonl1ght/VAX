@@ -240,6 +240,7 @@ std::optional<VkPipeline> PipelineBuilder::build(VkDevice device, PipelineType p
 
         return pipeline;
     }
+    return std::nullopt;
 }
 
 // MARK: - ShaderModuleBuilder

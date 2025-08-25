@@ -256,8 +256,8 @@ void DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t of
         .dstSet = VK_NULL_HANDLE,
         .dstBinding = binding,
         .dstArrayElement = 0,
-        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         .pBufferInfo = &bufferInfo
     };
 
@@ -267,9 +267,9 @@ void DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t of
 void DescriptorWriter::writeTexture(Texture* texture, uint32_t binding, uint32_t offset) {
     VkDescriptorImageInfo& imageInfo = _imageInfos.emplace_back(
         VkDescriptorImageInfo{
-            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            .sampler = texture->sampler->vkSampler,
             .imageView = texture->textureImageView,
-            .sampler = texture->sampler->vkSampler
+            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         }
     );
 
@@ -278,8 +278,8 @@ void DescriptorWriter::writeTexture(Texture* texture, uint32_t binding, uint32_t
         .dstSet = VK_NULL_HANDLE,
         .dstBinding = binding,
         .dstArrayElement = 0,
-        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         .pImageInfo = &imageInfo
     };
 

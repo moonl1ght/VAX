@@ -28,7 +28,7 @@ inline Settings loadSettings(std::string filePath) {
   Settings settings;
 
   settings.debugLight = settingsJson["debugLight"];
-//  map_ini
+//  map_init
   std::map<std::string, Settings::LightRenderingType> lightRenderingTypeMap = {
     {"phong", Settings::LightRenderingType::phong},
     {"PBR", Settings::LightRenderingType::pbr}

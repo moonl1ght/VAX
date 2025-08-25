@@ -21,9 +21,15 @@ find_package(glfw3 REQUIRED FATAL_ERROR)
 find_package(assimp REQUIRED FATAL_ERROR)
 find_package(nlohmann_json REQUIRED FATAL_ERROR)
 find_package(vk-bootstrap REQUIRED FATAL_ERROR)
-find_package(tinyobjloader REQUIRED FATAL_ERROR)
-find_package(SDL2 REQUIRED CONFIG)
-find_package(imgui REQUIRED CONFIG)
+if(WIN32)
+    set(CMAKE_PREFIX_PATH "C:/msys64/mingw64/lib/include/SDL3")
+    find_package(SDL3 REQUIRED)
+else()
+    find_package(SDL2 REQUIRED)
+    find_package(imgui REQUIRED)
+    find_package(tinyobjloader REQUIRED FATAL_ERROR)
+endif()
+# find_package(imgui REQUIRED CONFIG)
 
 # find_package(glm REQUIRED FATAL_ERROR)
 if(DEFINED ENV{VULKAN_SDK})
@@ -71,40 +77,64 @@ add_custom_target(
     DEPENDS ${SPIRV_BINARY_FILES}
 )
 
-MACRO(HEADER_DIRECTORIES return_list)
-    FILE(GLOB_RECURSE new_list "${PROJECT_SOURCE_DIR}/src/*.hpp"
+macro(HEADER_DIRECTORIES return_list)
+    file(GLOB_RECURSE new_list "${PROJECT_SOURCE_DIR}/src/*.hpp"
         "${PROJECT_SOURCE_DIR}/src/*.h")
-    SET(dir_list "")
+    set(dir_list "")
 
-    FOREACH(file_path ${new_list})
-        GET_FILENAME_COMPONENT(dir_path ${file_path} PATH)
-        SET(dir_list ${dir_list} ${dir_path})
-    ENDFOREACH()
+    foreach(file_path ${new_list})
+        get_filename_component(dir_path ${file_path} PATH)
+        set(dir_list ${dir_list} ${dir_path})
+    endforeach()
 
-    LIST(REMOVE_DUPLICATES dir_list)
-    SET(${return_list} ${dir_list})
-ENDMACRO()
+    list(REMOVE_DUPLICATES dir_list)
+    set(${return_list} ${dir_list})
+endmacro()
 
 HEADER_DIRECTORIES(header_list)
 add_executable(Luna main.cpp ${all_SRCS})
 target_include_directories(Luna PUBLIC ${header_list})
+
+if(WIN32)
+    add_custom_command(TARGET Luna POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "C:/msys64/mingw64/bin/SDL3.dll"
+        $<TARGET_FILE_DIR:Luna>/SDL3.dll)
+endif()
 
 # target_link_libraries(Luna)
 # add_executable(Luna main.cpp ${PROJECT_SOURCE_DIR}/src/apps/App.hpp ${PROJECT_SOURCE_DIR}/src/apps/App.cpp ${PROJECT_SOURCE_DIR}/src/apps/SimpleApp.hpp ${PROJECT_SOURCE_DIR}/src/apps/SimpleApp.cpp)
 
 # target_include_directories(your_executable_name PRIVATE ${PROJECT_SOURCE_DIR}/include ${CONAN_INCLUDE_DIRS})
 # find_package(nlohmann REQUIRED FATAL_ERROR)
-if(VULKAN_FOUND)
-    message(STATUS "Found Vulkan. Including and linking...")
-    target_link_libraries(
-        ${PROJECT_NAME}
-        Vulkan::Vulkan
-        glfw
-        nlohmann_json::nlohmann_json
-        assimp::assimp
-        vk-bootstrap::vk-bootstrap
-        tinyobjloader::tinyobjloader
-        SDL2::SDL2
-        imgui::imgui
-    )
-endif(VULKAN_FOUND)
+if(WIN32)
+    if(VULKAN_FOUND)
+        message(STATUS "Found Vulkan. Including and linking...")
+        target_link_libraries(
+            ${PROJECT_NAME}
+            Vulkan::Vulkan
+            glfw
+            nlohmann_json::nlohmann_json
+            assimp::assimp
+            vk-bootstrap::vk-bootstrap
+            # tinyobjloader::tinyobjloader
+            SDL3::SDL3
+            # imgui::imgui
+        )
+    endif(VULKAN_FOUND)
+else()
+    if(VULKAN_FOUND)
+        message(STATUS "Found Vulkan. Including and linking...")
+        target_link_libraries(
+            ${PROJECT_NAME}
+            Vulkan::Vulkan
+            glfw
+            nlohmann_json::nlohmann_json
+            assimp::assimp
+            vk-bootstrap::vk-bootstrap
+            tinyobjloader::tinyobjloader
+            SDL2::SDL2
+            imgui::imgui
+        )
+    endif(VULKAN_FOUND)
+endif()

@@ -6,9 +6,14 @@ static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 }
 
 void App::run() {
-    setup();
-    mainLoop();
-    cleanup();
+    try {
+        setup();
+        mainLoop();
+        cleanup();
+    }
+    catch (const std::exception& e) {
+        Logger::getInstance().error("Failed to run app: {}", e.what());
+    }
 }
 
 bool App::setup() {
@@ -25,22 +30,30 @@ bool App::setup() {
 }
 
 bool App::initWindow() {
-    const uint32_t WIDTH = 800;
-    const uint32_t HEIGHT = 600;
-    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-    _window = SDL_CreateWindow(
-        "Luna",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        WIDTH,
-        HEIGHT,
-        window_flags
-    );
-    if (_window == nullptr) {
-        Logger::getInstance().error("Failed to create window");
+    try {
+        if (!SDL_Vulkan_LoadLibrary(NULL)) {
+            std::cout << "Failed to load Vulkan library: " << SDL_GetError() << std::endl;
+            return false;
+        }
+        const uint32_t WIDTH = 800;
+        const uint32_t HEIGHT = 600;
+        SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN);
+        _window = SDL_CreateWindow(
+            "Luna",
+            WIDTH,
+            HEIGHT,
+            window_flags
+        );
+        if (_window == nullptr) {
+            Logger::getInstance().error("Failed to create window");
+            return false;
+        }
+        return true;
+    }
+    catch (const std::exception& e) {
+        Logger::getInstance().error("Failed to create window: {}", e.what());
         return false;
     }
-    return true;
 }
 
 void App::cleanup() {
@@ -67,16 +80,26 @@ void App::mainLoop() {
     if (_window == nullptr) {
         throw std::runtime_error("Window not initialized");
     }
-    bool running = true;
+    static bool running = true;
     while (running) {
+        std::cout << "Main loop" << std::endl;
         SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
+        try {
+            // std::cout << "Error: " << SDL_GetError() << std::endl;
+            while (SDL_PollEvent(&event)) {
+                // std::cout << "Error: " << SDL_GetError() << std::endl;
+                // std::cout << "Event: " << event.type << std::endl;
+            if (event.type == SDL_EVENT_QUIT) {
                 running = false;
-                break;
+                    break;
+                }
             }
         }
-        loopUpdate();
+        catch (const std::exception& e) {
+            Logger::getInstance().error("Failed to poll events: {}", e.what());
+        }
+        SDL_Delay(16); 
+        // loopUpdate();
     }
 }
 
