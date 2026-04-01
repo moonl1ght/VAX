@@ -49,6 +49,8 @@ bool Renderer::render(Scene* scene, float deltaTime) {
         return false;
     }
 
+    Logger::getInstance().log("Acquired swap chain image!");
+
     vkResetFences(_vkEngine->device->vkDevice, 1, &_vkEngine->inFlightFences[_currentFrame]);
 
     vkResetCommandBuffer(_vkEngine->commandBuffers[_currentFrame], 0);
@@ -56,6 +58,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
         Logger::getInstance().error("Failed to record command buffer!");
         return false;
     }
+    Logger::getInstance().log("Recorded command buffer!");
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -106,6 +109,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
 }
 
 void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
+    Logger::getInstance().log("Drawing background!");
     VkClearColorValue clearValue;
     float flash = std::abs(std::sin(_currentFrame / 120.f));
     clearValue = { { 1.0f, 1.0f, 1.0f, 1.0f } };
@@ -123,15 +127,17 @@ void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, _vkEngine->pipelineManager->getPipelineDrawBackground());
 
-    auto drawBackgroundDescriptorSet = _vkEngine->descriptorSetManager->getDrawBackgroundDescriptorSet(_currentFrame);
-    DescriptorWriter descriptorWriter;
-    descriptorWriter.writeTexture(_vkEngine->renderingDestination->drawImage.get(), 1, 0);
-    descriptorWriter.updateSet(_vkEngine->device->vkDevice, drawBackgroundDescriptorSet.value());
+    Logger::getInstance().log("Bound pipeline!");
 
+    auto drawBackgroundDescriptorSet = _vkEngine->descriptorSetManager->getDrawBackgroundDescriptorSet(_currentFrame);
     if (!drawBackgroundDescriptorSet.has_value()) {
         LOG_ERROR("Failed to get draw background descriptor set!");
         return;
     }
+    DescriptorWriter descriptorWriter;
+    descriptorWriter.writeStorageImage(_vkEngine->renderingDestination->drawImage->textureImageView, 0);
+    descriptorWriter.updateSet(_vkEngine->device->vkDevice, drawBackgroundDescriptorSet.value());
+    Logger::getInstance().log("Got draw background descriptor set!");
     vkCmdBindDescriptorSets(
         commandBuffer,
         VK_PIPELINE_BIND_POINT_COMPUTE,
@@ -142,6 +148,8 @@ void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
         0,
         nullptr
     );
+
+    Logger::getInstance().log("Bound descriptor sets!");
 
     vkCmdDispatch(commandBuffer, std::ceil(_vkEngine->renderingDestination->drawImage->size.width / 16.0), std::ceil(_vkEngine->renderingDestination->drawImage->size.height / 16.0), 1);
 }
@@ -156,6 +164,8 @@ bool Renderer::recordCommandBuffer(
         LOG_ERROR("Failed to begin recording command buffer!");
         return false;
     }
+
+    Logger::getInstance().log("Recorded command buffer!");
 
     vax::transitionImage(
         commandBuffer,
@@ -195,6 +205,8 @@ bool Renderer::recordCommandBuffer(
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
     );
+
+    Logger::getInstance().log("Transitioned image to present src khr!");
 
     // VkRenderPassBeginInfo renderPassInfo{};
     // renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

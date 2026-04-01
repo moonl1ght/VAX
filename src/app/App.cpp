@@ -99,7 +99,7 @@ void App::mainLoop() {
             Logger::getInstance().error("Failed to poll events: {}", e.what());
         }
         SDL_Delay(16); 
-        // loopUpdate();
+        loopUpdate();
     }
 }
 

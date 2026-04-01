@@ -31,7 +31,7 @@ bool PipelineManager::setup() {
     }
 
     PipelineBuilder backgroundPipelineBuilder(_pipelineDrawBackgroundLayout);
-    backgroundPipelineBuilder.addShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, backgroundShaderModule.value(), "background");
+    backgroundPipelineBuilder.addShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, backgroundShaderModule.value(), "main");
     auto pipelineDrawBackground = backgroundPipelineBuilder.build(
         vkEngine->device->vkDevice, PipelineBuilder::PipelineType::COMPUTE
     );
@@ -187,6 +187,7 @@ bool PipelineManager::setup() {
 
     vkDestroyShaderModule(vkEngine->device->vkDevice, fragShaderModule.value(), nullptr);
     vkDestroyShaderModule(vkEngine->device->vkDevice, vertShaderModule.value(), nullptr);
+    vkDestroyShaderModule(vkEngine->device->vkDevice, backgroundShaderModule.value(), nullptr);
     return true;
 }
 
@@ -233,7 +234,7 @@ std::optional<VkPipeline> PipelineBuilder::build(VkDevice device, PipelineType p
         auto result = vkCreateComputePipelines(
             device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &pipeline
         );
-        if (VK_CHECK(result)) {
+        if (!VK_CHECK(result)) {
             LOG_ERROR("Failed to create compute pipeline!");
             return std::nullopt;
         }
@@ -274,7 +275,7 @@ std::optional<VkShaderModule> ShaderModuleBuilder::build(VkDevice device) {
     createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
     VkShaderModule shaderModule;
-    if (VK_CHECK(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule))) {
+    if (!VK_CHECK(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule))) {
         LOG_ERROR("Failed to build shader module!");
         return std::nullopt;
     }

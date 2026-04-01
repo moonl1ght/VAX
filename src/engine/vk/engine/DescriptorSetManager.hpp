@@ -28,6 +28,7 @@ public:
 
     void writeBuffer(Buffer* buffer, uint32_t binding, uint32_t offset = 0);
     void writeTexture(Texture* texture, uint32_t binding, uint32_t offset = 0);
+    void writeStorageImage(VkImageView imageView, uint32_t binding);
 
     void updateSet(VkDevice device, VkDescriptorSet descriptorSet);
     void clear();

@@ -137,7 +137,13 @@ bool RenderingDestination::createRenderDesctinationTexture(VkExtent2D windowExte
                 VK_FORMAT_R16G16B16A16_SFLOAT
             )
         );
+        Logger::getInstance().log("Created render destination texture!");
+        std::cout << "Created render destination texture!" << drawImage->name << std::endl;
+        std::cout << "Sampler: " << (drawImage->sampler == nullptr ? "nullptr" : "not nullptr") << std::endl;
         drawImage->loadImageView();
+        if (auto sampler = Sampler::createSampler(_vkEngine->device)) {
+            drawImage->sampler = std::move(*sampler);
+        }
         return true;
     }
     LOG_ERROR("Failed to create render destination texture!");

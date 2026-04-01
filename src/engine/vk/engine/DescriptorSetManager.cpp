@@ -38,7 +38,7 @@ bool DescriptorSetManager::createDescriptorPool() {
     poolInfo.pPoolSizes = poolSizes.data();
     poolInfo.maxSets = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT);
 
-    if (VK_CHECK(vkCreateDescriptorPool(_vkEngine->device->vkDevice, &poolInfo, nullptr, &_descriptorPool))) {
+    if (!VK_CHECK(vkCreateDescriptorPool(_vkEngine->device->vkDevice, &poolInfo, nullptr, &_descriptorPool))) {
         LOG_ERROR("Failed to create descriptor pool!");
         return false;
     }
@@ -64,7 +64,7 @@ std::optional<VkDescriptorSet> DescriptorSetManager::getDrawBackgroundDescriptor
     auto result = vkAllocateDescriptorSets(
         _vkEngine->device->vkDevice, &allocInfo, _drawBackgroundDescriptorSets.data()
     );
-    if (VK_CHECK(result)) {
+    if (!VK_CHECK(result)) {
         LOG_ERROR("Failed to allocate descriptor set!");
         return std::nullopt;
     }
@@ -265,9 +265,13 @@ void DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t of
 }
 
 void DescriptorWriter::writeTexture(Texture* texture, uint32_t binding, uint32_t offset) {
+    Logger::getInstance().log("Writing texture!");
+    std::cout << "Writing texture!" << std::endl;
+    std::cout << "Sampler: " << (texture->sampler == nullptr ? "nullptr" : "not nullptr") << std::endl;
+    std::cout << "Texture image view: " << texture->textureImageView << std::endl;
     VkDescriptorImageInfo& imageInfo = _imageInfos.emplace_back(
         VkDescriptorImageInfo{
-            .sampler = texture->sampler->vkSampler,
+            .sampler = texture->sampler == nullptr ? VK_NULL_HANDLE : texture->sampler->vkSampler,
             .imageView = texture->textureImageView,
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         }
@@ -280,6 +284,29 @@ void DescriptorWriter::writeTexture(Texture* texture, uint32_t binding, uint32_t
         .dstArrayElement = 0,
         .descriptorCount = 1,
         .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .pImageInfo = &imageInfo
+    };
+    Logger::getInstance().log("Wrote texture!");
+
+    _writes.push_back(write);
+}
+
+void DescriptorWriter::writeStorageImage(VkImageView imageView, uint32_t binding) {
+    VkDescriptorImageInfo& imageInfo = _imageInfos.emplace_back(
+        VkDescriptorImageInfo{
+            .sampler = VK_NULL_HANDLE,
+            .imageView = imageView,
+            .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+        }
+    );
+
+    VkWriteDescriptorSet write{
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = VK_NULL_HANDLE,
+        .dstBinding = binding,
+        .dstArrayElement = 0,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
         .pImageInfo = &imageInfo
     };
 
@@ -308,6 +335,7 @@ void DescriptorLayoutBuilder::addBinding(uint32_t binding, VkDescriptorType type
     layoutBinding.descriptorType = type;
     layoutBinding.descriptorCount = 1;
     layoutBinding.pImmutableSamplers = nullptr;
+    bindings.push_back(layoutBinding);
 }
 
 void DescriptorLayoutBuilder::clear() {
@@ -328,11 +356,8 @@ std::optional<VkDescriptorSetLayout> DescriptorLayoutBuilder::build(
     layoutInfo.pNext = pNext;
 
     VkDescriptorSetLayout descriptorSetLayout;
-    auto result = vkCreateDescriptorSetLayout(
-        device, &layoutInfo, nullptr, &descriptorSetLayout
-    );
-    if (VK_CHECK(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout))) {
-        LOG_ERROR("Failed to create global descriptor set layout!");
+    if (!VK_CHECK(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout))) {
+        LOG_ERROR("Failed to create descriptor set layout!");
         return std::nullopt;
     }
 
