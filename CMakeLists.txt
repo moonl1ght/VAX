@@ -19,10 +19,11 @@ find_package(glfw3 REQUIRED FATAL_ERROR)
 # set(CMAKE_PREFIX_PATH="build/assimp-config.cmake")
 # set(-DCMAKE_TOOLCHAIN_FILE="build/assimp-config.cmake")
 find_package(assimp REQUIRED FATAL_ERROR)
+find_package(glm REQUIRED)
 find_package(nlohmann_json REQUIRED FATAL_ERROR)
 find_package(vk-bootstrap REQUIRED FATAL_ERROR)
 if(WIN32)
-    set(CMAKE_PREFIX_PATH "C:/msys64/mingw64/lib/include/SDL3")
+    list(APPEND CMAKE_PREFIX_PATH "C:/msys64/mingw64/lib/cmake/SDL3")
     find_package(SDL3 REQUIRED)
 else()
     find_package(SDL2 REQUIRED)
@@ -119,6 +120,7 @@ if(WIN32)
             vk-bootstrap::vk-bootstrap
             # tinyobjloader::tinyobjloader
             SDL3::SDL3
+            glm::glm
             # imgui::imgui
         )
     endif(VULKAN_FOUND)

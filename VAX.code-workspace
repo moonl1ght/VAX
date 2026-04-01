@@ -94,21 +94,21 @@
 	},
 	// "cmake.sourceDirectory": ["${workspaceFolder}/src/"]
 	},
-	"launch": {
-		"version": "0.2.0",
-		"configurations": [
-			{
-				"name": "(lldb) Launch",
-				"type": "cppdbg",
-				"request": "launch",
-				"program": "${workspaceFolder}/build/Luna",
-				"args": [],
-				"stopAtEntry": false,
-				"cwd": "${workspaceFolder}",
-				"environment": [],
-				"externalConsole": false,
-				"MIMode": "lldb"
-			}
-		]
-	}
+	// "launch": {
+	// 	"version": "0.2.0",
+	// 	"configurations": [
+	// 		{
+	// 			"name": "(lldb) Launch",
+	// 			"type": "cppdbg",
+	// 			"request": "launch",
+	// 			"program": "${workspaceFolder}/build/Luna",
+	// 			"args": [],
+	// 			"stopAtEntry": false,
+	// 			"cwd": "${workspaceFolder}",
+	// 			"environment": [],
+	// 			"externalConsole": false,
+	// 			"MIMode": "lldb"
+	// 		}
+	// 	]
+	// }
 }

@@ -2,9 +2,9 @@
 assimp/5.4.3
 nlohmann_json/3.11.3
 glfw/3.4
+glm/1.0.1
 tinyobjloader/2.0.0-rc10
 vk-bootstrap/1.3.296
-sdl/3.2.14
 imgui/1.92.0
 [generators]
 CMakeDeps
