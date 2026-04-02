@@ -1,4 +1,4 @@
-#include "VKEngine.hpp"
+#include "vkEngine.h"
 #include "TextureLoader.hpp"
 #include "Texture.hpp"
 #include "SwapchainManager.hpp"
@@ -38,7 +38,7 @@ void validationLayersDestroyDebugUtilsMessengerEXT(
     }
 }
 
-bool VKEngine::setup() {
+bool vax::VkEngine::setup() {
     std::optional<VkInstance> instanceOptional = vax::VkInstanceBuilder(
         deletionQueue,
         enableValidationLayers,
@@ -158,12 +158,12 @@ bool VKEngine::setup() {
     return true;
 }
 
-void VKEngine::cleanup() {
+void vax::VkEngine::cleanup() {
     deletionQueue.flush();
     LOG_INFO("Engine cleanup complete!");
 }
 
-bool VKEngine::setupDebugMessenger() {
+bool vax::VkEngine::setupDebugMessenger() {
     LOG_INFO("Setting up debug messenger...");
     if (!enableValidationLayers) return false;
 
@@ -185,7 +185,7 @@ bool VKEngine::setupDebugMessenger() {
     return true;
 }
 
-bool VKEngine::createCommandPool() {
+bool vax::VkEngine::createCommandPool() {
     LOG_INFO("Creating command pool...");
     VKUtils::QueueFamilyIndices queueFamilyIndices = device->getQueueFamilyIndices();
 
@@ -209,7 +209,7 @@ bool VKEngine::createCommandPool() {
     return true;
 }
 
-bool VKEngine::createCommandBuffer() {
+bool vax::VkEngine::createCommandBuffer() {
     LOG_INFO("Creating command buffer...");
     commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo allocInfo{};
@@ -226,7 +226,7 @@ bool VKEngine::createCommandBuffer() {
     return true;
 }
 
-bool VKEngine::createSyncObjects() {
+bool vax::VkEngine::createSyncObjects() {
     LOG_INFO("Creating synchronization objects...");
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -262,7 +262,7 @@ bool VKEngine::createSyncObjects() {
     return true;
 }
 
-VkCommandBuffer VKEngine::beginSingleTimeCommands() {
+VkCommandBuffer vax::VkEngine::beginSingleTimeCommands() {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -281,7 +281,7 @@ VkCommandBuffer VKEngine::beginSingleTimeCommands() {
     return commandBuffer;
 }
 
-void VKEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+void vax::VkEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     vkEndCommandBuffer(commandBuffer);
 
     VkSubmitInfo submitInfo{};
@@ -295,7 +295,7 @@ void VKEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     vkFreeCommandBuffers(device->vkDevice, commandPool, 1, &commandBuffer);
 }
 
-VkResult VKEngine::createAllocator() {
+VkResult vax::VkEngine::createAllocator() {
     VmaAllocatorCreateInfo allocatorInfo{};
     allocatorInfo.physicalDevice = device->vkPhysicalDevice;
     allocatorInfo.device = device->vkDevice;

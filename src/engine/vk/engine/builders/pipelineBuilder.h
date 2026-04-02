@@ -9,9 +9,9 @@ namespace vax {
 
     class PipelineBuilder {
     protected:
-        const VKEngine& vkEngine;
+        const vax::VkEngine& vkEngine;
     public:
-        PipelineBuilder(const VKEngine& vkEngine) : vkEngine(vkEngine) {};
+        PipelineBuilder(const vax::VkEngine& vkEngine) : vkEngine(vkEngine) {};
 
         virtual ~PipelineBuilder() = default;
 
@@ -94,7 +94,7 @@ namespace vax {
 
     private:
         Logger _logger = Logger("ComputePipelineBuilder");
-        const VKEngine& vkEngine;
+        const vax::VkEngine& vkEngine;
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
         VkPipelineShaderStageCreateInfo shaderStageInfo = {};
         bool isPipelineLayoutTransferred = false;

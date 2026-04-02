@@ -10,14 +10,14 @@ namespace vax {
 
     class Pipeline final {
     protected:
-        const VKEngine& vkEngine;
+        const vax::VkEngine& vkEngine;
     public:
         PipelineType pipelineType;
         VkPipelineLayout vkPipelineLayout = VK_NULL_HANDLE;
         VkPipeline vkPipeline = VK_NULL_HANDLE;
 
         Pipeline(
-            const VKEngine& vkEngine,
+            const vax::VkEngine& vkEngine,
             PipelineType pipelineType,
             VkPipelineLayout pipelineLayout,
             VkPipeline pipeline

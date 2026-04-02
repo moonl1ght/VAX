@@ -1,5 +1,5 @@
 #include "RenderingDestination.hpp"
-#include "VKEngine.hpp"
+#include "vkEngine.h"
 #include "ImageUtils.hpp"
 #include "Texture.hpp"
 

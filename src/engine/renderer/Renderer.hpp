@@ -2,14 +2,14 @@
 #define Renderer_hpp
 
 #include "luna.h"
-#include "VKEngine.hpp"
+#include "vkEngine.h"
 #include "Scene.hpp"
 #include "Buffer.hpp"
 
 class Renderer {
 public:
     Renderer(
-        VKEngine* vkEngine
+        vax::VkEngine* vkEngine
     )
         : _vkEngine(vkEngine) {
     };
@@ -27,7 +27,7 @@ public:
     void prepare();
 
 private:
-    VKEngine* _vkEngine;
+    vax::VkEngine* _vkEngine;
 
     std::vector<Buffer*> _sceneUniformBuffers;
     std::vector<void*> _sceneUniformBuffersMapped;

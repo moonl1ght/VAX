@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Renderer.hpp"
-#include "VKEngine.hpp"
+#include "vkEngine.h"
 #include "luna.h"
 
 class App final {
@@ -11,13 +11,13 @@ public:
 
     void run();
 
-    VKEngine* getEngine() const {
+    vax::VkEngine* getEngine() const {
         return _engine;
     }
 
 private:
     SDL_Window* _window = nullptr;
-    VKEngine* _engine = nullptr;
+    vax::VkEngine* _engine = nullptr;
     Renderer* _renderer = nullptr;
     Scene* _scene = nullptr;
 

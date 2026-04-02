@@ -1,10 +1,10 @@
 #pragma once
 
-#include "VKEngine.hpp"
+#include "vkEngine.h"
 
 class VKObjectBuilder {
 public:
-    VKObjectBuilder(VKEngine* vkEngine) : vkEngine(vkEngine) {}
+    VKObjectBuilder(vax::VkEngine* vkEngine) : vkEngine(vkEngine) {}
 
-    VKEngine* vkEngine;
+    vax::VkEngine* vkEngine;
 };

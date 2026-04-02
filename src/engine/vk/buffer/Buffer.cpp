@@ -1,7 +1,7 @@
 #include "Buffer.hpp"
 
 Buffer::Buffer(
-    VKEngine* vkEngine,
+    vax::VkEngine* vkEngine,
     const void* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
@@ -32,7 +32,7 @@ void Buffer::cleanup() {
 }
 
 void Buffer::reload(
-    VKEngine* vkEngine,
+    vax::VkEngine* vkEngine,
     const void* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
@@ -46,7 +46,7 @@ void Buffer::reload(
 }
 
 void Buffer::load(
-    VKEngine* vkEngine,
+    vax::VkEngine* vkEngine,
     const void* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
@@ -73,7 +73,7 @@ void Buffer::fill(const void* fillData) {
     vkUnmapMemory(_device, vkBufferMemory);
 }
 
-void Buffer::copyBufferTo(VKEngine* vkEngine, Buffer& dstBuffer, VkDeviceSize size) const {
+void Buffer::copyBufferTo(vax::VkEngine* vkEngine, Buffer& dstBuffer, VkDeviceSize size) const {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -115,7 +115,7 @@ bool Buffer::isLoaded() const {
 }
 
 void Buffer::load(
-    VKEngine* vkEngine,
+    vax::VkEngine* vkEngine,
     VkBufferUsageFlags usage,
     VkMemoryPropertyFlags properties
 ) {

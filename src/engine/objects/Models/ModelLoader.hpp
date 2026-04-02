@@ -6,7 +6,7 @@
 
 class ModelLoader final: public VKObject {
 public:
-    ModelLoader(VKEngine* stack) : VKObject(stack) {};
+    ModelLoader(vax::VkEngine* vkEngine) : VKObject(vkEngine) {};
     ~ModelLoader() = default;
 
     std::optional<DrawableModel*> loadModel(const std::string& path);

@@ -2,12 +2,12 @@
 
 #include "luna.h"
 
-class VKEngine;
+namespace vax { class VkEngine; }
 
 namespace vax {
 
     void transitionImageLayout(
-        VKEngine* vkEngine,
+        vax::VkEngine* vkEngine,
         VkImage image,
         VkFormat format,
         VkImageLayout oldLayout,
@@ -24,7 +24,7 @@ namespace vax {
     );
 
     void copyBufferToImage(
-        VKEngine* vkEngine,
+        vax::VkEngine* vkEngine,
         VkBuffer buffer,
         VkImage image,
         uint32_t width,
@@ -39,7 +39,7 @@ namespace vax {
     );
 
     std::optional<std::pair<VkImage, VmaAllocation>> createImage(
-        VKEngine* vkEngine,
+        vax::VkEngine* vkEngine,
         VkExtent3D extent,
         VkFormat format,
         VkImageTiling tiling,

@@ -1,5 +1,5 @@
 #include "ImageUtils.hpp"
-#include "VKEngine.hpp"
+#include "vkEngine.h"
 
 void vax::copyImageToImage(
     VkCommandBuffer commandBuffer, VkImage source, VkImage destination, VkExtent2D srcSize, VkExtent2D dstSize
@@ -82,7 +82,7 @@ void vax::transitionImage(
 }
 
 void vax::transitionImageLayout(
-    VKEngine* vkEngine,
+    vax::VkEngine* vkEngine,
     VkImage image,
     VkFormat format,
     VkImageLayout oldLayout,
@@ -144,7 +144,7 @@ void vax::transitionImageLayout(
 }
 
 void vax::copyBufferToImage(
-    VKEngine* vkEngine,
+    vax::VkEngine* vkEngine,
     VkBuffer buffer,
     VkImage image,
     uint32_t width,
@@ -173,7 +173,7 @@ void vax::copyBufferToImage(
 }
 
 std::optional<std::pair<VkImage, VmaAllocation>> vax::createImage(
-    VKEngine* vkEngine,
+    vax::VkEngine* vkEngine,
     VkExtent3D extent,
     VkFormat format,
     VkImageTiling tiling,

@@ -5,7 +5,7 @@
 #include "RenderPassManager.hpp"
 
 class Texture;
-class VKEngine;
+namespace vax { class VkEngine; }
 
 class RenderingDestination final {
 public:
@@ -14,7 +14,7 @@ public:
     std::vector<VkFramebuffer> swapchainFramebuffers;
 
     RenderingDestination(
-        VKEngine* vkEngine,
+        vax::VkEngine* vkEngine,
         SwapchainManager* swapchainManager,
         RenderPassManager* renderPassManager
     )
@@ -30,7 +30,7 @@ public:
     void recreate();
 
 private:
-    VKEngine* _vkEngine;
+    vax::VkEngine* _vkEngine;
     SwapchainManager* _swapchainManager;
     RenderPassManager* _renderPassManager;
 

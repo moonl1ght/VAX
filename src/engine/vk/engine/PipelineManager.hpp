@@ -30,7 +30,7 @@ struct PipelineBuilder {
 
 class PipelineManager final : public VKObject {
 public:
-    PipelineManager(VKEngine* engine, DescriptorSetManager* descriptorSetManager)
+    PipelineManager(vax::VkEngine* engine, DescriptorSetManager* descriptorSetManager)
         : VKObject(engine)
         , _descriptorSetManager(descriptorSetManager) {
     };

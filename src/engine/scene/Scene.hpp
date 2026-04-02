@@ -12,9 +12,9 @@ class Scene final : public VKObject {
 public:
     Texture* texture = nullptr;
 
-    Scene(VKEngine* stack)
-        : VKObject(stack)
-        , _modelLoader(ModelLoader(stack)) {
+    Scene(vax::VkEngine* vkEngine)
+        : VKObject(vkEngine)
+        , _modelLoader(ModelLoader(vkEngine)) {
     };
 
     ~Scene() {

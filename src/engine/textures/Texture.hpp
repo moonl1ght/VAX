@@ -20,7 +20,7 @@ public:
     Texture() = default;
 
     Texture(
-        VKEngine* vkEngine,
+        vax::VkEngine* vkEngine,
         std::string name,
         VkImage textureImage,
         VmaAllocation allocation,

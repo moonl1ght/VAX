@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "VKEngine.hpp"
+#include "vkEngine.h"
 #include "VKUtils.hpp"
 #include "luna.h"
 
@@ -16,7 +16,7 @@ public:
     Buffer() {}
 
     Buffer(
-        VKEngine* vkEngine,
+        vax::VkEngine* vkEngine,
         const void* data,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
@@ -56,21 +56,21 @@ public:
     }
 
     void load(
-        VKEngine* vkEngine,
+        vax::VkEngine* vkEngine,
         const void* data,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
         VkMemoryPropertyFlags properties
     );
     void reload(
-        VKEngine* vkEngine,
+        vax::VkEngine* vkEngine,
         const void* data,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
         VkMemoryPropertyFlags properties
     );
     void fill(const void* fillData);
-    void copyBufferTo(VKEngine* vkEngine, Buffer& dstBuffer, VkDeviceSize size) const;
+    void copyBufferTo(vax::VkEngine* vkEngine, Buffer& dstBuffer, VkDeviceSize size) const;
     bool isEmpty() const;
     bool isLoaded() const;
 
@@ -78,7 +78,7 @@ private:
     VkDevice _device;
 
     void load(
-        VKEngine* vkEngine,
+        vax::VkEngine* vkEngine,
         VkBufferUsageFlags usage,
         VkMemoryPropertyFlags properties
     );

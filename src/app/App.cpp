@@ -20,7 +20,7 @@ bool App::setup() {
     if (!initWindow()) {
         return false;
     }
-    _engine = new VKEngine(_window);
+    _engine = new vax::VkEngine(_window);
     _engine->setup();
     _renderer = new Renderer(_engine);
     _renderer->prepare();

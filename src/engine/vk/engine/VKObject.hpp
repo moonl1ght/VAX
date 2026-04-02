@@ -1,14 +1,14 @@
 #pragma once
 
 #include "luna.h"
-#include "VKEngine.hpp"
+#include "vkEngine.h"
 
 class VKObject {
 protected:
-    VKEngine* vkEngine = nullptr;
+    vax::VkEngine* vkEngine = nullptr;
 
     VKObject() = default;
-    VKObject(VKEngine* vkEngine) : vkEngine(vkEngine) {}
+    VKObject(vax::VkEngine* vkEngine) : vkEngine(vkEngine) {}
 
     virtual ~VKObject() = default;
 };

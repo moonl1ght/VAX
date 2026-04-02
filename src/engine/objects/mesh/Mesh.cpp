@@ -1,7 +1,7 @@
 #include "Mesh.hpp"
 
 void Mesh::draw(
-    VKEngine* vkEngine,
+    vax::VkEngine* vkEngine,
     VkCommandBuffer commandBuffer
 ) {
     if (!_isLoaded) {
@@ -14,7 +14,7 @@ void Mesh::draw(
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 }
 
-void Mesh::loadBuffers(VKEngine* vkEngine) {
+void Mesh::loadBuffers(vax::VkEngine* vkEngine) {
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
     VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
     if (MACOS) {
