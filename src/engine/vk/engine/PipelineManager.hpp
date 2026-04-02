@@ -6,17 +6,6 @@
 #include "Vertex.h"
 #include "DescriptorSetManager.hpp"
 
-struct ShaderModuleBuilder {
-    std::vector<char> code;
-
-    ShaderModuleBuilder() = default;
-    ~ShaderModuleBuilder() = default;
-
-    void readFile(const std::string& filename);
-
-    std::optional<VkShaderModule> build(VkDevice device);
-};
-
 struct PipelineBuilder {
     enum class PipelineType {
         RENDER,

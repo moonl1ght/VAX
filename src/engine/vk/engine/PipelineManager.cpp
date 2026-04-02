@@ -1,14 +1,15 @@
 #include "PipelineManager.hpp"
+#include "pipelineBuilder.h"
+#include "shaderModuleBuilder.h"
 
 bool PipelineManager::setup() {
-    ShaderModuleBuilder shaderBuilder;
-    shaderBuilder.readFile(SRC_PATH("engine/shaders/out/shader.vert.spv"));
+    auto shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/shader.vert.spv"));
     auto vertShaderModule = shaderBuilder.build(vkEngine->device->vkDevice);
 
-    shaderBuilder.readFile(SRC_PATH("engine/shaders/out/shader.frag.spv"));
+    shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/shader.frag.spv"));
     auto fragShaderModule = shaderBuilder.build(vkEngine->device->vkDevice);
 
-    shaderBuilder.readFile(SRC_PATH("engine/shaders/out/background.comp.spv"));
+    shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/background.comp.spv"));
     auto backgroundShaderModule = shaderBuilder.build(vkEngine->device->vkDevice);
 
     if (!vertShaderModule || !fragShaderModule || !backgroundShaderModule) {
@@ -242,43 +243,4 @@ std::optional<VkPipeline> PipelineBuilder::build(VkDevice device, PipelineType p
         return pipeline;
     }
     return std::nullopt;
-}
-
-// MARK: - ShaderModuleBuilder
-
-void ShaderModuleBuilder::readFile(const std::string& filename) {
-    std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-    if (!file.is_open()) {
-        LOG_ERROR("failed to open file!");
-        code = std::vector<char>();
-        return;
-    }
-
-    size_t fileSize = (size_t)file.tellg();
-    code.resize(fileSize);
-
-    file.seekg(0);
-    file.read(code.data(), fileSize);
-
-    file.close();
-}
-
-std::optional<VkShaderModule> ShaderModuleBuilder::build(VkDevice device) {
-    if (code.empty()) {
-        LOG_ERROR("Failed to build shader code!");
-        return std::nullopt;
-    }
-    VkShaderModuleCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-    VkShaderModule shaderModule;
-    if (!VK_CHECK(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule))) {
-        LOG_ERROR("Failed to build shader module!");
-        return std::nullopt;
-    }
-
-    return shaderModule;
 }
