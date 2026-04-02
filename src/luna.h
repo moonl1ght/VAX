@@ -19,7 +19,7 @@
 #include <array>
 #include <utility>
 
-#include "Logger.hpp"
+#include "logger.h"
 #include "vma.hpp"
 #include "tinyobjloader.hpp"
 

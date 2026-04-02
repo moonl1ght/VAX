@@ -2,7 +2,7 @@
 #include "tiny_obj_loader.h"
 
 std::optional<DrawableModel*> ModelLoader::loadModel(const std::string& path) {
-    Logger::getInstance().log("Loading model: " + path);
+    // Logger::getInstance().log("Loading model: " + path);
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;

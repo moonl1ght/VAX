@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SwapchainManager.hpp"
-#include "Device.hpp"
+#include "device.h"
 
 class RenderPassManager final {
 public:

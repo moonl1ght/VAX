@@ -12,7 +12,7 @@ int main() {
     std::cout << "Hello, World!" << std::endl;
     // return 0;
     std::srand(std::time(0));
-    Logger::getInstance().log("Run application");
+    // Logger::getInstance().log("Run application");
     static App app = App();
     try {
         app.run();

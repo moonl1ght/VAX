@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "Device.hpp"
+#include "device.h"
 #include "luna.h"
 
 class Sampler final {

@@ -57,7 +57,7 @@ bool App::initWindow() {
 }
 
 void App::cleanup() {
-    Logger::getInstance().log("Cleaning up...");
+    // Logger::getInstance().log("Cleaning up...");
 
     vkDeviceWaitIdle(_engine->device->vkDevice);
     delete _renderer;

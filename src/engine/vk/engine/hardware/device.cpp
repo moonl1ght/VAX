@@ -1,4 +1,4 @@
-#include "Device.hpp"
+#include "device.h"
 
 using namespace vax;
 

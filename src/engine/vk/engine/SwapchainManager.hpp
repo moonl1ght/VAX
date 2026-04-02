@@ -1,7 +1,7 @@
 #pragma once
 
 #include "luna.h"
-#include "Device.hpp"
+#include "device.h"
 #include "VKUtils.hpp"
 
 class SwapchainManager final {

@@ -9,7 +9,6 @@ void Texture::loadImageView() {
 }
 
 void Texture::destroy() {
-    Logger::getInstance().log("Destroying texture!" + name);
     if (textureImageView != VK_NULL_HANDLE) {
         vkDestroyImageView(vkEngine->device->vkDevice, textureImageView, nullptr);
         textureImageView = VK_NULL_HANDLE;
@@ -43,7 +42,6 @@ bool Texture::copyTo(Texture& other, VkCommandBuffer commandBuffer) const {
     if (!isValid()) {
         return false;
     }
-    Logger::getInstance().log("Copying texture to other!");
 
     if (other.isValid()) {
         other.destroy();

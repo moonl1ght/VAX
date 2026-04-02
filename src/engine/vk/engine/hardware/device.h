@@ -2,7 +2,6 @@
 
 #include "luna.h"
 #include "VKUtils.hpp"
-#include "Logger.hpp"
 
 namespace vax {
     class Device final {

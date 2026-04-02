@@ -3,7 +3,6 @@
 #include "Renderer.hpp"
 #include "VKEngine.hpp"
 #include "luna.h"
-#include "Logger.hpp"
 
 class App final {
 public:

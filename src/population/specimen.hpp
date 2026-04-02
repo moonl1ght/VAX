@@ -3,7 +3,7 @@
 #include <iostream>
 #include <unordered_set>
 #include "uuid_v4.h"
-#include "Logger.hpp"
+#include "logger.h"
 #include "population_utils.h"
 
 class Specimen {

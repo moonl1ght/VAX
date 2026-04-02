@@ -6,7 +6,7 @@
 #include <map>
 #include <uuid_v4.h>
 #include <ranges>
-#include "Logger.hpp"
+#include "logger.h"
 #include "generation.hpp"
 #include "specimen.hpp"
 
@@ -88,23 +88,23 @@ public:
             }
             specimens.insert(newBornSpecimens.begin(), newBornSpecimens.end());
             cleanUp();
-            Logger::getInstance().log("Year: ", year);
-            Logger::getInstance().log(
+            Logger::getInstance().info("Year: ", year);
+            Logger::getInstance().info(
                 "Specimens: ", specimens.size(),
                 "; Males: ", malesAlive,
                 "; Females: ", femalesAlive,
                 "; Pairs: ", pairsAlive
             );
-            Logger::getInstance().log(
+            Logger::getInstance().info(
                 "New born specimens: ", newBornSpecimens.size()
             );
-            Logger::getInstance().log(
+            Logger::getInstance().info(
                 "Total specimens born: ",
                 totalSpecimensBorn,
                 "; Total specimens dead: ",
                 totalSpecimensDead
             );
-            Logger::getInstance().log(
+            Logger::getInstance().info(
                 "Generations: ", generations.size(),
                 "; max generation: ", generations.rbegin()->first,
                 "; min generation: ", generations.begin()->first

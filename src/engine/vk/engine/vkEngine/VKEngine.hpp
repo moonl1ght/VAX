@@ -2,9 +2,9 @@
 
 #include "luna.h"
 #include "VKUtils.hpp"
-#include "Device.hpp"
+#include "device.h"
 #include "RenderPassManager.hpp"
-#include "DeletionQueue.hpp"
+#include "deletionQueue.h"
 
 class SwapchainManager;
 class RenderingDestination;
@@ -26,7 +26,7 @@ public:
     bool framebufferResized = false;
 
     SDL_Window* window;
-    VkInstance instance;
+    VkInstance instance = VK_NULL_HANDLE;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkSurfaceKHR surface;
     vax::Device* device;
@@ -56,33 +56,6 @@ public:
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
 private:
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        void* pUserData
-    ) {
-        switch (messageType) {
-        case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:
-            Logger::getInstance().log("validation layer: ", pCallbackData->pMessage);
-            break;
-        case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
-            Logger::getInstance().error("validation layer: ", pCallbackData->pMessage);
-            break;
-        case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
-            Logger::getInstance().error("validation layer: ", pCallbackData->pMessage);
-            break;
-        default:
-            Logger::getInstance().warning("validation layer: ", pCallbackData->pMessage);
-            break;
-        }
-        return VK_FALSE;
-    }
-
-    bool createInstance();
-    bool checkValidationLayerSupport();
-    std::vector<const char*> getRequiredExtensions();
-    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
     bool setupDebugMessenger();
     bool createCommandPool();
     bool createCommandBuffer();

@@ -5,6 +5,8 @@
 #include "RenderingDestination.hpp"
 #include "DescriptorSetManager.hpp"
 #include "PipelineManager.hpp"
+#include "vk_debug.h"
+#include "vkInstanceBuilder.h"
 
 VkResult CreateDebugUtilsMessengerEXT(
     VkInstance instance,
@@ -37,7 +39,17 @@ void validationLayersDestroyDebugUtilsMessengerEXT(
 }
 
 bool VKEngine::setup() {
-    if (!createInstance()) return false;
+    std::optional<VkInstance> instanceOptional = vax::VkInstanceBuilder(
+        deletionQueue,
+        enableValidationLayers,
+        validationLayers,
+        vulkanApiVersion
+    ).build();
+    if (instanceOptional.has_value()) {
+        instance = *instanceOptional;
+    } else {
+        return false;
+    }
 
     if (!setupDebugMessenger()) return false;
 
@@ -142,120 +154,13 @@ bool VKEngine::setup() {
         }
     );
 
-    LOG_INFO("✅ Engine setup complete!");
+    LOG_INFO("Engine setup complete!");
     return true;
 }
 
 void VKEngine::cleanup() {
     deletionQueue.flush();
-    LOG_INFO("🧹 Engine cleanup complete!");
-}
-
-bool VKEngine::createInstance() {
-    LOG_INFO("Creating instance...");
-    if (enableValidationLayers && !checkValidationLayerSupport()) {
-        LOG_ERROR("Validation layers requested, but not available!");
-        return false;
-    }
-    VkApplicationInfo appInfo{};
-    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Luna";
-    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.pEngineName = "Luna Engine";
-    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = vulkanApiVersion;
-
-    VkInstanceCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    createInfo.pApplicationInfo = &appInfo;
-    createInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-
-    auto extensions = getRequiredExtensions();
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-    createInfo.ppEnabledExtensionNames = extensions.data();
-
-    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-    if (enableValidationLayers) {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
-
-        populateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
-    }
-    else {
-        createInfo.enabledLayerCount = 0;
-        createInfo.pNext = nullptr;
-    }
-
-    if (!VK_CHECK(vkCreateInstance(&createInfo, nullptr, &instance))) {
-        LOG_ERROR("Failed to create instance!");
-        return false;
-    }
-
-    deletionQueue.push_function(
-        [&]() {
-            LOG_INFO("Destroying instance...");
-            vkDestroyInstance(instance, nullptr);
-        }
-    );
-    return true;
-}
-
-bool VKEngine::checkValidationLayerSupport() {
-    uint32_t layerCount;
-    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-    std::vector<VkLayerProperties> availableLayers(layerCount);
-    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-    for (const char* layerName : validationLayers) {
-        bool layerFound = false;
-
-        for (const auto& layerProperties : availableLayers) {
-            if (strcmp(layerName, layerProperties.layerName) == 0) {
-                layerFound = true;
-                break;
-            }
-        }
-
-        if (!layerFound) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-std::vector<const char*> VKEngine::getRequiredExtensions() {
-    std::cout << "Getting required extensions..." << std::endl;
-    unsigned int sdl_extensions_count = 0;
-    SDL_Vulkan_GetInstanceExtensions(&sdl_extensions_count);
-    const char* const* sdl_extensions = SDL_Vulkan_GetInstanceExtensions(&sdl_extensions_count);
-    std::cout << "SDL extensions count: " << sdl_extensions_count << std::endl;
-
-    std::vector<const char*> extensions(sdl_extensions, sdl_extensions + sdl_extensions_count);
-
-    if (enableValidationLayers) {
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    }
-    extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-    extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-    extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-    // extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-
-    return extensions;
-}
-
-void VKEngine::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
-    createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    createInfo.pfnUserCallback = debugCallback;
+    LOG_INFO("Engine cleanup complete!");
 }
 
 bool VKEngine::setupDebugMessenger() {
@@ -263,7 +168,7 @@ bool VKEngine::setupDebugMessenger() {
     if (!enableValidationLayers) return false;
 
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
-    populateDebugMessengerCreateInfo(createInfo);
+    vax::populateDebugMessengerCreateInfo(createInfo);
 
     if (!VK_CHECK(CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger))) {
         LOG_ERROR("Failed to set up debug messenger!");

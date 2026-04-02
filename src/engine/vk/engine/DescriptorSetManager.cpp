@@ -265,7 +265,6 @@ void DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t of
 }
 
 void DescriptorWriter::writeTexture(Texture* texture, uint32_t binding, uint32_t offset) {
-    Logger::getInstance().log("Writing texture!");
     std::cout << "Writing texture!" << std::endl;
     std::cout << "Sampler: " << (texture->sampler == nullptr ? "nullptr" : "not nullptr") << std::endl;
     std::cout << "Texture image view: " << texture->textureImageView << std::endl;
@@ -286,7 +285,6 @@ void DescriptorWriter::writeTexture(Texture* texture, uint32_t binding, uint32_t
         .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         .pImageInfo = &imageInfo
     };
-    Logger::getInstance().log("Wrote texture!");
 
     _writes.push_back(write);
 }

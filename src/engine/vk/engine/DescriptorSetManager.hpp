@@ -2,7 +2,7 @@
 #define DescriptorSetManager_hpp
 
 #include "luna.h"
-#include "Device.hpp"
+#include "device.h"
 #include "VKEngine.hpp"
 #include "Buffer.hpp"
 #include "Texture.hpp"
