@@ -1,7 +1,7 @@
 #include "vkEngine.h"
 #include "TextureLoader.hpp"
 #include "Texture.hpp"
-#include "SwapchainManager.hpp"
+#include "swapchainManager.h"
 #include "RenderingDestination.hpp"
 #include "DescriptorSetManager.hpp"
 #include "pipelineManager.h"
@@ -14,7 +14,8 @@ VkResult CreateDebugUtilsMessengerEXT(
     VkInstance instance,
     const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
     const VkAllocationCallbacks* pAllocator,
-    VkDebugUtilsMessengerEXT* pDebugMessenger) {
+    VkDebugUtilsMessengerEXT* pDebugMessenger
+) {
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
@@ -25,7 +26,8 @@ VkResult CreateDebugUtilsMessengerEXT(
 }
 
 void DestroyDebugUtilsMessengerEXT(
-    VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
+    VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator
+) {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debugMessenger, pAllocator);
@@ -33,7 +35,8 @@ void DestroyDebugUtilsMessengerEXT(
 }
 
 void validationLayersDestroyDebugUtilsMessengerEXT(
-    VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
+    VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator
+) {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debugMessenger, pAllocator);
@@ -49,30 +52,31 @@ bool vax::VkEngine::setup() {
     ).build();
     if (instanceOptional.has_value()) {
         instance = *instanceOptional;
-    } else {
+    }
+    else {
         return false;
     }
 
     if (!setupDebugMessenger()) return false;
 
-    printf("SDL version: %d.%d.%d\n", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
-    LOG_INFO("Creating surface...");
+    _logger.info("SDL version: {}.{}.{}", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
+    _logger.info("Creating surface...");
     if (!SDL_Vulkan_CreateSurface(window, instance, nullptr, &surface)) {
-        std::cout << "Failed to create surface! Error: " << SDL_GetError() << std::endl;
+        _logger.error("Failed to create surface! Error: {}", SDL_GetError());
         return false;
     }
 
     deletionQueue.push_function(
         [&]() {
-            LOG_INFO("Destroying surface...");
+            _logger.info("Destroying surface...");
             vkDestroySurfaceKHR(instance, surface, nullptr);
         }
     );
 
-    LOG_INFO("Creating device...");
+    _logger.info("Creating device...");
     device = std::make_unique<Device>();
     if (!device->load(instance, surface, enableValidationLayers)) {
-        LOG_ERROR("Failed to create device!");
+        _logger.error("Failed to create device!");
         return false;
     }
 
@@ -85,15 +89,15 @@ bool vax::VkEngine::setup() {
     queueManager = std::make_unique<QueueManager>();
     queueManager->setup(*device);
 
-    LOG_INFO("Creating allocator...");
+    _logger.info("Creating allocator...");
     if (!VK_CHECK(createAllocator())) {
-        LOG_ERROR("Failed to create allocator!");
+        _logger.error("Failed to create allocator!");
         return false;
     }
 
     deletionQueue.push_function(
         [&]() {
-            LOG_INFO("Destroying allocator...");
+            _logger.info("Destroying allocator...");
             vmaDestroyAllocator(allocator);
         }
     );
@@ -104,17 +108,15 @@ bool vax::VkEngine::setup() {
 
     if (!createSyncObjects()) return false;
 
-    swapchainManager = new SwapchainManager(window, surface, device.get());
+    swapchainManager = std::make_unique<vax::vk::SwapchainManager>(window, surface, *device);
     if (!swapchainManager->setup()) return false;
     deletionQueue.push_function(
         [&]() {
             swapchainManager->cleanup();
-            delete swapchainManager;
-            swapchainManager = nullptr;
         }
     );
 
-    renderPassManager = new RenderPassManager(swapchainManager, device.get());
+    renderPassManager = new RenderPassManager(swapchainManager.get(), device.get());
     if (!renderPassManager->setup()) return false;
     deletionQueue.push_function(
         [&]() {
@@ -124,7 +126,7 @@ bool vax::VkEngine::setup() {
         }
     );
 
-    renderingDestination = new RenderingDestination(this, swapchainManager, renderPassManager);
+    renderingDestination = new RenderingDestination(this, swapchainManager.get(), renderPassManager);
     renderingDestination->setup();
     deletionQueue.push_function(
         [&]() {

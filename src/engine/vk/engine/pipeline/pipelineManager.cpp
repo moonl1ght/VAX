@@ -2,6 +2,8 @@
 #include "pipelineBuilder.h"
 #include "shaderModuleBuilder.h"
 
+using namespace vax::vk;
+
 bool vax::PipelineManager::setup() {
     auto shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/shader.vert.spv"));
     auto vertShaderModule = shaderBuilder.build(vkEngine->device->vkDevice);
@@ -17,7 +19,7 @@ bool vax::PipelineManager::setup() {
         return false;
     }
 
-    vax::ComputePipelineBuilder backgroundPipelineBuilder(vkEngine);
+    vax::vk::ComputePipelineBuilder backgroundPipelineBuilder(*(vkEngine->device));
     VkPipelineLayoutCreateInfo computeLayoutInfo{};
     computeLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     computeLayoutInfo.pNext = nullptr;
@@ -31,7 +33,7 @@ bool vax::PipelineManager::setup() {
     backgroundPipelineBuilder.setShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, backgroundShaderModule.value(), "main");
     auto backgroundPipeline = backgroundPipelineBuilder.build();
     if (backgroundPipeline.has_value()) {
-        _backgroundPipeline = std::make_unique<vax::Pipeline>(std::move(*backgroundPipeline));
+        _backgroundPipeline = std::move(*backgroundPipeline);
     }
     else {
         return false;

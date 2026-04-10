@@ -1,4 +1,4 @@
-#include "SwapchainManager.hpp"
+#include "swapchainManager.h"
 #include "ImageUtils.hpp"
 #include "queueManager.h"
 
@@ -12,10 +12,14 @@ bool SwapchainManager::setup() {
 
 void SwapchainManager::cleanup() {
     for (auto imageView : swapchainImageViews) {
-        vkDestroyImageView(_device->vkDevice, imageView, nullptr);
+        vkDestroyImageView(_device.get().vkDevice, imageView, nullptr);
     }
 
-    vkDestroySwapchainKHR(_device->vkDevice, swapchain, nullptr);
+    for (auto image : swapchainImages) {
+        vkDestroyImage(_device.get().vkDevice, image, nullptr);
+    }
+
+    vkDestroySwapchainKHR(_device.get().vkDevice, swapchain, nullptr);
 }
 
 bool SwapchainManager::recreate() {
@@ -56,7 +60,7 @@ VkExtent2D SwapchainManager::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& ca
     }
     else {
         int width, height;
-        SDL_GetWindowSizeInPixels(_window, &width, &height);
+        SDL_GetWindowSizeInPixels(_window.get(), &width, &height);
 
         VkExtent2D actualExtent = {
             static_cast<uint32_t>(width),
@@ -76,7 +80,7 @@ VkExtent2D SwapchainManager::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& ca
 
 bool SwapchainManager::createSwapchain() {
     utils::SwapChainSupportDetails swapChainSupport = utils::querySwapChainSupport(
-        _device->vkPhysicalDevice, _surface
+        _device.get().vkPhysicalDevice, _surface.get()
     );
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -100,9 +104,9 @@ bool SwapchainManager::createSwapchain() {
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-    utils::QueueFamilyIndices indices = utils::findQueueFamilies(_device->vkPhysicalDevice, _surface);
+    utils::QueueFamilyIndices indices = utils::findQueueFamilies(_device.get().vkPhysicalDevice, _surface.get());
     if (!indices.isComplete()) {
-        LOG_ERROR("Queue family indices are not complete!");
+        _logger.error("Queue family indices are not complete!");
         return false;
     }
 
@@ -126,15 +130,15 @@ bool SwapchainManager::createSwapchain() {
 
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (!VK_CHECK(vkCreateSwapchainKHR(_device->vkDevice, &createInfo, nullptr, &swapchain))) {
-        LOG_ERROR("Failed to create swap chain!");
+    if (!VK_CHECK(vkCreateSwapchainKHR(_device.get().vkDevice, &createInfo, nullptr, &swapchain))) {
+        _logger.error("Failed to create swap chain!");
         return false;
     }
 
-    vkGetSwapchainImagesKHR(_device->vkDevice, swapchain, &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(_device.get().vkDevice, swapchain, &imageCount, nullptr);
     swapchainImages.resize(imageCount);
-    if (!VK_CHECK(vkGetSwapchainImagesKHR(_device->vkDevice, swapchain, &imageCount, swapchainImages.data()))) {
-        LOG_ERROR("Failed to get swap chain images!");
+    if (!VK_CHECK(vkGetSwapchainImagesKHR(_device.get().vkDevice, swapchain, &imageCount, swapchainImages.data()))) {
+        _logger.error("Failed to get swap chain images!");
         return false;
     }
 
@@ -149,13 +153,13 @@ bool SwapchainManager::createImageViews() {
 
     for (uint32_t i = 0; i < swapchainImages.size(); i++) {
         auto swapchainImageView = vax::createImageView(
-            _device->vkDevice, swapchainImages[i], swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT
+            _device.get().vkDevice, swapchainImages[i], swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT
         );
         if (swapchainImageView) {
             swapchainImageViews[i] = *swapchainImageView;
         }
         else {
-            LOG_ERROR("Failed to create swap chain image view!");
+            _logger.error("Failed to create swap chain image view!");
             return false;
         }
     }

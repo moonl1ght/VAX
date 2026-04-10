@@ -39,7 +39,7 @@ namespace vax {
                 std::swap(_descriptorSetManager, other._descriptorSetManager);
                 std::swap(_pipelineLayout, other._pipelineLayout);
                 std::swap(_pipeline, other._pipeline);
-                std::swap(_backgroundPipeline, other._backgroundPipeline);
+                // std::swap(_backgroundPipeline, other._backgroundPipeline);
             }
             return *this;
         };
@@ -47,7 +47,7 @@ namespace vax {
         bool setup();
         VkPipeline getPipeline() const { return _pipeline; }
         VkPipelineLayout getPipelineLayout() const { return _pipelineLayout; }
-        const vax::Pipeline& getBackgroundPipeline() const {
+        const vax::vk::Pipeline& getBackgroundPipeline() const {
             if (!_backgroundPipeline) {
                 throw std::runtime_error("Background pipeline not found!");
             }
@@ -60,6 +60,6 @@ namespace vax {
         VkPipelineLayout _pipelineLayout = VK_NULL_HANDLE;
         VkPipeline _pipeline = VK_NULL_HANDLE;
 
-        std::unique_ptr<vax::Pipeline> _backgroundPipeline = nullptr;
+        std::unique_ptr<vax::vk::Pipeline> _backgroundPipeline = nullptr;
     };
 }

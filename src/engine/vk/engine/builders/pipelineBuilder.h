@@ -2,18 +2,22 @@
 
 #include "luna.h"
 #include "pipeline.h"
+#include "device.h"
 
-namespace vax {
+namespace vax::vk {
 
     // MARK: - PipelineBuilder
 
-    class PipelineBuilder: public vax::VkObject {
+    class PipelineBuilder {
     public:
-        PipelineBuilder(vax::VkEngine* vkEngine) : vax::VkObject(vkEngine) {};
+        explicit PipelineBuilder(const vax::vk::Device& device) : _device(device) {};
 
         virtual ~PipelineBuilder() = default;
 
-        virtual std::optional<Pipeline> build() = 0;
+        virtual std::optional<std::unique_ptr<vax::vk::Pipeline>> build() = 0;
+
+    protected:
+        std::reference_wrapper<const vax::vk::Device> _device;
     };
 
     // MARK: - ComputePipelineBuilder
@@ -21,77 +25,22 @@ namespace vax {
     class ComputePipelineBuilder final : public PipelineBuilder {
     public:
 
-        ComputePipelineBuilder(vax::VkEngine* vkEngine) : PipelineBuilder(vkEngine) {};
+        explicit ComputePipelineBuilder(const vax::vk::Device& device) : PipelineBuilder(device) {};
 
         ~ComputePipelineBuilder() {
             if (pipelineLayout != VK_NULL_HANDLE && !isPipelineLayoutTransferred) {
-                vkDestroyPipelineLayout(vkEngine->device->vkDevice, pipelineLayout, nullptr);
+                vkDestroyPipelineLayout(_device.get().vkDevice, pipelineLayout, nullptr);
             }
         };
 
-        std::optional<vax::Pipeline> build() override {
-            if (shaderStageInfo.stage != VK_SHADER_STAGE_COMPUTE_BIT) {
-                _logger.error("Compute pipeline requires compute shader stage!");
-                return std::nullopt;
-            }
+        std::optional<std::unique_ptr<vax::vk::Pipeline>> build() override;
 
-            VkComputePipelineCreateInfo computePipelineCreateInfo{};
-            computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-            computePipelineCreateInfo.pNext = nullptr;
-            computePipelineCreateInfo.layout = pipelineLayout;
-            computePipelineCreateInfo.stage = shaderStageInfo;
+        bool setPipelineLayout(VkPipelineLayoutCreateInfo pipelineLayoutInfo);
 
-            VkPipeline pipeline;
-            auto result = vkCreateComputePipelines(
-                vkEngine->device->vkDevice, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &pipeline
-            );
-            if (!VK_CHECK(result)) {
-                _logger.error("Failed to create compute pipeline!");
-                return std::nullopt;
-            }
-
-            isPipelineLayoutTransferred = true;
-            return std::make_optional(vax::Pipeline(vkEngine, vax::PipelineType::COMPUTE, pipelineLayout, pipeline));
-        }
-
-        bool setPipelineLayout(VkPipelineLayoutCreateInfo pipelineLayoutInfo) {
-            if (pipelineLayout != VK_NULL_HANDLE) {
-                _logger.warning("Pipeline layout already set!");
-                return false;
-            }
-            auto pipelineLayoutResult = vkCreatePipelineLayout(
-                vkEngine->device->vkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout
-            );
-            if (!VK_CHECK(pipelineLayoutResult)) {
-                _logger.error("Failed to create pipeline layout!");
-                return false;
-            }
-            return true;
-        }
-
-        bool updatePipelineLayout(VkPipelineLayoutCreateInfo pipelineLayoutInfo) {
-            if (pipelineLayout != VK_NULL_HANDLE) {
-                vkDestroyPipelineLayout(vkEngine->device->vkDevice, pipelineLayout, nullptr);
-            }
-            auto pipelineLayoutResult = vkCreatePipelineLayout(
-                vkEngine->device->vkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout
-            );
-            if (!VK_CHECK(pipelineLayoutResult)) {
-                _logger.error("Failed to create pipeline layout!");
-                return false;
-            }
-            return true;
-        }
+        bool updatePipelineLayout(VkPipelineLayoutCreateInfo pipelineLayoutInfo);
 
         /// Replace the current shader stage with the new one.
-        void setShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name) {
-            VkPipelineShaderStageCreateInfo shaderStageInfo{};
-            shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            shaderStageInfo.stage = stage;
-            shaderStageInfo.module = module;
-            shaderStageInfo.pName = name;
-            this->shaderStageInfo = shaderStageInfo;
-        }
+        void setShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name);
 
     private:
         Logger _logger = Logger("ComputePipelineBuilder");
@@ -104,22 +53,15 @@ namespace vax {
 
     class GraphicsPipelineBuilder final : public PipelineBuilder {
     public:
-        std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
-        std::optional<vax::Pipeline> build() override {
-            return std::nullopt;
-        }
+        explicit GraphicsPipelineBuilder(const vax::vk::Device& device) : PipelineBuilder(device) {};
 
-        void addShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name) {
-            VkPipelineShaderStageCreateInfo shaderStageInfo{};
-            shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            shaderStageInfo.stage = stage;
-            shaderStageInfo.module = module;
-            shaderStageInfo.pName = name;
-            shaderStages.push_back(shaderStageInfo);
-        }
+        std::optional<std::unique_ptr<vax::vk::Pipeline>> build() override;
+
+        void addShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name);
 
     private:
         Logger _logger = Logger("GraphicsPipelineBuilder");
+        std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
     };
 }

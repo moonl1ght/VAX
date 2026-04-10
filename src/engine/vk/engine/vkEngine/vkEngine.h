@@ -7,7 +7,6 @@
 #include "device.h"
 #include "queueManager.h"
 
-class SwapchainManager;
 class RenderingDestination;
 class DescriptorSetManager;
 namespace vax {
@@ -16,6 +15,7 @@ namespace vax {
 namespace vax::vk {
     class Device;
     class QueueManager;
+    class SwapchainManager;
 }
 
 namespace vax {
@@ -46,8 +46,8 @@ namespace vax {
         VmaAllocator allocator;
 
         std::unique_ptr<vax::vk::QueueManager> queueManager;
+        std::unique_ptr<vax::vk::SwapchainManager> swapchainManager;
 
-        SwapchainManager* swapchainManager = nullptr;
         RenderPassManager* renderPassManager = nullptr;
         RenderingDestination* renderingDestination = nullptr;
         DescriptorSetManager* descriptorSetManager = nullptr;

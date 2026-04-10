@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SwapchainManager.hpp"
+#include "swapchainManager.h"
 #include "device.h"
 
 class RenderPassManager final {
@@ -8,7 +8,7 @@ public:
     RenderPassManager() = default;
 
     RenderPassManager(
-        SwapchainManager* swapchainManager,
+        vax::vk::SwapchainManager* swapchainManager,
         vax::vk::Device* device
     )
         : _swapchainManager(swapchainManager)
@@ -25,7 +25,7 @@ public:
     void cleanup();
 
 private:
-    SwapchainManager* _swapchainManager;
+    vax::vk::SwapchainManager* _swapchainManager;
     vax::vk::Device* _device;
     VkRenderPass _renderPass = VK_NULL_HANDLE;
 

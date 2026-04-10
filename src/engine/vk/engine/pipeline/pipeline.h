@@ -1,58 +1,45 @@
 #pragma once
 
 #include "luna.h"
-#include "vkObject.h"
+#include "device.h"
 
-namespace vax {
+namespace vax::vk {
     enum class PipelineType {
         RENDER,
         COMPUTE,
         UNKNOWN
     };
 
-    class Pipeline final : public vax::VkObject { 
+    class Pipeline final {
     public:
         PipelineType pipelineType = PipelineType::UNKNOWN;
         VkPipelineLayout vkPipelineLayout = VK_NULL_HANDLE;
         VkPipeline vkPipeline = VK_NULL_HANDLE;
 
-        Pipeline(vax::VkEngine* vkEngine) : vax::VkObject(vkEngine) {};
-
         Pipeline(const Pipeline& other) = delete;
-
         Pipeline& operator=(const Pipeline& other) = delete;
+        Pipeline(Pipeline&& other) = delete;
+        Pipeline& operator=(Pipeline&& other) = delete;
 
-        Pipeline(Pipeline&& other) : vax::VkObject(other.vkEngine) {
-            std::swap(pipelineType, other.pipelineType);
-            std::swap(vkPipelineLayout, other.vkPipelineLayout);
-            std::swap(vkPipeline, other.vkPipeline);
-        };
-
-        Pipeline& operator=(Pipeline&& other) noexcept {
-            if (this != &other) {
-                std::swap(vkEngine, other.vkEngine);
-                std::swap(pipelineType, other.pipelineType);
-                std::swap(vkPipelineLayout, other.vkPipelineLayout);
-                std::swap(vkPipeline, other.vkPipeline);
-            }
-            return *this;
-        }
-
-        Pipeline(
-            vax::VkEngine* vkEngine,
+        explicit Pipeline(
+            const vax::vk::Device& device,
             PipelineType pipelineType,
             VkPipelineLayout pipelineLayout,
             VkPipeline pipeline
-        ) :
-            vax::VkObject(vkEngine),
-            pipelineType(pipelineType),
-            vkPipelineLayout(pipelineLayout),
-            vkPipeline(pipeline) {
+        ) noexcept
+            : _device(device)
+            , pipelineType(pipelineType)
+            , vkPipelineLayout(pipelineLayout)
+            , vkPipeline(pipeline) {
         };
 
         ~Pipeline() {
-            vkDestroyPipelineLayout(vkEngine->device->vkDevice, vkPipelineLayout, nullptr);
-            vkDestroyPipeline(vkEngine->device->vkDevice, vkPipeline, nullptr);
+            vkDestroyPipelineLayout(_device.get().vkDevice, vkPipelineLayout, nullptr);
+            vkDestroyPipeline(_device.get().vkDevice, vkPipeline, nullptr);
         };
+
+    private:
+        Logger _logger = Logger("Pipeline");
+        std::reference_wrapper<const vax::vk::Device> _device;
     };
 }

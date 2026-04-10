@@ -1,7 +1,7 @@
 #pragma once
 
 #include "luna.h"
-#include "SwapchainManager.hpp"
+#include "swapchainManager.h"
 #include "RenderPassManager.hpp"
 
 class Texture;
@@ -15,7 +15,7 @@ public:
 
     RenderingDestination(
         vax::VkEngine* vkEngine,
-        SwapchainManager* swapchainManager,
+        vax::vk::SwapchainManager* swapchainManager,
         RenderPassManager* renderPassManager
     )
         : _vkEngine(vkEngine)
@@ -31,7 +31,7 @@ public:
 
 private:
     vax::VkEngine* _vkEngine;
-    SwapchainManager* _swapchainManager;
+    vax::vk::SwapchainManager* _swapchainManager;
     RenderPassManager* _renderPassManager;
 
     std::optional<Texture*> createDepthTexture(VkFormat format);
