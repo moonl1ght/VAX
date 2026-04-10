@@ -4,9 +4,9 @@
 #include "luna.h"
 #include "VAXMath.hpp"
 #include "Sampler.hpp"
-#include "VKObject.hpp"
+#include "vkObject.h"
 
-class Texture final : public VKObject {
+class Texture final : public vax::VkObject {
 public:
     std::string name;
     VkImage textureImage = VK_NULL_HANDLE;
@@ -17,7 +17,7 @@ public:
     VkFormat format = VK_FORMAT_UNDEFINED;
     VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_NONE;
 
-    Texture() = default;
+    Texture(vax::VkEngine* vkEngine) : vax::VkObject(vkEngine) {};
 
     Texture(
         vax::VkEngine* vkEngine,
@@ -28,7 +28,7 @@ public:
         VkFormat format,
         VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
     )
-        : VKObject(vkEngine)
+        : vax::VkObject(vkEngine)
         , name(name)
         , textureImage(textureImage)
         , allocation(allocation)
@@ -39,7 +39,7 @@ public:
 
     Texture(const Texture& other) = delete;
 
-    Texture(Texture&& other) noexcept {
+    Texture(Texture&& other) noexcept : vax::VkObject(other.vkEngine) {
         std::swap(name, other.name);
         std::swap(textureImage, other.textureImage);
         std::swap(allocation, other.allocation);
@@ -47,9 +47,8 @@ public:
         std::swap(textureImageView, other.textureImageView);
         std::swap(format, other.format);
         std::swap(aspectMask, other.aspectMask);
-        std::cout << "Swapped sampler! This: " << (sampler == nullptr ? "nullptr" : "not nullptr") << " Other: " << (other.sampler == nullptr ? "nullptr" : "not nullptr") << std::endl;
         std::swap(sampler, other.sampler);
-        std::swap(vkEngine, other.vkEngine);
+        other.vkEngine = nullptr;
     }
 
     ~Texture() {
@@ -70,7 +69,7 @@ public:
             format = other.format;
             aspectMask = other.aspectMask;
 
-            other.vkEngine = VK_NULL_HANDLE;
+            other.vkEngine = nullptr;
             other.name.clear();
             other.textureImage = VK_NULL_HANDLE;
             other.allocation = VK_NULL_HANDLE;

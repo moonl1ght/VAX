@@ -1,8 +1,8 @@
-#include "PipelineManager.hpp"
+#include "pipelineManager.h"
 #include "pipelineBuilder.h"
 #include "shaderModuleBuilder.h"
 
-bool PipelineManager::setup() {
+bool vax::PipelineManager::setup() {
     auto shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/shader.vert.spv"));
     auto vertShaderModule = shaderBuilder.build(vkEngine->device->vkDevice);
 
@@ -17,34 +17,25 @@ bool PipelineManager::setup() {
         return false;
     }
 
-    VkPipelineLayoutCreateInfo computeLayout{};
-    computeLayout.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    computeLayout.pNext = nullptr;
+    vax::ComputePipelineBuilder backgroundPipelineBuilder(vkEngine);
+    VkPipelineLayoutCreateInfo computeLayoutInfo{};
+    computeLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    computeLayoutInfo.pNext = nullptr;
     auto drawBackgroundDescriptorSetLayout = _descriptorSetManager->getDrawBackgroundDescriptorSetLayout();
-    computeLayout.pSetLayouts = &drawBackgroundDescriptorSetLayout;
-    computeLayout.setLayoutCount = 1;
-    auto pipelineDrawBackgroundLayoutResult = vkCreatePipelineLayout(
-        vkEngine->device->vkDevice, &computeLayout, nullptr, &_pipelineDrawBackgroundLayout
-    );
-    if (!VK_CHECK(pipelineDrawBackgroundLayoutResult)) {
-        LOG_ERROR("Failed to create pipeline layout!");
+    computeLayoutInfo.pSetLayouts = &drawBackgroundDescriptorSetLayout;
+    computeLayoutInfo.setLayoutCount = 1;
+    if (!backgroundPipelineBuilder.setPipelineLayout(computeLayoutInfo)) {
         return false;
     }
 
-    PipelineBuilder backgroundPipelineBuilder(_pipelineDrawBackgroundLayout);
-    backgroundPipelineBuilder.addShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, backgroundShaderModule.value(), "main");
-    auto pipelineDrawBackground = backgroundPipelineBuilder.build(
-        vkEngine->device->vkDevice, PipelineBuilder::PipelineType::COMPUTE
-    );
-
-    if (pipelineDrawBackground) {
-        _pipelineDrawBackground = *pipelineDrawBackground;
+    backgroundPipelineBuilder.setShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, backgroundShaderModule.value(), "main");
+    auto backgroundPipeline = backgroundPipelineBuilder.build();
+    if (backgroundPipeline.has_value()) {
+        _backgroundPipeline = std::make_unique<vax::Pipeline>(std::move(*backgroundPipeline));
     }
     else {
-        LOG_ERROR("Failed to create background pipeline!");
         return false;
     }
-
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -190,57 +181,4 @@ bool PipelineManager::setup() {
     vkDestroyShaderModule(vkEngine->device->vkDevice, vertShaderModule.value(), nullptr);
     vkDestroyShaderModule(vkEngine->device->vkDevice, backgroundShaderModule.value(), nullptr);
     return true;
-}
-
-// MARK: - PipelineBuilder
-
-void PipelineBuilder::addShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name) {
-    VkPipelineShaderStageCreateInfo shaderStageInfo{};
-    shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStageInfo.stage = stage;
-    shaderStageInfo.module = module;
-    shaderStageInfo.pName = name;
-    shaderStages.push_back(shaderStageInfo);
-}
-
-std::optional<VkPipeline> PipelineBuilder::build(VkDevice device, PipelineType pipelineType) {
-    if (shaderStages.empty()) {
-        LOG_ERROR("No shader stages added!");
-        return std::nullopt;
-    }
-
-    switch (pipelineType) {
-    case PipelineType::RENDER:
-        return std::nullopt;
-    case PipelineType::COMPUTE:
-        auto it = std::find_if(
-            shaderStages.begin(),
-            shaderStages.end(),
-            [](const VkPipelineShaderStageCreateInfo& stage) {
-                return stage.stage == VK_SHADER_STAGE_COMPUTE_BIT;
-            }
-        );
-        if (it == shaderStages.end()) {
-            LOG_ERROR("Compute pipeline requires exactly one compute shader stage!");
-            return std::nullopt;
-        }
-
-        VkComputePipelineCreateInfo computePipelineCreateInfo{};
-        computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-        computePipelineCreateInfo.pNext = nullptr;
-        computePipelineCreateInfo.layout = pipelineLayout;
-        computePipelineCreateInfo.stage = *it;
-
-        VkPipeline pipeline;
-        auto result = vkCreateComputePipelines(
-            device, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &pipeline
-        );
-        if (!VK_CHECK(result)) {
-            LOG_ERROR("Failed to create compute pipeline!");
-            return std::nullopt;
-        }
-
-        return pipeline;
-    }
-    return std::nullopt;
 }

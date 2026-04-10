@@ -3,6 +3,8 @@
 #include "ImageUtils.hpp"
 #include "Texture.hpp"
 
+using namespace vax::vk;
+
 bool RenderingDestination::setup() {
     if (!createDepthResources()) return false;
     if (!createFramebuffers()) return false;
@@ -67,7 +69,7 @@ bool RenderingDestination::createFramebuffers() {
 }
 
 bool RenderingDestination::createDepthResources() {
-    VkFormat depthFormat = VKUtils::findDepthFormat(_vkEngine->device->vkPhysicalDevice);
+    VkFormat depthFormat = utils::findDepthFormat(_vkEngine->device->vkPhysicalDevice);
 
     auto depthTextureResult = createDepthTexture(depthFormat);
     if (depthTextureResult) {
@@ -140,7 +142,7 @@ bool RenderingDestination::createRenderDesctinationTexture(VkExtent2D windowExte
         std::cout << "Created render destination texture!" << drawImage->name << std::endl;
         std::cout << "Sampler: " << (drawImage->sampler == nullptr ? "nullptr" : "not nullptr") << std::endl;
         drawImage->loadImageView();
-        if (auto sampler = Sampler::createSampler(_vkEngine->device)) {
+        if (auto sampler = Sampler::createSampler(_vkEngine->device.get())) {
             drawImage->sampler = std::move(*sampler);
         }
         return true;

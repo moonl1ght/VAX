@@ -16,7 +16,7 @@ namespace vax {
             enableValidationLayers(enableValidationLayers),
             validationLayers(validationLayers),
             vulkanApiVersion(vulkanApiVersion) {
-                logger = Logger("VkInstanceBuilder");
+            logger = Logger("VkInstanceBuilder");
         };
 
         std::optional<VkInstance> build() {

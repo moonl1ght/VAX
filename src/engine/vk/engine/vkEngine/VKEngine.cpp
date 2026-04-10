@@ -4,9 +4,11 @@
 #include "SwapchainManager.hpp"
 #include "RenderingDestination.hpp"
 #include "DescriptorSetManager.hpp"
-#include "PipelineManager.hpp"
+#include "pipelineManager.h"
 #include "vk_debug.h"
 #include "vkInstanceBuilder.h"
+
+using namespace vax::vk;
 
 VkResult CreateDebugUtilsMessengerEXT(
     VkInstance instance,
@@ -68,7 +70,7 @@ bool vax::VkEngine::setup() {
     );
 
     LOG_INFO("Creating device...");
-    device = new vax::Device();
+    device = std::make_unique<Device>();
     if (!device->load(instance, surface, enableValidationLayers)) {
         LOG_ERROR("Failed to create device!");
         return false;
@@ -76,16 +78,12 @@ bool vax::VkEngine::setup() {
 
     deletionQueue.push_function(
         [&]() {
-            LOG_INFO("Destroying device...");
-            delete device;
-            device = nullptr;
+            device->destroy();
         }
     );
 
-    LOG_INFO("Getting device queues...");
-    VKUtils::QueueFamilyIndices indices = device->getQueueFamilyIndices();
-    vkGetDeviceQueue(device->vkDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
-    vkGetDeviceQueue(device->vkDevice, indices.presentFamily.value(), 0, &presentQueue);
+    queueManager = std::make_unique<QueueManager>();
+    queueManager->setup(*device);
 
     LOG_INFO("Creating allocator...");
     if (!VK_CHECK(createAllocator())) {
@@ -106,7 +104,7 @@ bool vax::VkEngine::setup() {
 
     if (!createSyncObjects()) return false;
 
-    swapchainManager = new SwapchainManager(window, surface, device);
+    swapchainManager = new SwapchainManager(window, surface, device.get());
     if (!swapchainManager->setup()) return false;
     deletionQueue.push_function(
         [&]() {
@@ -116,7 +114,7 @@ bool vax::VkEngine::setup() {
         }
     );
 
-    renderPassManager = new RenderPassManager(swapchainManager, device);
+    renderPassManager = new RenderPassManager(swapchainManager, device.get());
     if (!renderPassManager->setup()) return false;
     deletionQueue.push_function(
         [&]() {
@@ -187,7 +185,7 @@ bool vax::VkEngine::setupDebugMessenger() {
 
 bool vax::VkEngine::createCommandPool() {
     LOG_INFO("Creating command pool...");
-    VKUtils::QueueFamilyIndices queueFamilyIndices = device->getQueueFamilyIndices();
+    utils::QueueFamilyIndices queueFamilyIndices = device->getQueueFamilyIndices();
 
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -289,8 +287,8 @@ void vax::VkEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(graphicsQueue);
+    vkQueueSubmit(queueManager->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(queueManager->graphicsQueue);
 
     vkFreeCommandBuffers(device->vkDevice, commandPool, 1, &commandBuffer);
 }

@@ -1,5 +1,7 @@
 #include "RenderPassManager.hpp"
 
+using namespace vax::vk;
+
 bool RenderPassManager::setup() {
     return createRenderPass();
 }
@@ -20,7 +22,7 @@ bool RenderPassManager::createRenderPass() {
     colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
     VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = VKUtils::findDepthFormat(_device->vkPhysicalDevice);
+    depthAttachment.format = utils::findDepthFormat(_device->vkPhysicalDevice);
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;

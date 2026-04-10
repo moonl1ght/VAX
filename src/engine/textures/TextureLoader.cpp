@@ -63,7 +63,7 @@ Texture* TextureLoader::loadTexture(std::string path, bool isAutoLoadImageView) 
     if (isAutoLoadImageView) {
         texture->loadImageView();
     }
-    if (auto sampler = Sampler::createSampler(vkEngine->device)) {
+    if (auto sampler = Sampler::createSampler(vkEngine->device.get())) {
         texture->sampler = std::move(*sampler);
     }
     return texture;

@@ -9,7 +9,7 @@ public:
 
     RenderPassManager(
         SwapchainManager* swapchainManager,
-        vax::Device* device
+        vax::vk::Device* device
     )
         : _swapchainManager(swapchainManager)
         , _device(device) {
@@ -26,7 +26,7 @@ public:
 
 private:
     SwapchainManager* _swapchainManager;
-    vax::Device* _device;
+    vax::vk::Device* _device;
     VkRenderPass _renderPass = VK_NULL_HANDLE;
 
     bool createRenderPass();

@@ -4,7 +4,7 @@
 #include "luna.h"
 #include "Model.hpp"
 #include "Mesh.hpp"
-#include "PipelineManager.hpp"
+#include "pipelineManager.h"
 #include "ShaderUniforms.h"
 
 class DrawableModel : public Model {
@@ -17,7 +17,7 @@ public:
     DrawableModel(const DrawableModel& other) = delete;
     DrawableModel& operator=(const DrawableModel& other) = delete;
 
-    void draw(vax::VkEngine* vkEngine, VkCommandBuffer commandBuffer, PipelineManager* pipelineManager, float time);
+    void draw(vax::VkEngine* vkEngine, VkCommandBuffer commandBuffer, vax::PipelineManager* pipelineManager, float time);
 };
 
 #endif

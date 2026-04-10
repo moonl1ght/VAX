@@ -1,5 +1,8 @@
 #include "SwapchainManager.hpp"
 #include "ImageUtils.hpp"
+#include "queueManager.h"
+
+using namespace vax::vk;
 
 bool SwapchainManager::setup() {
     if (!createSwapchain()) return false;
@@ -72,7 +75,7 @@ VkExtent2D SwapchainManager::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& ca
 }
 
 bool SwapchainManager::createSwapchain() {
-    VKUtils::SwapChainSupportDetails swapChainSupport = VKUtils::querySwapChainSupport(
+    utils::SwapChainSupportDetails swapChainSupport = utils::querySwapChainSupport(
         _device->vkPhysicalDevice, _surface
     );
 
@@ -97,7 +100,7 @@ bool SwapchainManager::createSwapchain() {
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-    VKUtils::QueueFamilyIndices indices = _device->getQueueFamilyIndices();
+    utils::QueueFamilyIndices indices = utils::findQueueFamilies(_device->vkPhysicalDevice, _surface);
     if (!indices.isComplete()) {
         LOG_ERROR("Queue family indices are not complete!");
         return false;

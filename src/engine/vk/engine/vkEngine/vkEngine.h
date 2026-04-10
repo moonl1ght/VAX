@@ -1,15 +1,22 @@
 #pragma once
 
 #include "luna.h"
-#include "VKUtils.hpp"
-#include "device.h"
+#include "vkUtils.h"
 #include "RenderPassManager.hpp"
 #include "deletionQueue.h"
+#include "device.h"
+#include "queueManager.h"
 
 class SwapchainManager;
 class RenderingDestination;
 class DescriptorSetManager;
-class PipelineManager;
+namespace vax {
+    class PipelineManager;
+}
+namespace vax::vk {
+    class Device;
+    class QueueManager;
+}
 
 namespace vax {
     class VkEngine final {
@@ -26,22 +33,25 @@ namespace vax {
 
         bool framebufferResized = false;
 
-        SDL_Window* window;
-        VkInstance instance = VK_NULL_HANDLE;
-        VkDebugUtilsMessengerEXT debugMessenger;
-        VkSurfaceKHR surface;
-        vax::Device* device;
-        VmaAllocator allocator;
         DeletionQueue deletionQueue;
 
-        VkQueue graphicsQueue;
-        VkQueue presentQueue;
+        SDL_Window* window;
+        VkSurfaceKHR surface;
+
+        VkDebugUtilsMessengerEXT debugMessenger;
+
+        VkInstance instance = VK_NULL_HANDLE;
+
+        std::unique_ptr<vax::vk::Device> device;
+        VmaAllocator allocator;
+
+        std::unique_ptr<vax::vk::QueueManager> queueManager;
 
         SwapchainManager* swapchainManager = nullptr;
         RenderPassManager* renderPassManager = nullptr;
         RenderingDestination* renderingDestination = nullptr;
         DescriptorSetManager* descriptorSetManager = nullptr;
-        PipelineManager* pipelineManager = nullptr;
+        vax::PipelineManager* pipelineManager = nullptr;
 
         VkCommandPool commandPool;
         std::vector<VkCommandBuffer> commandBuffers;
@@ -57,6 +67,8 @@ namespace vax {
         void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
     private:
+        Logger _logger;
+
         bool setupDebugMessenger();
         bool createCommandPool();
         bool createCommandBuffer();

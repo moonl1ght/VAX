@@ -1,6 +1,7 @@
 #include "Renderer.hpp"
 #include "RenderingDestination.hpp"
 #include "ImageUtils.hpp"
+#include "pipeline.h"
 
 void Renderer::prepare() {
     // Logger::getInstance().log("Preparing renderer...");
@@ -74,7 +75,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     submitInfo.pSignalSemaphores = signalSemaphores;
 
     if (
-        vkQueueSubmit(_vkEngine->graphicsQueue, 1, &submitInfo, _vkEngine->inFlightFences[_currentFrame]) != VK_SUCCESS
+        vkQueueSubmit(_vkEngine->queueManager->graphicsQueue, 1, &submitInfo, _vkEngine->inFlightFences[_currentFrame]) != VK_SUCCESS
         ) {
         Logger::getInstance().error("failed to submit draw command buffer!");
         return false;
@@ -90,7 +91,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
 
-    result = vkQueuePresentKHR(_vkEngine->presentQueue, &presentInfo);
+    result = vkQueuePresentKHR(_vkEngine->queueManager->presentQueue, &presentInfo);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _vkEngine->framebufferResized) {
         _vkEngine->framebufferResized = false;
         _vkEngine->renderingDestination->recreate();
@@ -120,8 +121,9 @@ void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
         1,
         &clearRange
     );
-
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, _vkEngine->pipelineManager->getPipelineDrawBackground());
+    auto& backgroundPipeline = _vkEngine->pipelineManager->getBackgroundPipeline();
+    std::cout << "Background pipeline: " << backgroundPipeline.vkPipeline << std::endl;
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, backgroundPipeline.vkPipeline);
 
     auto drawBackgroundDescriptorSet = _vkEngine->descriptorSetManager->getDrawBackgroundDescriptorSet(_currentFrame);
     if (!drawBackgroundDescriptorSet.has_value()) {
@@ -134,7 +136,7 @@ void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
     vkCmdBindDescriptorSets(
         commandBuffer,
         VK_PIPELINE_BIND_POINT_COMPUTE,
-        _vkEngine->pipelineManager->getPipelineDrawBackgroundLayout(),
+        backgroundPipeline.vkPipelineLayout,
         0,
         1,
         &drawBackgroundDescriptorSet.value(),

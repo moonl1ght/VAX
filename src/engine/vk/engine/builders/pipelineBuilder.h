@@ -7,11 +7,9 @@ namespace vax {
 
     // MARK: - PipelineBuilder
 
-    class PipelineBuilder {
-    protected:
-        const vax::VkEngine& vkEngine;
+    class PipelineBuilder: public vax::VkObject {
     public:
-        PipelineBuilder(const vax::VkEngine& vkEngine) : vkEngine(vkEngine) {};
+        PipelineBuilder(vax::VkEngine* vkEngine) : vax::VkObject(vkEngine) {};
 
         virtual ~PipelineBuilder() = default;
 
@@ -22,9 +20,12 @@ namespace vax {
 
     class ComputePipelineBuilder final : public PipelineBuilder {
     public:
+
+        ComputePipelineBuilder(vax::VkEngine* vkEngine) : PipelineBuilder(vkEngine) {};
+
         ~ComputePipelineBuilder() {
             if (pipelineLayout != VK_NULL_HANDLE && !isPipelineLayoutTransferred) {
-                vkDestroyPipelineLayout(vkEngine.device->vkDevice, pipelineLayout, nullptr);
+                vkDestroyPipelineLayout(vkEngine->device->vkDevice, pipelineLayout, nullptr);
             }
         };
 
@@ -42,7 +43,7 @@ namespace vax {
 
             VkPipeline pipeline;
             auto result = vkCreateComputePipelines(
-                vkEngine.device->vkDevice, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &pipeline
+                vkEngine->device->vkDevice, VK_NULL_HANDLE, 1, &computePipelineCreateInfo, nullptr, &pipeline
             );
             if (!VK_CHECK(result)) {
                 _logger.error("Failed to create compute pipeline!");
@@ -59,7 +60,7 @@ namespace vax {
                 return false;
             }
             auto pipelineLayoutResult = vkCreatePipelineLayout(
-                vkEngine.device->vkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout
+                vkEngine->device->vkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout
             );
             if (!VK_CHECK(pipelineLayoutResult)) {
                 _logger.error("Failed to create pipeline layout!");
@@ -70,10 +71,10 @@ namespace vax {
 
         bool updatePipelineLayout(VkPipelineLayoutCreateInfo pipelineLayoutInfo) {
             if (pipelineLayout != VK_NULL_HANDLE) {
-                vkDestroyPipelineLayout(vkEngine.device->vkDevice, pipelineLayout, nullptr);
+                vkDestroyPipelineLayout(vkEngine->device->vkDevice, pipelineLayout, nullptr);
             }
             auto pipelineLayoutResult = vkCreatePipelineLayout(
-                vkEngine.device->vkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout
+                vkEngine->device->vkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout
             );
             if (!VK_CHECK(pipelineLayoutResult)) {
                 _logger.error("Failed to create pipeline layout!");
@@ -94,7 +95,6 @@ namespace vax {
 
     private:
         Logger _logger = Logger("ComputePipelineBuilder");
-        const vax::VkEngine& vkEngine;
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
         VkPipelineShaderStageCreateInfo shaderStageInfo = {};
         bool isPipelineLayoutTransferred = false;

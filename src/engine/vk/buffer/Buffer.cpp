@@ -1,5 +1,7 @@
 #include "Buffer.hpp"
 
+using namespace vax::vk;
+
 Buffer::Buffer(
     vax::VkEngine* vkEngine,
     const void* data,
@@ -100,8 +102,8 @@ void Buffer::copyBufferTo(vax::VkEngine* vkEngine, Buffer& dstBuffer, VkDeviceSi
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    vkQueueSubmit(vkEngine->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(vkEngine->graphicsQueue);
+    vkQueueSubmit(vkEngine->queueManager->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(vkEngine->queueManager->graphicsQueue);
 
     vkFreeCommandBuffers(vkEngine->device->vkDevice, vkEngine->commandPool, 1, &commandBuffer);
 }
@@ -141,7 +143,7 @@ void Buffer::load(
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = VKUtils::findMemoryType(vkEngine->device->vkPhysicalDevice, memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = utils::findMemoryType(vkEngine->device->vkPhysicalDevice, memRequirements.memoryTypeBits, properties);
 
     if (vkAllocateMemory(vkEngine->device->vkDevice, &allocInfo, nullptr, &vkBufferMemory) != VK_SUCCESS) {
         Logger::getInstance().error("failed to allocate buffer memory!");

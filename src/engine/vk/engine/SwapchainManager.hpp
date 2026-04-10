@@ -2,7 +2,7 @@
 
 #include "luna.h"
 #include "device.h"
-#include "VKUtils.hpp"
+#include "vkUtils.h"
 
 class SwapchainManager final {
 public:
@@ -15,7 +15,7 @@ public:
     SwapchainManager(
         SDL_Window* window,
         VkSurfaceKHR surface,
-        vax::Device* device
+        vax::vk::Device* device
     )
         : _window(window)
         , _surface(surface)
@@ -29,7 +29,7 @@ public:
 private:
     SDL_Window* _window;
     VkSurfaceKHR _surface = VK_NULL_HANDLE;
-    vax::Device* _device;
+    vax::vk::Device* _device;
 
     bool createSwapchain();
     bool createImageViews();

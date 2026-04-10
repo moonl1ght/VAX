@@ -1,6 +1,6 @@
-#include "VKUtils.hpp"
+#include "vkUtils.h"
 
-uint32_t VKUtils::findMemoryType(
+uint32_t vax::vk::utils::findMemoryType(
     VkPhysicalDevice& physicalDevice,
     uint32_t typeFilter,
     VkMemoryPropertyFlags properties
@@ -17,8 +17,10 @@ uint32_t VKUtils::findMemoryType(
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-VKUtils::SwapChainSupportDetails VKUtils::querySwapChainSupport(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
-    VKUtils::SwapChainSupportDetails details;
+vax::vk::utils::SwapChainSupportDetails vax::vk::utils::querySwapChainSupport(
+    const VkPhysicalDevice& device, const VkSurfaceKHR& surface
+) {
+    vax::vk::utils::SwapChainSupportDetails details;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
 
@@ -41,8 +43,8 @@ VKUtils::SwapChainSupportDetails VKUtils::querySwapChainSupport(const VkPhysical
     return details;
 }
 
-VKUtils::QueueFamilyIndices VKUtils::findQueueFamilies(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
-    VKUtils::QueueFamilyIndices indices;
+vax::vk::utils::QueueFamilyIndices vax::vk::utils::findQueueFamilies(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
+    vax::vk::utils::QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -73,7 +75,16 @@ VKUtils::QueueFamilyIndices VKUtils::findQueueFamilies(const VkPhysicalDevice& d
     return indices;
 }
 
-VkFormat VKUtils::findSupportedFormat(
+VkFormat vax::vk::utils::findDepthFormat(VkPhysicalDevice physicalDevice) {
+    return findSupportedFormat(
+        physicalDevice,
+        { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+    );
+}
+
+VkFormat vax::vk::utils::findSupportedFormat(
     VkPhysicalDevice physicalDevice,
     const std::vector<VkFormat>& candidates,
     VkImageTiling tiling,
@@ -92,13 +103,4 @@ VkFormat VKUtils::findSupportedFormat(
     }
 
     throw std::runtime_error("failed to find supported format!");
-}
-
-VkFormat VKUtils::findDepthFormat(VkPhysicalDevice physicalDevice) {
-    return findSupportedFormat(
-        physicalDevice,
-        { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
-        VK_IMAGE_TILING_OPTIMAL,
-        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-    );
 }

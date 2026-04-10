@@ -6,14 +6,14 @@
 #include "Texture.hpp"
 #include "ShaderUniforms.h"
 #include "ModelLoader.hpp"
-#include "VKObject.hpp"
+#include "vkObject.h"
 
-class Scene final : public VKObject {
+class Scene final : public vax::VkObject {
 public:
     Texture* texture = nullptr;
 
     Scene(vax::VkEngine* vkEngine)
-        : VKObject(vkEngine)
+        : vax::VkObject(vkEngine)
         , _modelLoader(ModelLoader(vkEngine)) {
     };
 

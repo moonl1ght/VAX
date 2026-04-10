@@ -1,20 +1,19 @@
-#ifndef VKUtils_hpp
-#define VKUtils_hpp
+#pragma once
 
 #include "luna.h"
 
-#define VK_CHECK(x)                                                     \
-    ({                                                                  \
-        VkResult err = (x);                                             \
-        if (err != VK_SUCCESS) {                                        \
-            Logger::getInstance().error(                                \
-                "Detected Vulkan error: {}", err                        \
-            );                                                          \
-        }                                                               \
-        (err == VK_SUCCESS); /* Returns `true` if success */            \
+#define VK_CHECK(x) \
+    ({ \
+        VkResult err = (x); \
+        if (err != VK_SUCCESS) { \
+            Logger::getInstance().error( \
+                "Detected Vulkan error: {}", err \
+            ); \
+        } \
+        (err == VK_SUCCESS); \
     })
 
-namespace VKUtils {
+namespace vax::vk::utils {
 
     struct SwapChainSupportDetails {
         VkSurfaceCapabilitiesKHR capabilities;
@@ -46,6 +45,4 @@ namespace VKUtils {
 
     VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
 
-} // namespace VKUtils
-
-#endif
+}

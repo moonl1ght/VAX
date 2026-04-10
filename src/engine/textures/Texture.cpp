@@ -29,7 +29,7 @@ bool Texture::isValid() const {
 }
 
 std::optional<Texture*> Texture::makeCopy(VkCommandBuffer commandBuffer) const {
-    auto other = new Texture();
+    auto other = new Texture(vkEngine);
     if (copyTo(*other, commandBuffer)) {
         return std::make_optional(other);
     }

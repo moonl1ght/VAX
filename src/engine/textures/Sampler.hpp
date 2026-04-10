@@ -10,7 +10,7 @@ class Sampler final {
 public:
     VkSampler vkSampler;
 
-    static std::optional<std::unique_ptr<Sampler>> createSampler(vax::Device* device) {
+    static std::optional<std::unique_ptr<Sampler>> createSampler(vax::vk::Device* device) {
         VkPhysicalDeviceProperties properties{};
         vkGetPhysicalDeviceProperties(device->vkPhysicalDevice, &properties);
 
@@ -37,7 +37,7 @@ public:
         return std::make_unique<Sampler>(vkSampler, device);
     }
 
-    Sampler(VkSampler vkSampler, vax::Device* device) : vkSampler(vkSampler), _device(device) {}
+    Sampler(VkSampler vkSampler, vax::vk::Device* device) : vkSampler(vkSampler), _device(device) {}
     Sampler(const Sampler& other) = delete;
     Sampler(Sampler&& other) noexcept {
         std::swap(vkSampler, other.vkSampler);
@@ -61,7 +61,7 @@ public:
     ~Sampler() { vkDestroySampler(_device->vkDevice, vkSampler, nullptr); }
 
 private:
-    vax::Device* _device;
+    vax::vk::Device* _device;
 };
 
 #endif
