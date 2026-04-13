@@ -17,72 +17,37 @@ void App::run() {
 }
 
 bool App::setup() {
-    if (!initWindow()) {
+    _window = std::make_unique<vax::vk::Window>();
+    if (!_window->load()) {
         return false;
     }
-    _engine = new vax::VkEngine(_window);
+    _engine = std::make_unique<vax::VkEngine>(*_window);
     _engine->setup();
-    _renderer = new Renderer(_engine);
+    _renderer = std::make_unique<Renderer>(_engine.get());
     _renderer->prepare();
-    _scene = new Scene(_engine);
+    _scene = std::make_unique<Scene>(_engine.get());
     _scene->load();
     return true;
-}
-
-bool App::initWindow() {
-    try {
-        if (!SDL_Vulkan_LoadLibrary(NULL)) {
-            std::cout << "Failed to load Vulkan library: " << SDL_GetError() << std::endl;
-            return false;
-        }
-        const uint32_t WIDTH = 800;
-        const uint32_t HEIGHT = 600;
-        SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN);
-        _window = SDL_CreateWindow(
-            "Luna",
-            WIDTH,
-            HEIGHT,
-            window_flags
-        );
-        if (_window == nullptr) {
-            Logger::getInstance().error("Failed to create window");
-            return false;
-        }
-        return true;
-    }
-    catch (const std::exception& e) {
-        Logger::getInstance().error("Failed to create window: {}", e.what());
-        return false;
-    }
 }
 
 void App::cleanup() {
     // Logger::getInstance().log("Cleaning up...");
 
     vkDeviceWaitIdle(_engine->device->vkDevice);
-    delete _renderer;
-    _renderer = nullptr;
-    delete _scene;
-    _scene = nullptr;
 
     _engine->cleanup();
 
-    if (_window != nullptr) {
-        SDL_DestroyWindow(_window);
-        _window = nullptr;
-    }
+    _window->destroyWindow();
     SDL_Quit();
-    delete _engine;
-    _engine = nullptr;
 }
 
 void App::mainLoop() {
-    if (_window == nullptr) {
+    if (_window->window == nullptr) {
         throw std::runtime_error("Window not initialized");
     }
     static bool running = true;
     while (running) {
-        std::cout << "Main loop" << std::endl;
+        // std::cout << "Main loop" << std::endl;
         SDL_Event event;
         try {
             // std::cout << "Error: " << SDL_GetError() << std::endl;
@@ -108,7 +73,7 @@ void App::loopUpdate() {
     auto currentTime = std::chrono::high_resolution_clock::now();
     float timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
     _scene->update(timestamp);
-    if (!_renderer->render(_scene, timestamp)) {
+    if (!_renderer->render(_scene.get(), timestamp)) {
         Logger::getInstance().error("Failed to render scene!");
     }
 }

@@ -2,6 +2,7 @@
 
 #include <deque>
 #include <functional>
+#include "luna.h"
 
 class DeletionQueue {
 public:
@@ -17,5 +18,9 @@ public:
         }
 
         deletors.clear();
+        _logger.info("Flushed deletion queue");
     }
+
+private:
+    Logger _logger = Logger("DeletionQueue");
 };

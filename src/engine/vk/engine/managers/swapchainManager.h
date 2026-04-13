@@ -3,6 +3,7 @@
 #include "luna.h"
 #include "device.h"
 #include "vkUtils.h"
+#include "window.h"
 
 namespace vax::vk {
     class SwapchainManager final {
@@ -14,12 +15,10 @@ namespace vax::vk {
         VkExtent2D swapchainExtent = { 0, 0 };
 
         explicit SwapchainManager(
-            SDL_Window* window,
-            const VkSurfaceKHR& surface,
+            const vax::vk::Window& window,
             const vax::vk::Device& device
         ) noexcept
             : _window(window)
-            , _surface(surface)
             , _device(device) {
         };
 
@@ -35,8 +34,7 @@ namespace vax::vk {
     private:
         Logger _logger = Logger("SwapchainManager");
 
-        std::reference_wrapper<SDL_Window*> _window;
-        std::reference_wrapper<const VkSurfaceKHR> _surface;
+        std::reference_wrapper<const vax::vk::Window> _window;
         std::reference_wrapper<const vax::vk::Device> _device;
 
         bool createSwapchain();

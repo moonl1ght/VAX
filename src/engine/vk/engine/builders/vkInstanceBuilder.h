@@ -62,12 +62,6 @@ namespace vax {
                 return std::nullopt;
             }
 
-            deletionQueue.push_function(
-                [&]() {
-                    logger.info("Destroying instance...");
-                    vkDestroyInstance(instance, nullptr);
-                }
-            );
             return std::optional<VkInstance>(instance);
         }
 

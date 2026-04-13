@@ -6,6 +6,7 @@
 #include "deletionQueue.h"
 #include "device.h"
 #include "queueManager.h"
+#include "window.h"
 
 class RenderingDestination;
 class DescriptorSetManager;
@@ -21,7 +22,9 @@ namespace vax::vk {
 namespace vax {
     class VkEngine final {
     public:
-        VkEngine(SDL_Window* window) : window(window) {};
+        VkEngine(vax::vk::Window& window) : _window(window) {};
+
+        std::reference_wrapper<vax::vk::Window> _window;
 
         const int MAX_FRAMES_IN_FLIGHT = 2;
         const uint32_t vulkanApiVersion = VK_API_VERSION_1_3;
@@ -34,9 +37,6 @@ namespace vax {
         bool framebufferResized = false;
 
         DeletionQueue deletionQueue;
-
-        SDL_Window* window;
-        VkSurfaceKHR surface;
 
         VkDebugUtilsMessengerEXT debugMessenger;
 
@@ -67,7 +67,7 @@ namespace vax {
         void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
     private:
-        Logger _logger;
+        Logger _logger = Logger("VkEngine");
 
         bool setupDebugMessenger();
         bool createCommandPool();

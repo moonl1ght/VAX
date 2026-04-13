@@ -60,7 +60,7 @@ VkExtent2D SwapchainManager::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& ca
     }
     else {
         int width, height;
-        SDL_GetWindowSizeInPixels(_window.get(), &width, &height);
+        SDL_GetWindowSizeInPixels(_window.get().window, &width, &height);
 
         VkExtent2D actualExtent = {
             static_cast<uint32_t>(width),
@@ -80,7 +80,7 @@ VkExtent2D SwapchainManager::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& ca
 
 bool SwapchainManager::createSwapchain() {
     utils::SwapChainSupportDetails swapChainSupport = utils::querySwapChainSupport(
-        _device.get().vkPhysicalDevice, _surface.get()
+        _device.get().vkPhysicalDevice, _window.get().surface
     );
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -94,7 +94,7 @@ bool SwapchainManager::createSwapchain() {
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = _surface;
+    createInfo.surface = _window.get().surface;
 
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = surfaceFormat.format;
@@ -104,7 +104,9 @@ bool SwapchainManager::createSwapchain() {
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-    utils::QueueFamilyIndices indices = utils::findQueueFamilies(_device.get().vkPhysicalDevice, _surface.get());
+    utils::QueueFamilyIndices indices = utils::findQueueFamilies(
+        _device.get().vkPhysicalDevice, _window.get().surface
+    );
     if (!indices.isComplete()) {
         _logger.error("Queue family indices are not complete!");
         return false;

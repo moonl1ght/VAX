@@ -1,6 +1,7 @@
 #include <luna.h>
 
 #include "src/app/App.hpp"
+#include "window.h"
 
 int main() {
     printf("SDL version: %d.%d.%d\n", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);

@@ -51,32 +51,31 @@ bool vax::VkEngine::setup() {
         vulkanApiVersion
     ).build();
     if (instanceOptional.has_value()) {
+        std::cout << "Instance created" << instanceOptional.value() << std::endl;
         instance = *instanceOptional;
     }
     else {
         return false;
     }
-
-    if (!setupDebugMessenger()) return false;
-
-    _logger.info("SDL version: {}.{}.{}", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
-    _logger.info("Creating surface...");
-    if (!SDL_Vulkan_CreateSurface(window, instance, nullptr, &surface)) {
-        _logger.error("Failed to create surface! Error: {}", SDL_GetError());
-        return false;
-    }
-
     deletionQueue.push_function(
         [&]() {
-            _logger.info("Destroying surface...");
-            vkDestroySurfaceKHR(instance, surface, nullptr);
+            _logger.info("Destroying instance...");
+            vkDestroyInstance(instance, nullptr);
+            instance = VK_NULL_HANDLE;
         }
     );
 
-    _logger.info("Creating device...");
+    if (!setupDebugMessenger()) return false;
+
+    _window.get().createSurface(instance);
+    deletionQueue.push_function(
+        [&]() {
+            _window.get().destroySurface();
+        }
+    );
+
     device = std::make_unique<Device>();
-    if (!device->load(instance, surface, enableValidationLayers)) {
-        _logger.error("Failed to create device!");
+    if (!device->load(instance, _window.get().surface, enableValidationLayers)) {
         return false;
     }
 
@@ -108,7 +107,7 @@ bool vax::VkEngine::setup() {
 
     if (!createSyncObjects()) return false;
 
-    swapchainManager = std::make_unique<vax::vk::SwapchainManager>(window, surface, *device);
+    swapchainManager = std::make_unique<vax::vk::SwapchainManager>(_window.get(), *device);
     if (!swapchainManager->setup()) return false;
     deletionQueue.push_function(
         [&]() {

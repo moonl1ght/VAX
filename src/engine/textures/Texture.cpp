@@ -14,6 +14,7 @@ void Texture::destroy() {
         textureImageView = VK_NULL_HANDLE;
     }
     if (textureImage != VK_NULL_HANDLE) {
+        std::cout << "Destroying image with allocator: " << vkEngine->allocator << std::endl;
         vmaDestroyImage(vkEngine->allocator, textureImage, allocation);
         allocation = VK_NULL_HANDLE;
         textureImage = VK_NULL_HANDLE;

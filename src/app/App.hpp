@@ -3,6 +3,7 @@
 #include "Renderer.hpp"
 #include "vkEngine.h"
 #include "luna.h"
+#include "window.h"
 
 class App final {
 public:
@@ -12,17 +13,16 @@ public:
     void run();
 
     vax::VkEngine* getEngine() const {
-        return _engine;
+        return _engine.get();
     }
 
 private:
-    SDL_Window* _window = nullptr;
-    vax::VkEngine* _engine = nullptr;
-    Renderer* _renderer = nullptr;
-    Scene* _scene = nullptr;
+    std::unique_ptr<vax::vk::Window> _window;
+    std::unique_ptr<vax::VkEngine> _engine;
+    std::unique_ptr<Renderer> _renderer;
+    std::unique_ptr<Scene> _scene;
 
     bool setup();
-    bool initWindow();
     void mainLoop();
     void cleanup();
     void loopUpdate();

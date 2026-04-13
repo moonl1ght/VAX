@@ -198,6 +198,7 @@ std::optional<std::pair<VkImage, VmaAllocation>> vax::createImage(
     VmaAllocationCreateInfo allocInfo = {};
     allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
     allocInfo.requiredFlags = properties;
+    std::cout << "Creating image with allocator: " << vkEngine->allocator << std::endl;
     if (!VK_CHECK(vmaCreateImage(vkEngine->allocator, &imageInfo, &allocInfo, &image, &allocation, nullptr))) {
         return std::nullopt;
     }
