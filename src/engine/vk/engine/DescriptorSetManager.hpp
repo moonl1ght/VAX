@@ -3,9 +3,8 @@
 
 #include "luna.h"
 #include "device.h"
-#include "vkEngine.h"
 #include "Buffer.hpp"
-#include "Texture.hpp"
+#include "texture.h"
 #include "ShaderUniforms.h"
 
 struct DescriptorLayoutBuilder {
@@ -27,7 +26,7 @@ public:
     ~DescriptorWriter() {}
 
     void writeBuffer(Buffer* buffer, uint32_t binding, uint32_t offset = 0);
-    void writeTexture(Texture* texture, uint32_t binding, uint32_t offset = 0);
+    void writeTexture(vax::textures::Texture* texture, uint32_t binding, uint32_t offset = 0);
     void writeStorageImage(VkImageView imageView, uint32_t binding);
 
     void updateSet(VkDevice device, VkDescriptorSet descriptorSet);
@@ -41,7 +40,7 @@ private:
 
 class DescriptorSetManager {
 public:
-    DescriptorSetManager(vax::VkEngine* vkEngine) : _vkEngine(vkEngine) {};
+    DescriptorSetManager(vax::vk::Engine* vkEngine) : _vkEngine(vkEngine) {};
     ~DescriptorSetManager();
 
     DescriptorSetManager(const DescriptorSetManager&) = delete;
@@ -49,7 +48,7 @@ public:
 
     bool setup();
     std::optional<VkDescriptorSet> getGlobalDescriptorSet(
-        uint32_t frameIndex, Buffer* uniformBuffer, Texture* texture
+        uint32_t frameIndex, Buffer* uniformBuffer, vax::textures::Texture* texture
     );
 
     std::optional<VkDescriptorSet> getDrawBackgroundDescriptorSet(uint32_t frameIndex);
@@ -62,7 +61,7 @@ public:
     // VkDescriptorSetLayout getObjectDescriptorSetLayout() const { return _objectDescriptorSetLayout; }
 
 private:
-    vax::VkEngine* _vkEngine;
+    vax::vk::Engine* _vkEngine;
 
     VkDescriptorSetLayout _drawBackgroundDescriptorSetLayout = VK_NULL_HANDLE;
     VkDescriptorSetLayout _globalDescriptorSetLayout = VK_NULL_HANDLE;

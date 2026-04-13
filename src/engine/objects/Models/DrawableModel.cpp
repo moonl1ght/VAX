@@ -1,7 +1,7 @@
 #include "DrawableModel.hpp"
 
 void DrawableModel::draw(
-    vax::VkEngine* vkEngine, VkCommandBuffer commandBuffer, vax::PipelineManager* pipelineManager, float time
+    vax::vk::Engine* vkEngine, VkCommandBuffer commandBuffer, const vax::vk::PipelineManager& pipelineManager, float time
 ) {
     DrawPushConstants drawPushConstants{};
     // drawPushConstants.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -11,7 +11,7 @@ void DrawableModel::draw(
     );
     vkCmdPushConstants(
         commandBuffer,
-        pipelineManager->getPipelineLayout(),
+        pipelineManager.getPipelineLayout(),
         VK_SHADER_STAGE_VERTEX_BIT,
         0,
         sizeof(DrawPushConstants),

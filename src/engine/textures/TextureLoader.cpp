@@ -3,6 +3,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "./deps/stb_image.h"
 
+using namespace vax::textures;
+using namespace vax;
+
 Texture* TextureLoader::loadTexture(std::string path, bool isAutoLoadImageView) {
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -23,7 +26,7 @@ Texture* TextureLoader::loadTexture(std::string path, bool isAutoLoadImageView) 
     stbi_image_free(pixels);
 
     auto [textureImage, allocation] = vax::createImage(
-        vkEngine,
+        vkEngine->allocator,
         VkExtent3D{ static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1 },
         VK_FORMAT_R8G8B8A8_SRGB,
         VK_IMAGE_TILING_OPTIMAL,
@@ -53,18 +56,19 @@ Texture* TextureLoader::loadTexture(std::string path, bool isAutoLoadImageView) 
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     );
     auto texture = new Texture(
-        vkEngine,
+        *vkEngine->device,
+        vkEngine->allocator,
         path,
         textureImage,
         allocation,
-        vax::Size(texWidth, texHeight),
+        math::SizeUI(texWidth, texHeight),
         VK_FORMAT_R8G8B8A8_SRGB
     );
     if (isAutoLoadImageView) {
         texture->loadImageView();
     }
-    if (auto sampler = Sampler::createSampler(vkEngine->device.get())) {
-        texture->sampler = std::move(*sampler);
+    if (auto sampler = vax::textures::Sampler::createSampler(*vkEngine->device)) {
+        texture->sampler = std::make_unique<vax::textures::Sampler>(std::move(*sampler));
     }
     return texture;
 }

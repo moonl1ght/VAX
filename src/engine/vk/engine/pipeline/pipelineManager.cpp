@@ -1,25 +1,26 @@
 #include "pipelineManager.h"
 #include "pipelineBuilder.h"
 #include "shaderModuleBuilder.h"
+#include "DescriptorSetManager.hpp"
 
 using namespace vax::vk;
 
-bool vax::PipelineManager::setup() {
+bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
     auto shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/shader.vert.spv"));
-    auto vertShaderModule = shaderBuilder.build(vkEngine->device->vkDevice);
+    auto vertShaderModule = shaderBuilder.build(_device.get().vkDevice);
 
     shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/shader.frag.spv"));
-    auto fragShaderModule = shaderBuilder.build(vkEngine->device->vkDevice);
+    auto fragShaderModule = shaderBuilder.build(_device.get().vkDevice);
 
     shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/background.comp.spv"));
-    auto backgroundShaderModule = shaderBuilder.build(vkEngine->device->vkDevice);
+    auto backgroundShaderModule = shaderBuilder.build(_device.get().vkDevice);
 
     if (!vertShaderModule || !fragShaderModule || !backgroundShaderModule) {
         LOG_ERROR("Failed to build shader module!");
         return false;
     }
 
-    vax::vk::ComputePipelineBuilder backgroundPipelineBuilder(*(vkEngine->device));
+    vax::vk::ComputePipelineBuilder backgroundPipelineBuilder(_device.get());
     VkPipelineLayoutCreateInfo computeLayoutInfo{};
     computeLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     computeLayoutInfo.pNext = nullptr;
@@ -146,7 +147,7 @@ bool vax::PipelineManager::setup() {
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
     auto result = vkCreatePipelineLayout(
-        vkEngine->device->vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout
+        _device.get().vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout
     );
     if (result != VK_SUCCESS) {
         Logger::getInstance().error("failed to create pipeline layout!");
@@ -166,21 +167,21 @@ bool vax::PipelineManager::setup() {
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = _pipelineLayout;
-    pipelineInfo.renderPass = vkEngine->renderPassManager->getRenderPass();
+    pipelineInfo.renderPass = renderPass.get_vk_render_pass();
     // pipelineInfo.renderPass = vkEngine->renderPassManager->getRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     auto pipelineResult = vkCreateGraphicsPipelines(
-        vkEngine->device->vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline
+        _device.get().vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline
     );
     if (pipelineResult != VK_SUCCESS) {
         Logger::getInstance().error("failed to create graphics pipeline!");
         return false;
     }
 
-    vkDestroyShaderModule(vkEngine->device->vkDevice, fragShaderModule.value(), nullptr);
-    vkDestroyShaderModule(vkEngine->device->vkDevice, vertShaderModule.value(), nullptr);
-    vkDestroyShaderModule(vkEngine->device->vkDevice, backgroundShaderModule.value(), nullptr);
+    vkDestroyShaderModule(_device.get().vkDevice, fragShaderModule.value(), nullptr);
+    vkDestroyShaderModule(_device.get().vkDevice, vertShaderModule.value(), nullptr);
+    vkDestroyShaderModule(_device.get().vkDevice, backgroundShaderModule.value(), nullptr);
     return true;
 }

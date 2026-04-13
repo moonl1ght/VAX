@@ -17,7 +17,7 @@ public:
     DrawableModel(const DrawableModel& other) = delete;
     DrawableModel& operator=(const DrawableModel& other) = delete;
 
-    void draw(vax::VkEngine* vkEngine, VkCommandBuffer commandBuffer, vax::PipelineManager* pipelineManager, float time);
+    void draw(vax::vk::Engine* vkEngine, VkCommandBuffer commandBuffer, const vax::vk::PipelineManager& pipelineManager, float time);
 };
 
 #endif

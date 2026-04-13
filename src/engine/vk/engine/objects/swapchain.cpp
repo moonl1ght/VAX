@@ -1,16 +1,16 @@
-#include "swapchainManager.h"
+#include "swapchain.h"
 #include "ImageUtils.hpp"
 #include "queueManager.h"
 
 using namespace vax::vk;
 
-bool SwapchainManager::setup() {
+bool Swapchain::setup() {
     if (!createSwapchain()) return false;
     if (!createImageViews()) return false;
     return true;
 }
 
-void SwapchainManager::cleanup() {
+void Swapchain::cleanup() {
     for (auto imageView : swapchainImageViews) {
         vkDestroyImageView(_device.get().vkDevice, imageView, nullptr);
     }
@@ -22,7 +22,7 @@ void SwapchainManager::cleanup() {
     vkDestroySwapchainKHR(_device.get().vkDevice, swapchain, nullptr);
 }
 
-bool SwapchainManager::recreate() {
+bool Swapchain::recreate() {
     cleanup();
 
     if (!setup()) return false;
@@ -30,7 +30,7 @@ bool SwapchainManager::recreate() {
     return true;
 }
 
-VkSurfaceFormatKHR SwapchainManager::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+VkSurfaceFormatKHR Swapchain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
     for (const auto& availableFormat : availableFormats) {
         if (
             availableFormat.format ==
@@ -44,7 +44,7 @@ VkSurfaceFormatKHR SwapchainManager::chooseSwapSurfaceFormat(const std::vector<V
     return availableFormats[0];
 }
 
-VkPresentModeKHR SwapchainManager::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+VkPresentModeKHR Swapchain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
     for (const auto& availablePresentMode : availablePresentModes) {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
             return availablePresentMode;
@@ -54,7 +54,7 @@ VkPresentModeKHR SwapchainManager::chooseSwapPresentMode(const std::vector<VkPre
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D SwapchainManager::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+VkExtent2D Swapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
     }
@@ -78,7 +78,7 @@ VkExtent2D SwapchainManager::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& ca
     }
 }
 
-bool SwapchainManager::createSwapchain() {
+bool Swapchain::createSwapchain() {
     utils::SwapChainSupportDetails swapChainSupport = utils::querySwapChainSupport(
         _device.get().vkPhysicalDevice, _window.get().surface
     );
@@ -150,7 +150,7 @@ bool SwapchainManager::createSwapchain() {
     return true;
 }
 
-bool SwapchainManager::createImageViews() {
+bool Swapchain::createImageViews() {
     swapchainImageViews.resize(swapchainImages.size());
 
     for (uint32_t i = 0; i < swapchainImages.size(); i++) {

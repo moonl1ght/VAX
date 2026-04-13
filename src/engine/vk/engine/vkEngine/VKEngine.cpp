@@ -1,12 +1,12 @@
 #include "vkEngine.h"
 #include "TextureLoader.hpp"
-#include "Texture.hpp"
-#include "swapchainManager.h"
-#include "RenderingDestination.hpp"
+#include "texture.h"
+#include "renderDestination.h"
 #include "DescriptorSetManager.hpp"
-#include "pipelineManager.h"
 #include "vk_debug.h"
 #include "vkInstanceBuilder.h"
+#include "renderPassBuilder.h"
+#include "renderDestinationBuilder.h"
 
 using namespace vax::vk;
 
@@ -43,7 +43,7 @@ void validationLayersDestroyDebugUtilsMessengerEXT(
     }
 }
 
-bool vax::VkEngine::setup() {
+bool vax::vk::Engine::setup() {
     std::optional<VkInstance> instanceOptional = vax::VkInstanceBuilder(
         deletionQueue,
         enableValidationLayers,
@@ -93,6 +93,7 @@ bool vax::VkEngine::setup() {
         _logger.error("Failed to create allocator!");
         return false;
     }
+    std::cout << "Allocator created: " << allocator << std::endl;
 
     deletionQueue.push_function(
         [&]() {
@@ -107,33 +108,30 @@ bool vax::VkEngine::setup() {
 
     if (!createSyncObjects()) return false;
 
-    swapchainManager = std::make_unique<vax::vk::SwapchainManager>(_window.get(), *device);
-    if (!swapchainManager->setup()) return false;
+    swapchain = std::make_unique<Swapchain>(_window.get(), *device);
+    if (!swapchain->setup()) return false;
     deletionQueue.push_function(
         [&]() {
-            swapchainManager->cleanup();
+            swapchain->cleanup();
         }
     );
 
-    renderPassManager = new RenderPassManager(swapchainManager.get(), device.get());
-    if (!renderPassManager->setup()) return false;
-    deletionQueue.push_function(
-        [&]() {
-            renderPassManager->cleanup();
-            delete renderPassManager;
-            renderPassManager = nullptr;
-        }
-    );
+    std::optional<std::unique_ptr<RenderPass>> renderPassOptional = RenderPassBuilder(
+        *device,
+        *swapchain
+    ).build();
+    if (!renderPassOptional.has_value()) return false;
+    renderPass = std::move(*renderPassOptional);
 
-    renderingDestination = new RenderingDestination(this, swapchainManager.get(), renderPassManager);
-    renderingDestination->setup();
-    deletionQueue.push_function(
-        [&]() {
-            renderingDestination->cleanup();
-            delete renderingDestination;
-            renderingDestination = nullptr;
-        }
-    );
+    auto renderDestinationOptional = RenderDestinationBuilder(
+        *device,
+        allocator,
+        *swapchain,
+        *renderPass
+    ).build(this);
+    if (!renderDestinationOptional.has_value()) return false;
+    renderDestination = std::move(*renderDestinationOptional);
+    _logger.info("Render destination built");
 
     descriptorSetManager = new DescriptorSetManager(this);
     if (!descriptorSetManager->setup()) return false;
@@ -144,25 +142,40 @@ bool vax::VkEngine::setup() {
         }
     );
 
-    pipelineManager = new PipelineManager(this, descriptorSetManager);
-    pipelineManager->setup();
-    deletionQueue.push_function(
-        [&]() {
-            delete pipelineManager;
-            pipelineManager = nullptr;
-        }
-    );
+    pipelineManager = std::make_unique<PipelineManager>(*device, descriptorSetManager);
+    pipelineManager->setup(*renderPass);
 
     LOG_INFO("Engine setup complete!");
     return true;
 }
 
-void vax::VkEngine::cleanup() {
+void vax::vk::Engine::cleanup() {
     deletionQueue.flush();
-    LOG_INFO("Engine cleanup complete!");
+    _logger.info("Engine cleanup complete!");
 }
 
-bool vax::VkEngine::setupDebugMessenger() {
+void vax::vk::Engine::resize() {
+    _logger.info("Resizing engine...");
+    int width = 0, height = 0;
+    SDL_GetWindowSizeInPixels(_window.get().window, &width, &height);
+    while (width == 0 || height == 0) {
+        SDL_GetWindowSizeInPixels(_window.get().window, &width, &height);
+        SDL_Delay(100);
+    }
+    vkDeviceWaitIdle(device->vkDevice);
+
+    swapchain->recreate();
+    auto renderDestinationOptional = RenderDestinationBuilder(
+        *device,
+        allocator,
+        *swapchain,
+        *renderPass
+    ).build(this);
+    if (!renderDestinationOptional.has_value()) return;
+    renderDestination = std::move(*renderDestinationOptional);
+}
+
+bool vax::vk::Engine::setupDebugMessenger() {
     LOG_INFO("Setting up debug messenger...");
     if (!enableValidationLayers) return false;
 
@@ -184,7 +197,7 @@ bool vax::VkEngine::setupDebugMessenger() {
     return true;
 }
 
-bool vax::VkEngine::createCommandPool() {
+bool vax::vk::Engine::createCommandPool() {
     LOG_INFO("Creating command pool...");
     utils::QueueFamilyIndices queueFamilyIndices = device->getQueueFamilyIndices();
 
@@ -208,7 +221,7 @@ bool vax::VkEngine::createCommandPool() {
     return true;
 }
 
-bool vax::VkEngine::createCommandBuffer() {
+bool vax::vk::Engine::createCommandBuffer() {
     LOG_INFO("Creating command buffer...");
     commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo allocInfo{};
@@ -225,7 +238,7 @@ bool vax::VkEngine::createCommandBuffer() {
     return true;
 }
 
-bool vax::VkEngine::createSyncObjects() {
+bool vax::vk::Engine::createSyncObjects() {
     LOG_INFO("Creating synchronization objects...");
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -261,7 +274,7 @@ bool vax::VkEngine::createSyncObjects() {
     return true;
 }
 
-VkCommandBuffer vax::VkEngine::beginSingleTimeCommands() {
+VkCommandBuffer vax::vk::Engine::beginSingleTimeCommands() {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -280,7 +293,7 @@ VkCommandBuffer vax::VkEngine::beginSingleTimeCommands() {
     return commandBuffer;
 }
 
-void vax::VkEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+void vax::vk::Engine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     vkEndCommandBuffer(commandBuffer);
 
     VkSubmitInfo submitInfo{};
@@ -294,7 +307,7 @@ void vax::VkEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     vkFreeCommandBuffers(device->vkDevice, commandPool, 1, &commandBuffer);
 }
 
-VkResult vax::VkEngine::createAllocator() {
+VkResult vax::vk::Engine::createAllocator() {
     VmaAllocatorCreateInfo allocatorInfo{};
     allocatorInfo.physicalDevice = device->vkPhysicalDevice;
     allocatorInfo.device = device->vkDevice;

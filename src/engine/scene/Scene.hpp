@@ -3,16 +3,16 @@
 
 #include "luna.h"
 #include "DrawableModel.hpp"
-#include "Texture.hpp"
+#include "texture.h"
 #include "ShaderUniforms.h"
 #include "ModelLoader.hpp"
 #include "vkObject.h"
 
 class Scene final : public vax::VkObject {
 public:
-    Texture* texture = nullptr;
+    vax::textures::Texture* texture = nullptr;
 
-    Scene(vax::VkEngine* vkEngine)
+    Scene(vax::vk::Engine* vkEngine)
         : vax::VkObject(vkEngine)
         , _modelLoader(ModelLoader(vkEngine)) {
     };

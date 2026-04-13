@@ -1,6 +1,6 @@
 #ifndef VAXMath_hpp
 #define VAXMath_hpp
 
-#include "VAXMathObjects.hpp"
+#include "size.h"
 
 #endif

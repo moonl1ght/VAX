@@ -35,8 +35,8 @@ public:
         return *this;
     }
 
-    void draw(vax::VkEngine* vkEngine, VkCommandBuffer commandBuffer);
-    void loadBuffers(vax::VkEngine* vkEngine);
+    void draw(vax::vk::Engine* vkEngine, VkCommandBuffer commandBuffer);
+    void loadBuffers(vax::vk::Engine* vkEngine);
 
 private:
     bool _isLoaded = false;

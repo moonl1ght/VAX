@@ -3,10 +3,10 @@
 #include "Buffer.hpp"
 #include "luna.h"
 #include "vkUtils.h"
-#include "Texture.hpp"
+#include "texture.h"
 #include "vkObjectBuilder.h"
 
 class TextureLoader final : public vax::VkObjectBuilder {
 public:
-    Texture* loadTexture(std::string path, bool isAutoLoadImageView = true);
+    vax::textures::Texture* loadTexture(std::string path, bool isAutoLoadImageView = true);
 };

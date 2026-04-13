@@ -1,7 +1,8 @@
 #include "Renderer.hpp"
-#include "RenderingDestination.hpp"
+#include "renderDestination.h"
 #include "ImageUtils.hpp"
 #include "pipeline.h"
+#include "DescriptorSetManager.hpp"
 
 void Renderer::prepare() {
     // Logger::getInstance().log("Preparing renderer...");
@@ -34,7 +35,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(
         _vkEngine->device->vkDevice,
-        _vkEngine->swapchainManager->swapchain,
+        _vkEngine->swapchain->swapchain,
         UINT64_MAX,
         _vkEngine->imageAvailableSemaphores[_currentFrame],
         VK_NULL_HANDLE,
@@ -42,7 +43,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     );
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        _vkEngine->renderingDestination->recreate();
+        _vkEngine->resize();
         return false;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -86,7 +87,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    VkSwapchainKHR swapChains[] = { _vkEngine->swapchainManager->swapchain };
+    VkSwapchainKHR swapChains[] = { _vkEngine->swapchain->swapchain };
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
@@ -94,7 +95,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     result = vkQueuePresentKHR(_vkEngine->queueManager->presentQueue, &presentInfo);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _vkEngine->framebufferResized) {
         _vkEngine->framebufferResized = false;
-        _vkEngine->renderingDestination->recreate();
+        _vkEngine->resize();
         return false;
     }
     else if (result != VK_SUCCESS) {
@@ -115,7 +116,7 @@ void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
 
     vkCmdClearColorImage(
         commandBuffer,
-        _vkEngine->renderingDestination->drawImage->textureImage,
+        _vkEngine->renderDestination->drawImage->textureImage,
         VK_IMAGE_LAYOUT_GENERAL,
         &clearValue,
         1,
@@ -131,7 +132,7 @@ void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
         return;
     }
     DescriptorWriter descriptorWriter;
-    descriptorWriter.writeStorageImage(_vkEngine->renderingDestination->drawImage->textureImageView, 0);
+    descriptorWriter.writeStorageImage(_vkEngine->renderDestination->drawImage->textureImageView, 0);
     descriptorWriter.updateSet(_vkEngine->device->vkDevice, drawBackgroundDescriptorSet.value());
     vkCmdBindDescriptorSets(
         commandBuffer,
@@ -144,7 +145,7 @@ void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
         nullptr
     );
 
-    vkCmdDispatch(commandBuffer, std::ceil(_vkEngine->renderingDestination->drawImage->size.width / 16.0), std::ceil(_vkEngine->renderingDestination->drawImage->size.height / 16.0), 1);
+    vkCmdDispatch(commandBuffer, std::ceil(_vkEngine->renderDestination->drawImage->size.width / 16.0), std::ceil(_vkEngine->renderDestination->drawImage->size.height / 16.0), 1);
 }
 
 bool Renderer::recordCommandBuffer(
@@ -160,7 +161,7 @@ bool Renderer::recordCommandBuffer(
 
     vax::transitionImage(
         commandBuffer,
-        _vkEngine->renderingDestination->drawImage->textureImage,
+        _vkEngine->renderDestination->drawImage->textureImage,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_GENERAL
     );
@@ -169,30 +170,30 @@ bool Renderer::recordCommandBuffer(
 
     vax::transitionImage(
         commandBuffer,
-        _vkEngine->renderingDestination->drawImage->textureImage,
+        _vkEngine->renderDestination->drawImage->textureImage,
         VK_IMAGE_LAYOUT_GENERAL,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
     );
     vax::transitionImage(
         commandBuffer,
-        _vkEngine->swapchainManager->swapchainImages[imageIndex],
+        _vkEngine->swapchain->swapchainImages[imageIndex],
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
     );
 
     vax::copyImageToImage(
         commandBuffer,
-        _vkEngine->renderingDestination->drawImage->textureImage,
-        _vkEngine->swapchainManager->swapchainImages[imageIndex],
-        _vkEngine->renderingDestination->drawImage->size.toExtent2D(),
-        _vkEngine->swapchainManager->swapchainExtent
+        _vkEngine->renderDestination->drawImage->textureImage,
+        _vkEngine->swapchain->swapchainImages[imageIndex],
+        _vkEngine->renderDestination->drawImage->size.toExtent2D(),
+        _vkEngine->swapchain->swapchainExtent
     );
     // std::cout << "Image size: " << _vkEngine->renderingDestination->drawImage->size.toExtent2D().width << "x" << _vkEngine->renderingDestination->drawImage->size.toExtent2D().height << std::endl;
     // std::cout << "Swapchain size: " << _vkEngine->swapchainManager->swapchainExtent.width << "x" << _vkEngine->swapchainManager->swapchainExtent.height << std::endl;
 
     vax::transitionImage(
         commandBuffer,
-        _vkEngine->swapchainManager->swapchainImages[imageIndex],
+        _vkEngine->swapchain->swapchainImages[imageIndex],
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
     );

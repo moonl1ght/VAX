@@ -5,8 +5,8 @@
 namespace vax {
     class VkObjectBuilder {
     public:
-        VkObjectBuilder(vax::VkEngine* vkEngine) : vkEngine(vkEngine) {}
+        VkObjectBuilder(vax::vk::Engine* vkEngine) : vkEngine(vkEngine) {}
 
-        vax::VkEngine* vkEngine;
+        vax::vk::Engine* vkEngine;
     };
 }

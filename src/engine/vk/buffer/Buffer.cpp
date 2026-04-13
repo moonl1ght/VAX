@@ -3,7 +3,7 @@
 using namespace vax::vk;
 
 Buffer::Buffer(
-    vax::VkEngine* vkEngine,
+    vax::vk::Engine* vkEngine,
     const void* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
@@ -34,7 +34,7 @@ void Buffer::cleanup() {
 }
 
 void Buffer::reload(
-    vax::VkEngine* vkEngine,
+    vax::vk::Engine* vkEngine,
     const void* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
@@ -48,7 +48,7 @@ void Buffer::reload(
 }
 
 void Buffer::load(
-    vax::VkEngine* vkEngine,
+    vax::vk::Engine* vkEngine,
     const void* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
@@ -75,7 +75,7 @@ void Buffer::fill(const void* fillData) {
     vkUnmapMemory(_device, vkBufferMemory);
 }
 
-void Buffer::copyBufferTo(vax::VkEngine* vkEngine, Buffer& dstBuffer, VkDeviceSize size) const {
+void Buffer::copyBufferTo(vax::vk::Engine* vkEngine, Buffer& dstBuffer, VkDeviceSize size) const {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -117,7 +117,7 @@ bool Buffer::isLoaded() const {
 }
 
 void Buffer::load(
-    vax::VkEngine* vkEngine,
+    vax::vk::Engine* vkEngine,
     VkBufferUsageFlags usage,
     VkMemoryPropertyFlags properties
 ) {

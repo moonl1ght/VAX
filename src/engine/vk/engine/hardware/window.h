@@ -15,8 +15,8 @@ namespace vax::vk {
             uint32_t height = 600
         ) noexcept
             : width(width)
-            , height(height) {
-        };
+            , height(height)
+        { };
 
         Window(const Window& other) = delete;
         Window(Window&& other) = delete;

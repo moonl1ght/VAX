@@ -100,7 +100,7 @@ std::optional<VkDescriptorSet> DescriptorSetManager::getDrawBackgroundDescriptor
 // }
 
 std::optional<VkDescriptorSet> DescriptorSetManager::getGlobalDescriptorSet(
-    uint32_t frameIndex, Buffer* uniformBuffer, Texture* texture
+    uint32_t frameIndex, Buffer* uniformBuffer, vax::textures::Texture* texture
 ) {
     if (_globalDescriptorSets.size() == _vkEngine->MAX_FRAMES_IN_FLIGHT) {
         return std::make_optional(_globalDescriptorSets[frameIndex]);
@@ -264,7 +264,7 @@ void DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t of
     _writes.push_back(write);
 }
 
-void DescriptorWriter::writeTexture(Texture* texture, uint32_t binding, uint32_t offset) {
+void DescriptorWriter::writeTexture(vax::textures::Texture* texture, uint32_t binding, uint32_t offset) {
     std::cout << "Writing texture!" << std::endl;
     std::cout << "Sampler: " << (texture->sampler == nullptr ? "nullptr" : "not nullptr") << std::endl;
     std::cout << "Texture image view: " << texture->textureImageView << std::endl;

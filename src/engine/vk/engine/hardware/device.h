@@ -13,10 +13,10 @@ namespace vax::vk {
             _logger = Logger("Device");
         }
 
-        Device(const Device& rhs) = delete;
-        Device(Device&& rhs) = delete;
-        Device& operator=(const Device& rhs) = delete;
-        Device& operator=(Device&& rhs) = delete;
+        Device(const Device& other) = delete;
+        Device(Device&& other) = delete;
+        Device& operator=(const Device& other) = delete;
+        Device& operator=(Device&& other) = delete;
 
         bool load(VkInstance instance, VkSurfaceKHR surface, bool enableValidationLayers);
         void destroy();

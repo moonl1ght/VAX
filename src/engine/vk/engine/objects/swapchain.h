@@ -6,7 +6,7 @@
 #include "window.h"
 
 namespace vax::vk {
-    class SwapchainManager final {
+    class Swapchain final {
     public:
         VkSwapchainKHR swapchain = VK_NULL_HANDLE;
         std::vector<VkImage> swapchainImages;
@@ -14,7 +14,7 @@ namespace vax::vk {
         VkFormat swapchainImageFormat = VK_FORMAT_UNDEFINED;
         VkExtent2D swapchainExtent = { 0, 0 };
 
-        explicit SwapchainManager(
+        explicit Swapchain(
             const vax::vk::Window& window,
             const vax::vk::Device& device
         ) noexcept
@@ -22,17 +22,17 @@ namespace vax::vk {
             , _device(device) {
         };
 
-        SwapchainManager(const SwapchainManager& other) = delete;
-        SwapchainManager(SwapchainManager&& other) = delete;
-        SwapchainManager& operator=(const SwapchainManager& other) = delete;
-        SwapchainManager& operator=(SwapchainManager&& other) = delete;
+        Swapchain(const Swapchain& other) = delete;
+        Swapchain(Swapchain&& other) = delete;
+        Swapchain& operator=(const Swapchain& other) = delete;
+        Swapchain& operator=(Swapchain&& other) = delete;
 
         bool setup();
         void cleanup();
         bool recreate();
 
     private:
-        Logger _logger = Logger("SwapchainManager");
+        Logger _logger = Logger("Swapchain");
 
         std::reference_wrapper<const vax::vk::Window> _window;
         std::reference_wrapper<const vax::vk::Device> _device;

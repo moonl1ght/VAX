@@ -1,18 +1,14 @@
-#include "RenderPassManager.hpp"
+#include "renderPassBuilder.h"
+#include "vkUtils.h"
+#include "swapchain.h"
+#include "device.h"
 
 using namespace vax::vk;
 
-bool RenderPassManager::setup() {
-    return createRenderPass();
-}
-
-void RenderPassManager::cleanup() {
-    vkDestroyRenderPass(_device->vkDevice, _renderPass, nullptr);
-}
-
-bool RenderPassManager::createRenderPass() {
+std::optional<std::unique_ptr<vax::vk::RenderPass>> RenderPassBuilder::build() const noexcept
+{
     VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = _swapchainManager->swapchainImageFormat;
+    colorAttachment.format = _swapchain.get().swapchainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -22,7 +18,7 @@ bool RenderPassManager::createRenderPass() {
     colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
     VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = utils::findDepthFormat(_device->vkPhysicalDevice);
+    depthAttachment.format = utils::findDepthFormat(_device.get().vkPhysicalDevice);
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -65,10 +61,13 @@ bool RenderPassManager::createRenderPass() {
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if (!VK_CHECK(vkCreateRenderPass(_device->vkDevice, &renderPassInfo, nullptr, &_renderPass))) {
-        LOG_ERROR("Failed to create render pass!");
-        return false;
+    VkRenderPass renderPass;
+    if (!VK_CHECK(vkCreateRenderPass(_device.get().vkDevice, &renderPassInfo, nullptr, &renderPass))) {
+        _logger.error("Failed to create render pass!");
+        return std::nullopt;
     }
 
-    return true;
+    return std::make_optional<std::unique_ptr<vax::vk::RenderPass>>(
+        std::make_unique<vax::vk::RenderPass>(_device.get(), renderPass)
+    );
 }

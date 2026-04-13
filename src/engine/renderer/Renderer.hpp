@@ -9,7 +9,7 @@
 class Renderer {
 public:
     Renderer(
-        vax::VkEngine* vkEngine
+        vax::vk::Engine* vkEngine
     )
         : _vkEngine(vkEngine) {
     };
@@ -27,7 +27,7 @@ public:
     void prepare();
 
 private:
-    vax::VkEngine* _vkEngine;
+    vax::vk::Engine* _vkEngine;
 
     std::vector<Buffer*> _sceneUniformBuffers;
     std::vector<void*> _sceneUniformBuffersMapped;

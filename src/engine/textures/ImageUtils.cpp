@@ -82,7 +82,7 @@ void vax::transitionImage(
 }
 
 void vax::transitionImageLayout(
-    vax::VkEngine* vkEngine,
+    vax::vk::Engine* vkEngine,
     VkImage image,
     VkFormat format,
     VkImageLayout oldLayout,
@@ -144,7 +144,7 @@ void vax::transitionImageLayout(
 }
 
 void vax::copyBufferToImage(
-    vax::VkEngine* vkEngine,
+    vax::vk::Engine* vkEngine,
     VkBuffer buffer,
     VkImage image,
     uint32_t width,
@@ -173,7 +173,7 @@ void vax::copyBufferToImage(
 }
 
 std::optional<std::pair<VkImage, VmaAllocation>> vax::createImage(
-    vax::VkEngine* vkEngine,
+    VmaAllocator allocator,
     VkExtent3D extent,
     VkFormat format,
     VkImageTiling tiling,
@@ -198,8 +198,8 @@ std::optional<std::pair<VkImage, VmaAllocation>> vax::createImage(
     VmaAllocationCreateInfo allocInfo = {};
     allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
     allocInfo.requiredFlags = properties;
-    std::cout << "Creating image with allocator: " << vkEngine->allocator << std::endl;
-    if (!VK_CHECK(vmaCreateImage(vkEngine->allocator, &imageInfo, &allocInfo, &image, &allocation, nullptr))) {
+    if (!VK_CHECK(vmaCreateImage(allocator, &imageInfo, &allocInfo, &image, &allocation, nullptr))) {
+        Logger::getInstance().error("Failed to create image!");
         return std::nullopt;
     }
     return std::make_optional(std::make_pair(image, allocation));

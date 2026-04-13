@@ -21,7 +21,7 @@ bool App::setup() {
     if (!_window->load()) {
         return false;
     }
-    _engine = std::make_unique<vax::VkEngine>(*_window);
+    _engine = std::make_unique<vax::vk::Engine>(*_window);
     _engine->setup();
     _renderer = std::make_unique<Renderer>(_engine.get());
     _renderer->prepare();

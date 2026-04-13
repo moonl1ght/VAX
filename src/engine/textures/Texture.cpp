@@ -1,36 +1,38 @@
-#include "Texture.hpp"
+#include "texture.h"
 #include "TextureLoader.hpp"
 #include "ImageUtils.hpp"
 
-void Texture::loadImageView() {
+using namespace vax;
+
+void vax::textures::Texture::loadImageView() {
     textureImageView = vax::createImageView(
-        vkEngine->device->vkDevice, textureImage, format, aspectMask
+        _device.get().vkDevice, textureImage, format, aspectMask
     ).value();
 }
 
-void Texture::destroy() {
+void vax::textures::Texture::destroy() {
     if (textureImageView != VK_NULL_HANDLE) {
-        vkDestroyImageView(vkEngine->device->vkDevice, textureImageView, nullptr);
+        vkDestroyImageView(_device.get().vkDevice, textureImageView, nullptr);
         textureImageView = VK_NULL_HANDLE;
     }
     if (textureImage != VK_NULL_HANDLE) {
-        std::cout << "Destroying image with allocator: " << vkEngine->allocator << std::endl;
-        vmaDestroyImage(vkEngine->allocator, textureImage, allocation);
-        allocation = VK_NULL_HANDLE;
+        vmaDestroyImage(_allocator, textureImage, _allocation);
+        _allocation = VK_NULL_HANDLE;
         textureImage = VK_NULL_HANDLE;
     }
+    name.clear();
     sampler = nullptr;
-    size = vax::Size::zero();
+    size = math::SizeUI::zero();
     format = VK_FORMAT_UNDEFINED;
     aspectMask = VK_IMAGE_ASPECT_NONE;
 }
 
-bool Texture::isValid() const {
-    return textureImage != VK_NULL_HANDLE && allocation != VK_NULL_HANDLE;
+bool vax::textures::Texture::isValid() const {
+    return textureImage != VK_NULL_HANDLE && _allocation != VK_NULL_HANDLE;
 }
 
-std::optional<Texture*> Texture::makeCopy(VkCommandBuffer commandBuffer) const {
-    auto other = new Texture(vkEngine);
+std::optional<vax::textures::Texture*> vax::textures::Texture::makeCopy(VkCommandBuffer commandBuffer) const {
+    auto other = new Texture(_device.get(), _allocator);
     if (copyTo(*other, commandBuffer)) {
         return std::make_optional(other);
     }
@@ -39,7 +41,7 @@ std::optional<Texture*> Texture::makeCopy(VkCommandBuffer commandBuffer) const {
     return std::nullopt;
 }
 
-bool Texture::copyTo(Texture& other, VkCommandBuffer commandBuffer) const {
+bool vax::textures::Texture::copyTo(vax::textures::Texture& other, VkCommandBuffer commandBuffer) const {
     if (!isValid()) {
         return false;
     }

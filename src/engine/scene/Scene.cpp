@@ -2,13 +2,14 @@
 #include "TextureLoader.hpp"
 #include "ModelLoader.hpp"
 #include "Primitives2D.hpp"
+#include "swapchain.h"
 
 void Scene::update(float deltaTime) {
     _ubo.model = glm::rotate(glm::mat4(1.0f), deltaTime * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
     _ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     _ubo.proj = glm::perspective(
         glm::radians(45.0f), 
-        vkEngine->swapchainManager->swapchainExtent.width / (float) vkEngine->swapchainManager->swapchainExtent.height, 0.1f, 10.0f
+        vkEngine->swapchain->swapchainExtent.width / (float) vkEngine->swapchain->swapchainExtent.height, 0.1f, 10.0f
     );
     _ubo.proj[1][1] *= -1;
 }

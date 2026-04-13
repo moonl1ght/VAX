@@ -22,7 +22,8 @@ public:
     uint32_t femalesAlive = 0;
     uint32_t pairsAlive = 0;
 
-    Game() {
+    Game()
+    {
         year = 0;
         generations[year] = new Generation(year);
         uint32_t initialPopulation = 2;
@@ -38,7 +39,8 @@ public:
 
     ~Game() {}
 
-    void incrementGenderAlive(Specimen* specimen) {
+    void incrementGenderAlive(Specimen* specimen)
+    {
         if (specimen->isMale) {
             malesAlive++;
         }

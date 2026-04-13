@@ -16,7 +16,7 @@ public:
     Buffer() {}
 
     Buffer(
-        vax::VkEngine* vkEngine,
+        vax::vk::Engine* vkEngine,
         const void* data,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
@@ -56,21 +56,21 @@ public:
     }
 
     void load(
-        vax::VkEngine* vkEngine,
+        vax::vk::Engine* vkEngine,
         const void* data,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
         VkMemoryPropertyFlags properties
     );
     void reload(
-        vax::VkEngine* vkEngine,
+        vax::vk::Engine* vkEngine,
         const void* data,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
         VkMemoryPropertyFlags properties
     );
     void fill(const void* fillData);
-    void copyBufferTo(vax::VkEngine* vkEngine, Buffer& dstBuffer, VkDeviceSize size) const;
+    void copyBufferTo(vax::vk::Engine* vkEngine, Buffer& dstBuffer, VkDeviceSize size) const;
     bool isEmpty() const;
     bool isLoaded() const;
 
@@ -78,7 +78,7 @@ private:
     VkDevice _device;
 
     void load(
-        vax::VkEngine* vkEngine,
+        vax::vk::Engine* vkEngine,
         VkBufferUsageFlags usage,
         VkMemoryPropertyFlags properties
     );

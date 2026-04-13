@@ -2,29 +2,25 @@
 
 #include "luna.h"
 #include "vkUtils.h"
-#include "RenderPassManager.hpp"
+#include "renderPass.h"
 #include "deletionQueue.h"
 #include "device.h"
 #include "queueManager.h"
 #include "window.h"
+#include "pipelineManager.h"
+#include "swapchain.h"
+#include "renderDestination.h"
 
-class RenderingDestination;
 class DescriptorSetManager;
-namespace vax {
-    class PipelineManager;
-}
 namespace vax::vk {
     class Device;
     class QueueManager;
-    class SwapchainManager;
 }
 
-namespace vax {
-    class VkEngine final {
+namespace vax::vk {
+    class Engine final {
     public:
-        VkEngine(vax::vk::Window& window) : _window(window) {};
-
-        std::reference_wrapper<vax::vk::Window> _window;
+        explicit Engine(vax::vk::Window& window) : _window(window) {};
 
         const int MAX_FRAMES_IN_FLIGHT = 2;
         const uint32_t vulkanApiVersion = VK_API_VERSION_1_3;
@@ -43,15 +39,15 @@ namespace vax {
         VkInstance instance = VK_NULL_HANDLE;
 
         std::unique_ptr<vax::vk::Device> device;
-        VmaAllocator allocator;
+        VmaAllocator allocator = VK_NULL_HANDLE;
 
         std::unique_ptr<vax::vk::QueueManager> queueManager;
-        std::unique_ptr<vax::vk::SwapchainManager> swapchainManager;
+        std::unique_ptr<vax::vk::Swapchain> swapchain;
+        std::unique_ptr<vax::vk::RenderPass> renderPass;
+        std::unique_ptr<vax::vk::RenderDestination> renderDestination;
 
-        RenderPassManager* renderPassManager = nullptr;
-        RenderingDestination* renderingDestination = nullptr;
         DescriptorSetManager* descriptorSetManager = nullptr;
-        vax::PipelineManager* pipelineManager = nullptr;
+        std::unique_ptr<vax::vk::PipelineManager> pipelineManager;
 
         VkCommandPool commandPool;
         std::vector<VkCommandBuffer> commandBuffers;
@@ -62,12 +58,15 @@ namespace vax {
 
         bool setup();
         void cleanup();
+        void resize();
 
         VkCommandBuffer beginSingleTimeCommands();
         void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
     private:
-        Logger _logger = Logger("VkEngine");
+        Logger _logger = Logger("Engine");
+
+        std::reference_wrapper<vax::vk::Window> _window;
 
         bool setupDebugMessenger();
         bool createCommandPool();

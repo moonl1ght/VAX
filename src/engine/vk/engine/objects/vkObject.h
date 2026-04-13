@@ -6,9 +6,9 @@
 namespace vax {
     class VkObject {
     protected:
-        vax::VkEngine* vkEngine = nullptr;
+        vax::vk::Engine* vkEngine = nullptr;
 
-        VkObject(vax::VkEngine* vkEngine) : vkEngine(vkEngine) {}
+        VkObject(vax::vk::Engine* vkEngine) : vkEngine(vkEngine) {}
 
         virtual ~VkObject() = default;
     };

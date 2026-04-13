@@ -92,7 +92,8 @@ int Device::createLogicalDevice(
     return EXIT_SUCCESS;
 }
 
-bool Device::isDeviceSuitable(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
+bool Device::isDeviceSuitable(const VkPhysicalDevice& device, const VkSurfaceKHR& surface)
+{
     utils::QueueFamilyIndices indices = utils::findQueueFamilies(device, surface);
 
     bool extensionsSupported = checkDeviceExtensionSupport(device);
@@ -111,7 +112,8 @@ bool Device::isDeviceSuitable(const VkPhysicalDevice& device, const VkSurfaceKHR
 
 int Device::pickPhysicalDevice(
     const VkInstance& instance, const VkSurfaceKHR& surface, VkPhysicalDevice& physicalDevice
-) {
+)
+{
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 

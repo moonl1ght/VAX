@@ -1,12 +1,9 @@
-#ifndef VAXSize_hpp
-#define VAXSize_hpp
+#pragma once
 
-#include <iostream>
+namespace vax::math {
+    template<typename T>
+    concept arithmetic = std::integral<T> or std::floating_point<T>;
 
-template<typename T>
-concept arithmetic = std::integral<T> or std::floating_point<T>;
-
-namespace vax {
     template<typename T>
         requires arithmetic<T>
     struct Size_t {
@@ -17,11 +14,17 @@ namespace vax {
 
         Size_t(T width, T height) : width(width), height(height) {}
 
+        Size_t(VkExtent2D extent) : width(static_cast<T>(extent.width)), height(static_cast<T>(extent.height)) {}
+
         double whRatio() const noexcept { return static_cast<double>(width) / static_cast<double>(height); }
         double hwRatio() const noexcept { return static_cast<double>(height) / static_cast<double>(width); }
 
-        VkExtent2D toExtent2D() const noexcept { 
-            return VkExtent2D{ static_cast<uint32_t>(width), static_cast<uint32_t>(height) }; 
+        VkExtent2D toExtent2D() const noexcept {
+            return VkExtent2D{ static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+        }
+
+        VkExtent3D toExtent3D() const noexcept {
+            return VkExtent3D{ static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1 };
         }
     };
 
@@ -30,5 +33,3 @@ namespace vax {
     typedef Size_t<float> SizeF;
     typedef SizeD Size;
 }
-
-#endif
