@@ -1,9 +1,9 @@
 #include "App.hpp"
 
-static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-    auto app = reinterpret_cast<App*>(glfwGetWindowUserPointer(window));
-    app->getEngine()->framebufferResized = true;
-}
+// static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+//     auto app = reinterpret_cast<App*>(glfwGetWindowUserPointer(window));
+//     app->getEngine()->framebufferResized = true;
+// }
 
 void App::run() {
     try {

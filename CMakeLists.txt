@@ -26,7 +26,7 @@ if(WIN32)
     list(APPEND CMAKE_PREFIX_PATH "C:/msys64/mingw64/lib/cmake/SDL3")
     find_package(SDL3 REQUIRED)
 else()
-    find_package(SDL2 REQUIRED)
+    find_package(SDL3 REQUIRED FATAL_ERROR)
     find_package(imgui REQUIRED)
     find_package(tinyobjloader REQUIRED FATAL_ERROR)
 endif()
@@ -114,14 +114,11 @@ if(WIN32)
         target_link_libraries(
             ${PROJECT_NAME}
             Vulkan::Vulkan
-            glfw
             nlohmann_json::nlohmann_json
             assimp::assimp
             vk-bootstrap::vk-bootstrap
-            # tinyobjloader::tinyobjloader
             SDL3::SDL3
             glm::glm
-            # imgui::imgui
         )
     endif(VULKAN_FOUND)
 else()
@@ -130,12 +127,12 @@ else()
         target_link_libraries(
             ${PROJECT_NAME}
             Vulkan::Vulkan
-            glfw
             nlohmann_json::nlohmann_json
             assimp::assimp
             vk-bootstrap::vk-bootstrap
             tinyobjloader::tinyobjloader
-            SDL2::SDL2
+            SDL3::SDL3
+            glm::glm
             imgui::imgui
         )
     endif(VULKAN_FOUND)
