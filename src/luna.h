@@ -36,6 +36,8 @@
 
 #ifdef __APPLE__
 #define MACOS true
+#else
+#define MACOS false
 #endif
 
 #define SDL_MAIN_HANDLED
