@@ -12,7 +12,7 @@ std::optional<DrawableModel*> ModelLoader::loadModel(const std::string& path) {
         Logger::getInstance().error(warn + err);
         return std::nullopt;
     }
-    std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>();
+    std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>(*vkEngine->device);
     std::unordered_map<Vertex, uint32_t> uniqueVertices{};
 
     for (const auto& shape : shapes) {

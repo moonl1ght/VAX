@@ -4,7 +4,7 @@
 #include "luna.h"
 #include "vkEngine.h"
 #include "Scene.hpp"
-#include "Buffer.hpp"
+#include "buffer.h"
 
 class Renderer {
 public:
@@ -29,7 +29,7 @@ public:
 private:
     vax::vk::Engine* _vkEngine;
 
-    std::vector<Buffer*> _sceneUniformBuffers;
+    std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
     std::vector<void*> _sceneUniformBuffersMapped;
 
     uint32_t _currentFrame = 0;

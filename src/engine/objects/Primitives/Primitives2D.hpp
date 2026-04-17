@@ -5,8 +5,8 @@
 
 namespace Primitives2D {
 
-    inline DrawableModel* createTriangle() {
-        std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>();
+    inline DrawableModel* createTriangle(const vax::vk::Device& device) {
+        std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>(device);
         mesh->vertices = {
             {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
             {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},
@@ -15,8 +15,8 @@ namespace Primitives2D {
         return new DrawableModel(std::move(mesh));
     }
 
-    inline DrawableModel* createPlane() {
-        std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>();
+    inline DrawableModel* createPlane(const vax::vk::Device& device) {
+        std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>(device);
         mesh->vertices = {
             {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
             {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},

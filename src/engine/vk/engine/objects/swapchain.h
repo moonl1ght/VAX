@@ -17,7 +17,7 @@ namespace vax::vk {
         explicit Swapchain(
             const vax::vk::Window& window,
             const vax::vk::Device& device
-        ) noexcept
+        )
             : _window(window)
             , _device(device) {
         };

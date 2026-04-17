@@ -1,13 +1,16 @@
-#include "DescriptorSetManager.hpp"
+#include "descriptorSetManager.h"
+#include "vkEngine.h"
 
-DescriptorSetManager::~DescriptorSetManager() {
+using namespace vax::vk;
+
+vax::vk::DescriptorSetManager::~DescriptorSetManager() {
     vkDestroyDescriptorPool(_vkEngine->device->vkDevice, _descriptorPool, nullptr);
     vkDestroyDescriptorSetLayout(_vkEngine->device->vkDevice, _globalDescriptorSetLayout, nullptr);
     vkDestroyDescriptorSetLayout(_vkEngine->device->vkDevice, _drawBackgroundDescriptorSetLayout, nullptr);
     // vkDestroyDescriptorSetLayout(_vkEngine->device->vkDevice, _objectDescriptorSetLayout, nullptr);
 }
 
-bool DescriptorSetManager::setup() {
+bool vax::vk::DescriptorSetManager::setup() {
     if (!createDrawBackgroundDescriptorSetLayout()) {
         return false;
     }
@@ -19,7 +22,7 @@ bool DescriptorSetManager::setup() {
     return createDescriptorPool();
 }
 
-bool DescriptorSetManager::createDescriptorPool() {
+bool vax::vk::DescriptorSetManager::createDescriptorPool() {
     uint32_t uniformBufferCount = 2;
     uint32_t imageSamplerCount = 1;
     uint32_t maxUniformBufferSets = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT) * uniformBufferCount;
@@ -46,7 +49,7 @@ bool DescriptorSetManager::createDescriptorPool() {
     return true;
 }
 
-std::optional<VkDescriptorSet> DescriptorSetManager::getDrawBackgroundDescriptorSet(uint32_t frameIndex) {
+std::optional<VkDescriptorSet> vax::vk::DescriptorSetManager::getDrawBackgroundDescriptorSet(uint32_t frameIndex) {
     if (_drawBackgroundDescriptorSets.size() == _vkEngine->MAX_FRAMES_IN_FLIGHT) {
         return std::make_optional(_drawBackgroundDescriptorSets[frameIndex]);
     }
@@ -99,7 +102,7 @@ std::optional<VkDescriptorSet> DescriptorSetManager::getDrawBackgroundDescriptor
 //     return std::make_optional(_objectDescriptorSets[frameIndex]);
 // }
 
-std::optional<VkDescriptorSet> DescriptorSetManager::getGlobalDescriptorSet(
+std::optional<VkDescriptorSet> vax::vk::DescriptorSetManager::getGlobalDescriptorSet(
     uint32_t frameIndex, Buffer* uniformBuffer, vax::textures::Texture* texture
 ) {
     if (_globalDescriptorSets.size() == _vkEngine->MAX_FRAMES_IN_FLIGHT) {
@@ -163,7 +166,7 @@ std::optional<VkDescriptorSet> DescriptorSetManager::getGlobalDescriptorSet(
     return std::make_optional(_globalDescriptorSets[frameIndex]);
 }
 
-bool DescriptorSetManager::createDrawBackgroundDescriptorSetLayout() {
+bool vax::vk::DescriptorSetManager::createDrawBackgroundDescriptorSetLayout() {
     DescriptorLayoutBuilder builder;
     builder.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
     auto drawBackgroundDescriptorSetLayout = builder.build(
@@ -177,7 +180,7 @@ bool DescriptorSetManager::createDrawBackgroundDescriptorSetLayout() {
     return true;
 }
 
-bool DescriptorSetManager::createGlobalDescriptorSetLayout() {
+bool vax::vk::DescriptorSetManager::createGlobalDescriptorSetLayout() {
     // Binding 0: Uniform Buffer Object (UBO)
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
     uboLayoutBinding.binding = 0;
@@ -242,7 +245,7 @@ bool DescriptorSetManager::createGlobalDescriptorSetLayout() {
 
 // MARK: - DescriptorWriter
 
-void DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t offset) {
+void vax::vk::DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t offset) {
     VkDescriptorBufferInfo& bufferInfo = _bufferInfos.emplace_back(
         VkDescriptorBufferInfo{
             .buffer = buffer->vkBuffer,
@@ -264,7 +267,7 @@ void DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t of
     _writes.push_back(write);
 }
 
-void DescriptorWriter::writeTexture(vax::textures::Texture* texture, uint32_t binding, uint32_t offset) {
+void vax::vk::DescriptorWriter::writeTexture(vax::textures::Texture* texture, uint32_t binding, uint32_t offset) {
     std::cout << "Writing texture!" << std::endl;
     std::cout << "Sampler: " << (texture->sampler == nullptr ? "nullptr" : "not nullptr") << std::endl;
     std::cout << "Texture image view: " << texture->textureImageView << std::endl;
@@ -289,7 +292,7 @@ void DescriptorWriter::writeTexture(vax::textures::Texture* texture, uint32_t bi
     _writes.push_back(write);
 }
 
-void DescriptorWriter::writeStorageImage(VkImageView imageView, uint32_t binding) {
+void vax::vk::DescriptorWriter::writeStorageImage(VkImageView imageView, uint32_t binding) {
     VkDescriptorImageInfo& imageInfo = _imageInfos.emplace_back(
         VkDescriptorImageInfo{
             .sampler = VK_NULL_HANDLE,
@@ -311,7 +314,7 @@ void DescriptorWriter::writeStorageImage(VkImageView imageView, uint32_t binding
     _writes.push_back(write);
 }
 
-void DescriptorWriter::updateSet(VkDevice device, VkDescriptorSet descriptorSet) {
+void vax::vk::DescriptorWriter::updateSet(VkDevice device, VkDescriptorSet descriptorSet) {
     for (auto& write : _writes) {
         write.dstSet = descriptorSet;
     }
@@ -319,7 +322,7 @@ void DescriptorWriter::updateSet(VkDevice device, VkDescriptorSet descriptorSet)
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(_writes.size()), _writes.data(), 0, nullptr);
 }
 
-void DescriptorWriter::clear() {
+void vax::vk::DescriptorWriter::clear() {
     _writes.clear();
     _imageInfos.clear();
     _bufferInfos.clear();
@@ -327,7 +330,7 @@ void DescriptorWriter::clear() {
 
 // MARK: - DescriptorLayoutBuilder
 
-void DescriptorLayoutBuilder::addBinding(uint32_t binding, VkDescriptorType type) {
+void vax::vk::DescriptorLayoutBuilder::addBinding(uint32_t binding, VkDescriptorType type) {
     VkDescriptorSetLayoutBinding layoutBinding{};
     layoutBinding.binding = binding;
     layoutBinding.descriptorType = type;
@@ -336,11 +339,11 @@ void DescriptorLayoutBuilder::addBinding(uint32_t binding, VkDescriptorType type
     bindings.push_back(layoutBinding);
 }
 
-void DescriptorLayoutBuilder::clear() {
+void vax::vk::DescriptorLayoutBuilder::clear() {
     bindings.clear();
 }
 
-std::optional<VkDescriptorSetLayout> DescriptorLayoutBuilder::build(
+std::optional<VkDescriptorSetLayout> vax::vk::DescriptorLayoutBuilder::build(
     VkDevice device, VkShaderStageFlags shaderStages, void* pNext, VkDescriptorSetLayoutCreateFlags flags
 ) {
     for (auto& b : bindings) {

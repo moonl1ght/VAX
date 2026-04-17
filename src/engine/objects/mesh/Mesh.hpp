@@ -3,37 +3,24 @@
 
 #include "vkEngine.h"
 #include "Vertex.h"
-#include "Buffer.hpp"
+#include "buffer.h"
 #include "luna.h"
 
 class Mesh {
 public:
-    Buffer vertexBuffer;
-    Buffer indexBuffer;
+    vax::vk::Buffer vertexBuffer;
+    vax::vk::Buffer indexBuffer;
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
 
-    Mesh() {};
+    Mesh(const vax::vk::Device& device) : vertexBuffer(device), indexBuffer(device) {};
     ~Mesh() {};
 
     Mesh(const Mesh& other) = delete;
-    Mesh(Mesh&& other) noexcept {
-        std::swap(vertexBuffer, other.vertexBuffer);
-        std::swap(indexBuffer, other.indexBuffer);
-        std::swap(vertices, other.vertices);
-        std::swap(indices, other.indices);
-    }
+    Mesh(Mesh&& other) noexcept = delete;
 
     Mesh& operator=(const Mesh& other) = delete;
-    Mesh& operator=(Mesh&& other) noexcept {
-        if (this != &other) {
-            vertexBuffer = std::move(other.vertexBuffer);
-            indexBuffer = std::move(other.indexBuffer);
-            vertices = std::move(other.vertices);
-            indices = std::move(other.indices);
-        }
-        return *this;
-    }
+    Mesh& operator=(Mesh&& other) noexcept = delete;
 
     void draw(vax::vk::Engine* vkEngine, VkCommandBuffer commandBuffer);
     void loadBuffers(vax::vk::Engine* vkEngine);

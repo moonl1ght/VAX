@@ -1,7 +1,8 @@
 #include "pipelineManager.h"
 #include "pipelineBuilder.h"
 #include "shaderModuleBuilder.h"
-#include "DescriptorSetManager.hpp"
+#include "descriptorSetManager.h"
+#include "vkEngine.h"
 
 using namespace vax::vk;
 
@@ -24,7 +25,7 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
     VkPipelineLayoutCreateInfo computeLayoutInfo{};
     computeLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     computeLayoutInfo.pNext = nullptr;
-    auto drawBackgroundDescriptorSetLayout = _descriptorSetManager->getDrawBackgroundDescriptorSetLayout();
+    auto drawBackgroundDescriptorSetLayout = _descriptorSetManager.get().getDrawBackgroundDescriptorSetLayout();
     computeLayoutInfo.pSetLayouts = &drawBackgroundDescriptorSetLayout;
     computeLayoutInfo.setLayoutCount = 1;
     if (!backgroundPipelineBuilder.setPipelineLayout(computeLayoutInfo)) {
@@ -128,7 +129,7 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     // pipelineLayoutInfo.setLayoutCount = 1;
-    auto globalDescriptorSetLayout = _descriptorSetManager->getGlobalDescriptorSetLayout();
+    auto globalDescriptorSetLayout = _descriptorSetManager.get().getGlobalDescriptorSetLayout();
     // auto objectDescriptorSetLayout = _descriptorSetManager->getObjectDescriptorSetLayout();
     // pipelineLayoutInfo.pSetLayouts = &globalDescriptorSetLayout;
     pipelineLayoutInfo.setLayoutCount = 1;

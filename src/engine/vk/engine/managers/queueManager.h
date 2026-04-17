@@ -13,6 +13,11 @@ namespace vax::vk {
             _logger = Logger("QueueManager");
         }
 
+        QueueManager(const QueueManager& other) = delete;
+        QueueManager(QueueManager&& other) = delete;
+        QueueManager& operator=(const QueueManager& other) = delete;
+        QueueManager& operator=(QueueManager&& other) = delete;
+
         void setup(const Device& device);
 
     private:

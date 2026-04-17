@@ -1,7 +1,7 @@
 #include "vkUtils.h"
 
 uint32_t vax::vk::utils::findMemoryType(
-    VkPhysicalDevice& physicalDevice,
+    const VkPhysicalDevice& physicalDevice,
     uint32_t typeFilter,
     VkMemoryPropertyFlags properties
 ) {

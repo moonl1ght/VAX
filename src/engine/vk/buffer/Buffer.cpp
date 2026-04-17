@@ -1,81 +1,68 @@
-#include "Buffer.hpp"
+#include "buffer.h"
+#include "vkEngine.h"
 
 using namespace vax::vk;
 
-Buffer::Buffer(
-    vax::vk::Engine* vkEngine,
-    const void* data,
-    VkDeviceSize size,
-    VkBufferUsageFlags usage,
-    VkMemoryPropertyFlags properties
-)
-    : _device(vkEngine->device->vkDevice), size(size)
+void Buffer::cleanup()
 {
-    load(vkEngine, usage, properties);
-    fill(data);
-}
-
-Buffer::~Buffer() {
-    cleanup();
-}
-
-void Buffer::cleanup() {
-    if (_device == VK_NULL_HANDLE) {
-        return;
-    }
-    if (vkBuffer != VK_NULL_HANDLE) {
-        vkDestroyBuffer(_device, vkBuffer, nullptr);
+    if (vkBuffer != VK_NULL_HANDLE)
+    {
+        vkDestroyBuffer(_device.get().vkDevice, vkBuffer, nullptr);
         vkBuffer = VK_NULL_HANDLE;
     }
-    if (vkBufferMemory != VK_NULL_HANDLE) {
-        vkFreeMemory(_device, vkBufferMemory, nullptr);
+    if (vkBufferMemory != VK_NULL_HANDLE)
+    {
+        vkFreeMemory(_device.get().vkDevice, vkBufferMemory, nullptr);
         vkBufferMemory = VK_NULL_HANDLE;
     }
 }
 
 void Buffer::reload(
-    vax::vk::Engine* vkEngine,
     const void* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
-    VkMemoryPropertyFlags properties
-) {
+    VkMemoryPropertyFlags properties)
+{
     cleanup();
-    this->_device = vkEngine->device->vkDevice;
     this->size = size;
-    load(vkEngine, usage, properties);
+    load(usage, properties);
     fill(data);
 }
 
 void Buffer::load(
-    vax::vk::Engine* vkEngine,
     const void* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
-    VkMemoryPropertyFlags properties
-) {
-    if (isLoaded()) {
+    VkMemoryPropertyFlags properties)
+{
+    if (isLoaded())
+    {
         return;
     }
 
-    this->_device = vkEngine->device->vkDevice;
     this->size = size;
-    load(vkEngine, usage, properties);
+    load(usage, properties);
     fill(data);
 }
 
-void Buffer::fill(const void* fillData) {
-    if (isEmpty() || !isLoaded() || fillData == nullptr) {
+void Buffer::fill(const void* fillData)
+{
+    if (isEmpty() || !isLoaded() || fillData == nullptr)
+    {
         return;
     }
 
     void* data;
-    vkMapMemory(_device, vkBufferMemory, 0, size, 0, &data);
+    vkMapMemory(_device.get().vkDevice, vkBufferMemory, 0, size, 0, &data);
     memcpy(data, fillData, (size_t)size);
-    vkUnmapMemory(_device, vkBufferMemory);
+    vkUnmapMemory(_device.get().vkDevice, vkBufferMemory);
 }
 
-void Buffer::copyBufferTo(vax::vk::Engine* vkEngine, Buffer& dstBuffer, VkDeviceSize size) const {
+void Buffer::copyBufferTo(
+    vax::vk::Engine* vkEngine,
+    Buffer& dstBuffer,
+    VkDeviceSize size
+) const {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -108,20 +95,22 @@ void Buffer::copyBufferTo(vax::vk::Engine* vkEngine, Buffer& dstBuffer, VkDevice
     vkFreeCommandBuffers(vkEngine->device->vkDevice, vkEngine->commandPool, 1, &commandBuffer);
 }
 
-bool Buffer::isEmpty() const {
+bool Buffer::isEmpty() const
+{
     return size == 0;
 }
 
-bool Buffer::isLoaded() const {
+bool Buffer::isLoaded() const
+{
     return vkBuffer != VK_NULL_HANDLE && vkBufferMemory != VK_NULL_HANDLE;
 }
 
 void Buffer::load(
-    vax::vk::Engine* vkEngine,
     VkBufferUsageFlags usage,
-    VkMemoryPropertyFlags properties
-) {
-    if (isLoaded()) {
+    VkMemoryPropertyFlags properties)
+{
+    if (isLoaded())
+    {
         return;
     }
 
@@ -132,23 +121,25 @@ void Buffer::load(
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateBuffer(vkEngine->device->vkDevice, &bufferInfo, nullptr, &vkBuffer) != VK_SUCCESS) {
-        Logger::getInstance().error("failed to create buffer!");
+    if (vkCreateBuffer(_device.get().vkDevice, &bufferInfo, nullptr, &vkBuffer) != VK_SUCCESS)
+    {
+        _logger.error("failed to create buffer!");
         throw std::runtime_error("failed to create buffer!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(vkEngine->device->vkDevice, vkBuffer, &memRequirements);
+    vkGetBufferMemoryRequirements(_device.get().vkDevice, vkBuffer, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = utils::findMemoryType(vkEngine->device->vkPhysicalDevice, memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = utils::findMemoryType(_device.get().vkPhysicalDevice, memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(vkEngine->device->vkDevice, &allocInfo, nullptr, &vkBufferMemory) != VK_SUCCESS) {
-        Logger::getInstance().error("failed to allocate buffer memory!");
+    if (vkAllocateMemory(_device.get().vkDevice, &allocInfo, nullptr, &vkBufferMemory) != VK_SUCCESS)
+    {
+        _logger.error("failed to allocate buffer memory!");
         throw std::runtime_error("failed to allocate buffer memory!");
     }
 
-    vkBindBufferMemory(vkEngine->device->vkDevice, vkBuffer, vkBufferMemory, 0);
+    vkBindBufferMemory(_device.get().vkDevice, vkBuffer, vkBufferMemory, 0);
 }

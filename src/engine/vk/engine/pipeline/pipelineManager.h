@@ -1,11 +1,11 @@
 #pragma once
 
-#include "luna.h"
-#include "device.h"
 #include "Vertex.h"
+#include "descriptorSetManager.h"
+#include "device.h"
+#include "luna.h"
 #include "pipeline.h"
 
-class DescriptorSetManager;
 namespace vax::vk {
     class RenderPass;
 }
@@ -15,15 +15,11 @@ namespace vax::vk {
     public:
         PipelineManager(
             const vax::vk::Device& device,
-            DescriptorSetManager* descriptorSetManager
-        )
-            : _device(device)
-            , _descriptorSetManager(descriptorSetManager)
-        {
+            const vax::vk::DescriptorSetManager& descriptorSetManager)
+            : _device(device), _descriptorSetManager(descriptorSetManager) {
         };
 
-        ~PipelineManager()
-        {
+        ~PipelineManager() {
             vkDestroyPipelineLayout(_device.get().vkDevice, _pipelineLayout, nullptr);
             vkDestroyPipeline(_device.get().vkDevice, _pipeline, nullptr);
         };
@@ -47,10 +43,11 @@ namespace vax::vk {
     private:
         Logger _logger = Logger("PipelineManager");
         std::reference_wrapper<const vax::vk::Device> _device;
-        DescriptorSetManager* _descriptorSetManager;
+        std::reference_wrapper<const vax::vk::DescriptorSetManager> _descriptorSetManager;
+
         VkPipelineLayout _pipelineLayout = VK_NULL_HANDLE;
         VkPipeline _pipeline = VK_NULL_HANDLE;
 
         std::unique_ptr<vax::vk::Pipeline> _backgroundPipeline = nullptr;
     };
-}
+} // namespace vax::vk

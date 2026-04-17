@@ -10,8 +10,8 @@
 #include "pipelineManager.h"
 #include "swapchain.h"
 #include "renderDestination.h"
+#include "descriptorSetManager.h"
 
-class DescriptorSetManager;
 namespace vax::vk {
     class Device;
     class QueueManager;
@@ -45,8 +45,7 @@ namespace vax::vk {
         std::unique_ptr<vax::vk::Swapchain> swapchain;
         std::unique_ptr<vax::vk::RenderPass> renderPass;
         std::unique_ptr<vax::vk::RenderDestination> renderDestination;
-
-        DescriptorSetManager* descriptorSetManager = nullptr;
+        std::unique_ptr<vax::vk::DescriptorSetManager> descriptorSetManager;
         std::unique_ptr<vax::vk::PipelineManager> pipelineManager;
 
         VkCommandPool commandPool;

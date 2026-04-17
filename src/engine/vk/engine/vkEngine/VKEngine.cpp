@@ -2,7 +2,7 @@
 #include "TextureLoader.hpp"
 #include "texture.h"
 #include "renderDestination.h"
-#include "DescriptorSetManager.hpp"
+#include "descriptorSetManager.h"
 #include "vk_debug.h"
 #include "vkInstanceBuilder.h"
 #include "renderPassBuilder.h"
@@ -131,21 +131,14 @@ bool vax::vk::Engine::setup() {
     ).build(this);
     if (!renderDestinationOptional.has_value()) return false;
     renderDestination = std::move(*renderDestinationOptional);
-    _logger.info("Render destination built");
 
-    descriptorSetManager = new DescriptorSetManager(this);
+    descriptorSetManager = std::make_unique<DescriptorSetManager>(this);
     if (!descriptorSetManager->setup()) return false;
-    deletionQueue.push_function(
-        [&]() {
-            delete descriptorSetManager;
-            descriptorSetManager = nullptr;
-        }
-    );
 
-    pipelineManager = std::make_unique<PipelineManager>(*device, descriptorSetManager);
+    pipelineManager = std::make_unique<PipelineManager>(*device, *descriptorSetManager);
     pipelineManager->setup(*renderPass);
 
-    LOG_INFO("Engine setup complete!");
+    _logger.info("Engine setup complete!");
     return true;
 }
 

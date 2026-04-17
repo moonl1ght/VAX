@@ -15,8 +15,8 @@ Texture* TextureLoader::loadTexture(std::string path, bool isAutoLoadImageView) 
         throw std::runtime_error("failed to load texture image!");
     }
 
-    Buffer stagingBuffer = Buffer(
-        vkEngine,
+    vk::Buffer stagingBuffer = vk::Buffer(
+        *vkEngine->device,
         pixels,
         imageSize,
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Buffer.hpp"
+#include "buffer.h"
 #include "luna.h"
 #include "vkUtils.h"
 #include "texture.h"

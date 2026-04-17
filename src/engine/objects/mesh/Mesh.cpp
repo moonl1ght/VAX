@@ -1,5 +1,7 @@
 #include "Mesh.hpp"
 
+using namespace vax;
+
 void Mesh::draw(
     vax::vk::Engine* vkEngine,
     VkCommandBuffer commandBuffer
@@ -18,16 +20,16 @@ void Mesh::loadBuffers(vax::vk::Engine* vkEngine) {
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
     VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
     if (MACOS) {
-        vertexBuffer = Buffer(
-            vkEngine,
+        vertexBuffer = vk::Buffer(
+            *vkEngine->device,
             vertices.data(),
             bufferSize,
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
         );
 
-        indexBuffer = Buffer(
-            vkEngine,
+        indexBuffer = vk::Buffer(
+            *vkEngine->device,
             indices.data(),
             indexBufferSize,
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
@@ -35,15 +37,15 @@ void Mesh::loadBuffers(vax::vk::Engine* vkEngine) {
         );
     }
     else {
-        Buffer stagingBuffer = Buffer(
-            vkEngine,
+        vk::Buffer stagingBuffer = vk::Buffer(
+            *vkEngine->device,
             vertices.data(),
             bufferSize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
         );
-        vertexBuffer = Buffer(
-            vkEngine,
+        vertexBuffer = vk::Buffer(
+            *vkEngine->device,
             nullptr,
             bufferSize,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -52,15 +54,15 @@ void Mesh::loadBuffers(vax::vk::Engine* vkEngine) {
         stagingBuffer.copyBufferTo(vkEngine, vertexBuffer, bufferSize);
 
         if (!indices.empty()) {
-            Buffer stagingIndexBuffer = Buffer(
-                vkEngine,
+            vk::Buffer stagingIndexBuffer = vk::Buffer(
+                *vkEngine->device,
                 indices.data(),
                 indexBufferSize,
                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
             );
-            indexBuffer = Buffer(
-                vkEngine,
+            indexBuffer = vk::Buffer(
+                *vkEngine->device,
                 nullptr,
                 indexBufferSize,
                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,

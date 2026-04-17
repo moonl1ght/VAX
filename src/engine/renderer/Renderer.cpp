@@ -2,7 +2,10 @@
 #include "renderDestination.h"
 #include "ImageUtils.hpp"
 #include "pipeline.h"
-#include "DescriptorSetManager.hpp"
+#include "descriptorSetManager.h"
+#include "vkEngine.h"
+
+using namespace vax;
 
 void Renderer::prepare() {
     // Logger::getInstance().log("Preparing renderer...");
@@ -10,8 +13,8 @@ void Renderer::prepare() {
     _sceneUniformBuffers.resize(_vkEngine->MAX_FRAMES_IN_FLIGHT);
     _sceneUniformBuffersMapped.resize(_vkEngine->MAX_FRAMES_IN_FLIGHT);
     for (size_t i = 0; i < _vkEngine->MAX_FRAMES_IN_FLIGHT; i++) {
-        _sceneUniformBuffers[i] = new Buffer(
-            _vkEngine,
+        _sceneUniformBuffers[i] = new vk::Buffer(
+            *_vkEngine->device,
             nullptr,
             bufferSize,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -131,7 +134,7 @@ void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
         LOG_ERROR("Failed to get draw background descriptor set!");
         return;
     }
-    DescriptorWriter descriptorWriter;
+    vax::vk::DescriptorWriter descriptorWriter;
     descriptorWriter.writeStorageImage(_vkEngine->renderDestination->drawImage->textureImageView, 0);
     descriptorWriter.updateSet(_vkEngine->device->vkDevice, drawBackgroundDescriptorSet.value());
     vkCmdBindDescriptorSets(
