@@ -11,8 +11,7 @@ namespace vax::vk {
             VkRenderPass renderPass
         )
             : _device(device)
-            , _renderPass(renderPass)
-        {
+            , _renderPass(renderPass) {
         };
 
         RenderPass(const RenderPass& other) = delete;

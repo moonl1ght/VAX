@@ -7,7 +7,7 @@ namespace vax {
     class VkInstanceBuilder {
     public:
         VkInstanceBuilder(
-            DeletionQueue& deletionQueue,
+            vax::utils::DeletionQueue& deletionQueue,
             const bool enableValidationLayers,
             const std::vector<const char*>& validationLayers,
             const uint32_t vulkanApiVersion
@@ -67,7 +67,7 @@ namespace vax {
 
     private:
         Logger logger;
-        DeletionQueue& deletionQueue;
+        vax::utils::DeletionQueue& deletionQueue;
         const bool enableValidationLayers;
         const std::vector<const char*>& validationLayers;
         const uint32_t vulkanApiVersion;

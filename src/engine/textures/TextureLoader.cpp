@@ -1,5 +1,5 @@
 #include "TextureLoader.hpp"
-#include "ImageUtils.hpp"
+#include "imageUtils.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "./deps/stb_image.h"
 
@@ -34,22 +34,25 @@ Texture* TextureLoader::loadTexture(std::string path, bool isAutoLoadImageView) 
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
     ).value();
 
+    auto commandBuffer = vkEngine->commandManager->createSingleTimeCommandBuffer();
     vax::transitionImageLayout(
-        vkEngine,
+        commandBuffer,
         textureImage,
         VK_FORMAT_R8G8B8A8_SRGB,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
     );
+    auto commandBuffer1 = vkEngine->commandManager->createSingleTimeCommandBuffer(); // TODO: fix this
     vax::copyBufferToImage(
-        vkEngine,
+        commandBuffer1,
         stagingBuffer.vkBuffer,
         textureImage,
         static_cast<uint32_t>(texWidth),
         static_cast<uint32_t>(texHeight)
     );
+    auto commandBuffer2 = vkEngine->commandManager->createSingleTimeCommandBuffer(); // TODO: fix this
     vax::transitionImageLayout(
-        vkEngine,
+        commandBuffer2,
         textureImage,
         VK_FORMAT_R8G8B8A8_SRGB,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,

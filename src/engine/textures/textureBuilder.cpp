@@ -1,5 +1,5 @@
 #include "textureBuilder.h"
-#include "ImageUtils.hpp"
+#include "imageUtils.h"
 
 using namespace vax::textures;
 
@@ -28,8 +28,9 @@ std::optional<Texture> vax::textures::TextureBuilder::buildDepthTexture(VkFormat
         format,
         VK_IMAGE_ASPECT_DEPTH_BIT
     );
+    auto commandBuffer = vkEngine->commandManager->createSingleTimeCommandBuffer();
     vax::transitionImageLayout(
-        vkEngine,
+        commandBuffer,
         depthImage,
         format,
         VK_IMAGE_LAYOUT_UNDEFINED,

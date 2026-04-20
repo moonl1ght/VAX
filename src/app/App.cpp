@@ -1,22 +1,22 @@
-#include "App.hpp"
+#include "app.h"
 
-// static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-//     auto app = reinterpret_cast<App*>(glfwGetWindowUserPointer(window));
-//     app->getEngine()->framebufferResized = true;
-// }
+using namespace vax;
 
-void App::run() {
+bool vax::App::run() {
+    if (!setup()) {
+        return false;
+    }
     try {
-        setup();
         mainLoop();
         cleanup();
     }
     catch (const std::exception& e) {
         Logger::getInstance().error("Failed to run app: {}", e.what());
     }
+    return true;
 }
 
-bool App::setup() {
+bool vax::App::setup() {
     _window = std::make_unique<vax::vk::Window>();
     if (!_window->load()) {
         return false;
@@ -30,18 +30,21 @@ bool App::setup() {
     return true;
 }
 
-void App::cleanup() {
-    // Logger::getInstance().log("Cleaning up...");
-
+void vax::App::cleanup() {
+    _logger.info("Cleaning up...");
     vkDeviceWaitIdle(_engine->device->vkDevice);
+
+    _renderer = nullptr;
+    _scene = nullptr;
 
     _engine->cleanup();
 
     _window->destroyWindow();
     SDL_Quit();
+    _logger.info("Cleanup complete!");
 }
 
-void App::mainLoop() {
+void vax::App::mainLoop() {
     if (_window->window == nullptr) {
         throw std::runtime_error("Window not initialized");
     }
@@ -68,7 +71,7 @@ void App::mainLoop() {
     }
 }
 
-void App::loopUpdate() {
+void vax::App::loopUpdate() {
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
     float timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();

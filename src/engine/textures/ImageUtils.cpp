@@ -1,4 +1,4 @@
-#include "ImageUtils.hpp"
+#include "imageUtils.h"
 #include "vkEngine.h"
 
 void vax::copyImageToImage(
@@ -82,14 +82,14 @@ void vax::transitionImage(
 }
 
 void vax::transitionImageLayout(
-    vax::vk::Engine* vkEngine,
+    vax::vk::CommandBuffer& commandBuffer,
     VkImage image,
     VkFormat format,
     VkImageLayout oldLayout,
     VkImageLayout newLayout,
     VkImageAspectFlags aspectMask
 ) {
-    VkCommandBuffer commandBuffer = vkEngine->beginSingleTimeCommands();
+    commandBuffer.begin();
 
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -132,7 +132,7 @@ void vax::transitionImageLayout(
     }
 
     vkCmdPipelineBarrier(
-        commandBuffer,
+        commandBuffer.vkCommandBuffer,
         sourceStage, destinationStage,
         0,
         0, nullptr,
@@ -140,17 +140,17 @@ void vax::transitionImageLayout(
         1, &barrier
     );
 
-    vkEngine->endSingleTimeCommands(commandBuffer);
+    commandBuffer.end();
 }
 
 void vax::copyBufferToImage(
-    vax::vk::Engine* vkEngine,
+    vax::vk::CommandBuffer& commandBuffer,
     VkBuffer buffer,
     VkImage image,
     uint32_t width,
     uint32_t height
 ) {
-    VkCommandBuffer commandBuffer = vkEngine->beginSingleTimeCommands();
+    commandBuffer.begin();
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
@@ -167,9 +167,11 @@ void vax::copyBufferToImage(
         1
     };
 
-    vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+    vkCmdCopyBufferToImage(
+        commandBuffer.vkCommandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region
+    );
 
-    vkEngine->endSingleTimeCommands(commandBuffer);
+    commandBuffer.end();
 }
 
 std::optional<std::pair<VkImage, VmaAllocation>> vax::createImage(

@@ -1,5 +1,5 @@
 #include "swapchain.h"
-#include "ImageUtils.hpp"
+#include "imageUtils.h"
 #include "queueManager.h"
 
 using namespace vax::vk;
@@ -11,12 +11,9 @@ bool Swapchain::setup() {
 }
 
 void Swapchain::cleanup() {
+    _logger.debug("Cleaning up swapchain...");
     for (auto imageView : swapchainImageViews) {
         vkDestroyImageView(_device.get().vkDevice, imageView, nullptr);
-    }
-
-    for (auto image : swapchainImages) {
-        vkDestroyImage(_device.get().vkDevice, image, nullptr);
     }
 
     vkDestroySwapchainKHR(_device.get().vkDevice, swapchain, nullptr);

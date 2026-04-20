@@ -3,7 +3,7 @@
 
 #include "luna.h"
 #include "vkEngine.h"
-#include "Scene.hpp"
+#include "scene.h"
 #include "buffer.h"
 
 class Renderer {
@@ -15,7 +15,7 @@ public:
     };
 
     ~Renderer() {
-        for (size_t i = 0; i < _vkEngine->MAX_FRAMES_IN_FLIGHT; i++) {
+        for (size_t i = 0; i < vax::vk::Engine::MAX_FRAMES_IN_FLIGHT; i++) {
             delete _sceneUniformBuffers[i];
             _sceneUniformBuffers[i] = nullptr;
         }
@@ -23,7 +23,7 @@ public:
         _sceneUniformBuffersMapped.clear();
     };
 
-    bool render(Scene* scene, float deltaTime);
+    bool render(vax::Scene* scene, float deltaTime);
     void prepare();
 
 private:
@@ -35,7 +35,7 @@ private:
     uint32_t _currentFrame = 0;
 
     void drawBackground(VkCommandBuffer commandBuffer);
-    bool recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime);
+    bool recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::Scene* scene, float deltaTime);
 };
 
 #endif

@@ -1,6 +1,6 @@
-#include "Renderer.hpp"
+#include "renderer.h"
 #include "renderDestination.h"
-#include "ImageUtils.hpp"
+#include "imageUtils.h"
 #include "pipeline.h"
 #include "descriptorSetManager.h"
 #include "vkEngine.h"
@@ -10,9 +10,9 @@ using namespace vax;
 void Renderer::prepare() {
     // Logger::getInstance().log("Preparing renderer...");
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-    _sceneUniformBuffers.resize(_vkEngine->MAX_FRAMES_IN_FLIGHT);
-    _sceneUniformBuffersMapped.resize(_vkEngine->MAX_FRAMES_IN_FLIGHT);
-    for (size_t i = 0; i < _vkEngine->MAX_FRAMES_IN_FLIGHT; i++) {
+    _sceneUniformBuffers.resize(vk::Engine::MAX_FRAMES_IN_FLIGHT);
+    _sceneUniformBuffersMapped.resize(vk::Engine::MAX_FRAMES_IN_FLIGHT);
+    for (size_t i = 0; i < vk::Engine::MAX_FRAMES_IN_FLIGHT; i++) {
         _sceneUniformBuffers[i] = new vk::Buffer(
             *_vkEngine->device,
             nullptr,
@@ -56,8 +56,8 @@ bool Renderer::render(Scene* scene, float deltaTime) {
 
     vkResetFences(_vkEngine->device->vkDevice, 1, &_vkEngine->inFlightFences[_currentFrame]);
 
-    vkResetCommandBuffer(_vkEngine->commandBuffers[_currentFrame], 0);
-    if (!recordCommandBuffer(_vkEngine->commandBuffers[_currentFrame], imageIndex, scene, deltaTime)) {
+    vkResetCommandBuffer(_vkEngine->commandManager->commandBuffers[_currentFrame], 0);
+    if (!recordCommandBuffer(_vkEngine->commandManager->commandBuffers[_currentFrame], imageIndex, scene, deltaTime)) {
         Logger::getInstance().error("Failed to record command buffer!");
         return false;
     }
@@ -72,7 +72,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &_vkEngine->commandBuffers[_currentFrame];
+    submitInfo.pCommandBuffers = &_vkEngine->commandManager->commandBuffers[_currentFrame];
 
     VkSemaphore signalSemaphores[] = { _vkEngine->renderFinishedSemaphores[_currentFrame] };
     submitInfo.signalSemaphoreCount = 1;
@@ -106,7 +106,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
         return false;
     }
 
-    _currentFrame = (_currentFrame + 1) % _vkEngine->MAX_FRAMES_IN_FLIGHT;
+    _currentFrame = (_currentFrame + 1) % vk::Engine::MAX_FRAMES_IN_FLIGHT;
     return true;
 }
 

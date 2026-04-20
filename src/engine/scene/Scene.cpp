@@ -1,10 +1,10 @@
-#include "Scene.hpp"
+#include "scene.h"
 #include "TextureLoader.hpp"
 #include "ModelLoader.hpp"
 #include "Primitives2D.hpp"
 #include "swapchain.h"
 
-void Scene::update(float deltaTime) {
+void vax::Scene::update(float deltaTime) {
     _ubo.model = glm::rotate(glm::mat4(1.0f), deltaTime * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
     _ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     _ubo.proj = glm::perspective(
@@ -14,7 +14,7 @@ void Scene::update(float deltaTime) {
     _ubo.proj[1][1] *= -1;
 }
 
-void Scene::load() {
+void vax::Scene::load() {
     texture = TextureLoader(vkEngine).loadTexture(RES_PATH("assets/models/room/viking_room.png"));
     _ubo.model = glm::mat4(1.0f);
     _ubo.view = glm::mat4(1.0f);

@@ -25,9 +25,9 @@ bool vax::vk::DescriptorSetManager::setup() {
 bool vax::vk::DescriptorSetManager::createDescriptorPool() {
     uint32_t uniformBufferCount = 2;
     uint32_t imageSamplerCount = 1;
-    uint32_t maxUniformBufferSets = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT) * uniformBufferCount;
-    uint32_t maxImageSamplerSets = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT) * imageSamplerCount;
-    uint32_t maxDrawBackgroundSets = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT) * 1;
+    uint32_t maxUniformBufferSets = static_cast<uint32_t>(Engine::MAX_FRAMES_IN_FLIGHT) * uniformBufferCount;
+    uint32_t maxImageSamplerSets = static_cast<uint32_t>(Engine::MAX_FRAMES_IN_FLIGHT) * imageSamplerCount;
+    uint32_t maxDrawBackgroundSets = static_cast<uint32_t>(Engine::MAX_FRAMES_IN_FLIGHT) * 1;
 
     std::vector<VkDescriptorPoolSize> poolSizes = {
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBufferSets },
@@ -39,10 +39,10 @@ bool vax::vk::DescriptorSetManager::createDescriptorPool() {
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT);
+    poolInfo.maxSets = static_cast<uint32_t>(Engine::MAX_FRAMES_IN_FLIGHT);
 
     if (!VK_CHECK(vkCreateDescriptorPool(_vkEngine->device->vkDevice, &poolInfo, nullptr, &_descriptorPool))) {
-        LOG_ERROR("Failed to create descriptor pool!");
+        _logger.error("Failed to create descriptor pool!");
         return false;
     }
 
@@ -50,25 +50,25 @@ bool vax::vk::DescriptorSetManager::createDescriptorPool() {
 }
 
 std::optional<VkDescriptorSet> vax::vk::DescriptorSetManager::getDrawBackgroundDescriptorSet(uint32_t frameIndex) {
-    if (_drawBackgroundDescriptorSets.size() == _vkEngine->MAX_FRAMES_IN_FLIGHT) {
+    if (_drawBackgroundDescriptorSets.size() == Engine::MAX_FRAMES_IN_FLIGHT) {
         return std::make_optional(_drawBackgroundDescriptorSets[frameIndex]);
     }
 
     std::vector<VkDescriptorSetLayout> layouts(
-        _vkEngine->MAX_FRAMES_IN_FLIGHT, _drawBackgroundDescriptorSetLayout
+        Engine::MAX_FRAMES_IN_FLIGHT, _drawBackgroundDescriptorSetLayout
     );
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = _descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT);
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(Engine::MAX_FRAMES_IN_FLIGHT);
     allocInfo.pSetLayouts = layouts.data();
 
-    _drawBackgroundDescriptorSets.resize(_vkEngine->MAX_FRAMES_IN_FLIGHT);
+    _drawBackgroundDescriptorSets.resize(Engine::MAX_FRAMES_IN_FLIGHT);
     auto result = vkAllocateDescriptorSets(
         _vkEngine->device->vkDevice, &allocInfo, _drawBackgroundDescriptorSets.data()
     );
     if (!VK_CHECK(result)) {
-        LOG_ERROR("Failed to allocate descriptor set!");
+        _logger.error("Failed to allocate descriptor set!");
         return std::nullopt;
     }
 
@@ -268,9 +268,6 @@ void vax::vk::DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, ui
 }
 
 void vax::vk::DescriptorWriter::writeTexture(vax::textures::Texture* texture, uint32_t binding, uint32_t offset) {
-    std::cout << "Writing texture!" << std::endl;
-    std::cout << "Sampler: " << (texture->sampler == nullptr ? "nullptr" : "not nullptr") << std::endl;
-    std::cout << "Texture image view: " << texture->textureImageView << std::endl;
     VkDescriptorImageInfo& imageInfo = _imageInfos.emplace_back(
         VkDescriptorImageInfo{
             .sampler = texture->sampler == nullptr ? VK_NULL_HANDLE : texture->sampler->vkSampler,

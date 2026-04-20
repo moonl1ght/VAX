@@ -11,6 +11,7 @@
 #include "swapchain.h"
 #include "renderDestination.h"
 #include "descriptorSetManager.h"
+#include "commandManager.h"
 
 namespace vax::vk {
     class Device;
@@ -20,9 +21,10 @@ namespace vax::vk {
 namespace vax::vk {
     class Engine final {
     public:
+        static const int MAX_FRAMES_IN_FLIGHT = 2;
+
         explicit Engine(vax::vk::Window& window) : _window(window) {};
 
-        const int MAX_FRAMES_IN_FLIGHT = 2;
         const uint32_t vulkanApiVersion = VK_API_VERSION_1_3;
 
         const bool enableValidationLayers = true;
@@ -32,7 +34,7 @@ namespace vax::vk {
 
         bool framebufferResized = false;
 
-        DeletionQueue deletionQueue;
+        vax::utils::DeletionQueue deletionQueue;
 
         VkDebugUtilsMessengerEXT debugMessenger;
 
@@ -47,9 +49,7 @@ namespace vax::vk {
         std::unique_ptr<vax::vk::RenderDestination> renderDestination;
         std::unique_ptr<vax::vk::DescriptorSetManager> descriptorSetManager;
         std::unique_ptr<vax::vk::PipelineManager> pipelineManager;
-
-        VkCommandPool commandPool;
-        std::vector<VkCommandBuffer> commandBuffers;
+        std::unique_ptr<vax::vk::CommandManager> commandManager;
 
         std::vector<VkSemaphore> imageAvailableSemaphores;
         std::vector<VkSemaphore> renderFinishedSemaphores;
@@ -59,17 +59,12 @@ namespace vax::vk {
         void cleanup();
         void resize();
 
-        VkCommandBuffer beginSingleTimeCommands();
-        void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-
     private:
         Logger _logger = Logger("Engine");
 
         std::reference_wrapper<vax::vk::Window> _window;
 
         bool setupDebugMessenger();
-        bool createCommandPool();
-        bool createCommandBuffer();
         bool createSyncObjects();
         VkResult createAllocator();
     };

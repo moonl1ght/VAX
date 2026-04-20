@@ -4,23 +4,25 @@
 #include <functional>
 #include "luna.h"
 
-class DeletionQueue {
-public:
-    std::deque<std::function<void()>> deletors;
+namespace vax::utils {
+    class DeletionQueue {
+    public:
+        std::deque<std::function<void()>> deletors;
 
-    void push_function(std::function<void()>&& function) {
-        deletors.push_back(function);
-    }
-
-    void flush() {
-        for (auto it = deletors.rbegin(); it != deletors.rend(); ++it) {
-            (*it)();
+        void push_function(std::function<void()>&& function) {
+            deletors.push_back(function);
         }
 
-        deletors.clear();
-        _logger.info("Flushed deletion queue");
-    }
+        void flush() {
+            for (auto it = deletors.rbegin(); it != deletors.rend(); ++it) {
+                (*it)();
+            }
 
-private:
-    Logger _logger = Logger("DeletionQueue");
-};
+            deletors.clear();
+            _logger.info("Flushed deletion queue");
+        }
+
+    private:
+        Logger _logger = Logger("DeletionQueue");
+    };
+}

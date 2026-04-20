@@ -85,7 +85,15 @@
   "shared_mutex": "cpp",
   "stop_token": "cpp",
   "thread": "cpp",
-  "cfenv": "cpp"
+  "cfenv": "cpp",
+  "__bit_reference": "cpp",
+  "__node_handle": "cpp",
+  "__split_buffer": "cpp",
+  "__tree": "cpp",
+  "complex": "cpp",
+  "list": "cpp",
+  "locale": "cpp",
+  "csignal": "cpp"
 },
 "C_Cpp.default.compilerPath": "C:/msys64/ucrt64/bin/gcc.exe",
 "cmake.buildDirectory": "${workspaceFolder}/build"
