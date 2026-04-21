@@ -103,20 +103,20 @@ std::optional<VkDescriptorSet> vax::vk::DescriptorSetManager::getDrawBackgroundD
 // }
 
 std::optional<VkDescriptorSet> vax::vk::DescriptorSetManager::getGlobalDescriptorSet(
-    uint32_t frameIndex, Buffer* uniformBuffer, vax::textures::Texture* texture
+    uint32_t frameIndex, const vax::vk::Buffer& uniformBuffer, const vax::textures::Texture& texture
 ) {
-    if (_globalDescriptorSets.size() == _vkEngine->MAX_FRAMES_IN_FLIGHT) {
+    if (_globalDescriptorSets.size() == Engine::MAX_FRAMES_IN_FLIGHT) {
         return std::make_optional(_globalDescriptorSets[frameIndex]);
     }
 
-    std::vector<VkDescriptorSetLayout> layouts(_vkEngine->MAX_FRAMES_IN_FLIGHT, _globalDescriptorSetLayout);
+    std::vector<VkDescriptorSetLayout> layouts(Engine::MAX_FRAMES_IN_FLIGHT, _globalDescriptorSetLayout);
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = _descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(_vkEngine->MAX_FRAMES_IN_FLIGHT);
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(Engine::MAX_FRAMES_IN_FLIGHT);
     allocInfo.pSetLayouts = layouts.data();
 
-    _globalDescriptorSets.resize(_vkEngine->MAX_FRAMES_IN_FLIGHT);
+    _globalDescriptorSets.resize(Engine::MAX_FRAMES_IN_FLIGHT);
     auto result = vkAllocateDescriptorSets(
         _vkEngine->device->vkDevice, &allocInfo, _globalDescriptorSets.data()
     );
@@ -125,16 +125,16 @@ std::optional<VkDescriptorSet> vax::vk::DescriptorSetManager::getGlobalDescripto
         return std::nullopt;
     }
 
-    for (size_t i = 0; i < _vkEngine->MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < Engine::MAX_FRAMES_IN_FLIGHT; i++) {
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = uniformBuffer->getVkBuffer();
+        bufferInfo.buffer = uniformBuffer.getVkBuffer();
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = texture->textureImageView;
-        imageInfo.sampler = texture->sampler->vkSampler;
+        imageInfo.imageView = texture.textureImageView;
+        imageInfo.sampler = texture.sampler->vkSampler;
 
         std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 

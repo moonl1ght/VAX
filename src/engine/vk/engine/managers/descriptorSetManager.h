@@ -56,7 +56,7 @@ namespace vax::vk {
 
         bool setup();
         std::optional<VkDescriptorSet> getGlobalDescriptorSet(
-            uint32_t frameIndex, vax::vk::Buffer* uniformBuffer, vax::textures::Texture* texture
+            uint32_t frameIndex, const vax::vk::Buffer& uniformBuffer, const vax::textures::Texture& texture
         );
 
         std::optional<VkDescriptorSet> getDrawBackgroundDescriptorSet(uint32_t frameIndex);

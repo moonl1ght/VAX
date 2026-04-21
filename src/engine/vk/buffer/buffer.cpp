@@ -47,10 +47,10 @@ bool Buffer::cleanup()
 }
 
 void Buffer::bind(void* data) {
-    if (isEmpty() || !isGpuAllocated() || data == nullptr) {
+    if (isEmpty() || !isGpuAllocated()) {
         return;
     }
-    
+
     vkMapMemory(
         _device.get().vkDevice,
         _vkBufferMemory,

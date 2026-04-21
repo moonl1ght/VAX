@@ -12,16 +12,23 @@ void Renderer::prepare() {
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
     _sceneUniformBuffers.reserve(vk::Engine::MAX_FRAMES_IN_FLIGHT);
     _sceneUniformBuffersMapped.resize(vk::Engine::MAX_FRAMES_IN_FLIGHT);
-    for (size_t i = 0; i < vk::Engine::MAX_FRAMES_IN_FLIGHT; i++) {\
-        std::cout << "Preparing scene uniform buffer " << i << " with size " << bufferSize << std::endl;
+    for (size_t i = 0; i < vk::Engine::MAX_FRAMES_IN_FLIGHT; i++) {
         _sceneUniformBuffers.emplace_back(vk::Buffer::allocate(
             *_vkEngine->device,
             bufferSize,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
         ).value());
+        vkMapMemory(
+            _vkEngine->device->vkDevice,
+            _sceneUniformBuffers[i].getVkBufferMemory(),
+            0,
+            bufferSize,
+            0,
+            &_sceneUniformBuffersMapped[i]
+        );
 
-        _sceneUniformBuffers[i].bind(_sceneUniformBuffersMapped[i]);
+        // _sceneUniformBuffers[i].bind(_sceneUniformBuffersMapped[i]);
     }
 }
 
@@ -48,7 +55,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
         return false;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        Logger::getInstance().error("Failed to acquire swap chain image!");
+        _logger.error("Failed to acquire swap chain image!");
         return false;
     }
 
@@ -60,7 +67,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
 
     vkResetCommandBuffer(_vkEngine->commandManager->commandBuffers[_currentFrame], 0);
     if (!recordCommandBuffer(_vkEngine->commandManager->commandBuffers[_currentFrame], imageIndex, scene, deltaTime)) {
-        Logger::getInstance().error("Failed to record command buffer!");
+        _logger.error("Failed to record command buffer!");
         return false;
     }
 
@@ -87,7 +94,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
             &submitInfo,
             _vkEngine->syncObjectsManager->getInFlightFences()[_currentFrame]
         ))) {
-        Logger::getInstance().error("failed to submit draw command buffer!");
+        _logger.error("failed to submit draw command buffer!");
         return false;
     }
 
@@ -108,7 +115,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
         return false;
     }
     else if (result != VK_SUCCESS) {
-        Logger::getInstance().error("failed to present swap chain image!");
+        _logger.error("failed to present swap chain image!");
         return false;
     }
 
@@ -164,110 +171,126 @@ bool Renderer::recordCommandBuffer(
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
     if (!VK_CHECK(vkBeginCommandBuffer(commandBuffer, &beginInfo))) {
-        LOG_ERROR("Failed to begin recording command buffer!");
+        _logger.error("Failed to begin recording command buffer!");
         return false;
     }
 
-    vax::transitionImage(
-        commandBuffer,
-        _vkEngine->renderDestination->drawImage->textureImage,
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_GENERAL
-    );
+    // {
+    //     vax::transitionImage(
+    //         commandBuffer,
+    //         _vkEngine->renderDestination->drawImage->textureImage,
+    //         VK_IMAGE_LAYOUT_UNDEFINED,
+    //         VK_IMAGE_LAYOUT_GENERAL
+    //     );
 
-    drawBackground(commandBuffer);
+    //     drawBackground(commandBuffer);
 
-    vax::transitionImage(
-        commandBuffer,
-        _vkEngine->renderDestination->drawImage->textureImage,
-        VK_IMAGE_LAYOUT_GENERAL,
-        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
-    );
-    vax::transitionImage(
-        commandBuffer,
-        _vkEngine->swapchain->swapchainImages[imageIndex],
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-    );
+    //     vax::transitionImage(
+    //         commandBuffer,
+    //         _vkEngine->renderDestination->drawImage->textureImage,
+    //         VK_IMAGE_LAYOUT_GENERAL,
+    //         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+    //     );
+    //     vax::transitionImage(
+    //         commandBuffer,
+    //         _vkEngine->swapchain->swapchainImages[imageIndex],
+    //         VK_IMAGE_LAYOUT_UNDEFINED,
+    //         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+    //     );
 
-    vax::copyImageToImage(
-        commandBuffer,
-        _vkEngine->renderDestination->drawImage->textureImage,
-        _vkEngine->swapchain->swapchainImages[imageIndex],
-        _vkEngine->renderDestination->drawImage->size.toExtent2D(),
-        _vkEngine->swapchain->swapchainExtent
-    );
-    // std::cout << "Image size: " << _vkEngine->renderingDestination->drawImage->size.toExtent2D().width << "x" << _vkEngine->renderingDestination->drawImage->size.toExtent2D().height << std::endl;
-    // std::cout << "Swapchain size: " << _vkEngine->swapchainManager->swapchainExtent.width << "x" << _vkEngine->swapchainManager->swapchainExtent.height << std::endl;
+    //     vax::copyImageToImage(
+    //         commandBuffer,
+    //         _vkEngine->renderDestination->drawImage->textureImage,
+    //         _vkEngine->swapchain->swapchainImages[imageIndex],
+    //         _vkEngine->renderDestination->drawImage->size.toExtent2D(),
+    //         _vkEngine->swapchain->swapchainExtent
+    //     );
+    //     // std::cout << "Image size: " << _vkEngine->renderingDestination->drawImage->size.toExtent2D().width << "x" << _vkEngine->renderingDestination->drawImage->size.toExtent2D().height << std::endl;
+    //     // std::cout << "Swapchain size: " << _vkEngine->swapchainManager->swapchainExtent.width << "x" << _vkEngine->swapchainManager->swapchainExtent.height << std::endl;
 
-    vax::transitionImage(
-        commandBuffer,
-        _vkEngine->swapchain->swapchainImages[imageIndex],
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-    );
-
-    // VkRenderPassBeginInfo renderPassInfo{};
-    // renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    // renderPassInfo.renderPass = _vkEngine->renderPassManager->getRenderPass();
-    // renderPassInfo.framebuffer = _vkEngine->renderingDestination->swapchainFramebuffers[imageIndex];
-    // renderPassInfo.renderArea.offset = { 0, 0 };
-    // renderPassInfo.renderArea.extent = _vkEngine->swapchainManager->swapchainExtent;
-
-    // std::array<VkClearValue, 2> clearValues{};
-    // clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-    // clearValues[1].depthStencil = { 1.0f, 0 };
-
-    // renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    // renderPassInfo.pClearValues = clearValues.data();
-
-    // vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    // vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _vkEngine->pipelineManager->getPipeline());
-
-    // VkViewport viewport{};
-    // viewport.x = 0.0f;
-    // viewport.y = 0.0f;
-    // viewport.width = (float)_vkEngine->swapchainManager->swapchainExtent.width;
-    // viewport.height = (float)_vkEngine->swapchainManager->swapchainExtent.height;
-    // viewport.minDepth = 0.0f;
-    // viewport.maxDepth = 1.0f;
-    // vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-    // VkRect2D scissor{};
-    // scissor.offset = { 0, 0 };
-    // scissor.extent = _vkEngine->swapchainManager->swapchainExtent;
-    // vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-    // memcpy(_sceneUniformBuffersMapped[_currentFrame], &scene->getUBO(), sizeof(scene->getUBO()));
-
-    // auto descriptorSet = _vkEngine->descriptorSetManager->getGlobalDescriptorSet(
-    //     _currentFrame, _sceneUniformBuffers[_currentFrame], scene->texture
-    // );
-    // if (!descriptorSet.has_value()) {
-    //     Logger::getInstance().error("Failed to get global descriptor set!");
-    //     return false;
-    // }
-    // std::vector<VkDescriptorSet> descriptorSets = { descriptorSet.value() };
-    // vkCmdBindDescriptorSets(
-    //     commandBuffer,
-    //     VK_PIPELINE_BIND_POINT_GRAPHICS,
-    //     _vkEngine->pipelineManager->getPipelineLayout(),
-    //     0,
-    //     static_cast<uint32_t>(descriptorSets.size()),
-    //     descriptorSets.data(),
-    //     0,
-    //     nullptr
-    // );
-
-    // for (auto& drawableModel : scene->getDrawableModels()) {
-    //     drawableModel->draw(_vkEngine, commandBuffer, _vkEngine->pipelineManager, deltaTime);
+    //     vax::transitionImage(
+    //         commandBuffer,
+    //         _vkEngine->swapchain->swapchainImages[imageIndex],
+    //         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    //         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+    //     );
     // }
 
-    // vkCmdEndRenderPass(commandBuffer);
+    std::cout << "Recording command buffer for image index: " << imageIndex << std::endl;
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = _vkEngine->renderPass->getVkRenderPass();
+    renderPassInfo.framebuffer = _vkEngine->renderDestination->swapchainFramebuffers[imageIndex];
+    renderPassInfo.renderArea.offset = { 0, 0 };
+    renderPassInfo.renderArea.extent = _vkEngine->swapchain->swapchainExtent;
+
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+    clearValues[1].depthStencil = { 1.0f, 0 };
+
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _vkEngine->pipelineManager->getPipeline());
+
+    std::cout << "Global descriptor set: " << _vkEngine->descriptorSetManager->getGlobalDescriptorSetLayout() << std::endl;
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = (float)_vkEngine->swapchain->swapchainExtent.width;
+    viewport.height = (float)_vkEngine->swapchain->swapchainExtent.height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = { 0, 0 };
+    scissor.extent = _vkEngine->swapchain->swapchainExtent;
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    std::cout << "Scene uniform buffer: " << _sceneUniformBuffers[_currentFrame].getVkBuffer() << std::endl;
+    std::cout << "Scene texture: " << scene->texture->textureImageView << std::endl;
+
+    std::cout << "Copying scene uniform buffer..." << _sceneUniformBuffersMapped.size() << std::endl;
+    std::cout << "Current frame: " << scene->getUBO().proj[0][0] << std::endl;
+
+    memcpy(_sceneUniformBuffersMapped[_currentFrame], &scene->getUBO(), sizeof(scene->getUBO()));
+
+    std::cout << "Getting global descriptor set..." << std::endl;
+
+    auto descriptorSet = _vkEngine->descriptorSetManager->getGlobalDescriptorSet(
+        _currentFrame, _sceneUniformBuffers[_currentFrame], *scene->texture
+    );
+    if (!descriptorSet.has_value()) {
+        _logger.error("Failed to get global descriptor set!");
+        return false;
+    }
+    std::vector<VkDescriptorSet> descriptorSets = { descriptorSet.value() };
+
+    std::cout << "Binding descriptor sets..." << std::endl;
+    vkCmdBindDescriptorSets(
+        commandBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        _vkEngine->pipelineManager->getPipelineLayout(),
+        0,
+        static_cast<uint32_t>(descriptorSets.size()),
+        descriptorSets.data(),
+        0,
+        nullptr
+    );
+
+    for (auto& drawableModel : scene->getDrawableModels()) {
+        drawableModel->draw(_vkEngine, commandBuffer, *(_vkEngine->pipelineManager), deltaTime);
+    }
+
+    std::cout << "Ending render pass..." << std::endl;
+
+    vkCmdEndRenderPass(commandBuffer);
 
     if (!VK_CHECK(vkEndCommandBuffer(commandBuffer))) {
-        LOG_ERROR("Failed to end command buffer!");
+        _logger.error("Failed to end command buffer!");
         return false;
     }
     return true;

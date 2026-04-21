@@ -41,7 +41,7 @@ namespace vax::vk {
         };
 
     private:
-        Logger _logger = Logger("PipelineManager");
+        vax::utils::Logger _logger = vax::utils::Logger("PipelineManager");
         std::reference_wrapper<const vax::vk::Device> _device;
         std::reference_wrapper<const vax::vk::DescriptorSetManager> _descriptorSetManager;
 
@@ -50,4 +50,4 @@ namespace vax::vk {
 
         std::unique_ptr<vax::vk::Pipeline> _backgroundPipeline = nullptr;
     };
-} // namespace vax::vk
+}

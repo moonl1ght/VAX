@@ -2,7 +2,7 @@
 
 #extension GL_GOOGLE_include_directive : enable
 
-#include "ShaderUniforms.h"
+#include "shaderUniforms.h"
 
 layout(set = 0, binding = 0) uniform _UniformBufferObject {
     UniformBufferObject ubo;

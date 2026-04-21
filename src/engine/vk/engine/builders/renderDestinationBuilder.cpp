@@ -54,7 +54,7 @@ bool vax::vk::RenderDestinationBuilder::createFramebuffers(
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = _renderPass.get().get_vk_render_pass();
+        framebufferInfo.renderPass = _renderPass.get().getVkRenderPass();
         framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
         framebufferInfo.pAttachments = attachments.data();
         framebufferInfo.width = _swapchain.get().swapchainExtent.width;

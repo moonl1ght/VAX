@@ -3,7 +3,10 @@
 using namespace vax::objects;
 
 void DrawableModel::draw(
-    vax::vk::Engine* vkEngine, VkCommandBuffer commandBuffer, const vax::vk::PipelineManager& pipelineManager, float time
+    vax::vk::Engine* vkEngine,
+    VkCommandBuffer commandBuffer,
+    const vax::vk::PipelineManager& pipelineManager,
+    float time
 ) {
     DrawPushConstants drawPushConstants{};
     // drawPushConstants.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));

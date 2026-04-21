@@ -57,8 +57,8 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 
-    auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
+    auto bindingDescription = vax::objects::Vertex::getBindingDescription();
+    auto attributeDescriptions = vax::objects::Vertex::getAttributeDescriptions();
 
     vertexInputInfo.vertexBindingDescriptionCount = 1;
     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -151,7 +151,7 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
         _device.get().vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout
     );
     if (result != VK_SUCCESS) {
-        Logger::getInstance().error("failed to create pipeline layout!");
+        _logger.error("failed to create pipeline layout!");
         return false;
     }
 
@@ -168,7 +168,7 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = _pipelineLayout;
-    pipelineInfo.renderPass = renderPass.get_vk_render_pass();
+    pipelineInfo.renderPass = renderPass.getVkRenderPass();
     // pipelineInfo.renderPass = vkEngine->renderPassManager->getRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -177,7 +177,7 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
         _device.get().vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline
     );
     if (pipelineResult != VK_SUCCESS) {
-        Logger::getInstance().error("failed to create graphics pipeline!");
+        _logger.error("failed to create graphics pipeline!");
         return false;
     }
 

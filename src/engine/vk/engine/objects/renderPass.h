@@ -23,7 +23,7 @@ namespace vax::vk {
             vkDestroyRenderPass(_device.get().vkDevice, _renderPass, nullptr);
         };
 
-        const VkRenderPass get_vk_render_pass() const {
+        const VkRenderPass getVkRenderPass() const {
             return _renderPass;
         }
 

@@ -39,7 +39,7 @@ namespace vax::vk {
         };
 
     private:
-        Logger _logger = Logger("Pipeline");
+        vax::utils::Logger _logger = vax::utils::Logger("Pipeline");
         std::reference_wrapper<const vax::vk::Device> _device;
     };
 }
