@@ -23,7 +23,7 @@ namespace vax::textures {
         );
 
     private:
-        Logger _logger = Logger("TextureBuilder");
+        utils::Logger _logger = utils::Logger("TextureBuilder");
         std::reference_wrapper<const vax::vk::Device> _device;
         VmaAllocator _allocator;
     };

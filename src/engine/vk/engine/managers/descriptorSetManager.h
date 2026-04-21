@@ -38,7 +38,7 @@ namespace vax::vk {
         void clear();
 
     private:
-        Logger _logger = Logger("DescriptorWriter");
+        vax::utils::Logger _logger = vax::utils::Logger("DescriptorWriter");
         std::vector<VkWriteDescriptorSet> _writes;
         std::vector<VkDescriptorBufferInfo> _bufferInfos;
         std::vector<VkDescriptorImageInfo> _imageInfos;
@@ -69,7 +69,7 @@ namespace vax::vk {
         // VkDescriptorSetLayout getObjectDescriptorSetLayout() const { return _objectDescriptorSetLayout; }
 
     private:
-        Logger _logger = Logger("DescriptorSetManager");
+        vax::utils::Logger _logger = vax::utils::Logger("DescriptorSetManager");
         vax::vk::Engine* _vkEngine;
 
         VkDescriptorSetLayout _drawBackgroundDescriptorSetLayout = VK_NULL_HANDLE;

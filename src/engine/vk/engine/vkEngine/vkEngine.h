@@ -58,7 +58,7 @@ namespace vax::vk {
         void resize();
 
     private:
-        Logger _logger = Logger("Engine");
+        vax::utils::Logger _logger = vax::utils::Logger("Engine");
 
         std::reference_wrapper<vax::vk::Window> _window;
 

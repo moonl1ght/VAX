@@ -9,9 +9,7 @@ namespace vax::vk {
         VkPhysicalDevice vkPhysicalDevice = VK_NULL_HANDLE;
         VkDevice vkDevice = VK_NULL_HANDLE;
 
-        Device() {
-            _logger = Logger("Device");
-        }
+        Device() { }
 
         Device(const Device& other) = delete;
         Device(Device&& other) = delete;
@@ -24,7 +22,7 @@ namespace vax::vk {
         utils::QueueFamilyIndices getQueueFamilyIndices() const { return _indices; }
 
     private:
-        Logger _logger;
+        vax::utils::Logger _logger = vax::utils::Logger("Device");
 
         utils::QueueFamilyIndices _indices;
 

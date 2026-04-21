@@ -103,7 +103,7 @@ namespace vax::textures {
         bool copyTo(Texture& other, VkCommandBuffer commandBuffer) const;
 
     private:
-        Logger _logger = Logger("Texture");
+        utils::Logger _logger = utils::Logger("Texture");
         VmaAllocation _allocation = VK_NULL_HANDLE;
         VmaAllocator _allocator = VK_NULL_HANDLE;
         std::reference_wrapper<const vax::vk::Device> _device;

@@ -121,7 +121,7 @@ std::optional<VkDescriptorSet> vax::vk::DescriptorSetManager::getGlobalDescripto
         _vkEngine->device->vkDevice, &allocInfo, _globalDescriptorSets.data()
     );
     if (result != VK_SUCCESS) {
-        Logger::getInstance().error("Failed to allocate descriptor set!");
+        _logger.error("Failed to allocate descriptor set!");
         return std::nullopt;
     }
 
@@ -210,7 +210,7 @@ bool vax::vk::DescriptorSetManager::createGlobalDescriptorSetLayout() {
         _vkEngine->device->vkDevice, &layoutInfo, nullptr, &_globalDescriptorSetLayout
     );
     if (result != VK_SUCCESS) {
-        Logger::getInstance().error("Failed to create global descriptor set layout!");
+        _logger.error("Failed to create global descriptor set layout!");
         return false;
     }
 

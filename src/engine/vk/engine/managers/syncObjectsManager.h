@@ -20,7 +20,7 @@ namespace vax::vk {
         std::vector<VkSemaphore> _renderFinishedSemaphores;
         std::vector<VkFence> _inFlightFences;
 
-        Logger _logger = Logger("SyncObjectsManager");
+        vax::utils::Logger _logger = vax::utils::Logger("SyncObjectsManager");
         std::reference_wrapper<const vax::vk::Device> _device;
     };
 }

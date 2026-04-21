@@ -25,7 +25,7 @@ namespace vax::vk {
         vax::vk::CommandBuffer createSingleTimeCommandBuffer();
 
     private:
-        Logger _logger = Logger("CommandManager");
+        vax::utils::Logger _logger = vax::utils::Logger("CommandManager");
         std::reference_wrapper<const vax::vk::Device> _device;
 
         bool createCommandPool();

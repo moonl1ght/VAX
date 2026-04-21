@@ -1,5 +1,7 @@
 #include "drawableModel.h"
 
+using namespace vax::objects;
+
 void DrawableModel::draw(
     vax::vk::Engine* vkEngine, VkCommandBuffer commandBuffer, const vax::vk::PipelineManager& pipelineManager, float time
 ) {

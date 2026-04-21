@@ -1,13 +1,12 @@
-#ifndef Camera_hpp
-#define Camera_hpp
+#pragma once
 
 #include "luna.h"
-#include "Model.hpp"
+#include "model.h"
 
-class Camera {
-public:
-    Camera() {};
-    ~Camera() {};
-};
-
-#endif  
+namespace vax::objects {
+    class Camera {
+    public:
+        Camera() {};
+        ~Camera() {};
+    };
+}

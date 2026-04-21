@@ -1,6 +1,3 @@
-#ifndef VAXMath_hpp
-#define VAXMath_hpp
+#pragma once
 
 #include "size.h"
-
-#endif

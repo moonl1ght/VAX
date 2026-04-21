@@ -31,6 +31,6 @@ namespace vax::vk {
 
     private:
         VkInstance _instance = VK_NULL_HANDLE;
-        Logger _logger = Logger("Window");
+        vax::utils::Logger _logger = vax::utils::Logger("Window");
     };
 };

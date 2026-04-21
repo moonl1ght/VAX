@@ -1,6 +1,8 @@
 #include "imageUtils.h"
 #include "vkEngine.h"
 
+using namespace vax;
+
 void vax::copyImageToImage(
     VkCommandBuffer commandBuffer, VkImage source, VkImage destination, VkExtent2D srcSize, VkExtent2D dstSize
 ) {
@@ -127,7 +129,7 @@ void vax::transitionImageLayout(
         destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     }
     else {
-        Logger::getInstance().error("Unsupported layout transition!");
+        vax::utils::Logger::getInstance().error("Unsupported layout transition!");
         throw std::invalid_argument("unsupported layout transition!");
     }
 
@@ -201,7 +203,7 @@ std::optional<std::pair<VkImage, VmaAllocation>> vax::createImage(
     allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
     allocInfo.requiredFlags = properties;
     if (!VK_CHECK(vmaCreateImage(allocator, &imageInfo, &allocInfo, &image, &allocation, nullptr))) {
-        Logger::getInstance().error("Failed to create image!");
+        vax::utils::Logger::getInstance().error("Failed to create image!");
         return std::nullopt;
     }
     return std::make_optional(std::make_pair(image, allocation));

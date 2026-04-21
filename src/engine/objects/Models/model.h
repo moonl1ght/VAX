@@ -3,10 +3,12 @@
 #include "luna.h"
 #include "transform.h"
 
-class Model {
-public:
-    Transform transform;
+namespace vax::objects {
+    class Model {
+    public:
+        vax::math::Transform transform;
 
-    Model() { };
-    virtual ~Model() { };
-};
+        Model() {};
+        virtual ~Model() {};
+    };
+}

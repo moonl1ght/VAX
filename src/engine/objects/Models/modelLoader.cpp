@@ -1,15 +1,16 @@
 #include "modelLoader.h"
 #include "tiny_obj_loader.h"
 
+using namespace vax::objects;
+
 std::optional<DrawableModel*> ModelLoader::loadModel(const std::string& path) {
-    // Logger::getInstance().log("Loading model: " + path);
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
 
     if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str())) {
-        Logger::getInstance().error(warn + err);
+        _logger.error("Failed to load model: " + warn + err);
         return std::nullopt;
     }
     std::unique_ptr<vax::objects::Mesh> mesh = std::make_unique<vax::objects::Mesh>(*vkEngine->device);

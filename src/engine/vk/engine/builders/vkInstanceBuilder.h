@@ -16,13 +16,13 @@ namespace vax {
             enableValidationLayers(enableValidationLayers),
             validationLayers(validationLayers),
             vulkanApiVersion(vulkanApiVersion) {
-            logger = Logger("VkInstanceBuilder");
+            _logger = vax::utils::Logger("VkInstanceBuilder");
         };
 
         std::optional<VkInstance> build() {
-            logger.info("Creating instance...");
+            _logger.info("Creating instance...");
             if (enableValidationLayers && !checkValidationLayerSupport()) {
-                logger.error("Validation layers requested, but not available!");
+                _logger.error("Validation layers requested, but not available!");
                 return std::nullopt;
             }
             VkApplicationInfo appInfo{};
@@ -58,7 +58,7 @@ namespace vax {
             VkInstance instance = VK_NULL_HANDLE;
 
             if (!VK_CHECK(vkCreateInstance(&createInfo, nullptr, &instance))) {
-                logger.error("Failed to create instance!");
+                _logger.error("Failed to create instance!");
                 return std::nullopt;
             }
 
@@ -66,7 +66,7 @@ namespace vax {
         }
 
     private:
-        Logger logger;
+        vax::utils::Logger _logger = vax::utils::Logger("VkInstanceBuilder");
         vax::utils::DeletionQueue& deletionQueue;
         const bool enableValidationLayers;
         const std::vector<const char*>& validationLayers;

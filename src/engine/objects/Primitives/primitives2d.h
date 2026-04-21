@@ -1,21 +1,20 @@
-#ifndef Primitives2D_hpp
-#define Primitives2D_hpp
+#pragma once
 
 #include "drawableModel.h"
 
-namespace Primitives2D {
+namespace vax::objects::Primitives2D {
 
-    inline DrawableModel* createTriangle(const vax::vk::Device& device) {
+    inline vax::objects::DrawableModel* createTriangle(const vax::vk::Device& device) {
         std::unique_ptr<vax::objects::Mesh> mesh = std::make_unique<vax::objects::Mesh>(device);
         mesh->vertices = {
             {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
             {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},
             {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}
         };
-        return new DrawableModel(std::move(mesh));
+        return new vax::objects::DrawableModel(std::move(mesh));
     }
 
-    inline DrawableModel* createPlane(const vax::vk::Device& device) {
+    inline vax::objects::DrawableModel* createPlane(const vax::vk::Device& device) {
         std::unique_ptr<vax::objects::Mesh> mesh = std::make_unique<vax::objects::Mesh>(device);
         mesh->vertices = {
             {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
@@ -24,9 +23,7 @@ namespace Primitives2D {
             {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
         };
         mesh->indices = { 0, 1, 2, 2, 3, 0 };
-        return new DrawableModel(std::move(mesh));
+        return new vax::objects::DrawableModel(std::move(mesh));
     }
 
-} // namespace Primitives2D
-
-#endif
+}

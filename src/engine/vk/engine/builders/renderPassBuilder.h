@@ -17,7 +17,7 @@ namespace vax::vk {
         std::optional<std::unique_ptr<vax::vk::RenderPass>> build() const noexcept;
 
     private:
-        Logger _logger = Logger("RenderPassBuilder");
+        vax::utils::Logger _logger = vax::utils::Logger("RenderPassBuilder");
         std::reference_wrapper<const vax::vk::Device> _device;
         std::reference_wrapper<const vax::vk::Swapchain> _swapchain;
     };

@@ -28,7 +28,7 @@ namespace vax::objects {
         bool loadBuffers(vax::vk::Engine* vkEngine);
 
     private:
-        Logger _logger = Logger("Mesh");
+        utils::Logger _logger = utils::Logger("Mesh");
         bool _isLoaded = false;
     };
 }

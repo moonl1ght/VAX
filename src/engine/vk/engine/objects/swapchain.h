@@ -32,7 +32,7 @@ namespace vax::vk {
         bool recreate();
 
     private:
-        Logger _logger = Logger("Swapchain");
+        vax::utils::Logger _logger = vax::utils::Logger("Swapchain");
 
         std::reference_wrapper<const vax::vk::Window> _window;
         std::reference_wrapper<const vax::vk::Device> _device;

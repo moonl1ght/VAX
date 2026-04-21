@@ -1,6 +1,8 @@
 #include "sampler.h"
 
-std::optional<vax::textures::Sampler> vax::textures::Sampler::createSampler(const vax::vk::Device& device)
+using namespace vax::textures;
+
+std::optional<Sampler> Sampler::createSampler(const vax::vk::Device& device)
 {
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(device.vkPhysicalDevice, &properties);
@@ -22,7 +24,7 @@ std::optional<vax::textures::Sampler> vax::textures::Sampler::createSampler(cons
 
     VkSampler vkSampler;
     if (vkCreateSampler(device.vkDevice, &samplerInfo, nullptr, &vkSampler) != VK_SUCCESS) {
-        Logger::getInstance().error("failed to create texture sampler!");
+        vax::utils::Logger::getInstance().error("failed to create texture sampler!");
         return std::nullopt;
     }
     return vax::textures::Sampler(vkSampler, device);

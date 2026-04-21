@@ -9,9 +9,7 @@ namespace vax::vk {
         VkQueue graphicsQueue = VK_NULL_HANDLE;
         VkQueue presentQueue = VK_NULL_HANDLE;
 
-        QueueManager() {
-            _logger = Logger("QueueManager");
-        }
+        QueueManager() { }
 
         QueueManager(const QueueManager& other) = delete;
         QueueManager(QueueManager&& other) = delete;
@@ -21,6 +19,6 @@ namespace vax::vk {
         void setup(const Device& device);
 
     private:
-        Logger _logger;
+        vax::utils::Logger _logger = vax::utils::Logger("QueueManager");
     };
 }

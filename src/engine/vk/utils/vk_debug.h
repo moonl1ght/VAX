@@ -11,16 +11,16 @@ namespace vax {
     ) {
         switch (messageType) {
         case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:
-            Logger::getInstance().info("validation layer: ", pCallbackData->pMessage);
+            vax::utils::Logger::getInstance().info("validation layer: ", pCallbackData->pMessage);
             break;
         case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
-            Logger::getInstance().error("validation layer: ", pCallbackData->pMessage);
+            vax::utils::Logger::getInstance().error("validation layer: ", pCallbackData->pMessage);
             break;
         case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
-            Logger::getInstance().error("validation layer: ", pCallbackData->pMessage);
+            vax::utils::Logger::getInstance().error("validation layer: ", pCallbackData->pMessage);
             break;
         default:
-            Logger::getInstance().warning("validation layer: ", pCallbackData->pMessage);
+            vax::utils::Logger::getInstance().warning("validation layer: ", pCallbackData->pMessage);
             break;
         }
         return VK_FALSE;

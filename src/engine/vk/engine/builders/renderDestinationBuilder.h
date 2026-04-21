@@ -22,7 +22,7 @@ namespace vax::vk {
         std::optional<std::unique_ptr<vax::vk::RenderDestination>> build(vax::vk::Engine* vkEngine) const noexcept;
 
     private:
-        Logger _logger = Logger("RenderDestinationBuilder");
+        vax::utils::Logger _logger = vax::utils::Logger("RenderDestinationBuilder");
         std::reference_wrapper<const vax::vk::Device> _device;
         VmaAllocator _allocator;
         std::reference_wrapper<const vax::vk::Swapchain> _swapchain;

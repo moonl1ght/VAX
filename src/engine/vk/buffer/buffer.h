@@ -101,7 +101,7 @@ namespace vax::vk {
         VkDeviceSize getSize() const { return _size; }
 
     private:
-        Logger _logger = Logger("Buffer");
+        vax::utils::Logger _logger = vax::utils::Logger("Buffer");
         std::reference_wrapper<const vax::vk::Device> _device;
 
         VkBuffer _vkBuffer = VK_NULL_HANDLE;

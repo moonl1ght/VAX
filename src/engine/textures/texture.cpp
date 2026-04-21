@@ -37,7 +37,7 @@ std::optional<vax::textures::Texture*> vax::textures::Texture::makeCopy(VkComman
     if (copyTo(*other, commandBuffer)) {
         return std::make_optional(other);
     }
-    Logger::getInstance().error("Failed to make copy of texture");
+    _logger.error("Failed to make copy of texture");
     delete other;
     return std::nullopt;
 }

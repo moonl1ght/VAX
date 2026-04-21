@@ -43,7 +43,7 @@ namespace vax::vk {
         void setShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name);
 
     private:
-        Logger _logger = Logger("ComputePipelineBuilder");
+        vax::utils::Logger _logger = vax::utils::Logger("ComputePipelineBuilder");
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
         VkPipelineShaderStageCreateInfo shaderStageInfo = {};
         bool isPipelineLayoutTransferred = false;
@@ -61,7 +61,7 @@ namespace vax::vk {
         void addShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name);
 
     private:
-        Logger _logger = Logger("GraphicsPipelineBuilder");
+        vax::utils::Logger _logger = vax::utils::Logger("GraphicsPipelineBuilder");
         std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
     };
 }

@@ -39,6 +39,7 @@ namespace vax::textures {
         ~Sampler() { vkDestroySampler(_device.get().vkDevice, vkSampler, nullptr); }
 
     private:
+        vax::utils::Logger _logger = vax::utils::Logger("Sampler");
         std::reference_wrapper<const vax::vk::Device> _device;
     };
 }

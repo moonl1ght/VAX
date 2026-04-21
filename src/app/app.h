@@ -19,7 +19,7 @@ namespace vax {
         }
 
     private:
-        Logger _logger = Logger("App");
+        utils::Logger _logger = utils::Logger("App");
 
         std::unique_ptr<vax::vk::Window> _window;
         std::unique_ptr<vax::vk::Engine> _engine;

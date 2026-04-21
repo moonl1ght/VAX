@@ -29,7 +29,7 @@ namespace vax {
         }
 
     private:
-        Logger _logger = Logger("ShaderModuleBuilder");
+        utils::Logger _logger = utils::Logger("ShaderModuleBuilder");
         std::vector<char> _code;
 
         void readFile(const std::string& filename) {

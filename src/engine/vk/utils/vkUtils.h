@@ -6,7 +6,7 @@
     ({ \
         VkResult err = (x); \
         if (err != VK_SUCCESS) { \
-            Logger::getInstance().error( \
+            vax::utils::Logger::getInstance().error( \
                 "Detected Vulkan error: {}", err \
             ); \
         } \

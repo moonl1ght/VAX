@@ -14,7 +14,7 @@ namespace vax {
 
         Scene(vax::vk::Engine* vkEngine)
             : vax::VkObject(vkEngine)
-            , _modelLoader(ModelLoader(vkEngine)) {
+            , _modelLoader(vax::objects::ModelLoader(vkEngine)) {
         };
 
         ~Scene() {
@@ -29,7 +29,7 @@ namespace vax {
         void load();
         void update(float deltaTime);
 
-        const std::vector<DrawableModel*>& getDrawableModels() const {
+        const std::vector<vax::objects::DrawableModel*>& getDrawableModels() const {
             return _drawableModels;
         }
 
@@ -38,8 +38,8 @@ namespace vax {
         }
 
     private:
-        ModelLoader _modelLoader;
+        vax::objects::ModelLoader _modelLoader;
         UniformBufferObject _ubo;
-        std::vector<DrawableModel*> _drawableModels; // TODO: change to value type
+        std::vector<vax::objects::DrawableModel*> _drawableModels; // TODO: change to value type
     };
 }
