@@ -10,37 +10,35 @@ using namespace vax;
 void Renderer::prepare() {
     // Logger::getInstance().log("Preparing renderer...");
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-    _sceneUniformBuffers.resize(vk::Engine::MAX_FRAMES_IN_FLIGHT);
+    _sceneUniformBuffers.reserve(vk::Engine::MAX_FRAMES_IN_FLIGHT);
     _sceneUniformBuffersMapped.resize(vk::Engine::MAX_FRAMES_IN_FLIGHT);
-    for (size_t i = 0; i < vk::Engine::MAX_FRAMES_IN_FLIGHT; i++) {
-        _sceneUniformBuffers[i] = new vk::Buffer(
+    for (size_t i = 0; i < vk::Engine::MAX_FRAMES_IN_FLIGHT; i++) {\
+        std::cout << "Preparing scene uniform buffer " << i << " with size " << bufferSize << std::endl;
+        _sceneUniformBuffers.emplace_back(vk::Buffer::allocate(
             *_vkEngine->device,
-            nullptr,
             bufferSize,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-        );
+        ).value());
 
-        vkMapMemory(
-            _vkEngine->device->vkDevice,
-            _sceneUniformBuffers[i]->vkBufferMemory,
-            0,
-            bufferSize,
-            0,
-            &_sceneUniformBuffersMapped[i]
-        );
+        _sceneUniformBuffers[i].bind(_sceneUniformBuffersMapped[i]);
     }
 }
 
 bool Renderer::render(Scene* scene, float deltaTime) {
-    vkWaitForFences(_vkEngine->device->vkDevice, 1, &_vkEngine->inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
+    vkWaitForFences(
+        _vkEngine->device->vkDevice,
+        1,
+        &_vkEngine->syncObjectsManager->getInFlightFences()[_currentFrame],
+        VK_TRUE, UINT64_MAX
+    );
 
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(
         _vkEngine->device->vkDevice,
         _vkEngine->swapchain->swapchain,
         UINT64_MAX,
-        _vkEngine->imageAvailableSemaphores[_currentFrame],
+        _vkEngine->syncObjectsManager->getImageAvailableSemaphores()[_currentFrame],
         VK_NULL_HANDLE,
         &imageIndex
     );
@@ -54,7 +52,11 @@ bool Renderer::render(Scene* scene, float deltaTime) {
         return false;
     }
 
-    vkResetFences(_vkEngine->device->vkDevice, 1, &_vkEngine->inFlightFences[_currentFrame]);
+    vkResetFences(
+        _vkEngine->device->vkDevice,
+        1,
+        &_vkEngine->syncObjectsManager->getInFlightFences()[_currentFrame]
+    );
 
     vkResetCommandBuffer(_vkEngine->commandManager->commandBuffers[_currentFrame], 0);
     if (!recordCommandBuffer(_vkEngine->commandManager->commandBuffers[_currentFrame], imageIndex, scene, deltaTime)) {
@@ -65,7 +67,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = { _vkEngine->imageAvailableSemaphores[_currentFrame] };
+    VkSemaphore waitSemaphores[] = { _vkEngine->syncObjectsManager->getImageAvailableSemaphores()[_currentFrame] };
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
@@ -74,13 +76,17 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &_vkEngine->commandManager->commandBuffers[_currentFrame];
 
-    VkSemaphore signalSemaphores[] = { _vkEngine->renderFinishedSemaphores[_currentFrame] };
+    VkSemaphore signalSemaphores[] = { _vkEngine->syncObjectsManager->getRenderFinishedSemaphores()[_currentFrame] };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (
-        vkQueueSubmit(_vkEngine->queueManager->graphicsQueue, 1, &submitInfo, _vkEngine->inFlightFences[_currentFrame]) != VK_SUCCESS
-        ) {
+    if (!VK_CHECK(
+        vkQueueSubmit(
+            _vkEngine->queueManager->graphicsQueue,
+            1,
+            &submitInfo,
+            _vkEngine->syncObjectsManager->getInFlightFences()[_currentFrame]
+        ))) {
         Logger::getInstance().error("failed to submit draw command buffer!");
         return false;
     }

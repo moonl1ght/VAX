@@ -1,10 +1,10 @@
 #pragma once
 
 #include "luna.h"
-#include "DrawableModel.hpp"
+#include "drawableModel.h"
 #include "texture.h"
-#include "ShaderUniforms.h"
-#include "ModelLoader.hpp"
+#include "shaderUniforms.h"
+#include "modelLoader.h"
 #include "vkObject.h"
 
 namespace vax {

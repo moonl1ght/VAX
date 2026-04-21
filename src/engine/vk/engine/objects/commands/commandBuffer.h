@@ -10,10 +10,13 @@ namespace vax::vk {
             const vax::vk::Device& device,
             const VkCommandPool commandPool,
             VkCommandBuffer vkCommandBuffer
-        ) : _commandPool(commandPool), _device(device) {
+        ) : _commandPool(commandPool), _device(device), vkCommandBuffer(vkCommandBuffer) {
         };
 
         ~CommandBuffer() {
+            if (_isBegun) {
+                end();
+            }
             vkFreeCommandBuffers(_device.get().vkDevice, _commandPool, 1, &vkCommandBuffer);
         }
 
@@ -28,5 +31,6 @@ namespace vax::vk {
     private:
         const VkCommandPool _commandPool;
         std::reference_wrapper<const vax::vk::Device> _device;
+        bool _isBegun = false;
     };
 }

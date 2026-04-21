@@ -1,7 +1,7 @@
 #pragma once
 
 #include "luna.h"
-#include "VAXMath.hpp"
+#include "vaxMath.h"
 #include "sampler.h"
 
 namespace vax::textures {

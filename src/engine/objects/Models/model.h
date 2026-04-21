@@ -1,8 +1,7 @@
-#ifndef Model_hpp
-#define Model_hpp
+#pragma once
 
 #include "luna.h"
-#include "Transform.hpp"
+#include "transform.h"
 
 class Model {
 public:
@@ -11,5 +10,3 @@ public:
     Model() { };
     virtual ~Model() { };
 };
-
-#endif

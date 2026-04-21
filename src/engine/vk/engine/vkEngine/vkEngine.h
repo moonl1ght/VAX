@@ -12,6 +12,7 @@
 #include "renderDestination.h"
 #include "descriptorSetManager.h"
 #include "commandManager.h"
+#include "syncObjectsManager.h"
 
 namespace vax::vk {
     class Device;
@@ -50,10 +51,7 @@ namespace vax::vk {
         std::unique_ptr<vax::vk::DescriptorSetManager> descriptorSetManager;
         std::unique_ptr<vax::vk::PipelineManager> pipelineManager;
         std::unique_ptr<vax::vk::CommandManager> commandManager;
-
-        std::vector<VkSemaphore> imageAvailableSemaphores;
-        std::vector<VkSemaphore> renderFinishedSemaphores;
-        std::vector<VkFence> inFlightFences;
+        std::unique_ptr<vax::vk::SyncObjectsManager> syncObjectsManager;
 
         bool setup();
         void cleanup();
@@ -65,7 +63,6 @@ namespace vax::vk {
         std::reference_wrapper<vax::vk::Window> _window;
 
         bool setupDebugMessenger();
-        bool createSyncObjects();
         VkResult createAllocator();
     };
 }

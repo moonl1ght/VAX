@@ -7,6 +7,10 @@
 #include "ShaderUniforms.h"
 
 namespace vax::vk {
+    class Engine;
+}
+
+namespace vax::vk {
 
     struct DescriptorLayoutBuilder {
         std::vector<VkDescriptorSetLayoutBinding> bindings;

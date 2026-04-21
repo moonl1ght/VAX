@@ -1,7 +1,7 @@
 #pragma once
 
 #include "luna.h"
-#include "DrawableModel.hpp"
+#include "drawableModel.h"
 #include "vkObject.h"
 
 class ModelLoader final: public vax::VkObject {

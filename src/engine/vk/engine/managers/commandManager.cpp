@@ -11,11 +11,12 @@ bool vax::vk::CommandManager::setup() {
 }
 
 void vax::vk::CommandManager::cleanup() {
-    vkDestroyCommandPool(_device.get().vkDevice, commandPool, nullptr);
 
     for (size_t i = 0; i < commandBuffers.size(); ++i) {
         vkFreeCommandBuffers(_device.get().vkDevice, commandPool, 1, &commandBuffers[i]);
     }
+
+    vkDestroyCommandPool(_device.get().vkDevice, commandPool, nullptr);
 
     commandBuffers.clear();
     commandPool = VK_NULL_HANDLE;

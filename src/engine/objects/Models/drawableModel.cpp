@@ -1,4 +1,4 @@
-#include "DrawableModel.hpp"
+#include "drawableModel.h"
 
 void DrawableModel::draw(
     vax::vk::Engine* vkEngine, VkCommandBuffer commandBuffer, const vax::vk::PipelineManager& pipelineManager, float time
@@ -17,5 +17,5 @@ void DrawableModel::draw(
         sizeof(DrawPushConstants),
         &drawPushConstants
     );
-    mesh->draw(vkEngine, commandBuffer);
+    mesh->forceDraw(vkEngine, commandBuffer);
 }

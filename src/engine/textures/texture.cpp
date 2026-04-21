@@ -1,5 +1,5 @@
 #include "texture.h"
-#include "TextureLoader.hpp"
+#include "textureLoader.h"
 #include "imageUtils.h"
 
 using namespace vax;

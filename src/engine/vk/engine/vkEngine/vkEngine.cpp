@@ -1,5 +1,5 @@
 #include "vkEngine.h"
-#include "TextureLoader.hpp"
+#include "textureLoader.h"
 #include "texture.h"
 #include "renderDestination.h"
 #include "descriptorSetManager.h"
@@ -115,7 +115,13 @@ bool vax::vk::Engine::setup() {
         }
     );
 
-    if (!createSyncObjects()) return false;
+    syncObjectsManager = std::make_unique<SyncObjectsManager>(*device);
+    if (!syncObjectsManager->setup()) return false;
+    deletionQueue.push_function(
+        [&]() {
+            syncObjectsManager->cleanup();
+        }
+    );
 
     swapchain = std::make_unique<Swapchain>(_window.get(), *device);
     if (!swapchain->setup()) return false;
@@ -217,42 +223,6 @@ bool vax::vk::Engine::setupDebugMessenger() {
         [&]() {
             LOG_INFO("Destroying debug messenger...");
             DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-        }
-    );
-
-    return true;
-}
-
-bool vax::vk::Engine::createSyncObjects() {
-    LOG_INFO("Creating synchronization objects...");
-    imageAvailableSemaphores.resize(Engine::MAX_FRAMES_IN_FLIGHT);
-    renderFinishedSemaphores.resize(Engine::MAX_FRAMES_IN_FLIGHT);
-    inFlightFences.resize(Engine::MAX_FRAMES_IN_FLIGHT);
-    VkSemaphoreCreateInfo semaphoreInfo{};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-    VkFenceCreateInfo fenceInfo{};
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-    for (size_t i = 0; i < Engine::MAX_FRAMES_IN_FLIGHT; i++) {
-        if (!VK_CHECK(vkCreateSemaphore(device->vkDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i])) ||
-            !VK_CHECK(vkCreateSemaphore(device->vkDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i])) ||
-            !VK_CHECK(vkCreateFence(device->vkDevice, &fenceInfo, nullptr, &inFlightFences[i]))) {
-
-            LOG_ERROR("Failed to create synchronization objects for a frame!");
-            return false;
-        }
-    }
-
-    deletionQueue.push_function(
-        [&]() {
-            LOG_INFO("Destroying synchronization objects...");
-            for (size_t i = 0; i < Engine::MAX_FRAMES_IN_FLIGHT; i++) {
-                vkDestroySemaphore(device->vkDevice, imageAvailableSemaphores[i], nullptr);
-                vkDestroySemaphore(device->vkDevice, renderFinishedSemaphores[i], nullptr);
-                vkDestroyFence(device->vkDevice, inFlightFences[i], nullptr);
-            }
         }
     );
 

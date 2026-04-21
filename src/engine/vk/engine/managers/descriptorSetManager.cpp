@@ -127,7 +127,7 @@ std::optional<VkDescriptorSet> vax::vk::DescriptorSetManager::getGlobalDescripto
 
     for (size_t i = 0; i < _vkEngine->MAX_FRAMES_IN_FLIGHT; i++) {
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = uniformBuffer->vkBuffer;
+        bufferInfo.buffer = uniformBuffer->getVkBuffer();
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
@@ -248,9 +248,9 @@ bool vax::vk::DescriptorSetManager::createGlobalDescriptorSetLayout() {
 void vax::vk::DescriptorWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t offset) {
     VkDescriptorBufferInfo& bufferInfo = _bufferInfos.emplace_back(
         VkDescriptorBufferInfo{
-            .buffer = buffer->vkBuffer,
+            .buffer = buffer->getVkBuffer(),
             .offset = offset,
-            .range = buffer->size
+            .range = buffer->getSize()
         }
     );
 

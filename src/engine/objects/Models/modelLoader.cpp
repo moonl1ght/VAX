@@ -1,4 +1,4 @@
-#include "ModelLoader.hpp"
+#include "modelLoader.h"
 #include "tiny_obj_loader.h"
 
 std::optional<DrawableModel*> ModelLoader::loadModel(const std::string& path) {
@@ -12,7 +12,7 @@ std::optional<DrawableModel*> ModelLoader::loadModel(const std::string& path) {
         Logger::getInstance().error(warn + err);
         return std::nullopt;
     }
-    std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>(*vkEngine->device);
+    std::unique_ptr<vax::objects::Mesh> mesh = std::make_unique<vax::objects::Mesh>(*vkEngine->device);
     std::unordered_map<Vertex, uint32_t> uniqueVertices{};
 
     for (const auto& shape : shapes) {

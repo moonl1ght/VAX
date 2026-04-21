@@ -14,8 +14,13 @@ namespace vax::textures {
         ) : _device(device), _allocator(allocator) {
         };
 
-        std::optional<vax::textures::Texture> buildDepthTexture(VkFormat format, vax::math::SizeUI size, vax::vk::Engine* vkEngine);
-        std::optional<vax::textures::Texture> buildTexture(VkFormat format, vax::math::SizeUI size, vax::vk::Engine* vkEngine);
+        std::optional<vax::textures::Texture> buildDepthTexture(
+            VkFormat format, vax::math::SizeUI size, vax::vk::Engine* vkEngine
+        );
+
+        std::optional<vax::textures::Texture> buildTexture(
+            VkFormat format, vax::math::SizeUI size, vax::vk::Engine* vkEngine
+        );
 
     private:
         Logger _logger = Logger("TextureBuilder");

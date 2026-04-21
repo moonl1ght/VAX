@@ -7,9 +7,17 @@ bool vax::vk::CommandBuffer::begin() {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    return VK_CHECK(vkBeginCommandBuffer(vkCommandBuffer, &beginInfo));
+    auto result = VK_CHECK(vkBeginCommandBuffer(vkCommandBuffer, &beginInfo));
+    if (result == VK_SUCCESS) {
+        _isBegun = true;
+    }
+    return result;
 }
 
 bool vax::vk::CommandBuffer::end() {
-    return VK_CHECK(vkEndCommandBuffer(vkCommandBuffer));
+    auto result = VK_CHECK(vkEndCommandBuffer(vkCommandBuffer));
+    if (result == VK_SUCCESS) {
+        _isBegun = false;
+    }
+    return result == VK_SUCCESS;
 }

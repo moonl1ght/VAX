@@ -1,4 +1,4 @@
-#include "TextureLoader.hpp"
+#include "textureLoader.h"
 #include "imageUtils.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "./deps/stb_image.h"
@@ -15,13 +15,13 @@ Texture* TextureLoader::loadTexture(std::string path, bool isAutoLoadImageView) 
         throw std::runtime_error("failed to load texture image!");
     }
 
-    vk::Buffer stagingBuffer = vk::Buffer(
+    auto stagingBuffer = vk::Buffer::allocateAndFillData(
         *vkEngine->device,
         pixels,
         imageSize,
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-    );
+    ).value();
 
     stbi_image_free(pixels);
 
@@ -45,7 +45,7 @@ Texture* TextureLoader::loadTexture(std::string path, bool isAutoLoadImageView) 
     auto commandBuffer1 = vkEngine->commandManager->createSingleTimeCommandBuffer(); // TODO: fix this
     vax::copyBufferToImage(
         commandBuffer1,
-        stagingBuffer.vkBuffer,
+        stagingBuffer.getVkBuffer(),
         textureImage,
         static_cast<uint32_t>(texWidth),
         static_cast<uint32_t>(texHeight)

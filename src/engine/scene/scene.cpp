@@ -1,7 +1,7 @@
 #include "scene.h"
-#include "TextureLoader.hpp"
-#include "ModelLoader.hpp"
-#include "Primitives2D.hpp"
+#include "textureLoader.h"
+#include "modelLoader.h"
+#include "primitives2d.h"
 #include "swapchain.h"
 
 void vax::Scene::update(float deltaTime) {

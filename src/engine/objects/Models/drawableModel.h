@@ -2,16 +2,16 @@
 #define DrawableModel_hpp
 
 #include "luna.h"
-#include "Model.hpp"
-#include "Mesh.hpp"
+#include "model.h"
+#include "mesh.h"
 #include "pipelineManager.h"
 #include "ShaderUniforms.h"
 
 class DrawableModel : public Model {
 public:
-    std::unique_ptr<Mesh> mesh;
+    std::unique_ptr<vax::objects::Mesh> mesh;
 
-    DrawableModel(std::unique_ptr<Mesh> mesh): mesh(std::move(mesh)) {};
+    DrawableModel(std::unique_ptr<vax::objects::Mesh> mesh): mesh(std::move(mesh)) {};
     ~DrawableModel() { };
 
     DrawableModel(const DrawableModel& other) = delete;

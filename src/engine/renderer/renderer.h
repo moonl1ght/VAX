@@ -15,10 +15,6 @@ public:
     };
 
     ~Renderer() {
-        for (size_t i = 0; i < vax::vk::Engine::MAX_FRAMES_IN_FLIGHT; i++) {
-            delete _sceneUniformBuffers[i];
-            _sceneUniformBuffers[i] = nullptr;
-        }
         _sceneUniformBuffers.clear();
         _sceneUniformBuffersMapped.clear();
     };
@@ -29,7 +25,7 @@ public:
 private:
     vax::vk::Engine* _vkEngine;
 
-    std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
+    std::vector<vax::vk::Buffer> _sceneUniformBuffers;
     std::vector<void*> _sceneUniformBuffersMapped;
 
     uint32_t _currentFrame = 0;
