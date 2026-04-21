@@ -21,3 +21,12 @@ bool vax::vk::CommandBuffer::end() {
     }
     return result == VK_SUCCESS;
 }
+
+void vax::vk::CommandBuffer::submitAndWait(VkQueue queue) {
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &vkCommandBuffer;
+    vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(queue);
+}

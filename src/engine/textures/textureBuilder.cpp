@@ -35,6 +35,7 @@ std::optional<Texture> vax::textures::TextureBuilder::buildDepthTexture(VkFormat
         format,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        vkEngine->queueManager->graphicsQueue,
         VK_IMAGE_ASPECT_DEPTH_BIT
     );
     texture.loadImageView();

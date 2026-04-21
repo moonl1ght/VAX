@@ -89,6 +89,7 @@ void vax::transitionImageLayout(
     VkFormat format,
     VkImageLayout oldLayout,
     VkImageLayout newLayout,
+    VkQueue submitQueue,
     VkImageAspectFlags aspectMask
 ) {
     commandBuffer.begin();
@@ -143,6 +144,7 @@ void vax::transitionImageLayout(
     );
 
     commandBuffer.end();
+    commandBuffer.submitAndWait(submitQueue);
 }
 
 void vax::copyBufferToImage(
@@ -150,7 +152,8 @@ void vax::copyBufferToImage(
     VkBuffer buffer,
     VkImage image,
     uint32_t width,
-    uint32_t height
+    uint32_t height,
+    VkQueue submitQueue
 ) {
     commandBuffer.begin();
 
@@ -174,6 +177,7 @@ void vax::copyBufferToImage(
     );
 
     commandBuffer.end();
+    commandBuffer.submitAndWait(submitQueue);
 }
 
 std::optional<std::pair<VkImage, VmaAllocation>> vax::createImage(

@@ -4,7 +4,7 @@
 #include "device.h"
 #include "buffer.h"
 #include "texture.h"
-#include "ShaderUniforms.h"
+#include "shaderUniforms.h"
 
 namespace vax::vk {
     class Engine;

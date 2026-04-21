@@ -8,7 +8,6 @@
 using namespace vax;
 
 void Renderer::prepare() {
-    // Logger::getInstance().log("Preparing renderer...");
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
     _sceneUniformBuffers.reserve(vk::Engine::MAX_FRAMES_IN_FLIGHT);
     _sceneUniformBuffersMapped.resize(vk::Engine::MAX_FRAMES_IN_FLIGHT);
@@ -235,7 +234,6 @@ bool Renderer::recordCommandBuffer(
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _vkEngine->pipelineManager->getPipeline());
 
-    std::cout << "Global descriptor set: " << _vkEngine->descriptorSetManager->getGlobalDescriptorSetLayout() << std::endl;
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -250,15 +248,7 @@ bool Renderer::recordCommandBuffer(
     scissor.extent = _vkEngine->swapchain->swapchainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    std::cout << "Scene uniform buffer: " << _sceneUniformBuffers[_currentFrame].getVkBuffer() << std::endl;
-    std::cout << "Scene texture: " << scene->texture->textureImageView << std::endl;
-
-    std::cout << "Copying scene uniform buffer..." << _sceneUniformBuffersMapped.size() << std::endl;
-    std::cout << "Current frame: " << scene->getUBO().proj[0][0] << std::endl;
-
     memcpy(_sceneUniformBuffersMapped[_currentFrame], &scene->getUBO(), sizeof(scene->getUBO()));
-
-    std::cout << "Getting global descriptor set..." << std::endl;
 
     auto descriptorSet = _vkEngine->descriptorSetManager->getGlobalDescriptorSet(
         _currentFrame, _sceneUniformBuffers[_currentFrame], *scene->texture
@@ -269,7 +259,6 @@ bool Renderer::recordCommandBuffer(
     }
     std::vector<VkDescriptorSet> descriptorSets = { descriptorSet.value() };
 
-    std::cout << "Binding descriptor sets..." << std::endl;
     vkCmdBindDescriptorSets(
         commandBuffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -284,8 +273,6 @@ bool Renderer::recordCommandBuffer(
     for (auto& drawableModel : scene->getDrawableModels()) {
         drawableModel->draw(_vkEngine, commandBuffer, *(_vkEngine->pipelineManager), deltaTime);
     }
-
-    std::cout << "Ending render pass..." << std::endl;
 
     vkCmdEndRenderPass(commandBuffer);
 

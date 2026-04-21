@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vertex.h"
+#include "vertex.h"
 #include "descriptorSetManager.h"
 #include "device.h"
 #include "luna.h"

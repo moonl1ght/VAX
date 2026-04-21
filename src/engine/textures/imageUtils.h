@@ -15,6 +15,7 @@ namespace vax {
         VkFormat format,
         VkImageLayout oldLayout,
         VkImageLayout newLayout,
+        VkQueue submitQueue,
         VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
     );
 
@@ -31,7 +32,8 @@ namespace vax {
         VkBuffer buffer,
         VkImage image,
         uint32_t width,
-        uint32_t height
+        uint32_t height,
+        VkQueue submitQueue
     );
 
     std::optional<VkImageView> createImageView(

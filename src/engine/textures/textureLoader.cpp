@@ -34,29 +34,34 @@ Texture* TextureLoader::loadTexture(std::string path, bool isAutoLoadImageView) 
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
     ).value();
 
+    VkQueue graphicsQueue = vkEngine->queueManager->graphicsQueue;
+
     auto commandBuffer = vkEngine->commandManager->createSingleTimeCommandBuffer();
     vax::transitionImageLayout(
         commandBuffer,
         textureImage,
         VK_FORMAT_R8G8B8A8_SRGB,
         VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        graphicsQueue
     );
-    auto commandBuffer1 = vkEngine->commandManager->createSingleTimeCommandBuffer(); // TODO: fix this
+    auto commandBuffer1 = vkEngine->commandManager->createSingleTimeCommandBuffer();
     vax::copyBufferToImage(
         commandBuffer1,
         stagingBuffer.getVkBuffer(),
         textureImage,
         static_cast<uint32_t>(texWidth),
-        static_cast<uint32_t>(texHeight)
+        static_cast<uint32_t>(texHeight),
+        graphicsQueue
     );
-    auto commandBuffer2 = vkEngine->commandManager->createSingleTimeCommandBuffer(); // TODO: fix this
+    auto commandBuffer2 = vkEngine->commandManager->createSingleTimeCommandBuffer();
     vax::transitionImageLayout(
         commandBuffer2,
         textureImage,
         VK_FORMAT_R8G8B8A8_SRGB,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        graphicsQueue
     );
     auto texture = new Texture(
         *vkEngine->device,

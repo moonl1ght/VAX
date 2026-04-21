@@ -27,6 +27,7 @@ namespace vax::vk {
 
         bool begin();
         bool end();
+        void submitAndWait(VkQueue queue);
 
     private:
         const VkCommandPool _commandPool;
