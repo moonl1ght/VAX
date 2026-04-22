@@ -7,10 +7,10 @@
 using namespace vax::vk;
 
 bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
-    auto shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/shader.vert.spv"));
+    auto shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/base.vert.spv"));
     auto vertShaderModule = shaderBuilder.build(_device.get().vkDevice);
 
-    shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/shader.frag.spv"));
+    shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/base.frag.spv"));
     auto fragShaderModule = shaderBuilder.build(_device.get().vkDevice);
 
     shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/background.comp.spv"));
@@ -32,7 +32,7 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
         return false;
     }
 
-    backgroundPipelineBuilder.setShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, backgroundShaderModule.value(), "main");
+    backgroundPipelineBuilder.setShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, backgroundShaderModule.value(), "compMain");
     auto backgroundPipeline = backgroundPipelineBuilder.build();
     if (backgroundPipeline.has_value()) {
         _backgroundPipeline = std::move(*backgroundPipeline);

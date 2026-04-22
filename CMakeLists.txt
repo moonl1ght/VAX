@@ -41,7 +41,22 @@ endif()
 
 add_compile_definitions(PROJ_DIR="${PROJECT_SOURCE_DIR}")
 
-find_program(GLSL_VALIDATOR glslangValidator HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
+if(WIN32)
+    file(GLOB _SLANG_BIN_HINTS "C:/slang-*/bin")
+endif()
+
+find_program(SLANG_COMPILER slangc HINTS
+    $ENV{SLANG_DIR}/bin
+    ${_SLANG_BIN_HINTS}
+    $ENV{VULKAN_SDK}/Bin
+    $ENV{VULKAN_SDK}/Bin32
+    /usr/bin
+    /usr/local/bin
+)
+if(NOT SLANG_COMPILER)
+    message(FATAL_ERROR "slangc not found. Install Slang and ensure it is on PATH or set SLANG_DIR.")
+endif()
+message(STATUS "Found slangc: ${SLANG_COMPILER}")
 
 # add_subdirectory(src/)
 # target_sources(src/**.cpp)
@@ -55,23 +70,55 @@ file(GLOB_RECURSE all_SRCS
     "${PROJECT_SOURCE_DIR}/src/*.spv"
 )
 
-file(GLOB_RECURSE GLSL_SOURCE_FILES
-    "${PROJECT_SOURCE_DIR}/src/engine/shaders/*.frag"
-    "${PROJECT_SOURCE_DIR}/src/engine/shaders/*.vert"
-    "${PROJECT_SOURCE_DIR}/src/engine/shaders/*.comp"
+# Convention: name.stage.slang → name.stage.spv
+# Stage is auto-derived from the second extension.
+set(STAGE_NAME_vert vertex)
+set(STAGE_NAME_frag fragment)
+set(STAGE_NAME_comp compute)
+set(STAGE_NAME_geom geometry)
+set(STAGE_NAME_tesc hull)
+set(STAGE_NAME_tese domain)
+
+set(ENTRY_NAME_vert vertMain)
+set(ENTRY_NAME_frag fragMain)
+set(ENTRY_NAME_comp compMain)
+set(ENTRY_NAME_geom geomMain)
+set(ENTRY_NAME_tesc tescMain)
+set(ENTRY_NAME_tese teseMain)
+
+file(GLOB_RECURSE SLANG_SOURCE_FILES
+    "${PROJECT_SOURCE_DIR}/src/engine/shaders/*.vert.slang"
+    "${PROJECT_SOURCE_DIR}/src/engine/shaders/*.frag.slang"
+    "${PROJECT_SOURCE_DIR}/src/engine/shaders/*.comp.slang"
+    "${PROJECT_SOURCE_DIR}/src/engine/shaders/*.geom.slang"
+    "${PROJECT_SOURCE_DIR}/src/engine/shaders/*.tesc.slang"
+    "${PROJECT_SOURCE_DIR}/src/engine/shaders/*.tese.slang"
 )
 
-foreach(GLSL ${GLSL_SOURCE_FILES})
-    message(STATUS "BUILDING SHADER")
-    get_filename_component(FILE_NAME ${GLSL} NAME)
-    set(SPIRV "${PROJECT_SOURCE_DIR}/src/engine/shaders/out/${FILE_NAME}.spv")
-    message(STATUS ${GLSL})
+file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/src/engine/shaders/out")
+
+foreach(SLANG ${SLANG_SOURCE_FILES})
+    string(REGEX MATCH "([^/\\]+)\\.([^.]+)\\.slang$" _ "${SLANG}")
+    set(BASE_NAME    "${CMAKE_MATCH_1}")
+    set(SUFFIX       "${CMAKE_MATCH_2}")
+    set(STAGE        "${STAGE_NAME_${SUFFIX}}")
+    set(EP           "${ENTRY_NAME_${SUFFIX}}")
+    set(SPIRV        "${PROJECT_SOURCE_DIR}/src/engine/shaders/out/${BASE_NAME}.${SUFFIX}.spv")
+    message(STATUS "BUILDING SLANG SHADER: ${BASE_NAME} [${STAGE}]")
     add_custom_command(
         OUTPUT ${SPIRV}
-        COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
-        DEPENDS ${GLSL})
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_SOURCE_DIR}/src/engine/shaders/out"
+        COMMAND ${SLANG_COMPILER} "${SLANG}"
+            -entry ${EP}
+            -stage ${STAGE}
+            -target spirv
+            -o "${SPIRV}"
+        DEPENDS ${SLANG}
+        COMMENT "Compiling ${BASE_NAME} [${STAGE}]"
+        VERBATIM
+    )
     list(APPEND SPIRV_BINARY_FILES ${SPIRV})
-endforeach(GLSL)
+endforeach()
 
 add_custom_target(
     Shaders
@@ -95,6 +142,7 @@ endmacro()
 HEADER_DIRECTORIES(header_list)
 add_executable(Luna main.cpp ${all_SRCS})
 target_include_directories(Luna PUBLIC ${header_list})
+add_dependencies(Luna Shaders)
 
 if(WIN32)
     add_custom_command(TARGET Luna POST_BUILD
