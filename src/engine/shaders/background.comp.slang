@@ -4,9 +4,8 @@ RWTexture2D<float4> image;
 [shader("compute")]
 [numthreads(16, 16, 1)]
 void compMain(
-    uint3 globalID : SV_DispatchThreadID,
-    uint3 localID  : SV_GroupThreadID)
-{
+    uint3 globalID: SV_DispatchThreadID,
+    uint3 localID: SV_GroupThreadID) {
     int2 texelCoord = int2(globalID.xy);
 
     uint width, height;

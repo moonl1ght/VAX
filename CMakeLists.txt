@@ -70,8 +70,6 @@ file(GLOB_RECURSE all_SRCS
     "${PROJECT_SOURCE_DIR}/src/*.spv"
 )
 
-# Convention: name.stage.slang → name.stage.spv
-# Stage is auto-derived from the second extension.
 set(STAGE_NAME_vert vertex)
 set(STAGE_NAME_frag fragment)
 set(STAGE_NAME_comp compute)

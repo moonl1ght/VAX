@@ -215,7 +215,6 @@ bool Renderer::recordCommandBuffer(
     //     );
     // }
 
-    std::cout << "Recording command buffer for image index: " << imageIndex << std::endl;
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = _vkEngine->renderPass->getVkRenderPass();

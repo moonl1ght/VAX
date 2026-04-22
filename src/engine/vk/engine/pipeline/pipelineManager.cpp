@@ -32,7 +32,7 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
         return false;
     }
 
-    backgroundPipelineBuilder.setShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, backgroundShaderModule.value(), "compMain");
+    backgroundPipelineBuilder.setShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, backgroundShaderModule.value(), "main");
     auto backgroundPipeline = backgroundPipelineBuilder.build();
     if (backgroundPipeline.has_value()) {
         _backgroundPipeline = std::move(*backgroundPipeline);
