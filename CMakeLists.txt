@@ -43,6 +43,12 @@ add_compile_definitions(PROJ_DIR="${PROJECT_SOURCE_DIR}")
 
 if(WIN32)
     file(GLOB _SLANG_BIN_HINTS "C:/slang-*/bin")
+elseif(APPLE)
+    file(GLOB _SLANG_BIN_HINTS "/Applications/Slang.app/Contents/MacOS/bin")
+endif()
+
+if(APPLE)
+    set(SLANG_DIR "/Users/alexander/slang-2026/bin/")
 endif()
 
 find_program(SLANG_COMPILER slangc HINTS
