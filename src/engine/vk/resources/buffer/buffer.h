@@ -4,15 +4,21 @@
 #include "luna.h"
 #include "device.h"
 #include "bufferData.h"
+#include "bufferUtils.h"
 
 namespace vax::vk {
     class QueueManager;
     class CommandManager;
 }
 
+namespace vax {
+    class BufferManager;
+}
+
 namespace vax::vk {
     class Buffer final {
     public:
+        friend class vax::BufferManager;
 
         static std::optional<Buffer> allocateAndFillData(
             const vax::vk::Device& device,
@@ -29,9 +35,7 @@ namespace vax::vk {
             VkMemoryPropertyFlags properties
         );
 
-        ~Buffer() {
-            cleanup();
-        }
+        ~Buffer() { }
 
         Buffer(const vax::vk::Device& device) : _device(device) {};
 
@@ -43,10 +47,14 @@ namespace vax::vk {
             : _device(other._device)
             , _vkBuffer(other._vkBuffer)
             , _vkBufferMemory(other._vkBufferMemory)
-            , _size(other._size) {
+            , _size(other._size)
+            , _isDetached(other._isDetached)
+            , _id(other._id) {
             other._vkBuffer = VK_NULL_HANDLE;
             other._vkBufferMemory = VK_NULL_HANDLE;
             other._size = 0;
+            other._isDetached = true;
+            other._id = -1;
         }
 
         Buffer& operator=(Buffer&& other) noexcept {
@@ -56,9 +64,13 @@ namespace vax::vk {
                 _vkBuffer = other._vkBuffer;
                 _vkBufferMemory = other._vkBufferMemory;
                 _size = other._size;
+                _isDetached = other._isDetached;
+                _id = other._id;
                 other._vkBuffer = VK_NULL_HANDLE;
                 other._vkBufferMemory = VK_NULL_HANDLE;
                 other._size = 0;
+                other._isDetached = true;
+                other._id = -1;
             }
             return *this;
         }
@@ -90,7 +102,7 @@ namespace vax::vk {
 
         bool isEmpty() const;
 
-        bool isGpuAllocated() const;
+        bool isAllocated() const;
 
         bool cleanup();
 
@@ -100,17 +112,27 @@ namespace vax::vk {
 
         VkDeviceSize getSize() const { return _size; }
 
+        BufferId id() const { return _id; }
+
+        bool isDetached() const { return _isDetached; }
+
     private:
         vax::utils::Logger _logger = vax::utils::Logger("Buffer");
         std::reference_wrapper<const vax::vk::Device> _device;
 
+        BufferId _id = 0;
         VkBuffer _vkBuffer = VK_NULL_HANDLE;
         VkDeviceMemory _vkBufferMemory = VK_NULL_HANDLE;
         VkDeviceSize _size = 0;
+        bool _isDetached = true;
 
-        bool _allocateOnGpu(
+        bool _allocate(
             VkBufferUsageFlags usage,
             VkMemoryPropertyFlags properties
         );
+
+        bool _destroy();
+
+        void _detach();
     };
 }

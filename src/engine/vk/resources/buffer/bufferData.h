@@ -19,7 +19,9 @@ namespace vax::vk {
 
         BufferData& operator=(const BufferData& other) = delete;
 
-        BufferData(BufferData&& other) noexcept : data(other.data), _dataDeleter(std::move(other._dataDeleter)) {
+        BufferData(BufferData&& other) noexcept
+            : data(other.data)
+            , _dataDeleter(std::move(other._dataDeleter)) {
             other.data = nullptr;
         }
 

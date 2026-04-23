@@ -14,7 +14,7 @@ std::optional<Buffer> Buffer::allocateAndFillData(
 ) {
     auto buffer = Buffer(device);
     buffer._size = size;
-    if (!buffer._allocateOnGpu(usage, properties)) return std::nullopt;
+    if (!buffer._allocate(usage, properties)) return std::nullopt;
     if (!buffer.fill(data)) return std::nullopt;
     return buffer;
 }
@@ -27,19 +27,27 @@ std::optional<Buffer> Buffer::allocate(
 ) {
     auto buffer = Buffer(device);
     buffer._size = size;
-    if (!buffer._allocateOnGpu(usage, properties)) return std::nullopt;
+    if (!buffer._allocate(usage, properties)) return std::nullopt;
     return buffer;
 }
 
 bool Buffer::cleanup()
 {
-    if (_vkBuffer != VK_NULL_HANDLE)
-    {
+    if (isDetached()) return true;
+    return _destroy();
+}
+
+void Buffer::_detach() {
+    _isDetached = true;
+    _id = -1;
+}
+
+bool Buffer::_destroy() {
+    if (_vkBuffer != VK_NULL_HANDLE) {
         vkDestroyBuffer(_device.get().vkDevice, _vkBuffer, nullptr);
         _vkBuffer = VK_NULL_HANDLE;
     }
-    if (_vkBufferMemory != VK_NULL_HANDLE)
-    {
+    if (_vkBufferMemory != VK_NULL_HANDLE) {
         vkFreeMemory(_device.get().vkDevice, _vkBufferMemory, nullptr);
         _vkBufferMemory = VK_NULL_HANDLE;
     }
@@ -47,7 +55,7 @@ bool Buffer::cleanup()
 }
 
 void Buffer::bind(void* data) {
-    if (isEmpty() || !isGpuAllocated()) {
+    if (isEmpty() || !isAllocated()) {
         return;
     }
 
@@ -69,7 +77,7 @@ bool Buffer::reload(
 {
     if (!cleanup()) return false;
     _size = size;
-    if (!_allocateOnGpu(usage, properties)) return false;
+    if (!_allocate(usage, properties)) return false;
     if (!fill(data)) return false;
     return true;
 }
@@ -80,20 +88,20 @@ bool Buffer::load(
     VkBufferUsageFlags usage,
     VkMemoryPropertyFlags properties)
 {
-    if (isGpuAllocated())
+    if (isAllocated())
     {
         return false;
     }
 
     _size = size;
-    if (!_allocateOnGpu(usage, properties)) return false;
+    if (!_allocate(usage, properties)) return false;
     if (!fill(data)) return false;
     return true;
 }
 
 bool Buffer::fill(const void* fillData)
 {
-    if (isEmpty() || !isGpuAllocated() || fillData == nullptr)
+    if (isEmpty() || !isAllocated() || fillData == nullptr)
     {
         return false;
     }
@@ -135,17 +143,16 @@ bool Buffer::isEmpty() const
     return _size == 0;
 }
 
-bool Buffer::isGpuAllocated() const
+bool Buffer::isAllocated() const
 {
     return _vkBuffer != VK_NULL_HANDLE && _vkBufferMemory != VK_NULL_HANDLE;
 }
 
-bool Buffer::_allocateOnGpu(
+bool Buffer::_allocate(
     VkBufferUsageFlags usage,
-    VkMemoryPropertyFlags properties)
-{
-    if (isGpuAllocated())
-    {
+    VkMemoryPropertyFlags properties
+) {
+    if (isAllocated()) {
         return false;
     }
 
@@ -156,8 +163,7 @@ bool Buffer::_allocateOnGpu(
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateBuffer(_device.get().vkDevice, &bufferInfo, nullptr, &_vkBuffer) != VK_SUCCESS)
-    {
+    if (vkCreateBuffer(_device.get().vkDevice, &bufferInfo, nullptr, &_vkBuffer) != VK_SUCCESS) {
         _logger.error("failed to create buffer!");
         return false;
     }
@@ -172,8 +178,7 @@ bool Buffer::_allocateOnGpu(
         _device.get().vkPhysicalDevice, memRequirements.memoryTypeBits, properties
     );
 
-    if (vkAllocateMemory(_device.get().vkDevice, &allocInfo, nullptr, &_vkBufferMemory) != VK_SUCCESS)
-    {
+    if (vkAllocateMemory(_device.get().vkDevice, &allocInfo, nullptr, &_vkBufferMemory) != VK_SUCCESS) {
         _logger.error("failed to allocate buffer memory!");
         return false;
     }

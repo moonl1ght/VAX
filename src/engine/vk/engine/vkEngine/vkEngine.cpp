@@ -7,6 +7,7 @@
 #include "vkInstanceBuilder.h"
 #include "renderPassBuilder.h"
 #include "renderDestinationBuilder.h"
+#include "resourceManager.h"
 
 using namespace vax::vk;
 

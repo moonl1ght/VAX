@@ -53,6 +53,8 @@ namespace vax::vk {
         std::unique_ptr<vax::vk::CommandManager> commandManager;
         std::unique_ptr<vax::vk::SyncObjectsManager> syncObjectsManager;
 
+        std::unique_ptr<vax::ResourceManager> resourceManager;
+
         bool setup();
         void cleanup();
         void resize();
