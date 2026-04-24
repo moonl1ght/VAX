@@ -6,6 +6,7 @@
 #include "pipelineManager.h"
 #include "shaderUniforms.h"
 #include "resourceHandle.h"
+#include "vkEngine.h"
 
 namespace vax::objects {
     class PrimitivesBuilder;

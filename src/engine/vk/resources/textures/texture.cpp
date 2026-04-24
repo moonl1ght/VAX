@@ -11,7 +11,6 @@ void vax::textures::Texture::loadImageView() {
 }
 
 void vax::textures::Texture::destroy() {
-    _logger.info("Destroying texture...");
     if (textureImageView != VK_NULL_HANDLE) {
         vkDestroyImageView(_device.get().vkDevice, textureImageView, nullptr);
         textureImageView = VK_NULL_HANDLE;

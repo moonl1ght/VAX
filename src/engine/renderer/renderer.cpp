@@ -122,46 +122,46 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     return true;
 }
 
-void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
-    VkClearColorValue clearValue;
-    float flash = std::abs(std::sin(_currentFrame / 120.f));
-    clearValue = { { 1.0f, 1.0f, 1.0f, 1.0f } };
+// void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
+//     VkClearColorValue clearValue;
+//     float flash = std::abs(std::sin(_currentFrame / 120.f));
+//     clearValue = { { 1.0f, 1.0f, 1.0f, 1.0f } };
 
-    VkImageSubresourceRange clearRange = vax::imageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
+//     VkImageSubresourceRange clearRange = vax::imageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
 
-    vkCmdClearColorImage(
-        commandBuffer,
-        _vkEngine->renderDestination->drawImage->textureImage,
-        VK_IMAGE_LAYOUT_GENERAL,
-        &clearValue,
-        1,
-        &clearRange
-    );
-    auto& backgroundPipeline = _vkEngine->pipelineManager->getBackgroundPipeline();
-    std::cout << "Background pipeline: " << backgroundPipeline.vkPipeline << std::endl;
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, backgroundPipeline.vkPipeline);
+//     vkCmdClearColorImage(
+//         commandBuffer,
+//         _vkEngine->renderDestination->drawImage->textureImage,
+//         VK_IMAGE_LAYOUT_GENERAL,
+//         &clearValue,
+//         1,
+//         &clearRange
+//     );
+//     auto& backgroundPipeline = _vkEngine->pipelineManager->getBackgroundPipeline();
+//     std::cout << "Background pipeline: " << backgroundPipeline.vkPipeline << std::endl;
+//     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, backgroundPipeline.vkPipeline);
 
-    auto drawBackgroundDescriptorSet = _vkEngine->descriptorSetManager->getDrawBackgroundDescriptorSet(_currentFrame);
-    if (!drawBackgroundDescriptorSet.has_value()) {
-        LOG_ERROR("Failed to get draw background descriptor set!");
-        return;
-    }
-    vax::vk::DescriptorWriter descriptorWriter;
-    descriptorWriter.writeStorageImage(_vkEngine->renderDestination->drawImage->textureImageView, 0);
-    descriptorWriter.updateSet(_vkEngine->device->vkDevice, drawBackgroundDescriptorSet.value());
-    vkCmdBindDescriptorSets(
-        commandBuffer,
-        VK_PIPELINE_BIND_POINT_COMPUTE,
-        backgroundPipeline.vkPipelineLayout,
-        0,
-        1,
-        &drawBackgroundDescriptorSet.value(),
-        0,
-        nullptr
-    );
+//     auto drawBackgroundDescriptorSet = _vkEngine->descriptorSetManager->getDrawBackgroundDescriptorSet(_currentFrame);
+//     if (!drawBackgroundDescriptorSet.has_value()) {
+//         LOG_ERROR("Failed to get draw background descriptor set!");
+//         return;
+//     }
+//     vax::vk::DescriptorWriter descriptorWriter;
+//     descriptorWriter.writeStorageImage(_vkEngine->renderDestination->drawImage->textureImageView, 0);
+//     descriptorWriter.updateSet(_vkEngine->device->vkDevice, drawBackgroundDescriptorSet.value());
+//     vkCmdBindDescriptorSets(
+//         commandBuffer,
+//         VK_PIPELINE_BIND_POINT_COMPUTE,
+//         backgroundPipeline.vkPipelineLayout,
+//         0,
+//         1,
+//         &drawBackgroundDescriptorSet.value(),
+//         0,
+//         nullptr
+//     );
 
-    vkCmdDispatch(commandBuffer, std::ceil(_vkEngine->renderDestination->drawImage->size.width / 16.0), std::ceil(_vkEngine->renderDestination->drawImage->size.height / 16.0), 1);
-}
+//     vkCmdDispatch(commandBuffer, std::ceil(_vkEngine->renderDestination->drawImage->size.width / 16.0), std::ceil(_vkEngine->renderDestination->drawImage->size.height / 16.0), 1);
+// }
 
 bool Renderer::recordCommandBuffer(
     VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime
@@ -249,14 +249,19 @@ bool Renderer::recordCommandBuffer(
 
     memcpy(_sceneUniformBuffersMapped[_currentFrame], &scene->getUBO(), sizeof(scene->getUBO()));
 
-    auto descriptorSet = _vkEngine->descriptorSetManager->getGlobalDescriptorSet(
-        _currentFrame, _sceneUniformBuffers[_currentFrame], *scene->texture
+    auto descriptorSetWriter = _vkEngine->descriptorSetManager->getDefaultDescriptorSetWriter(
+        _currentFrame, vax::vk::DescriptorSetLayout::DefaultType::BASE
     );
-    if (!descriptorSet.has_value()) {
-        _logger.error("Failed to get global descriptor set!");
+    if (descriptorSetWriter.has_value()) {
+        descriptorSetWriter.value().writeBuffer(&_sceneUniformBuffers[_currentFrame], 0);
+        // descriptorSet.writeTexture(scene->texture, 1);
+        descriptorSetWriter.value().update();
+    } else {
+        _logger.error("Failed to get default descriptor set writer!");
         return false;
     }
-    std::vector<VkDescriptorSet> descriptorSets = { descriptorSet.value() };
+    VkDescriptorSet descriptorSet = descriptorSetWriter.value().getDescriptorSet();
+    std::vector<VkDescriptorSet> descriptorSets = { descriptorSet };
 
     vkCmdBindDescriptorSets(
         commandBuffer,

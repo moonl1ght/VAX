@@ -2,7 +2,6 @@
 #include "textureLoader.h"
 #include "texture.h"
 #include "renderDestination.h"
-#include "descriptorSetManager.h"
 #include "vk_debug.h"
 #include "vkInstanceBuilder.h"
 #include "renderPassBuilder.h"
@@ -159,12 +158,13 @@ bool vax::vk::Engine::setup() {
         }
     );
 
-    descriptorSetManager = std::make_unique<DescriptorSetManager>(this);
+    descriptorSetManager = std::make_unique<DescriptorSetManager>(*device, MAX_FRAMES_IN_FLIGHT);
     if (!descriptorSetManager->setup()) return false;
     deletionQueue.push_function(
         [&]() {
             _logger.debug("Destroying descriptor set manager...");
-            descriptorSetManager = nullptr; // TODO: remove from destructor
+            descriptorSetManager->cleanup();
+            descriptorSetManager = nullptr;
         }
     );
 

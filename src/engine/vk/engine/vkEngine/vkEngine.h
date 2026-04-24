@@ -23,13 +23,12 @@ namespace vax::vk {
 namespace vax::vk {
     class Engine final {
     public:
-        static const int MAX_FRAMES_IN_FLIGHT = 2;
-
-        explicit Engine(vax::vk::Window& window) : _window(window) {};
+        static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
         const uint32_t vulkanApiVersion = VK_API_VERSION_1_3;
 
         const bool enableValidationLayers = true;
+
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"
         };
@@ -55,6 +54,15 @@ namespace vax::vk {
         std::unique_ptr<vax::vk::SyncObjectsManager> syncObjectsManager;
 
         std::unique_ptr<vax::ResourceManager> resourceManager;
+
+        explicit Engine(vax::vk::Window& window) : _window(window) {};
+
+        ~Engine() { };
+
+        Engine(const Engine& other) = delete;
+        Engine& operator=(const Engine& other) = delete;
+        Engine(Engine&& other) noexcept = delete;
+        Engine& operator=(Engine&& other) noexcept = delete;
 
         bool setup();
         void cleanup();
