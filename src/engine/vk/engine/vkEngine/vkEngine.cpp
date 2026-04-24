@@ -7,7 +7,6 @@
 #include "vkInstanceBuilder.h"
 #include "renderPassBuilder.h"
 #include "renderDestinationBuilder.h"
-#include "resourceManager.h"
 
 using namespace vax::vk;
 
@@ -60,7 +59,7 @@ bool vax::vk::Engine::setup() {
     }
     deletionQueue.push_function(
         [&]() {
-            _logger.info("Destroying instance...");
+            _logger.debug("Destroying instance...");
             vkDestroyInstance(instance, nullptr);
             instance = VK_NULL_HANDLE;
         }
@@ -103,7 +102,7 @@ bool vax::vk::Engine::setup() {
 
     deletionQueue.push_function(
         [&]() {
-            _logger.info("Destroying allocator...");
+            _logger.debug("Destroying allocator...");
             vmaDestroyAllocator(allocator);
         }
     );
@@ -140,7 +139,7 @@ bool vax::vk::Engine::setup() {
     renderPass = std::move(*renderPassOptional);
     deletionQueue.push_function(
         [&]() {
-            _logger.info("Destroying render pass...");
+            _logger.debug("Destroying render pass...");
             renderPass = nullptr; // TODO: remove from destructor
         }
     );
@@ -155,7 +154,7 @@ bool vax::vk::Engine::setup() {
     renderDestination = std::move(*renderDestinationOptional);
     deletionQueue.push_function(
         [&]() {
-            _logger.info("Destroying render destination...");
+            _logger.debug("Destroying render destination...");
             renderDestination = nullptr; // TODO: remove from destructor
         }
     );
@@ -164,7 +163,7 @@ bool vax::vk::Engine::setup() {
     if (!descriptorSetManager->setup()) return false;
     deletionQueue.push_function(
         [&]() {
-            _logger.info("Destroying descriptor set manager...");
+            _logger.debug("Destroying descriptor set manager...");
             descriptorSetManager = nullptr; // TODO: remove from destructor
         }
     );
@@ -173,8 +172,16 @@ bool vax::vk::Engine::setup() {
     pipelineManager->setup(*renderPass);
     deletionQueue.push_function(
         [&]() {
-            _logger.info("Destroying pipeline manager...");
+            _logger.debug("Destroying pipeline manager...");
             pipelineManager = nullptr; // TODO: remove from destructor
+        }
+    );
+
+    resourceManager = std::make_unique<ResourceManager>(*device);
+    deletionQueue.push_function(
+        [&]() {
+            _logger.debug("Destroying resource manager...");
+            resourceManager->cleanup();
         }
     );
 

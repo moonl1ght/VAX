@@ -4,7 +4,7 @@
 #include "luna.h"
 #include "device.h"
 #include "bufferData.h"
-#include "bufferUtils.h"
+#include "resourceUtils.h"
 
 namespace vax::vk {
     class QueueManager;
@@ -54,7 +54,7 @@ namespace vax::vk {
             other._vkBufferMemory = VK_NULL_HANDLE;
             other._size = 0;
             other._isDetached = true;
-            other._id = -1;
+            other._id = vax::NullId;
         }
 
         Buffer& operator=(Buffer&& other) noexcept {
@@ -70,7 +70,7 @@ namespace vax::vk {
                 other._vkBufferMemory = VK_NULL_HANDLE;
                 other._size = 0;
                 other._isDetached = true;
-                other._id = -1;
+                other._id = vax::NullId;
             }
             return *this;
         }
@@ -93,7 +93,7 @@ namespace vax::vk {
 
         bool fill(const void* fillData);
 
-        bool copyBufferTo(
+        bool copyBufferToSync(
             const QueueManager& queueManager,
             CommandManager& commandManager,
             Buffer& dstBuffer,
@@ -104,7 +104,7 @@ namespace vax::vk {
 
         bool isAllocated() const;
 
-        bool cleanup();
+        void cleanup();
 
         VkBuffer getVkBuffer() const { return _vkBuffer; }
 
@@ -120,7 +120,7 @@ namespace vax::vk {
         vax::utils::Logger _logger = vax::utils::Logger("Buffer");
         std::reference_wrapper<const vax::vk::Device> _device;
 
-        BufferId _id = 0;
+        BufferId _id = vax::NullId;
         VkBuffer _vkBuffer = VK_NULL_HANDLE;
         VkDeviceMemory _vkBufferMemory = VK_NULL_HANDLE;
         VkDeviceSize _size = 0;
@@ -131,7 +131,7 @@ namespace vax::vk {
             VkMemoryPropertyFlags properties
         );
 
-        bool _destroy();
+        void _destroy();
 
         void _detach();
     };

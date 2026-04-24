@@ -1,4 +1,5 @@
 #include "drawableModel.h"
+#include "vkEngine.h"
 
 using namespace vax::objects;
 
@@ -22,5 +23,5 @@ void DrawableModel::draw(
         sizeof(DrawPushConstants),
         &drawPushConstants
     );
-    mesh->forceDraw(vkEngine, commandBuffer);
+    mesh->forceDraw(*vkEngine->queueManager, *vkEngine->commandManager, commandBuffer);
 }

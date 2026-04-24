@@ -5,6 +5,8 @@
 
 using namespace vax::vk;
 
+using namespace vax;
+
 std::optional<Buffer> Buffer::allocateAndFillData(
     const vax::vk::Device& device,
     const void* data,
@@ -31,18 +33,17 @@ std::optional<Buffer> Buffer::allocate(
     return buffer;
 }
 
-bool Buffer::cleanup()
-{
-    if (isDetached()) return true;
-    return _destroy();
+void Buffer::cleanup() {
+    if (isDetached()) return;
+    _destroy();
 }
 
 void Buffer::_detach() {
     _isDetached = true;
-    _id = -1;
+    _id = NullId;
 }
 
-bool Buffer::_destroy() {
+void Buffer::_destroy() {
     if (_vkBuffer != VK_NULL_HANDLE) {
         vkDestroyBuffer(_device.get().vkDevice, _vkBuffer, nullptr);
         _vkBuffer = VK_NULL_HANDLE;
@@ -51,7 +52,8 @@ bool Buffer::_destroy() {
         vkFreeMemory(_device.get().vkDevice, _vkBufferMemory, nullptr);
         _vkBufferMemory = VK_NULL_HANDLE;
     }
-    return true;
+    _isDetached = true;
+    _id = NullId;
 }
 
 void Buffer::bind(void* data) {
@@ -73,9 +75,9 @@ bool Buffer::reload(
     const void* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
-    VkMemoryPropertyFlags properties)
-{
-    if (!cleanup()) return false;
+    VkMemoryPropertyFlags properties
+) {
+    cleanup();
     _size = size;
     if (!_allocate(usage, properties)) return false;
     if (!fill(data)) return false;
@@ -86,8 +88,8 @@ bool Buffer::load(
     const void* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
-    VkMemoryPropertyFlags properties)
-{
+    VkMemoryPropertyFlags properties
+) {
     if (isAllocated())
     {
         return false;
@@ -99,8 +101,7 @@ bool Buffer::load(
     return true;
 }
 
-bool Buffer::fill(const void* fillData)
-{
+bool Buffer::fill(const void* fillData) {
     if (isEmpty() || !isAllocated() || fillData == nullptr)
     {
         return false;
@@ -113,7 +114,7 @@ bool Buffer::fill(const void* fillData)
     return true;
 }
 
-bool vax::vk::Buffer::copyBufferTo(
+bool vax::vk::Buffer::copyBufferToSync(
     const QueueManager& queueManager,
     CommandManager& commandManager,
     Buffer& dstBuffer,
@@ -138,13 +139,11 @@ bool vax::vk::Buffer::copyBufferTo(
     return true;
 }
 
-bool Buffer::isEmpty() const
-{
+bool Buffer::isEmpty() const {
     return _size == 0;
 }
 
-bool Buffer::isAllocated() const
-{
+bool Buffer::isAllocated() const {
     return _vkBuffer != VK_NULL_HANDLE && _vkBufferMemory != VK_NULL_HANDLE;
 }
 

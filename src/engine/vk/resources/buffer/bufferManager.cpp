@@ -3,12 +3,11 @@
 
 using namespace vax;
 
-bool BufferManager::fullCleanup() {
+void BufferManager::fullCleanup() {
     for (auto& [id, buffer] : _pool) {
         buffer._destroy();
     }
     _pool.clear();
-    return true;
 }
 
 std::optional<BufferManager::BufferResource> BufferManager::allocateBuffer(

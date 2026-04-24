@@ -13,6 +13,7 @@
 #include "descriptorSetManager.h"
 #include "commandManager.h"
 #include "syncObjectsManager.h"
+#include "resourceManager.h"
 
 namespace vax::vk {
     class Device;

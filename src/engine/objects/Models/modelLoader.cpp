@@ -33,12 +33,12 @@ std::optional<DrawableModel*> ModelLoader::loadModel(const std::string& path) {
 
             vertex.color = { 1.0f, 1.0f, 1.0f };
 
-            mesh->vertices.push_back(vertex);
+            mesh->addVertex(vertex);
             if (uniqueVertices.count(vertex) == 0) {
-                uniqueVertices[vertex] = static_cast<uint32_t>(mesh->vertices.size());
-                mesh->vertices.push_back(vertex);
+                uniqueVertices[vertex] = static_cast<uint32_t>(mesh->vertices().size());
+                mesh->addVertex(vertex);
             }   
-            mesh->indices.push_back(uniqueVertices[vertex]);
+            mesh->addIndex(uniqueVertices[vertex]);
         }
     }
     return std::make_optional(new DrawableModel(std::move(mesh)));

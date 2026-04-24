@@ -24,6 +24,6 @@ void vax::Scene::load() {
     // // _drawableModels.emplace_back(Primitives2D::createPlane());
     // _drawableModels[1]->transform.position = glm::vec3(0.0f, 0.0f, -0.5f);
     for (auto& model : _drawableModels) {
-        model->mesh->loadBuffers(vkEngine);
+        model->mesh->loadBuffers(*vkEngine->queueManager, *vkEngine->commandManager);
     }
 }

@@ -2,8 +2,8 @@
 
 using namespace vax;
 
-bool ResourceManager::cleanup() {
-    if (!_bufferManager.fullCleanup()) return false;
+void ResourceManager::cleanup() {
+    _bufferManager.fullCleanup();
+    _meshManager.fullCleanup();
     _logger.debug("ResourceManager cleanup complete");
-    return true;
 }

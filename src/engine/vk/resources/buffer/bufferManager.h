@@ -3,7 +3,7 @@
 #include "luna.h"
 #include "device.h"
 #include "buffer.h"
-#include "bufferHandle.h"
+#include "resourceHandle.h"
 
 namespace vax {
     class BufferManager final {
@@ -21,7 +21,7 @@ namespace vax {
         BufferManager& operator=(const BufferManager& other) = delete;
         BufferManager& operator=(BufferManager&& other) noexcept = delete;
 
-        bool fullCleanup();
+        void fullCleanup();
 
         std::optional<BufferResource> allocateBuffer(
             VkDeviceSize size,
