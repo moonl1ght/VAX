@@ -23,5 +23,5 @@ void DrawableModel::draw(
         sizeof(DrawPushConstants),
         &drawPushConstants
     );
-    mesh->forceDraw(*vkEngine->queueManager, *vkEngine->commandManager, commandBuffer);
+    _mesh->forceDraw(*vkEngine->queueManager, *vkEngine->commandManager, commandBuffer);
 }

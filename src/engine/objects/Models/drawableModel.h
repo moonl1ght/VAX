@@ -5,23 +5,41 @@
 #include "mesh.h"
 #include "pipelineManager.h"
 #include "shaderUniforms.h"
+#include "resourceHandle.h"
+
+namespace vax::objects {
+    class PrimitivesBuilder;
+}
 
 namespace vax::objects {
     class DrawableModel : public Model {
     public:
+        friend class vax::objects::PrimitivesBuilder;
+
         struct DrawContext {
 
         };
 
-        std::unique_ptr<vax::objects::Mesh> mesh;
-
-        explicit DrawableModel(std::unique_ptr<vax::objects::Mesh> mesh) : mesh(std::move(mesh)) {};
+        explicit DrawableModel(
+            vax::MeshManager& meshManager,
+            vax::MeshHandle meshHandle
+        )
+            : _meshManager(meshManager)
+            , _meshHandle(meshHandle) {
+        };
 
         ~DrawableModel() {};
 
-        DrawableModel(const DrawableModel& other) = delete;
-        DrawableModel& operator=(const DrawableModel& other) = delete;
-
         void draw(vax::vk::Engine* vkEngine, VkCommandBuffer commandBuffer, const vax::vk::PipelineManager& pipelineManager, float time);
+
+    private:
+        vax::utils::Logger _logger = vax::utils::Logger("DrawableModel");
+
+        std::reference_wrapper<vax::MeshManager> _meshManager;
+
+        vax::MeshHandle _meshHandle;
+
+        // TODO: remove this will need to use mesh manager to get the mesh
+        vax::objects::Mesh* _mesh;
     };
 }
