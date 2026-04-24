@@ -9,9 +9,14 @@
 namespace vax::objects {
     class DrawableModel : public Model {
     public:
+        struct DrawContext {
+
+        };
+
         std::unique_ptr<vax::objects::Mesh> mesh;
 
-        DrawableModel(std::unique_ptr<vax::objects::Mesh> mesh) : mesh(std::move(mesh)) {};
+        explicit DrawableModel(std::unique_ptr<vax::objects::Mesh> mesh) : mesh(std::move(mesh)) {};
+
         ~DrawableModel() {};
 
         DrawableModel(const DrawableModel& other) = delete;

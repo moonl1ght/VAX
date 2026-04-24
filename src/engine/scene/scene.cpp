@@ -3,6 +3,9 @@
 #include "modelLoader.h"
 #include "primitives2d.h"
 #include "swapchain.h"
+#include "primitivesBuilder.h"
+
+using namespace vax;
 
 void vax::Scene::update(float deltaTime) {
     _ubo.model = glm::rotate(glm::mat4(1.0f), deltaTime * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -19,11 +22,11 @@ void vax::Scene::load() {
     _ubo.model = glm::mat4(1.0f);
     _ubo.view = glm::mat4(1.0f);
     _ubo.proj = glm::mat4(1.0f);
-    _drawableModels.emplace_back(_modelLoader.loadModel(RES_PATH("assets/models/room/viking_room.obj")).value());
+    // _drawableModels.emplace_back(_modelLoader.loadModel(RES_PATH("assets/models/room/viking_room.obj")).value());
     // // _drawableModels.emplace_back(Primitives2D::createPlane());
     // // _drawableModels.emplace_back(Primitives2D::createPlane());
     // _drawableModels[1]->transform.position = glm::vec3(0.0f, 0.0f, -0.5f);
-    for (auto& model : _drawableModels) {
-        model->mesh->loadBuffers(*vkEngine->queueManager, *vkEngine->commandManager);
-    }
+//     for (auto& model : _drawableModels) {
+//         model->mesh->loadBuffers(*vkEngine->queueManager, *vkEngine->commandManager);
+//     }
 }

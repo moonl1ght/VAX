@@ -1,5 +1,20 @@
 #include "primitivesBuilder.h"
 
+using namespace vax::objects;
+
+using namespace vax;
+
+std::optional<DrawableModel> PrimitivesBuilder::createCube() {
+    auto mesh = _meshManager.get().createEmptyMesh();
+    // mesh->setVertices({
+    //     {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    //     {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    //     {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}
+    // });
+    // mesh->setIndices({0, 1, 2});
+    return std::nullopt;
+}
+
 
 // MeshData CreateCube(float size) {
 //     MeshData mesh;
