@@ -1,14 +1,7 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-# set( CMAKE_CXX_COMPILER "C:\\msys64\\ucrt64\\bin\\g++" )
-# set( CMAKE_C_COMPILER "C:\\msys64\\ucrt64\\bin\\gcc" )
-# set( CMAKE_CXX_COMPILER "C:/msys64/ucrt64/bin/g++" )
-# set( CMAKE_C_COMPILER "C:/msys64/ucrt64/bin/gcc" )
 project(Luna VERSION 0.1.0 LANGUAGES C CXX)
 
-# set( CMAKE_CXX_COMPILER "C:/msys64/ucrt64/bin/g++" )
-# set( CMAKE_C_COMPILER "C:/msys64/ucrt64/bin/gcc" )
-# set(CMAKE_GENERATOR MinGW Makefiles)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_LIST_DIR}/build/)
 
@@ -32,16 +25,14 @@ else()
     find_package(tinyobjloader REQUIRED FATAL_ERROR)
 endif()
 find_package(imgui REQUIRED CONFIG)
-if(WIN32)
-    foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
-        if(DEFINED imgui_PACKAGE_FOLDER_${_cfg})
-            set(IMGUI_PACKAGE_DIR "${imgui_PACKAGE_FOLDER_${_cfg}}")
-            break()
-        endif()
-    endforeach()
-    if(NOT IMGUI_PACKAGE_DIR)
-        message(FATAL_ERROR "Could not determine imgui package folder from Conan variables.")
+foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+    if(DEFINED imgui_PACKAGE_FOLDER_${_cfg})
+        set(IMGUI_PACKAGE_DIR "${imgui_PACKAGE_FOLDER_${_cfg}}")
+        break()
     endif()
+endforeach()
+if(NOT IMGUI_PACKAGE_DIR)
+    message(FATAL_ERROR "Could not determine imgui package folder from Conan variables.")
 endif()
 
 # find_package(glm REQUIRED FATAL_ERROR)
@@ -157,12 +148,10 @@ endmacro()
 
 HEADER_DIRECTORIES(header_list)
 
-if(WIN32)
-    set(IMGUI_BACKEND_SRCS
-        "${IMGUI_PACKAGE_DIR}/res/bindings/imgui_impl_vulkan.cpp"
-        "${IMGUI_PACKAGE_DIR}/res/bindings/imgui_impl_sdl3.cpp"
-    )
-endif()
+set(IMGUI_BACKEND_SRCS
+    "${IMGUI_PACKAGE_DIR}/res/bindings/imgui_impl_vulkan.cpp"
+    "${IMGUI_PACKAGE_DIR}/res/bindings/imgui_impl_sdl3.cpp"
+)
 
 add_executable(Luna main.cpp ${all_SRCS} ${IMGUI_BACKEND_SRCS})
 target_include_directories(Luna PUBLIC ${header_list})
@@ -173,11 +162,12 @@ if(WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "C:/msys64/mingw64/bin/SDL3.dll"
         $<TARGET_FILE_DIR:Luna>/SDL3.dll)
-    target_include_directories(Luna PRIVATE
-        "${IMGUI_PACKAGE_DIR}/include"
-        "${IMGUI_PACKAGE_DIR}/res/bindings"
-    )
 endif()
+
+target_include_directories(Luna PRIVATE
+    "${IMGUI_PACKAGE_DIR}/include"
+    "${IMGUI_PACKAGE_DIR}/res/bindings"
+)
 
 # target_link_libraries(Luna)
 # add_executable(Luna main.cpp ${PROJECT_SOURCE_DIR}/src/apps/App.hpp ${PROJECT_SOURCE_DIR}/src/apps/App.cpp ${PROJECT_SOURCE_DIR}/src/apps/SimpleApp.hpp ${PROJECT_SOURCE_DIR}/src/apps/SimpleApp.cpp)

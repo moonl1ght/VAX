@@ -124,47 +124,6 @@ bool Renderer::render(Scene* scene, float deltaTime, ImDrawData* imguiDrawData) 
     return true;
 }
 
-// void Renderer::drawBackground(VkCommandBuffer commandBuffer) {
-//     VkClearColorValue clearValue;
-//     float flash = std::abs(std::sin(_currentFrame / 120.f));
-//     clearValue = { { 1.0f, 1.0f, 1.0f, 1.0f } };
-
-//     VkImageSubresourceRange clearRange = vax::imageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
-
-//     vkCmdClearColorImage(
-//         commandBuffer,
-//         _vkEngine->renderDestination->drawImage->textureImage,
-//         VK_IMAGE_LAYOUT_GENERAL,
-//         &clearValue,
-//         1,
-//         &clearRange
-//     );
-//     auto& backgroundPipeline = _vkEngine->pipelineManager->getBackgroundPipeline();
-//     std::cout << "Background pipeline: " << backgroundPipeline.vkPipeline << std::endl;
-//     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, backgroundPipeline.vkPipeline);
-
-//     auto drawBackgroundDescriptorSet = _vkEngine->descriptorSetManager->getDrawBackgroundDescriptorSet(_currentFrame);
-//     if (!drawBackgroundDescriptorSet.has_value()) {
-//         LOG_ERROR("Failed to get draw background descriptor set!");
-//         return;
-//     }
-//     vax::vk::DescriptorWriter descriptorWriter;
-//     descriptorWriter.writeStorageImage(_vkEngine->renderDestination->drawImage->textureImageView, 0);
-//     descriptorWriter.updateSet(_vkEngine->device->vkDevice, drawBackgroundDescriptorSet.value());
-//     vkCmdBindDescriptorSets(
-//         commandBuffer,
-//         VK_PIPELINE_BIND_POINT_COMPUTE,
-//         backgroundPipeline.vkPipelineLayout,
-//         0,
-//         1,
-//         &drawBackgroundDescriptorSet.value(),
-//         0,
-//         nullptr
-//     );
-
-//     vkCmdDispatch(commandBuffer, std::ceil(_vkEngine->renderDestination->drawImage->size.width / 16.0), std::ceil(_vkEngine->renderDestination->drawImage->size.height / 16.0), 1);
-// }
-
 bool Renderer::recordCommandBuffer(
     VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime, ImDrawData* imguiDrawData
 ) {
@@ -175,47 +134,6 @@ bool Renderer::recordCommandBuffer(
         _logger.error("Failed to begin recording command buffer!");
         return false;
     }
-
-    // {
-    //     vax::transitionImage(
-    //         commandBuffer,
-    //         _vkEngine->renderDestination->drawImage->textureImage,
-    //         VK_IMAGE_LAYOUT_UNDEFINED,
-    //         VK_IMAGE_LAYOUT_GENERAL
-    //     );
-
-    //     drawBackground(commandBuffer);
-
-    //     vax::transitionImage(
-    //         commandBuffer,
-    //         _vkEngine->renderDestination->drawImage->textureImage,
-    //         VK_IMAGE_LAYOUT_GENERAL,
-    //         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
-    //     );
-    //     vax::transitionImage(
-    //         commandBuffer,
-    //         _vkEngine->swapchain->swapchainImages[imageIndex],
-    //         VK_IMAGE_LAYOUT_UNDEFINED,
-    //         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-    //     );
-
-    //     vax::copyImageToImage(
-    //         commandBuffer,
-    //         _vkEngine->renderDestination->drawImage->textureImage,
-    //         _vkEngine->swapchain->swapchainImages[imageIndex],
-    //         _vkEngine->renderDestination->drawImage->size.toExtent2D(),
-    //         _vkEngine->swapchain->swapchainExtent
-    //     );
-    //     // std::cout << "Image size: " << _vkEngine->renderingDestination->drawImage->size.toExtent2D().width << "x" << _vkEngine->renderingDestination->drawImage->size.toExtent2D().height << std::endl;
-    //     // std::cout << "Swapchain size: " << _vkEngine->swapchainManager->swapchainExtent.width << "x" << _vkEngine->swapchainManager->swapchainExtent.height << std::endl;
-
-    //     vax::transitionImage(
-    //         commandBuffer,
-    //         _vkEngine->swapchain->swapchainImages[imageIndex],
-    //         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-    //         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-    //     );
-    // }
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -280,9 +198,8 @@ bool Renderer::recordCommandBuffer(
         drawableModel.draw(&_vkEngine.get(), commandBuffer, *(_vkEngine.get().pipelineManager), deltaTime);
     }
 
-    vkCmdEndRenderPass(commandBuffer);
-
     ImGui_ImplVulkan_RenderDrawData(imguiDrawData, commandBuffer);
+    vkCmdEndRenderPass(commandBuffer);
 
     if (!VK_CHECK(vkEndCommandBuffer(commandBuffer))) {
         _logger.error("Failed to end command buffer!");

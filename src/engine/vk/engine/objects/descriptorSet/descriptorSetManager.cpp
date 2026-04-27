@@ -87,11 +87,11 @@ bool DescriptorSetManager::createDefaultDescriptorSetLayouts() {
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT
     );
-    builder.addBinding(
-        1,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        VK_SHADER_STAGE_FRAGMENT_BIT
-    );
+    // builder.addBinding(
+    //     1,
+    //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+    //     VK_SHADER_STAGE_FRAGMENT_BIT
+    // );
     auto baseDescriptorSetLayout = builder.build(DescriptorSetLayout::DefaultType::BASE);
     builder.clear();
     if (!baseDescriptorSetLayout) {
