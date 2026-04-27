@@ -9,7 +9,7 @@ namespace vax {
     class Renderer final {
     public:
         Renderer(
-            vax::vk::Engine* vkEngine
+            vax::vk::Engine& vkEngine
         )
             : _vkEngine(vkEngine) {
         };
@@ -19,12 +19,18 @@ namespace vax {
             _sceneUniformBuffersMapped.clear();
         };
 
+        Renderer(const Renderer& other) = delete;
+        Renderer& operator=(const Renderer& other) = delete;
+        Renderer(Renderer&& other) noexcept = delete;
+        Renderer& operator=(Renderer&& other) noexcept = delete;
+
         bool render(vax::Scene* scene, float deltaTime);
         void prepare();
 
     private:
-        vax::vk::Engine* _vkEngine;
         vax::utils::Logger _logger = vax::utils::Logger("Renderer");
+
+        std::reference_wrapper<vax::vk::Engine> _vkEngine;
 
         std::vector<vax::vk::Buffer> _sceneUniformBuffers;
         std::vector<void*> _sceneUniformBuffersMapped;
