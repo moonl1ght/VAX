@@ -32,7 +32,7 @@ namespace vax {
 
         std::reference_wrapper<vax::vk::Engine> _vkEngine;
 
-        std::vector<vax::vk::Buffer> _sceneUniformBuffers;
+        std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
         std::vector<void*> _sceneUniformBuffersMapped;
 
         uint32_t _currentFrame = 0;

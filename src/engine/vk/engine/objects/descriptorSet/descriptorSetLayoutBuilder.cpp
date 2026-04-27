@@ -13,8 +13,8 @@ void DescriptorSetLayoutBuilder::addBinding(
         .binding = binding,
         .descriptorType = type,
         .descriptorCount = 1,
-        .pImmutableSamplers = nullptr,
         .stageFlags = stageFlags,
+        .pImmutableSamplers = nullptr,
     };
     _bindings.push_back(layoutBinding);
 }
@@ -30,10 +30,10 @@ std::optional<DescriptorSetLayout> DescriptorSetLayoutBuilder::build(
 ) {
     VkDescriptorSetLayoutCreateInfo layoutInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        .pNext = pNext,
+        .flags = flags,
         .bindingCount = static_cast<uint32_t>(_bindings.size()),
         .pBindings = _bindings.data(),
-        .flags = flags,
-        .pNext = pNext,
     };
 
     VkDescriptorSetLayout descriptorSetLayout;

@@ -18,7 +18,7 @@ namespace vax::objects {
         std::optional<vax::vk::Buffer> indexBuffer = std::nullopt;
 
         explicit Mesh(const vax::vk::Device& device) : _device(device) {};
-        ~Mesh() {};
+        ~Mesh() { cleanup(); };
 
         Mesh(const Mesh& other) = delete;
         Mesh& operator=(const Mesh& other) = delete;

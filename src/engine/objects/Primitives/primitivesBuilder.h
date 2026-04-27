@@ -11,6 +11,11 @@ namespace vax::objects {
 
         ~PrimitivesBuilder() {};
 
+        PrimitivesBuilder(const PrimitivesBuilder& other) = delete;
+        PrimitivesBuilder(PrimitivesBuilder&& other) noexcept = delete;
+        PrimitivesBuilder& operator=(const PrimitivesBuilder& other) = delete;
+        PrimitivesBuilder& operator=(PrimitivesBuilder&& other) noexcept = delete;
+
         std::optional<vax::objects::DrawableModel> createCube();
 
     private:

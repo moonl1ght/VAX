@@ -34,8 +34,7 @@ std::optional<Buffer> Buffer::allocate(
 }
 
 void Buffer::cleanup() {
-    if (isDetached()) return;
-    _destroy();
+    if (isDetached()) _destroy();
 }
 
 void Buffer::_detach() {

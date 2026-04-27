@@ -35,9 +35,12 @@ namespace vax::vk {
             VkMemoryPropertyFlags properties
         );
 
-        ~Buffer() { }
+        ~Buffer() {
+            cleanup();
+        }
 
-        Buffer(const vax::vk::Device& device) : _device(device) {};
+        Buffer(const vax::vk::Device& device) : _device(device) {
+        };
 
         Buffer(const Buffer& other) = delete;
 

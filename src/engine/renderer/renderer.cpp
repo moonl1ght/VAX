@@ -12,15 +12,16 @@ void Renderer::prepare() {
     _sceneUniformBuffers.reserve(vk::Engine::MAX_FRAMES_IN_FLIGHT);
     _sceneUniformBuffersMapped.resize(vk::Engine::MAX_FRAMES_IN_FLIGHT);
     for (size_t i = 0; i < vk::Engine::MAX_FRAMES_IN_FLIGHT; i++) {
-        _sceneUniformBuffers.emplace_back(vk::Buffer::allocate(
-            *(_vkEngine.get().device),
+        auto& bufferManager = _vkEngine.get().resourceManager->bufferManager();
+        auto allocation = bufferManager.allocateBuffer(
             bufferSize,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-        ).value());
+        ).value();
+        _sceneUniformBuffers.push_back(allocation.second);
         vkMapMemory(
             _vkEngine.get().device->vkDevice,
-            _sceneUniformBuffers[i].getVkBufferMemory(),
+            _sceneUniformBuffers[i]->getVkBufferMemory(),
             0,
             bufferSize,
             0,
@@ -253,7 +254,7 @@ bool Renderer::recordCommandBuffer(
         _currentFrame, vax::vk::DescriptorSetLayout::DefaultType::BASE
     );
     if (descriptorSetWriter.has_value()) {
-        descriptorSetWriter.value().writeBuffer(&_sceneUniformBuffers[_currentFrame], 0);
+        descriptorSetWriter.value().writeBuffer(_sceneUniformBuffers[_currentFrame], 0);
         // descriptorSet.writeTexture(scene->texture, 1);
         descriptorSetWriter.value().update();
     } else {
@@ -275,7 +276,7 @@ bool Renderer::recordCommandBuffer(
     );
 
     for (auto& drawableModel : scene->getDrawableModels()) {
-        drawableModel->draw(&_vkEngine.get(), commandBuffer, *(_vkEngine.get().pipelineManager), deltaTime);
+        drawableModel.draw(&_vkEngine.get(), commandBuffer, *(_vkEngine.get().pipelineManager), deltaTime);
     }
 
     vkCmdEndRenderPass(commandBuffer);

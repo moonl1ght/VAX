@@ -5,31 +5,35 @@
 #include "texture.h"
 #include "shaderUniforms.h"
 #include "modelLoader.h"
-#include "vkObject.h"
+#include "primitivesBuilder.h"
+#include "vkEngine.h"
 
 namespace vax {
-    class Scene final : public vax::VkObject {
+    class Scene final {
     public:
         vax::textures::Texture* texture = nullptr;
 
-        Scene(vax::vk::Engine* vkEngine)
-            : vax::VkObject(vkEngine)
-            , _modelLoader(vax::objects::ModelLoader(vkEngine)) {
+        Scene(vax::vk::Engine& vkEngine)
+            : _vkEngine(vkEngine)
+            , _modelLoader(vax::objects::ModelLoader(&vkEngine))
+            , _primitivesBuilder(vax::objects::PrimitivesBuilder(vkEngine.resourceManager->meshManager())) {
         };
 
         ~Scene() {
             delete texture;
             texture = nullptr;
-            for (auto model : _drawableModels) {
-                delete model;
-            }
             _drawableModels.clear();
         };
+
+        Scene(const Scene& other) = delete;
+        Scene& operator=(const Scene& other) = delete;
+        Scene(Scene&& other) noexcept = delete;
+        Scene& operator=(Scene&& other) noexcept = delete;
 
         void load();
         void update(float deltaTime);
 
-        const std::vector<vax::objects::DrawableModel*>& getDrawableModels() const {
+        std::vector<vax::objects::DrawableModel>& getDrawableModels() {
             return _drawableModels;
         }
 
@@ -38,8 +42,10 @@ namespace vax {
         }
 
     private:
+        std::reference_wrapper<vax::vk::Engine> _vkEngine;
         vax::objects::ModelLoader _modelLoader;
+        vax::objects::PrimitivesBuilder _primitivesBuilder;
         UniformBufferObject _ubo;
-        std::vector<vax::objects::DrawableModel*> _drawableModels; // TODO: change to value type
+        std::vector<vax::objects::DrawableModel> _drawableModels; // TODO: change to value type
     };
 }

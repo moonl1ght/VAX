@@ -22,20 +22,20 @@ bool DescriptorSetManager::createDescriptorSetPool() {
     uint32_t uniformBufferCount = 2;
     uint32_t imageSamplerCount = 1;
     uint32_t maxUniformBufferSets = static_cast<uint32_t>(_maxFramesInFlight) * uniformBufferCount;
-    uint32_t maxImageSamplerSets = static_cast<uint32_t>(_maxFramesInFlight) * imageSamplerCount;
+    // uint32_t maxImageSamplerSets = static_cast<uint32_t>(_maxFramesInFlight) * imageSamplerCount;
     // uint32_t maxDrawBackgroundSets = static_cast<uint32_t>(_maxFramesInFlight) * 1;
 
     std::vector<VkDescriptorPoolSize> poolSizes = {
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBufferSets },
-        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxImageSamplerSets },
+        // { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxImageSamplerSets },
         // { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, maxDrawBackgroundSets }
     };
 
     VkDescriptorPoolCreateInfo poolInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .maxSets = static_cast<uint32_t>(_maxFramesInFlight),
         .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
         .pPoolSizes = poolSizes.data(),
-        .maxSets = static_cast<uint32_t>(_maxFramesInFlight),
     };
 
     if (!VK_CHECK(vkCreateDescriptorPool(_device.get().vkDevice, &poolInfo, nullptr, &_descriptorPool))) {

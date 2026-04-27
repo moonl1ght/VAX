@@ -25,7 +25,7 @@ bool App::setup() {
     _engine->setup();
     _renderer = std::make_unique<Renderer>(*_engine);
     _renderer->prepare();
-    _scene = std::make_unique<Scene>(_engine.get());
+    _scene = std::make_unique<Scene>(*_engine);
     _scene->load();
     return true;
 }

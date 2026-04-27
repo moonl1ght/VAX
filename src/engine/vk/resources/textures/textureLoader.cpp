@@ -14,7 +14,6 @@ Texture* TextureLoader::loadTexture(std::string path, bool isAutoLoadImageView) 
     if (!pixels) {
         throw std::runtime_error("failed to load texture image!");
     }
-
     auto stagingBuffer = vk::Buffer::allocateAndFillData(
         *vkEngine->device,
         pixels,

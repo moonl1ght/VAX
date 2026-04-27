@@ -3,8 +3,8 @@
 [vk::binding(0, 0)]
 ConstantBuffer<UniformBufferObject> ubo;
 
-[vk::binding(1, 0)]
-Sampler2D texSampler;
+// [vk::binding(1, 0)]
+// Sampler2D texSampler;
 
 [vk::push_constant]
 DrawPushConstants pushConstants;

@@ -28,16 +28,16 @@ std::optional<DrawableModel> PrimitivesBuilder::createCube() {
         {{-s, -s, -s}, {-1,0, 0}, {0, 0}}, {{-s, -s,  s}, {-1,0, 0}, {1, 0}},
         {{-s,  s,  s}, {-1,0, 0}, {1, 1}}, {{-s,  s, -s}, {-1,0, 0}, {0, 1}}
     });
-    // for (int i = 0; i < 6; ++i) {
-    //     unsigned int offset = i * 4;
-    //     mesh.addIndex(offset + 0);
-    //     mesh.addIndex(offset + 1);
-    //     mesh.addIndex(offset + 2);
+    for (int i = 0; i < 6; ++i) {
+        unsigned int offset = i * 4;
+        mesh.value().second->addIndex(offset + 0);
+        mesh.value().second->addIndex(offset + 1);
+        mesh.value().second->addIndex(offset + 2);
 
-    //     mesh.addIndex(offset + 0);
-    //     mesh.addIndex(offset + 2);
-    //     mesh.addIndex(offset + 3);
-    // }
+        mesh.value().second->addIndex(offset + 0);
+        mesh.value().second->addIndex(offset + 2);
+        mesh.value().second->addIndex(offset + 3);
+    }
     // mesh->setVertices({
     //     {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
     //     {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
