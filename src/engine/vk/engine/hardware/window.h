@@ -25,9 +25,9 @@ namespace vax::vk {
 
         bool load();
         bool createSurface(VkInstance instance);
-        bool destroySurface();
-        bool destroyWindow();
-        bool destroy();
+        void destroySurface();
+        void destroyWindow();
+        void destroy();
 
     private:
         VkInstance _instance = VK_NULL_HANDLE;

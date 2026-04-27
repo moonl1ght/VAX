@@ -196,23 +196,23 @@ void vax::vk::Engine::cleanup() {
 
 void vax::vk::Engine::resize() {
     _logger.info("Resizing engine...");
-    // int width = 0, height = 0;
-    // SDL_GetWindowSizeInPixels(_window.get().window, &width, &height);
-    // while (width == 0 || height == 0) {
-    //     SDL_GetWindowSizeInPixels(_window.get().window, &width, &height);
-    //     SDL_Delay(100);
-    // }
-    // vkDeviceWaitIdle(device->vkDevice);
+    int width = 0, height = 0;
+    SDL_GetWindowSizeInPixels(_window.get().window, &width, &height);
+    while (width == 0 || height == 0) {
+        SDL_GetWindowSizeInPixels(_window.get().window, &width, &height);
+        SDL_Delay(100);
+    }
+    vkDeviceWaitIdle(device->vkDevice);
 
-    // swapchain->recreate();
-    // auto renderDestinationOptional = RenderDestinationBuilder(
-    //     *device,
-    //     allocator,
-    //     *swapchain,
-    //     *renderPass
-    // ).build(this);
-    // if (!renderDestinationOptional.has_value()) return;
-    // renderDestination = std::move(*renderDestinationOptional);
+    swapchain->recreate();
+    auto renderDestinationOptional = RenderDestinationBuilder(
+        *device,
+        allocator,
+        *swapchain,
+        *renderPass
+    ).build(this);
+    if (!renderDestinationOptional.has_value()) return;
+    renderDestination = std::move(*renderDestinationOptional);
 }
 
 bool vax::vk::Engine::setupDebugMessenger() {
