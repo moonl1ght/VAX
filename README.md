@@ -26,7 +26,7 @@ pacman -S mingw-w64-ucrt-x86_64-SDL3
 
 Install Conan dependencies and configure:
 ```bash
-conan install . --output-folder=build --build=missing --profile=winprofile
+conan install . --output-folder=build --build=missing --profile=winprofile  -c tools.cmake.cmaketoolchain:generator=Ninja
 ```
 
 Then configure and build via CMake (VSCode: **CMake: Configure** then **CMake: Build**), or manually:

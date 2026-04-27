@@ -25,12 +25,24 @@ find_package(vk-bootstrap REQUIRED FATAL_ERROR)
 if(WIN32)
     list(APPEND CMAKE_PREFIX_PATH "C:/msys64/mingw64/lib/cmake/SDL3")
     find_package(SDL3 REQUIRED)
+    # find_package(imgui REQUIRED)
 else()
     find_package(SDL3 REQUIRED FATAL_ERROR)
-    find_package(imgui REQUIRED)
+    # find_package(imgui REQUIRED)
     find_package(tinyobjloader REQUIRED FATAL_ERROR)
 endif()
-# find_package(imgui REQUIRED CONFIG)
+find_package(imgui REQUIRED CONFIG)
+if(WIN32)
+    foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+        if(DEFINED imgui_PACKAGE_FOLDER_${_cfg})
+            set(IMGUI_PACKAGE_DIR "${imgui_PACKAGE_FOLDER_${_cfg}}")
+            break()
+        endif()
+    endforeach()
+    if(NOT IMGUI_PACKAGE_DIR)
+        message(FATAL_ERROR "Could not determine imgui package folder from Conan variables.")
+    endif()
+endif()
 
 # find_package(glm REQUIRED FATAL_ERROR)
 if(DEFINED ENV{VULKAN_SDK})
@@ -144,7 +156,15 @@ macro(HEADER_DIRECTORIES return_list)
 endmacro()
 
 HEADER_DIRECTORIES(header_list)
-add_executable(Luna main.cpp ${all_SRCS})
+
+if(WIN32)
+    set(IMGUI_BACKEND_SRCS
+        "${IMGUI_PACKAGE_DIR}/res/bindings/imgui_impl_vulkan.cpp"
+        "${IMGUI_PACKAGE_DIR}/res/bindings/imgui_impl_sdl3.cpp"
+    )
+endif()
+
+add_executable(Luna main.cpp ${all_SRCS} ${IMGUI_BACKEND_SRCS})
 target_include_directories(Luna PUBLIC ${header_list})
 add_dependencies(Luna Shaders)
 
@@ -153,6 +173,10 @@ if(WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "C:/msys64/mingw64/bin/SDL3.dll"
         $<TARGET_FILE_DIR:Luna>/SDL3.dll)
+    target_include_directories(Luna PRIVATE
+        "${IMGUI_PACKAGE_DIR}/include"
+        "${IMGUI_PACKAGE_DIR}/res/bindings"
+    )
 endif()
 
 # target_link_libraries(Luna)
@@ -165,6 +189,7 @@ if(WIN32)
         message(STATUS "Found Vulkan. Including and linking...")
         target_link_libraries(
             ${PROJECT_NAME}
+            imgui::imgui
             Vulkan::Vulkan
             nlohmann_json::nlohmann_json
             assimp::assimp
@@ -178,6 +203,7 @@ else()
         message(STATUS "Found Vulkan. Including and linking...")
         target_link_libraries(
             ${PROJECT_NAME}
+            imgui::imgui
             Vulkan::Vulkan
             nlohmann_json::nlohmann_json
             assimp::assimp
@@ -185,7 +211,6 @@ else()
             tinyobjloader::tinyobjloader
             SDL3::SDL3
             glm::glm
-            imgui::imgui
         )
     endif(VULKAN_FOUND)
 endif()

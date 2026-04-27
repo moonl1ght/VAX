@@ -4,6 +4,7 @@
 #include "pipeline.h"
 #include "descriptorSetManager.h"
 #include "vkEngine.h"
+#include "imgui_impl_vulkan.h"
 
 using namespace vax;
 
@@ -32,7 +33,7 @@ void Renderer::prepare() {
     }
 }
 
-bool Renderer::render(Scene* scene, float deltaTime) {
+bool Renderer::render(Scene* scene, float deltaTime, ImDrawData* imguiDrawData) {
     vkWaitForFences(
         _vkEngine.get().device->vkDevice,
         1,
@@ -66,7 +67,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
     );
 
     vkResetCommandBuffer(_vkEngine.get().commandManager->commandBuffers[_currentFrame], 0);
-    if (!recordCommandBuffer(_vkEngine.get().commandManager->commandBuffers[_currentFrame], imageIndex, scene, deltaTime)) {
+    if (!recordCommandBuffer(_vkEngine.get().commandManager->commandBuffers[_currentFrame], imageIndex, scene, deltaTime, imguiDrawData)) {
         _logger.error("Failed to record command buffer!");
         return false;
     }
@@ -165,7 +166,7 @@ bool Renderer::render(Scene* scene, float deltaTime) {
 // }
 
 bool Renderer::recordCommandBuffer(
-    VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime
+    VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime, ImDrawData* imguiDrawData
 ) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -280,6 +281,8 @@ bool Renderer::recordCommandBuffer(
     }
 
     vkCmdEndRenderPass(commandBuffer);
+
+    ImGui_ImplVulkan_RenderDrawData(imguiDrawData, commandBuffer);
 
     if (!VK_CHECK(vkEndCommandBuffer(commandBuffer))) {
         _logger.error("Failed to end command buffer!");

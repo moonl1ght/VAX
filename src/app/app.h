@@ -26,6 +26,8 @@ namespace vax {
         std::unique_ptr<Renderer> _renderer;
         std::unique_ptr<Scene> _scene;
 
+        VkDescriptorPool _imguiDescriptorPool = VK_NULL_HANDLE;
+
         bool setup();
         void mainLoop();
         void cleanup();

@@ -4,6 +4,7 @@
 #include "vkEngine.h"
 #include "scene.h"
 #include "buffer.h"
+#include "imgui.h"
 
 namespace vax {
     class Renderer final {
@@ -24,7 +25,7 @@ namespace vax {
         Renderer(Renderer&& other) noexcept = delete;
         Renderer& operator=(Renderer&& other) noexcept = delete;
 
-        bool render(vax::Scene* scene, float deltaTime);
+        bool render(vax::Scene* scene, float deltaTime, ImDrawData* imguiDrawData);
         void prepare();
 
     private:
@@ -39,7 +40,7 @@ namespace vax {
 
         // void drawBackground(VkCommandBuffer commandBuffer);
         bool recordCommandBuffer(
-            VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::Scene* scene, float deltaTime
+            VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::Scene* scene, float deltaTime, ImDrawData* imguiDrawData
         );
     };
 }
