@@ -8,7 +8,7 @@
 namespace vax::objects {
     struct Vertex {
         glm::vec3 position;
-        glm::vec3 color;
+        glm::vec3 normal;
         glm::vec2 uv;
 
         static VkVertexInputBindingDescription getBindingDescription() {
@@ -30,7 +30,7 @@ namespace vax::objects {
             attributeDescriptions[1].binding = 0;
             attributeDescriptions[1].location = 1;
             attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[1].offset = offsetof(Vertex, color);
+            attributeDescriptions[1].offset = offsetof(Vertex, normal);
 
             attributeDescriptions[2].binding = 0;
             attributeDescriptions[2].location = 2;
@@ -41,7 +41,7 @@ namespace vax::objects {
         }
 
         bool operator==(const Vertex& other) const {
-            return position == other.position && color == other.color && uv == other.uv;
+            return position == other.position && normal == other.normal && uv == other.uv;
         }
     };
 }
@@ -50,7 +50,7 @@ namespace std {
     template<> struct hash<vax::objects::Vertex> {
         size_t operator()(vax::objects::Vertex const& vertex) const {
             return ((std::hash<glm::vec3>()(vertex.position) ^
-                (std::hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+                (std::hash<glm::vec3>()(vertex.normal) << 1)) >> 1) ^
                 (std::hash<glm::vec2>()(vertex.uv) << 1);
         }
     };

@@ -14,7 +14,7 @@ struct VertexInput {
     float3 position;
 
     [vk::location(1)]
-    float3 color;
+    float3 normal;
 
     [vk::location(2)]
     float2 uv;
@@ -23,9 +23,8 @@ struct VertexInput {
 struct VertexOutput {
     float4 position : SV_Position;
 
-    [vk::location(0)]
-    float3 color;
+    float3 normal : NORMAL;
 
-    [vk::location(1)]
-    float2 uv;
+    float2 uv : TEXCOORD0;
 };
+

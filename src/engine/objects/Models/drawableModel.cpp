@@ -15,6 +15,7 @@ void DrawableModel::draw(
     drawPushConstants.model = glm::rotate(
         transform.getModelMatrix(), time * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f)
     );
+    drawPushConstants.flags = ObjectFlags::None;
     vkCmdPushConstants(
         commandBuffer,
         pipelineManager.getPipelineLayout(),

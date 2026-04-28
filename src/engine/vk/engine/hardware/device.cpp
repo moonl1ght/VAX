@@ -3,7 +3,9 @@
 using namespace vax::vk;
 
 std::vector<const char*> deviceExtensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+    VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME
 };
 
 bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
@@ -66,6 +68,11 @@ int Device::createLogicalDevice(
     synchronization2Features.synchronization2 = VK_TRUE;
     synchronization2Features.pNext = &bufferDeviceAddressFeatures;
 
+    VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR fragmentShaderBarycentricFeatures{};
+    fragmentShaderBarycentricFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR;
+    fragmentShaderBarycentricFeatures.fragmentShaderBarycentric = VK_TRUE;
+    fragmentShaderBarycentricFeatures.pNext = &synchronization2Features;
+
     if (enableValidationLayers && MACOS) {
         deviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME); // needed for macOS
     }
@@ -77,7 +84,7 @@ int Device::createLogicalDevice(
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.pNext = &synchronization2Features;
+    createInfo.pNext = &fragmentShaderBarycentricFeatures;
 
     createInfo.enabledExtensionCount = 0;
 
