@@ -5,6 +5,7 @@
 #include "luna.h"
 #include "window.h"
 #include "logger.h"
+#include "uiLayer.h"
 
 namespace vax {
     class App final {
@@ -25,8 +26,7 @@ namespace vax {
         std::unique_ptr<vax::vk::Engine> _engine;
         std::unique_ptr<Renderer> _renderer;
         std::unique_ptr<Scene> _scene;
-
-        VkDescriptorPool _imguiDescriptorPool = VK_NULL_HANDLE;
+        std::unique_ptr<vax::ui::UILayer> _uiLayer;
 
         bool setup();
         void mainLoop();

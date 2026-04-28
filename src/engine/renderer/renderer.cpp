@@ -33,7 +33,7 @@ void Renderer::prepare() {
     }
 }
 
-bool Renderer::render(Scene* scene, float deltaTime, ImDrawData* imguiDrawData) {
+bool Renderer::render(Scene* scene, float deltaTime) {
     vkWaitForFences(
         _vkEngine.get().device->vkDevice,
         1,
@@ -67,7 +67,10 @@ bool Renderer::render(Scene* scene, float deltaTime, ImDrawData* imguiDrawData) 
     );
 
     vkResetCommandBuffer(_vkEngine.get().commandManager->commandBuffers[_currentFrame], 0);
-    if (!recordCommandBuffer(_vkEngine.get().commandManager->commandBuffers[_currentFrame], imageIndex, scene, deltaTime, imguiDrawData)) {
+    auto recordResult = recordCommandBuffer(
+        _vkEngine.get().commandManager->commandBuffers[_currentFrame], imageIndex, scene, deltaTime
+    );
+    if (!recordResult) {
         _logger.error("Failed to record command buffer!");
         return false;
     }
@@ -125,7 +128,7 @@ bool Renderer::render(Scene* scene, float deltaTime, ImDrawData* imguiDrawData) 
 }
 
 bool Renderer::recordCommandBuffer(
-    VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime, ImDrawData* imguiDrawData
+    VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime
 ) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -176,7 +179,8 @@ bool Renderer::recordCommandBuffer(
         descriptorSetWriter.value().writeBuffer(_sceneUniformBuffers[_currentFrame], 0);
         // descriptorSet.writeTexture(scene->texture, 1);
         descriptorSetWriter.value().update();
-    } else {
+    }
+    else {
         _logger.error("Failed to get default descriptor set writer!");
         return false;
     }
@@ -198,7 +202,8 @@ bool Renderer::recordCommandBuffer(
         drawableModel.draw(&_vkEngine.get(), commandBuffer, *(_vkEngine.get().pipelineManager), deltaTime);
     }
 
-    ImGui_ImplVulkan_RenderDrawData(imguiDrawData, commandBuffer);
+    _uiLayer.get().render(commandBuffer);
+
     vkCmdEndRenderPass(commandBuffer);
 
     if (!VK_CHECK(vkEndCommandBuffer(commandBuffer))) {

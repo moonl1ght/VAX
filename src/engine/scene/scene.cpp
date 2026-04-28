@@ -7,7 +7,7 @@
 using namespace vax;
 
 void vax::Scene::update(float deltaTime) {
-    _ubo.model = glm::rotate(glm::mat4(1.0f), deltaTime * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
+    // _ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
     _ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     auto swapchainExtent = _vkEngine.get().swapchain->swapchainExtent;
     auto swapchainWidth = swapchainExtent.width;
