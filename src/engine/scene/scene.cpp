@@ -24,7 +24,7 @@ void vax::Scene::update(float deltaTime) {
 }
 
 void vax::Scene::load() {
-    auto model = _modelLoader.loadModel(RES_PATH("assets/models/robot.glb"));
+    auto model = _modelLoader.loadModel(RES_PATH("assets/models/helmet.glb"));
     // texture = TextureLoader(vkEngine).loadTexture(RES_PATH("assets/models/room/viking_room.png"));
     _ubo.cameraPosition = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     _ubo.view = glm::mat4(1.0f);
