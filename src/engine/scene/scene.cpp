@@ -24,6 +24,7 @@ void vax::Scene::update(float deltaTime) {
 }
 
 void vax::Scene::load() {
+    auto model = _modelLoader.loadModel(RES_PATH("assets/models/robot.glb"));
     // texture = TextureLoader(vkEngine).loadTexture(RES_PATH("assets/models/room/viking_room.png"));
     _ubo.cameraPosition = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     _ubo.view = glm::mat4(1.0f);
@@ -33,11 +34,11 @@ void vax::Scene::load() {
     // // _drawableModels.emplace_back(Primitives2D::createPlane());
     // _drawableModels[1]->transform.position = glm::vec3(0.0f, 0.0f, -0.5f);
     auto cube = _primitivesBuilder.createCube();
-    if (!cube.has_value()) {
+    if (!model.has_value()) {
         return;
     }
-    _drawableModels.push_back(std::move(cube.value()));
-//     for (auto& model : _drawableModels) {
-//         model->mesh->loadBuffers(*vkEngine->queueManager, *vkEngine->commandManager);
-//     }
+    _drawableModels.push_back(std::move(model.value()));
+    // for (auto& model : _drawableModels) {
+    //     model->mesh->loadBuffers(*vkEngine->queueManager, *vkEngine->commandManager);
+    // }
 }

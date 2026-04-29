@@ -7,15 +7,18 @@
 #include "shaderUniforms.h"
 #include "resourceHandle.h"
 #include "vkEngine.h"
+#include "submesh.h"
 
 namespace vax::objects {
     class PrimitivesBuilder;
+    class ModelLoader;
 }
 
 namespace vax::objects {
     class DrawableModel : public Model {
     public:
         friend class vax::objects::PrimitivesBuilder;
+        friend class vax::objects::ModelLoader;
 
         struct DrawContext {
 
@@ -31,7 +34,12 @@ namespace vax::objects {
 
         ~DrawableModel() {};
 
-        void draw(vax::vk::Engine* vkEngine, VkCommandBuffer commandBuffer, const vax::vk::PipelineManager& pipelineManager, float time);
+        void draw(
+            vax::vk::Engine* vkEngine,
+            VkCommandBuffer commandBuffer,
+            const vax::vk::PipelineManager& pipelineManager,
+            float time
+        );
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("DrawableModel");

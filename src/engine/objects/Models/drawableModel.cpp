@@ -1,5 +1,4 @@
 #include "drawableModel.h"
-#include "vkEngine.h"
 
 using namespace vax::objects;
 

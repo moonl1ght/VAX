@@ -15,7 +15,7 @@ namespace vax {
 
         Scene(vax::vk::Engine& vkEngine)
             : _vkEngine(vkEngine)
-            , _modelLoader(vax::objects::ModelLoader(&vkEngine))
+            , _modelLoader(vax::objects::ModelLoader(*vkEngine.resourceManager))
             , _primitivesBuilder(vax::objects::PrimitivesBuilder(vkEngine.resourceManager->meshManager())) {
         };
 

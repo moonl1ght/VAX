@@ -2,17 +2,26 @@
 
 #include "luna.h"
 #include "drawableModel.h"
-#include "vkObject.h"
+#include "resourceManager.h"
 
 namespace vax::objects {
-    class ModelLoader final : public vax::VkObject {
+    class ModelLoader final {
     public:
-        ModelLoader(vax::vk::Engine* vkEngine) : vax::VkObject(vkEngine) {};
-        ~ModelLoader() = default;
+        explicit ModelLoader(
+            vax::ResourceManager& resourceManager
+        ) : _resourceManager(resourceManager) {};
+        ~ModelLoader() {};
 
-        std::optional<DrawableModel*> loadModel(const std::string& path);
+        ModelLoader(const ModelLoader& other) = delete;
+        ModelLoader& operator=(const ModelLoader& other) = delete;
+        ModelLoader(ModelLoader&& other) noexcept = delete;
+        ModelLoader& operator=(ModelLoader&& other) noexcept = delete;
+
+        std::optional<DrawableModel> loadModel(const std::string& path);
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("ModelLoader");
+
+        std::reference_wrapper<vax::ResourceManager> _resourceManager;
     };
 }
