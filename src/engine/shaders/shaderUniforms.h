@@ -35,4 +35,12 @@ struct DrawPushConstants {
     uint32_t flags; // 4 bytes
 };
 
+typedef struct {
+    vec4 baseColor; 
+    float metallic;
+    float roughness;
+    float ambientOcclusion;
+    float _padding;
+} PBRMaterial;
+
 #endif  // ShaderUniforms_h

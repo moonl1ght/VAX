@@ -6,8 +6,7 @@
 using namespace vax::objects;
 using namespace vax;
 
-static glm::mat4 toGlm(const aiMatrix4x4& m) {
-    // Assimp is row-major, GLM is column-major
+constexpr glm::mat4 toGlm(const aiMatrix4x4& m) {
     return {
         m.a1, m.b1, m.c1, m.d1,
         m.a2, m.b2, m.c2, m.d2,
@@ -16,7 +15,35 @@ static glm::mat4 toGlm(const aiMatrix4x4& m) {
     };
 }
 
-static void processNode(
+PBRMaterial processMaterial(aiMaterial* mat) {
+    PBRMaterial material {
+        .baseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+        .metallic = 0.0f,
+        .roughness = 0.0f,
+        .ambientOcclusion = 1.0f
+    };
+    aiColor4D color(1.0f, 1.0f, 1.0f, 1.0f);
+    float factor;
+
+    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_BASE_COLOR, &color)) {
+        material.baseColor = glm::vec4(color.r, color.g, color.b, color.a);
+    }
+    if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_METALLIC_FACTOR, &factor)) {
+        material.metallic = factor;
+    }
+    if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_ROUGHNESS_FACTOR, &factor)) {
+        material.roughness = factor;
+    }
+
+    // Get Texture Paths
+    // auto albedoTexturePath  = getTexturePath(mat, aiTextureType_BASE_COLOR);
+    // auto normalTexturePath  = getTexturePath(mat, aiTextureType_NORMALS);
+    // auto metRoughTexturePath = getTexturePath(mat, aiTextureType_METALNESS); // Or aiTextureType_UNKNOWN for packed glTF
+    
+    return material;
+}
+
+void processNode(
     const aiScene* scene,
     const aiNode* node,
     const glm::mat4& parentTransform,
@@ -67,7 +94,18 @@ static void processNode(
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {
-        processNode(scene, node->mChildren[i], transform, vertices, indices, submeshes, vertexOffset, indexOffset, depth + 1, logger);
+        processNode(
+            scene,
+            node->mChildren[i],
+            transform,
+            vertices,
+            indices,
+            submeshes,
+            vertexOffset,
+            indexOffset,
+            depth + 1,
+            logger
+        );
     }
 }
 
@@ -75,7 +113,8 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path) {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(
         path,
-        aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs | aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder
+        aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs 
+        | aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder
     );
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -102,6 +141,12 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path) {
     uint32_t currentIndexOffset = 0;
 
     submeshes.reserve(scene->mNumMeshes);
+
+    std::vector<PBRMaterial> materials;
+    materials.reserve(scene->mNumMaterials);
+    for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
+        materials.push_back(processMaterial(scene->mMaterials[i]));
+    }
 
     processNode(
         scene,
