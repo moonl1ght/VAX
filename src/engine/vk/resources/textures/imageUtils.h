@@ -7,7 +7,7 @@ namespace vax::vk {
     class Engine;
 };
 
-namespace vax {
+namespace vax::textures::utils {
 
     void transitionImageLayout(
         vax::vk::CommandBuffer& commandBuffer,
@@ -49,8 +49,7 @@ namespace vax {
         VkFormat format,
         VkImageTiling tiling,
         VkImageUsageFlags usage,
-        VkMemoryPropertyFlags properties
+        VkMemoryPropertyFlags properties,
+        uint32_t layers = 1
     );
-
-    VkImageSubresourceRange imageSubresourceRange(VkImageAspectFlags aspectMask);
 };

@@ -1,11 +1,17 @@
-#include "textureBuilder.h"
+#include "textureFactory.h"
 #include "imageUtils.h"
+#include "commandManager.h"
 
 using namespace vax::textures;
+using namespace vax;
 
-std::optional<Texture> vax::textures::TextureBuilder::buildDepthTexture(VkFormat format, vax::math::SizeUI size, vax::vk::Engine* vkEngine) {
-    _logger.debug("Building depth texture...");
-    auto imageResult = vax::createImage(
+std::optional<Texture> TextureFactory::makeDepthTexture(
+    VkFormat format,
+    vax::math::SizeUI size,
+    vk::CommandManager& commandManager,
+    VkQueue submitQueue
+) {
+    auto imageResult = utils::createImage(
         _allocator,
         size.toExtent3D(),
         format,
@@ -28,30 +34,34 @@ std::optional<Texture> vax::textures::TextureBuilder::buildDepthTexture(VkFormat
         format,
         VK_IMAGE_ASPECT_DEPTH_BIT
     );
-    auto commandBuffer = vkEngine->commandManager->createSingleTimeCommandBuffer();
-    vax::transitionImageLayout(
+
+    auto commandBuffer = commandManager.createSingleTimeCommandBuffer();
+    utils::transitionImageLayout(
         commandBuffer,
         depthImage,
         format,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-        vkEngine->queueManager->graphicsQueue,
+        submitQueue,
         VK_IMAGE_ASPECT_DEPTH_BIT
     );
     texture.loadImageView();
     return std::make_optional(std::move(texture));
 }
 
-std::optional<Texture> vax::textures::TextureBuilder::buildTexture(VkFormat format, vax::math::SizeUI size, vax::vk::Engine* vkEngine) {
+std::optional<Texture> TextureFactory::makeTexture(
+    VkFormat format,
+    math::SizeUI size
+) {
     VkImageUsageFlags drawImageUsages{};
     drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
     drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    auto imageResult = vax::createImage(
+    auto imageResult = utils::createImage(
         _allocator,
         size.toExtent3D(),
-        VK_FORMAT_R16G16B16A16_SFLOAT,
+        format,
         VK_IMAGE_TILING_OPTIMAL,
         drawImageUsages,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
@@ -60,16 +70,16 @@ std::optional<Texture> vax::textures::TextureBuilder::buildTexture(VkFormat form
         auto [image, allocation] = imageResult.value();
         auto texture = vax::textures::Texture(
             _device.get(),
-                _allocator,
-                "render_destination",
-                image,
-                allocation,
-                size,
-                VK_FORMAT_R16G16B16A16_SFLOAT
+            _allocator,
+            "render_destination",
+            image,
+            allocation,
+            size,
+            VK_FORMAT_R16G16B16A16_SFLOAT
         );
         texture.loadImageView();
         if (auto sampler = vax::textures::Sampler::createSampler(_device.get())) {
-            texture.sampler = std::make_unique<vax::textures::Sampler>(std::move(*sampler));
+            texture._sampler = std::make_unique<vax::textures::Sampler>(std::move(*sampler));
         }
         return std::make_optional(std::move(texture));
     }

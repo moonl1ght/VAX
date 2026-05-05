@@ -123,7 +123,7 @@ namespace vax::vk {
         vax::utils::Logger _logger = vax::utils::Logger("Buffer");
         std::reference_wrapper<const vax::vk::Device> _device;
 
-        BufferId _id = vax::NullId;
+        BufferId _id = vax::NullBufferId;
         VkBuffer _vkBuffer = VK_NULL_HANDLE;
         VkDeviceMemory _vkBufferMemory = VK_NULL_HANDLE;
         VkDeviceSize _size = 0;

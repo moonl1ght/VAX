@@ -1,5 +1,4 @@
 #include "bufferManager.h"
-#include "deletionQueue.h"
 
 using namespace vax;
 

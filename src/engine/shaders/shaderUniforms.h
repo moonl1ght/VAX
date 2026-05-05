@@ -1,5 +1,5 @@
-#ifndef ShaderUniforms_h
-#define ShaderUniforms_h
+#ifndef shaderUniforms_h
+#define shaderUniforms_h
 
 #ifdef __cplusplus
 
@@ -37,10 +37,8 @@ struct DrawPushConstants {
 
 typedef struct {
     vec4 baseColor; 
-    float metallic;
-    float roughness;
-    float ambientOcclusion;
-    float _padding;
+    float metallicFactor, roughnessFactor, normalScale, occlusionStrength; // vec4
+    vec4 emissiveFactorAlphaCutoff;
 } PBRMaterial;
 
-#endif  // ShaderUniforms_h
+#endif  // shaderUniforms_h

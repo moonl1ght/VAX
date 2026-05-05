@@ -29,13 +29,11 @@ void DescriptorSetWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t
 }
 
 void DescriptorSetWriter::writeTexture(textures::Texture* texture, uint32_t binding, uint32_t offset) {
-    VkDescriptorImageInfo& imageInfo = _imageInfos.emplace_back(
-        VkDescriptorImageInfo{
-            .sampler = texture->sampler == nullptr ? VK_NULL_HANDLE : texture->sampler->vkSampler,
-            .imageView = texture->textureImageView,
-            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        }
-        );
+    auto imageInfo = texture->descriptorImageInfo();
+    if (!imageInfo) {
+        _logger.error("Failed to write descriptor image info");
+        return;
+    }
 
     VkWriteDescriptorSet write{
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -44,7 +42,7 @@ void DescriptorSetWriter::writeTexture(textures::Texture* texture, uint32_t bind
         .dstArrayElement = 0,
         .descriptorCount = 1,
         .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        .pImageInfo = &imageInfo
+        .pImageInfo = &(imageInfo.value())
     };
 
     _writes.push_back(write);

@@ -1,34 +1,47 @@
 #include "renderDestinationBuilder.h"
-#include "textureBuilder.h"
+#include "textureFactory.h"
 #include "renderPass.h"
 
 using namespace vax::vk;
+using namespace vax;
 
-std::optional<std::unique_ptr<RenderDestination>> vax::vk::RenderDestinationBuilder::build(
-    vax::vk::Engine* vkEngine
+std::optional<std::unique_ptr<RenderDestination>> RenderDestinationBuilder::build(
+    Engine* vkEngine
 ) const noexcept {
     _logger.info("Building render destination...");
     VkFormat depthFormat = utils::findDepthFormat(_device.get().vkPhysicalDevice);
 
-    auto depthTexture = vax::textures::TextureBuilder(
+    // TODO: refactor this
+    // vk::CommandBuffer commandBuffer = vkEngine->commandManager->createSingleTimeCommandBuffer();
+    auto depthTexture = textures::TextureFactory(
         _device.get(), _allocator
     )
-        .buildDepthTexture(depthFormat, vax::math::SizeUI(_swapchain.get().swapchainExtent), vkEngine);
+        .makeDepthTexture(depthFormat, math::SizeUI(_swapchain.get().swapchainExtent), *vkEngine->commandManager, vkEngine->queueManager->graphicsQueue);
+
+    std::cout << "depthTexture: " << depthTexture.has_value() << std::endl;
 
     if (!depthTexture.has_value()) {
         return std::nullopt;
     }
+
+    // depthTexture->loadImageView();
 
     std::vector<VkFramebuffer> swapchainFramebuffers;
     if (!createFramebuffers(*depthTexture, swapchainFramebuffers)) {
         return std::nullopt;
     }
 
-    auto drawImage = vax::textures::TextureBuilder(_device.get(), _allocator)
-        .buildTexture(VK_FORMAT_R16G16B16A16_SFLOAT, vax::math::SizeUI(_swapchain.get().swapchainExtent), vkEngine);
+
+    std::cout << "depthTexture: " << depthTexture.has_value() << std::endl;
+
+
+    auto drawImage = textures::TextureFactory(_device.get(), _allocator)
+        .makeTexture(VK_FORMAT_R16G16B16A16_SFLOAT, vax::math::SizeUI(_swapchain.get().swapchainExtent));
     if (!drawImage.has_value()) {
         return std::nullopt;
     }
+
+    std::cout << "drawImage: " << std::endl;
 
     return std::make_optional<std::unique_ptr<vax::vk::RenderDestination>>(
         std::make_unique<vax::vk::RenderDestination>(
@@ -40,16 +53,16 @@ std::optional<std::unique_ptr<RenderDestination>> vax::vk::RenderDestinationBuil
     );
 }
 
-bool vax::vk::RenderDestinationBuilder::createFramebuffers(
-    const vax::textures::Texture& depthTexture,
+bool RenderDestinationBuilder::createFramebuffers(
+    const textures::Texture& depthTexture,
     std::vector<VkFramebuffer>& swapchainFramebuffers
 ) const {
     swapchainFramebuffers.resize(_swapchain.get().swapchainImageViews.size());
 
-    for (size_t i = 0; i < _swapchain.get().swapchainImageViews.size(); i++) {
+    for (size_t i = 0; i < _swapchain.get().swapchainImageViews.size(); ++i) {
         std::array<VkImageView, 2> attachments = {
             _swapchain.get().swapchainImageViews[i],
-            depthTexture.textureImageView
+            depthTexture.imageView()
         };
 
         VkFramebufferCreateInfo framebufferInfo{};

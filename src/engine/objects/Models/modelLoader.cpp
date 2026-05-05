@@ -2,6 +2,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/GltfMaterial.h>
 
 using namespace vax::objects;
 using namespace vax;
@@ -16,30 +17,53 @@ constexpr glm::mat4 toGlm(const aiMatrix4x4& m) {
 }
 
 PBRMaterial processMaterial(aiMaterial* mat) {
-    PBRMaterial material {
+    PBRMaterial material{
         .baseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-        .metallic = 0.0f,
-        .roughness = 0.0f,
-        .ambientOcclusion = 1.0f
+        .metallicFactor = 1.0f,
+        .roughnessFactor = 1.0f,
+        .normalScale = 1.0f,
+        .occlusionStrength = 1.0f,
+        .emissiveFactorAlphaCutoff = glm::vec4(0.0f, 0.0f, 0.0f, 0.5f)
     };
-    aiColor4D color(1.0f, 1.0f, 1.0f, 1.0f);
-    float factor;
+    aiColor4D color;
+    ai_real factor;
 
-    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_BASE_COLOR, &color)) {
+    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &color)) {
         material.baseColor = glm::vec4(color.r, color.g, color.b, color.a);
     }
+    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_EMISSIVE, &color)) {
+        material.emissiveFactorAlphaCutoff = glm::vec4(color.r, color.g, color.b, 0.5f);
+    }
     if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_METALLIC_FACTOR, &factor)) {
-        material.metallic = factor;
+        material.metallicFactor = factor;
     }
     if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_ROUGHNESS_FACTOR, &factor)) {
-        material.roughness = factor;
+        material.roughnessFactor = factor;
+    }
+    if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_GLTF_TEXTURE_SCALE(aiTextureType_NORMALS, 0), &factor)) {
+        material.normalScale = factor;
+    }
+    if (
+        AI_SUCCESS == aiGetMaterialFloat(
+            mat, AI_MATKEY_GLTF_TEXTURE_SCALE(aiTextureType_AMBIENT_OCCLUSION, 0), &factor
+        )
+        ) {
+        material.occlusionStrength = factor;
     }
 
-    // Get Texture Paths
-    // auto albedoTexturePath  = getTexturePath(mat, aiTextureType_BASE_COLOR);
-    // auto normalTexturePath  = getTexturePath(mat, aiTextureType_NORMALS);
-    // auto metRoughTexturePath = getTexturePath(mat, aiTextureType_METALNESS); // Or aiTextureType_UNKNOWN for packed glTF
-    
+    std::cout << "Material: " << material.baseColor.x << " " << material.baseColor.y << " " << material.baseColor.z << " " << material.baseColor.w << std::endl;
+    std::cout << "Metallic: " << material.metallicFactor << std::endl;
+    std::cout << "Roughness: " << material.roughnessFactor << std::endl;
+    std::cout << "Normal Scale: " << material.normalScale << std::endl;
+    std::cout << "Occlusion Strength: " << material.occlusionStrength << std::endl;
+    std::cout << "Emissive Factor Alpha Cutoff: " << material.emissiveFactorAlphaCutoff.x << " " << material.emissiveFactorAlphaCutoff.y << " " << material.emissiveFactorAlphaCutoff.z << " " << material.emissiveFactorAlphaCutoff.w << std::endl;
+
+    // auto albedoTexturePath = getTexturePath(mat, aiTextureType_BASE_COLOR);
+    // auto normalTexturePath = getTexturePath(mat, aiTextureType_NORMALS);
+    // auto metRoughTexturePath = getTexturePath(mat, aiTextureType_METALNESS);
+    // ao texture
+    // TODO: emissive texture
+
     return material;
 }
 
@@ -68,7 +92,7 @@ void processNode(
             .materialIndex = mesh->mMaterialIndex
         };
         submeshes.push_back(submesh);
-        submesh.debugPrint(logger);
+        // submesh.debugPrint(logger);
 
         for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
             Vertex vertex;
@@ -113,7 +137,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path) {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(
         path,
-        aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs 
+        aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs
         | aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder
     );
 

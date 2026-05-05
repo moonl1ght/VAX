@@ -151,7 +151,7 @@ bool Swapchain::createImageViews() {
     swapchainImageViews.resize(swapchainImages.size());
 
     for (uint32_t i = 0; i < swapchainImages.size(); i++) {
-        auto swapchainImageView = vax::createImageView(
+        auto swapchainImageView = textures::utils::createImageView(
             _device.get().vkDevice, swapchainImages[i], swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT
         );
         if (swapchainImageView) {

@@ -4,10 +4,9 @@
 #include "luna.h"
 
 namespace vax::textures {
-
     class Sampler final {
     public:
-        VkSampler vkSampler;
+        VkSampler vkSampler = VK_NULL_HANDLE;
 
         static std::optional<vax::textures::Sampler> createSampler(const vax::vk::Device& device);
 
