@@ -9,22 +9,8 @@ namespace vax::vk {
 
 namespace vax::textures::utils {
 
-    void transitionImageLayout(
-        vax::vk::CommandBuffer& commandBuffer,
-        VkImage image,
-        VkFormat format,
-        VkImageLayout oldLayout,
-        VkImageLayout newLayout,
-        VkQueue submitQueue,
-        VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
-    );
-
     void copyImageToImage(
         VkCommandBuffer commandBuffer, VkImage source, VkImage destination, VkExtent2D srcSize, VkExtent2D dstSize
-    );
-
-    void transitionImage(
-        VkCommandBuffer commandBuffer, VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout
     );
 
     void copyBufferToImage(

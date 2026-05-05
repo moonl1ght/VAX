@@ -1,3 +1,5 @@
+#pragma once
+
 #include "luna.h"
 #include "device.h"
 

@@ -1,6 +1,7 @@
 #include "renderDestinationBuilder.h"
 #include "textureFactory.h"
 #include "renderPass.h"
+#include "textureWorker.h"
 
 using namespace vax::vk;
 using namespace vax;
@@ -11,37 +12,36 @@ std::optional<std::unique_ptr<RenderDestination>> RenderDestinationBuilder::buil
     _logger.info("Building render destination...");
     VkFormat depthFormat = utils::findDepthFormat(_device.get().vkPhysicalDevice);
 
-    // TODO: refactor this
-    // vk::CommandBuffer commandBuffer = vkEngine->commandManager->createSingleTimeCommandBuffer();
     auto depthTexture = textures::TextureFactory(
         _device.get(), _allocator
     )
-        .makeDepthTexture(depthFormat, math::SizeUI(_swapchain.get().swapchainExtent), *vkEngine->commandManager, vkEngine->queueManager->graphicsQueue);
-
-    std::cout << "depthTexture: " << depthTexture.has_value() << std::endl;
+        .makeDepthTexture(depthFormat, math::SizeUI(_swapchain.get().swapchainExtent));
 
     if (!depthTexture.has_value()) {
         return std::nullopt;
     }
 
-    // depthTexture->loadImageView();
+    auto textureWorker = textures::TextureWorker(_device.get(), *vkEngine->commandManager);
+    textureWorker.transitionTextureLayoutAndSubmit(
+        vkEngine->queueManager->graphicsQueue,
+        *depthTexture,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_ASPECT_DEPTH_BIT
+    );
+
+    depthTexture->loadImageView();
 
     std::vector<VkFramebuffer> swapchainFramebuffers;
     if (!createFramebuffers(*depthTexture, swapchainFramebuffers)) {
         return std::nullopt;
     }
 
-
-    std::cout << "depthTexture: " << depthTexture.has_value() << std::endl;
-
-
     auto drawImage = textures::TextureFactory(_device.get(), _allocator)
         .makeTexture(VK_FORMAT_R16G16B16A16_SFLOAT, vax::math::SizeUI(_swapchain.get().swapchainExtent));
     if (!drawImage.has_value()) {
         return std::nullopt;
     }
-
-    std::cout << "drawImage: " << std::endl;
 
     return std::make_optional<std::unique_ptr<vax::vk::RenderDestination>>(
         std::make_unique<vax::vk::RenderDestination>(

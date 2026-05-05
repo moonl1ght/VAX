@@ -10,7 +10,6 @@ void Texture::cleanup() {
 }
 
 void Texture::_destroy(bool inDestructor) {
-    std::cout << "Texture::_destroy: " << std::endl;
     if (inDestructor && !_isDetached) {
         _logger.error("Texture must be detached before destruction");
         return;

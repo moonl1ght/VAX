@@ -41,7 +41,7 @@ namespace vax::textures {
         TextureFactory& operator=(TextureFactory&& other) noexcept = delete;
 
         std::optional<Texture> makeDepthTexture(
-            VkFormat format, math::SizeUI size, vk::CommandManager& commandManager, VkQueue submitQueue
+            VkFormat format, math::SizeUI size
         );
 
         std::optional<Texture> makeTexture(

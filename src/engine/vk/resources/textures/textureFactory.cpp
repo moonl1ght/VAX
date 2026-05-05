@@ -7,9 +7,7 @@ using namespace vax;
 
 std::optional<Texture> TextureFactory::makeDepthTexture(
     VkFormat format,
-    vax::math::SizeUI size,
-    vk::CommandManager& commandManager,
-    VkQueue submitQueue
+    vax::math::SizeUI size
 ) {
     auto imageResult = utils::createImage(
         _allocator,
@@ -34,18 +32,6 @@ std::optional<Texture> TextureFactory::makeDepthTexture(
         format,
         VK_IMAGE_ASPECT_DEPTH_BIT
     );
-
-    auto commandBuffer = commandManager.createSingleTimeCommandBuffer();
-    utils::transitionImageLayout(
-        commandBuffer,
-        depthImage,
-        format,
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-        submitQueue,
-        VK_IMAGE_ASPECT_DEPTH_BIT
-    );
-    texture.loadImageView();
     return std::make_optional(std::move(texture));
 }
 
