@@ -22,7 +22,7 @@ void Renderer::prepare() {
         _sceneUniformBuffers.push_back(allocation.second);
         vkMapMemory(
             _vkEngine.get().device->vkDevice,
-            _sceneUniformBuffers[i]->getVkBufferMemory(),
+            _sceneUniformBuffers[i]->vkBufferMemory(),
             0,
             bufferSize,
             0,

@@ -8,9 +8,13 @@
 namespace vax {
     class ResourceManager final {
     public:
-        explicit ResourceManager(const vax::vk::Device& device)
+        explicit ResourceManager(
+            const vax::vk::Device& device,
+            VmaAllocator allocator
+        )
             : _bufferManager(device)
-            , _meshManager(device) {
+            , _meshManager(device)
+            , _textureManager(device, allocator) {
         };
 
         ResourceManager(const ResourceManager& other) = delete;
@@ -24,10 +28,13 @@ namespace vax {
 
         vax::MeshManager& meshManager() { return _meshManager; }
 
+        vax::TextureManager& textureManager() { return _textureManager; }
+
     private:
         vax::utils::Logger _logger = vax::utils::Logger("ResourceManager");
 
         vax::BufferManager _bufferManager;
         vax::MeshManager _meshManager;
+        vax::TextureManager _textureManager;
     };
 }

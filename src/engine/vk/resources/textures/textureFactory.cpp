@@ -55,20 +55,17 @@ std::optional<TextureManager::TextureResource> TextureFactory::makeDepthTexture(
 }
 
 std::optional<Texture> TextureFactory::makeTextureDetached(
+    std::string name,
     VkFormat format,
-    math::SizeUI size
+    math::SizeUI size,
+    VkImageUsageFlags imageUsageFlags
 ) {
-    VkImageUsageFlags drawImageUsages{};
-    drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
-    drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     auto imageResult = utils::createImage(
         _allocator,
         size.toExtent3D(),
         format,
         VK_IMAGE_TILING_OPTIMAL,
-        drawImageUsages,
+        imageUsageFlags,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
     );
     if (imageResult) {
@@ -76,11 +73,12 @@ std::optional<Texture> TextureFactory::makeTextureDetached(
         auto texture = vax::textures::Texture(
             _device.get(),
             _allocator,
-            "render_destination",
+            name,
             image,
             allocation,
             size,
-            VK_FORMAT_R16G16B16A16_SFLOAT
+            format,
+            VK_IMAGE_ASPECT_COLOR_BIT
         );
         texture.loadImageView();
         if (auto sampler = vax::textures::Sampler::createSampler(_device.get())) {
@@ -94,10 +92,12 @@ std::optional<Texture> TextureFactory::makeTextureDetached(
 
 
 std::optional<TextureManager::TextureResource> TextureFactory::makeTexture(
+    std::string name,
     VkFormat format,
-    math::SizeUI size
+    math::SizeUI size,
+    VkImageUsageFlags imageUsageFlags
 ) {
-    auto texture = makeTextureDetached(format, size);
+    auto texture = makeTextureDetached(name, format, size, imageUsageFlags);
     if (!texture) {
         return std::nullopt;
     }

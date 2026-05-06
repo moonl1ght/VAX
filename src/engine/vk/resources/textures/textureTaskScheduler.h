@@ -2,14 +2,15 @@
 
 #include "luna.h"
 #include "texture.h"
+#include "buffer.h"
 #include "device.h"
 #include "commandBuffer.h"
 #include "commandManager.h"
 
 namespace vax::textures {
-    class TextureWorkerInline final {
+    class TextureTaskSchedulerInline final {
     public:
-        explicit TextureWorkerInline(
+        explicit TextureTaskSchedulerInline(
             const vax::vk::Device& device,
             vax::vk::CommandBuffer& commandBuffer
         )
@@ -17,12 +18,12 @@ namespace vax::textures {
             , _commandBuffer(commandBuffer) {
         }
 
-        ~TextureWorkerInline() {}
+        ~TextureTaskSchedulerInline() {}
 
-        TextureWorkerInline(const TextureWorkerInline& other) = delete;
-        TextureWorkerInline& operator=(const TextureWorkerInline& other) = delete;
-        TextureWorkerInline(TextureWorkerInline&& other) noexcept = delete;
-        TextureWorkerInline& operator=(TextureWorkerInline&& other) noexcept = delete;
+        TextureTaskSchedulerInline(const TextureTaskSchedulerInline& other) = delete;
+        TextureTaskSchedulerInline& operator=(const TextureTaskSchedulerInline& other) = delete;
+        TextureTaskSchedulerInline(TextureTaskSchedulerInline&& other) noexcept = delete;
+        TextureTaskSchedulerInline& operator=(TextureTaskSchedulerInline&& other) noexcept = delete;
 
         void transitionTextureLayout(
             Texture& texture,
@@ -31,14 +32,19 @@ namespace vax::textures {
             VkImageAspectFlags aspectMask
         );
 
+        void copyBufferToTexture(
+            vax::vk::Buffer& buffer,
+            Texture& texture
+        );
+
     private:
         std::reference_wrapper<const vax::vk::Device> _device;
         std::reference_wrapper<vax::vk::CommandBuffer> _commandBuffer;
     };
 
-    class TextureWorker final {
+    class TextureTaskScheduler final {
     public:
-        explicit TextureWorker(
+        explicit TextureTaskScheduler(
             const vax::vk::Device& device,
             vax::vk::CommandManager& commandManager
         )
@@ -46,12 +52,12 @@ namespace vax::textures {
             , _commandManager(commandManager) {
         }
 
-        ~TextureWorker() {}
+        ~TextureTaskScheduler() {}
 
-        TextureWorker(const TextureWorker& other) = delete;
-        TextureWorker& operator=(const TextureWorker& other) = delete;
-        TextureWorker(TextureWorker&& other) noexcept = delete;
-        TextureWorker& operator=(TextureWorker&& other) noexcept = delete;
+        TextureTaskScheduler(const TextureTaskScheduler& other) = delete;
+        TextureTaskScheduler& operator=(const TextureTaskScheduler& other) = delete;
+        TextureTaskScheduler(TextureTaskScheduler&& other) noexcept = delete;
+        TextureTaskScheduler& operator=(TextureTaskScheduler&& other) noexcept = delete;
 
         void transitionTextureLayout(
             Texture& texture,
@@ -66,6 +72,17 @@ namespace vax::textures {
             VkImageLayout oldLayout,
             VkImageLayout newLayout,
             VkImageAspectFlags aspectMask
+        );
+
+        void copyBufferToTexture(
+            vax::vk::Buffer& buffer,
+            Texture& texture
+        );
+
+        void copyBufferToTextureAndSubmit(
+            VkQueue submitQueue,
+            vax::vk::Buffer& buffer,
+            Texture& texture
         );
 
     private:

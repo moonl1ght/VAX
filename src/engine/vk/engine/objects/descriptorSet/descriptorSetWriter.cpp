@@ -9,9 +9,9 @@ using namespace vax;
 void DescriptorSetWriter::writeBuffer(Buffer* buffer, uint32_t binding, uint32_t offset) {
     VkDescriptorBufferInfo& bufferInfo = _bufferInfos.emplace_back(
         VkDescriptorBufferInfo{
-            .buffer = buffer->getVkBuffer(),
+            .buffer = buffer->vkBuffer(),
             .offset = offset,
-            .range = buffer->getSize()
+            .range = buffer->size()
         }
     );
 

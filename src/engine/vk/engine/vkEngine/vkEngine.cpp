@@ -177,7 +177,7 @@ bool vax::vk::Engine::setup() {
         }
     );
 
-    resourceManager = std::make_unique<ResourceManager>(*device);
+    resourceManager = std::make_unique<ResourceManager>(*device, allocator);
     deletionQueue.push_function(
         [&]() {
             _logger.debug("Destroying resource manager...");

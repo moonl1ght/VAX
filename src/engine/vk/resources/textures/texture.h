@@ -31,7 +31,7 @@ namespace vax::textures {
             VmaAllocation allocation,
             vax::math::SizeUI size,
             VkFormat format,
-            VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+            VkImageAspectFlags aspectMask
         )
             : _device(device)
             , _allocator(allocator)
@@ -112,10 +112,6 @@ namespace vax::textures {
 
         void loadImageView();
 
-        std::optional<Texture*> makeCopy(VkCommandBuffer commandBuffer) const;
-
-        bool copyTo(Texture& other, VkCommandBuffer commandBuffer) const;
-
         const std::string& name() const { return _name; }
 
         bool isDetached() const { return _isDetached; }
@@ -129,6 +125,12 @@ namespace vax::textures {
         const Sampler& sampler() const { return *_sampler; }
 
         std::optional<VkDescriptorImageInfo> descriptorImageInfo() const;
+
+        vax::math::SizeUI size() const { return _size; }
+
+        uint32_t width() const { return _size.width; }
+
+        uint32_t height() const { return _size.height; }
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("Texture");

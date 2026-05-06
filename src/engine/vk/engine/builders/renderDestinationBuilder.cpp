@@ -1,7 +1,7 @@
 #include "renderDestinationBuilder.h"
 #include "textureFactory.h"
 #include "renderPass.h"
-#include "textureWorker.h"
+#include "textureTaskScheduler.h"
 
 using namespace vax::vk;
 using namespace vax;
@@ -21,8 +21,8 @@ std::optional<std::unique_ptr<RenderDestination>> RenderDestinationBuilder::buil
         return std::nullopt;
     }
 
-    auto textureWorker = textures::TextureWorker(_device.get(), *vkEngine->commandManager);
-    textureWorker.transitionTextureLayoutAndSubmit(
+    auto textureTaskScheduler = textures::TextureTaskScheduler(_device.get(), *vkEngine->commandManager);
+    textureTaskScheduler.transitionTextureLayoutAndSubmit(
         vkEngine->queueManager->graphicsQueue,
         *depthTexture,
         VK_IMAGE_LAYOUT_UNDEFINED,
@@ -37,8 +37,18 @@ std::optional<std::unique_ptr<RenderDestination>> RenderDestinationBuilder::buil
         return std::nullopt;
     }
 
+    VkImageUsageFlags drawImageUsages{};
+    drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
+    drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     auto drawImage = textures::TextureFactory(_device.get(), _allocator)
-        .makeTextureDetached(VK_FORMAT_R16G16B16A16_SFLOAT, vax::math::SizeUI(_swapchain.get().swapchainExtent));
+        .makeTextureDetached(
+            "draw_image",
+            VK_FORMAT_R16G16B16A16_SFLOAT,
+            vax::math::SizeUI(_swapchain.get().swapchainExtent),
+            drawImageUsages
+        );
     if (!drawImage.has_value()) {
         return std::nullopt;
     }

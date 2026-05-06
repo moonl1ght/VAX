@@ -9,17 +9,9 @@ namespace vax::vk {
 
 namespace vax::textures::utils {
 
+    // TODO: Move to textureTaskScheduler
     void copyImageToImage(
         VkCommandBuffer commandBuffer, VkImage source, VkImage destination, VkExtent2D srcSize, VkExtent2D dstSize
-    );
-
-    void copyBufferToImage(
-        vax::vk::CommandBuffer& commandBuffer,
-        VkBuffer buffer,
-        VkImage image,
-        uint32_t width,
-        uint32_t height,
-        VkQueue submitQueue
     );
 
     std::optional<VkImageView> createImageView(

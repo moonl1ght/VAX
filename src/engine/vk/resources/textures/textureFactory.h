@@ -46,11 +46,17 @@ namespace vax::textures {
         );
 
         std::optional<vax::TextureManager::TextureResource> makeTexture(
-            VkFormat format, math::SizeUI size
+            std::string name,
+            VkFormat format,
+            math::SizeUI size,
+            VkImageUsageFlags imageUsageFlags
         );
 
         std::optional<Texture> makeTextureDetached(
-            VkFormat format, math::SizeUI size
+            std::string name,
+            VkFormat format,
+            math::SizeUI size,
+            VkImageUsageFlags imageUsageFlags
         );
 
     private:

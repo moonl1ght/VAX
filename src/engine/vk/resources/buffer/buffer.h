@@ -109,11 +109,11 @@ namespace vax::vk {
 
         void cleanup();
 
-        VkBuffer getVkBuffer() const { return _vkBuffer; }
+        VkBuffer vkBuffer() const { return _vkBuffer; }
 
-        VkDeviceMemory getVkBufferMemory() const { return _vkBufferMemory; }
+        VkDeviceMemory vkBufferMemory() const { return _vkBufferMemory; }
 
-        VkDeviceSize getSize() const { return _size; }
+        VkDeviceSize size() const { return _size; }
 
         BufferId id() const { return _id; }
 

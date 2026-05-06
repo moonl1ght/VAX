@@ -44,39 +44,6 @@ namespace vax::textures::utils {
         vkCmdBlitImage2(commandBuffer, &blitInfo);
     }
 
-    void copyBufferToImage(
-        vk::CommandBuffer& commandBuffer,
-        VkBuffer buffer,
-        VkImage image,
-        uint32_t width,
-        uint32_t height,
-        VkQueue submitQueue
-    ) {
-        commandBuffer.begin();
-
-        VkBufferImageCopy region{};
-        region.bufferOffset = 0;
-        region.bufferRowLength = 0;
-        region.bufferImageHeight = 0;
-        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        region.imageSubresource.mipLevel = 0;
-        region.imageSubresource.baseArrayLayer = 0;
-        region.imageSubresource.layerCount = 1;
-        region.imageOffset = { 0, 0, 0 };
-        region.imageExtent = {
-            width,
-            height,
-            1
-        };
-
-        vkCmdCopyBufferToImage(
-            commandBuffer.vkCommandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region
-        );
-
-        commandBuffer.end();
-        commandBuffer.submitAndWait(submitQueue);
-    }
-
     std::optional<std::pair<VkImage, VmaAllocation>> createImage(
         VmaAllocator allocator,
         VkExtent3D extent,
@@ -124,12 +91,14 @@ namespace vax::textures::utils {
             .image = image,
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
             .format = format,
+            .subresourceRange = {
+                .aspectMask = aspectMask,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            },
         };
-        viewInfo.subresourceRange.aspectMask = aspectMask;
-        viewInfo.subresourceRange.baseMipLevel = 0;
-        viewInfo.subresourceRange.levelCount = 1;
-        viewInfo.subresourceRange.baseArrayLayer = 0;
-        viewInfo.subresourceRange.layerCount = 1;
 
         VkImageView imageView;
         if (!VK_CHECK(vkCreateImageView(device, &viewInfo, nullptr, &imageView))) {
