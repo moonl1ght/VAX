@@ -1,5 +1,4 @@
 #include "modelLoader.h"
-#include "textureLoader.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -51,19 +50,6 @@ PBRMaterial processMaterial(aiMaterial* mat) {
         ) {
         material.occlusionStrength = factor;
     }
-
-    std::cout << "Material: " << material.baseColor.x << " " << material.baseColor.y << " " << material.baseColor.z << " " << material.baseColor.w << std::endl;
-    std::cout << "Metallic: " << material.metallicFactor << std::endl;
-    std::cout << "Roughness: " << material.roughnessFactor << std::endl;
-    std::cout << "Normal Scale: " << material.normalScale << std::endl;
-    std::cout << "Occlusion Strength: " << material.occlusionStrength << std::endl;
-    std::cout << "Emissive Factor Alpha Cutoff: " << material.emissiveFactorAlphaCutoff.x << " " << material.emissiveFactorAlphaCutoff.y << " " << material.emissiveFactorAlphaCutoff.z << " " << material.emissiveFactorAlphaCutoff.w << std::endl;
-
-    // auto albedoTexturePath = getTexturePath(mat, aiTextureType_BASE_COLOR);
-    // auto normalTexturePath = getTexturePath(mat, aiTextureType_NORMALS);
-    // auto metRoughTexturePath = getTexturePath(mat, aiTextureType_METALNESS);
-    // ao texture
-    // TODO: emissive texture
 
     return material;
 }
@@ -134,7 +120,7 @@ void processNode(
     }
 }
 
-std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path) {
+std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQueue submitQueue) {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(
         path,

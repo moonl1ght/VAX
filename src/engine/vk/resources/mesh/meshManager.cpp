@@ -11,13 +11,12 @@ void vax::MeshManager::fullCleanup() {
 
 std::optional<MeshManager::MeshResource> MeshManager::createEmptyMesh() {
     auto mesh = vax::objects::Mesh(_device.get());
-    mesh._isDetached = false;
     mesh._id = _lastId++;
     auto [it, inserted] = _pool.try_emplace(mesh.id(), std::move(mesh));
     if (!inserted) {
-        mesh._destroy();
         return std::nullopt;
     }
+    it->second._isDetached = false;
     return std::make_pair(it->first, &it->second);
 }
 

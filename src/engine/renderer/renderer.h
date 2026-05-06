@@ -2,7 +2,7 @@
 
 #include "luna.h"
 #include "vkEngine.h"
-#include "scene.h"
+#include "drawableScene.h"
 #include "buffer.h"
 #include "uiLayer.h"
 
@@ -18,8 +18,8 @@ namespace vax {
         };
 
         ~Renderer() {
-            _sceneUniformBuffers.clear();
-            _sceneUniformBuffersMapped.clear();
+            // _sceneUniformBuffers.clear();
+            // _sceneUniformBuffersMapped.clear();
         };
 
         Renderer(const Renderer& other) = delete;
@@ -27,7 +27,7 @@ namespace vax {
         Renderer(Renderer&& other) noexcept = delete;
         Renderer& operator=(Renderer&& other) noexcept = delete;
 
-        bool render(vax::Scene* scene, float deltaTime);
+        bool render(vax::DrawableScene* scene, float deltaTime);
         void prepare();
 
     private:
@@ -36,14 +36,14 @@ namespace vax {
         std::reference_wrapper<vax::vk::Engine> _vkEngine;
         std::reference_wrapper<vax::ui::UILayer> _uiLayer;
 
-        std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
-        std::vector<void*> _sceneUniformBuffersMapped;
+        // std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
+        // std::vector<void*> _sceneUniformBuffersMapped;
 
         uint32_t _currentFrame = 0;
 
         // void drawBackground(VkCommandBuffer commandBuffer);
         bool recordCommandBuffer(
-            VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::Scene* scene, float deltaTime
+            VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::DrawableScene* scene, float deltaTime
         );
     };
 }

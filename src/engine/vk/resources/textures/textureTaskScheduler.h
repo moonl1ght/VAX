@@ -59,24 +59,12 @@ namespace vax::textures {
         TextureTaskScheduler(TextureTaskScheduler&& other) noexcept = delete;
         TextureTaskScheduler& operator=(TextureTaskScheduler&& other) noexcept = delete;
 
-        void transitionTextureLayout(
-            Texture& texture,
-            VkImageLayout oldLayout,
-            VkImageLayout newLayout,
-            VkImageAspectFlags aspectMask
-        );
-
         void transitionTextureLayoutAndSubmit(
             VkQueue submitQueue,
             Texture& texture,
             VkImageLayout oldLayout,
             VkImageLayout newLayout,
             VkImageAspectFlags aspectMask
-        );
-
-        void copyBufferToTexture(
-            vax::vk::Buffer& buffer,
-            Texture& texture
         );
 
         void copyBufferToTextureAndSubmit(

@@ -54,24 +54,39 @@ int Device::createLogicalDevice(
         queueCreateInfos.push_back(queueCreateInfo);
     }
 
-    VkPhysicalDeviceFeatures deviceFeatures{};
-    deviceFeatures.samplerAnisotropy = VK_TRUE;
+    VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+        .descriptorBindingPartiallyBound = VK_TRUE,
+        .runtimeDescriptorArray = VK_TRUE,
+        .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
+        .pNext = nullptr
+    };
 
-    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures{};
-    bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
-    bufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
-    bufferDeviceAddressFeatures.pNext = nullptr;
+    VkPhysicalDeviceFeatures2 deviceFeatures{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        .features = {
+            .samplerAnisotropy = VK_TRUE
+        },
+        .pNext = &descriptorIndexingFeatures
+    };
 
-    // Enable synchronization2 feature
-    VkPhysicalDeviceSynchronization2Features synchronization2Features{};
-    synchronization2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
-    synchronization2Features.synchronization2 = VK_TRUE;
-    synchronization2Features.pNext = &bufferDeviceAddressFeatures;
+    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+        .bufferDeviceAddress = VK_TRUE,
+        .pNext = &deviceFeatures
+    };
 
-    VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR fragmentShaderBarycentricFeatures{};
-    fragmentShaderBarycentricFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR;
-    fragmentShaderBarycentricFeatures.fragmentShaderBarycentric = VK_TRUE;
-    fragmentShaderBarycentricFeatures.pNext = &synchronization2Features;
+    VkPhysicalDeviceSynchronization2Features synchronization2Features{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+        .synchronization2 = VK_TRUE,
+        .pNext = &bufferDeviceAddressFeatures
+    };
+
+    VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR fragmentShaderBarycentricFeatures{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR,
+        .fragmentShaderBarycentric = VK_TRUE,
+        .pNext = &synchronization2Features
+    };
 
     if (enableValidationLayers && MACOS) {
         deviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME); // needed for macOS
@@ -83,7 +98,7 @@ int Device::createLogicalDevice(
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
-    createInfo.pEnabledFeatures = &deviceFeatures;
+    createInfo.pEnabledFeatures = nullptr;
     createInfo.pNext = &fragmentShaderBarycentricFeatures;
 
     createInfo.enabledExtensionCount = 0;

@@ -30,8 +30,8 @@ bool App::setup() {
     _renderer = std::make_unique<Renderer>(*_engine, *_uiLayer);
     _renderer->prepare();
 
-    _scene = std::make_unique<Scene>(*_engine);
-    _scene->load();
+    _drawableScene = std::make_unique<DrawableScene>(*_engine);
+    _drawableScene->load(_engine->queueManager->graphicsQueue);
 
     return true;
 }
@@ -42,7 +42,7 @@ void App::cleanup() {
     _uiLayer->cleanup();
 
     _renderer = nullptr;
-    _scene = nullptr;
+    _drawableScene = nullptr;
 
     _engine->cleanup();
 
@@ -80,8 +80,8 @@ void App::loopUpdate() {
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
     float timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-    _scene->update(timestamp);
-    if (!_renderer->render(_scene.get(), timestamp)) {
+    _drawableScene->update(timestamp);
+    if (!_renderer->render(_drawableScene.get(), timestamp)) {
         _logger.error("Failed to render scene!");
     }
 }

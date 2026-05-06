@@ -78,8 +78,6 @@ namespace vax::vk {
             return *this;
         }
 
-        void bind(void* data);
-
         bool load(
             const void* data,
             VkDeviceSize size,
@@ -96,6 +94,12 @@ namespace vax::vk {
 
         bool fill(const void* fillData);
 
+        void map();
+
+        void unmap();
+
+        std::optional<void*> mappedMemory() const;
+
         bool copyBufferToSync(
             const QueueManager& queueManager,
             CommandManager& commandManager,
@@ -104,6 +108,8 @@ namespace vax::vk {
         ) const;
 
         bool isEmpty() const;
+
+        bool isMapped() const { return _isMapped; }
 
         bool isAllocated() const;
 
@@ -127,7 +133,10 @@ namespace vax::vk {
         VkBuffer _vkBuffer = VK_NULL_HANDLE;
         VkDeviceMemory _vkBufferMemory = VK_NULL_HANDLE;
         VkDeviceSize _size = 0;
+        bool _isMapped = false;
+        void* _mappedMemory = nullptr;
         bool _isDetached = true;
+
 
         bool _allocate(
             VkBufferUsageFlags usage,

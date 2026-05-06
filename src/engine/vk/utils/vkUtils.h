@@ -2,6 +2,12 @@
 
 #include "luna.h"
 
+namespace vax {
+    constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+    constexpr int MAX_GLOBAL_TEXTURES = 1000;
+    constexpr int MAX_MATERIALS = 1000;
+}
+
 #define VK_CHECK(x) \
     ({ \
         VkResult err = (x); \

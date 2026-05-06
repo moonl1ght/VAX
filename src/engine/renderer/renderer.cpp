@@ -9,31 +9,9 @@
 using namespace vax;
 
 void Renderer::prepare() {
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-    _sceneUniformBuffers.reserve(vk::Engine::MAX_FRAMES_IN_FLIGHT);
-    _sceneUniformBuffersMapped.resize(vk::Engine::MAX_FRAMES_IN_FLIGHT);
-    for (size_t i = 0; i < vk::Engine::MAX_FRAMES_IN_FLIGHT; i++) {
-        auto& bufferManager = _vkEngine.get().resourceManager->bufferManager();
-        auto allocation = bufferManager.allocateBuffer(
-            bufferSize,
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-        ).value();
-        _sceneUniformBuffers.push_back(allocation.second);
-        vkMapMemory(
-            _vkEngine.get().device->vkDevice,
-            _sceneUniformBuffers[i]->vkBufferMemory(),
-            0,
-            bufferSize,
-            0,
-            &_sceneUniformBuffersMapped[i]
-        );
-
-        // _sceneUniformBuffers[i].bind(_sceneUniformBuffersMapped[i]);
-    }
 }
 
-bool Renderer::render(Scene* scene, float deltaTime) {
+bool Renderer::render(DrawableScene* scene, float deltaTime) {
     vkWaitForFences(
         _vkEngine.get().device->vkDevice,
         1,
@@ -123,12 +101,12 @@ bool Renderer::render(Scene* scene, float deltaTime) {
         return false;
     }
 
-    _currentFrame = (_currentFrame + 1) % vk::Engine::MAX_FRAMES_IN_FLIGHT;
+    _currentFrame = (_currentFrame + 1) % vax::MAX_FRAMES_IN_FLIGHT;
     return true;
 }
 
 bool Renderer::recordCommandBuffer(
-    VkCommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene, float deltaTime
+    VkCommandBuffer commandBuffer, uint32_t imageIndex, DrawableScene* scene, float deltaTime
 ) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -170,13 +148,17 @@ bool Renderer::recordCommandBuffer(
     scissor.extent = _vkEngine.get().swapchain->swapchainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    memcpy(_sceneUniformBuffersMapped[_currentFrame], &scene->getUBO(), sizeof(scene->getUBO()));
+    if (auto mappedMemory = scene->getSceneUniformBuffers()[_currentFrame]->mappedMemory()) {
+        memcpy(mappedMemory.value(), &scene->getUBO(), sizeof(scene->getUBO()));
+    } else {
+        _logger.error("Failed to get mapped memory!");
+    }
 
     auto descriptorSetWriter = _vkEngine.get().descriptorSetManager->getDefaultDescriptorSetWriter(
         _currentFrame, vax::vk::DescriptorSetLayout::DefaultType::BASE
     );
     if (descriptorSetWriter.has_value()) {
-        descriptorSetWriter.value().writeBuffer(_sceneUniformBuffers[_currentFrame], 0);
+        descriptorSetWriter.value().writeBuffer(scene->getSceneUniformBuffers()[_currentFrame], 0);
         // descriptorSet.writeTexture(scene->texture, 1);
         descriptorSetWriter.value().update();
     }

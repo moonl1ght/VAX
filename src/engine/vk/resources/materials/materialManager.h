@@ -1,0 +1,43 @@
+#pragma once
+
+#include "luna.h"
+#include "device.h"
+#include "buffer.h"
+#include "shaderUniforms.h"
+#include "resourceUtils.h"
+
+namespace vax {
+    class MaterialManager final {
+    public:
+        explicit MaterialManager(const vax::vk::Device& device) : _device(device) {};
+
+        ~MaterialManager() {
+            cleanup();
+        }
+
+        MaterialManager(const MaterialManager& other) = delete;
+        MaterialManager(MaterialManager&& other) noexcept = delete;
+        MaterialManager& operator=(const MaterialManager& other) = delete;
+        MaterialManager& operator=(MaterialManager&& other) noexcept = delete;
+
+        bool setup();
+
+        void cleanup();
+
+        MaterialId insert(PBRMaterial material);
+
+        std::optional<PBRMaterial> find(MaterialId id);
+
+        void deleteMaterial(MaterialId id);
+
+    private:
+        vax::utils::Logger _logger = vax::utils::Logger("MaterialManager");
+        std::reference_wrapper<const vax::vk::Device> _device;
+        // TODO: change to vector of buffers to handle material overflow
+        std::unique_ptr<vax::vk::Buffer> _buffer = nullptr;
+        std::vector<PBRMaterial> _materials;
+        std::vector<MaterialId> _materialsToDelete;
+
+        bool _updateBuffer(MaterialId id, PBRMaterial material);
+    };
+}

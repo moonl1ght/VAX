@@ -96,8 +96,7 @@ bool vax::objects::Mesh::loadBuffers(
 }
 
 void vax::objects::Mesh::cleanup() {
-    if (isDetached()) return;
-    _destroy();
+    if (isDetached()) _destroy();
 }
 
 void vax::objects::Mesh::_destroy() {
@@ -108,6 +107,8 @@ void vax::objects::Mesh::_destroy() {
         indexBuffer.value().cleanup();
     }
     _isDetached = true;
+    _indices.clear();
+    _isLoaded = false;
     _id = vax::NullId;
     _vertices.clear();
     _indices.clear();

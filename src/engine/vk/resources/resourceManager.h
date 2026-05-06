@@ -4,6 +4,7 @@
 #include "bufferManager.h"
 #include "meshManager.h"
 #include "textureManager.h"
+#include "materialManager.h"
 
 namespace vax {
     class ResourceManager final {
@@ -14,13 +15,16 @@ namespace vax {
         )
             : _bufferManager(device)
             , _meshManager(device)
-            , _textureManager(device, allocator) {
+            , _textureManager(device, allocator)
+            , _materialManager(device) {
         };
 
         ResourceManager(const ResourceManager& other) = delete;
         ResourceManager(ResourceManager&& other) noexcept = delete;
         ResourceManager& operator=(const ResourceManager& other) = delete;
         ResourceManager& operator=(ResourceManager&& other) noexcept = delete;
+
+        bool setup();
 
         void cleanup();
 
@@ -30,11 +34,14 @@ namespace vax {
 
         vax::TextureManager& textureManager() { return _textureManager; }
 
+        vax::MaterialManager& materialManager() { return _materialManager; }
+
     private:
         vax::utils::Logger _logger = vax::utils::Logger("ResourceManager");
 
         vax::BufferManager _bufferManager;
         vax::MeshManager _meshManager;
         vax::TextureManager _textureManager;
+        vax::MaterialManager _materialManager;
     };
 }

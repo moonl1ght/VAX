@@ -55,21 +55,6 @@ void Buffer::_destroy() {
     _id = NullId;
 }
 
-void Buffer::bind(void* data) {
-    if (isEmpty() || !isAllocated()) {
-        return;
-    }
-
-    vkMapMemory(
-        _device.get().vkDevice,
-        _vkBufferMemory,
-        0,
-        _size,
-        0,
-        &data
-    );
-}
-
 bool Buffer::reload(
     const void* data,
     VkDeviceSize size,
@@ -183,4 +168,22 @@ bool Buffer::_allocate(
 
     vkBindBufferMemory(_device.get().vkDevice, _vkBuffer, _vkBufferMemory, 0);
     return true;
+}
+
+void Buffer::map() {
+    if (isMapped()) return;
+    vkMapMemory(_device.get().vkDevice, _vkBufferMemory, 0, _size, 0, &_mappedMemory);
+    _isMapped = true;
+}
+
+void Buffer::unmap() {
+    if (!isMapped()) return;
+    vkUnmapMemory(_device.get().vkDevice, _vkBufferMemory);
+    _isMapped = false;
+    _mappedMemory = nullptr;
+}
+
+std::optional<void*> Buffer::mappedMemory() const {
+    if (!isMapped()) return std::nullopt;
+    return _mappedMemory;
 }

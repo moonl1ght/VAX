@@ -1,4 +1,4 @@
-#include "scene.h"
+#include "drawableScene.h"
 #include "textureLoader.h"
 #include "modelLoader.h"
 #include "swapchain.h"
@@ -6,7 +6,7 @@
 
 using namespace vax;
 
-void vax::Scene::update(float deltaTime) {
+void vax::DrawableScene::update(float deltaTime) {
     auto cameraPos = glm::vec3(2.0f, 2.0f, 2.0f);
     _ubo.cameraPosition = glm::vec4(cameraPos, 1.0f);
     // _ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -23,8 +23,31 @@ void vax::Scene::update(float deltaTime) {
     _ubo.proj[1][1] *= -1;
 }
 
-void vax::Scene::load() {
-    auto model = _modelLoader.loadModel(RES_PATH("assets/models/helmet.glb"));
+void vax::DrawableScene::load(VkQueue submitQueue) {
+    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+    _sceneUniformBuffers.reserve(vax::MAX_FRAMES_IN_FLIGHT);
+    // _sceneUniformBuffersMapped.resize(vax::MAX_FRAMES_IN_FLIGHT);
+    for (size_t i = 0; i < vax::MAX_FRAMES_IN_FLIGHT; i++) {
+        auto& bufferManager = _resourceManager.bufferManager();
+        auto allocation = bufferManager.allocateBuffer(
+            bufferSize,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        ).value();
+        allocation.second->map();
+        _sceneUniformBuffers.push_back(allocation.second);
+        // vkMapMemory(
+        //     _vkEngine.get().device->vkDevice,
+        //     _sceneUniformBuffers[i]->vkBufferMemory(),
+        //     0,
+        //     bufferSize,
+        //     0,
+        //     &_sceneUniformBuffersMapped[i]
+        // );
+
+        // _sceneUniformBuffers[i].bind(_sceneUniformBuffersMapped[i]);
+    }
+    auto model = _modelLoader.loadModel(RES_PATH("assets/models/helmet.glb"), submitQueue);
     // texture = TextureLoader(vkEngine).loadTexture(RES_PATH("assets/models/room/viking_room.png"));
     _ubo.cameraPosition = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     _ubo.view = glm::mat4(1.0f);

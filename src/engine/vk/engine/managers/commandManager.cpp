@@ -41,7 +41,7 @@ bool vax::vk::CommandManager::createCommandPool() {
 
 bool vax::vk::CommandManager::createCommandBuffer() {
     _logger.info("Creating command buffer...");
-    commandBuffers.resize(Engine::MAX_FRAMES_IN_FLIGHT);
+    commandBuffers.resize(vax::MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = commandPool;
@@ -57,11 +57,12 @@ bool vax::vk::CommandManager::createCommandBuffer() {
 }
 
 CommandBuffer vax::vk::CommandManager::createSingleTimeCommandBuffer() {
-    VkCommandBufferAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = commandPool;
-    allocInfo.commandBufferCount = 1;
+    VkCommandBufferAllocateInfo allocInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandPool = commandPool,
+        .commandBufferCount = 1
+    };
 
     VkCommandBuffer commandBuffer;
     vkAllocateCommandBuffers(_device.get().vkDevice, &allocInfo, &commandBuffer);

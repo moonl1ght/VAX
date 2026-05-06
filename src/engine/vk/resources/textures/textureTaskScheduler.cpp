@@ -40,21 +40,6 @@ void TextureTaskSchedulerInline::transitionTextureLayout(
     vkCmdPipelineBarrier2(_commandBuffer.get().vkCommandBuffer, &depInfo);
 }
 
-
-void TextureTaskScheduler::transitionTextureLayout(
-    Texture& texture,
-    VkImageLayout oldLayout,
-    VkImageLayout newLayout,
-    VkImageAspectFlags aspectMask
-) {
-    auto commandBuffer = _commandManager.get().createSingleTimeCommandBuffer();
-    auto taskSchedulerInline = TextureTaskSchedulerInline(_device.get(), commandBuffer);
-    commandBuffer.begin();
-    taskSchedulerInline.transitionTextureLayout(texture, oldLayout, newLayout, aspectMask);
-    commandBuffer.end();
-}
-
-
 void TextureTaskScheduler::transitionTextureLayoutAndSubmit(
     VkQueue submitQueue,
     Texture& texture,
@@ -96,17 +81,6 @@ void TextureTaskSchedulerInline::copyBufferToTexture(
         1,
         &region
     );
-}
-
-void TextureTaskScheduler::copyBufferToTexture(
-    vax::vk::Buffer& buffer,
-    Texture& texture
-) {
-    auto commandBuffer = _commandManager.get().createSingleTimeCommandBuffer();
-    auto taskSchedulerInline = TextureTaskSchedulerInline(_device.get(), commandBuffer);
-    commandBuffer.begin();
-    taskSchedulerInline.copyBufferToTexture(buffer, texture);
-    commandBuffer.end();
 }
 
 void TextureTaskScheduler::copyBufferToTextureAndSubmit(

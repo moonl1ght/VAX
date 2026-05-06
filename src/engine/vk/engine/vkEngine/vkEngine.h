@@ -23,8 +23,6 @@ namespace vax::vk {
 namespace vax::vk {
     class Engine final {
     public:
-        static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-
         const uint32_t vulkanApiVersion = VK_API_VERSION_1_3;
 
         const bool enableValidationLayers = true;
@@ -52,8 +50,6 @@ namespace vax::vk {
         std::unique_ptr<vax::vk::PipelineManager> pipelineManager;
         std::unique_ptr<vax::vk::CommandManager> commandManager;
         std::unique_ptr<vax::vk::SyncObjectsManager> syncObjectsManager;
-
-        std::unique_ptr<vax::ResourceManager> resourceManager;
 
         explicit Engine(vax::vk::Window& window) : _window(window) {};
 

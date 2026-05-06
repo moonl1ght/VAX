@@ -14,4 +14,6 @@ namespace vax {
     constexpr TextureId NullTextureId = std::numeric_limits<TextureId>::max();
     using SamplerId = uint32_t;
     constexpr SamplerId NullSamplerId = std::numeric_limits<SamplerId>::max();
+    using MaterialId = uint32_t;
+    constexpr MaterialId NullMaterialId = std::numeric_limits<MaterialId>::max();
 }
