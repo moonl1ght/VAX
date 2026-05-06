@@ -158,9 +158,15 @@ bool Renderer::recordCommandBuffer(
         _currentFrame, vax::vk::DescriptorSetLayout::DefaultType::BASE
     );
     if (descriptorSetWriter.has_value()) {
-        descriptorSetWriter.value().writeBuffer(scene->getSceneUniformBuffers()[_currentFrame], 0);
+        descriptorSetWriter.value().writeBuffer(
+            *scene->getSceneUniformBuffers()[_currentFrame], 0, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+        );
+        descriptorSetWriter.value().writeBuffer(
+            scene->getMaterialBuffer(), 1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+        );
+        // descriptorSetWriter.value().writeBuffer(scene->getMaterialBuffers()[_currentFrame], 1);
         // descriptorSet.writeTexture(scene->texture, 1);
-        descriptorSetWriter.value().update();
+        descriptorSetWriter->update();
     }
     else {
         _logger.error("Failed to get default descriptor set writer!");

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <deque>
 #include "luna.h"
 #include "device.h"
 
@@ -24,7 +25,13 @@ namespace vax::vk {
 
         ~DescriptorSetWriter() {}
 
-        void writeBuffer(vax::vk::Buffer* buffer, uint32_t binding, uint32_t offset = 0);
+        void writeBuffer(
+            const Buffer& buffer,
+            uint32_t binding,
+            uint32_t offset,
+            VkDescriptorType descriptorType,
+            uint32_t descriptorCount = 1
+        );
         void writeTexture(vax::textures::Texture* texture, uint32_t binding, uint32_t offset = 0);
         void writeStorageImage(VkImageView imageView, uint32_t binding);
 
@@ -39,7 +46,7 @@ namespace vax::vk {
         std::reference_wrapper<const vax::vk::Device> _device;
         VkDescriptorSet _descriptorSet;
         std::vector<VkWriteDescriptorSet> _writes;
-        std::vector<VkDescriptorBufferInfo> _bufferInfos;
-        std::vector<VkDescriptorImageInfo> _imageInfos;
+        std::deque<VkDescriptorBufferInfo> _bufferInfos;
+        std::deque<VkDescriptorImageInfo> _imageInfos;
     };
 }

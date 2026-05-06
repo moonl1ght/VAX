@@ -30,10 +30,12 @@ struct UniformBufferObject {
     vec4 cameraPosition;
 };
 
-struct DrawPushConstants {
+typedef struct {
     mat4 model; // 64 bytes
     uint32_t flags; // 4 bytes
-};
+    uint32_t materialIndex; // 4 bytes
+    uint32_t padding[2]; // 8 bytes
+} DrawPushConstants;
 
 typedef struct {
     vec4 baseColor; 

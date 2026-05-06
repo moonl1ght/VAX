@@ -7,12 +7,13 @@ using namespace vax;
 void DescriptorSetLayoutBuilder::addBinding(
     uint32_t binding,
     VkDescriptorType type,
-    VkShaderStageFlags stageFlags
+    VkShaderStageFlags stageFlags,
+    uint32_t descriptorCount
 ) {
     VkDescriptorSetLayoutBinding layoutBinding = {
         .binding = binding,
         .descriptorType = type,
-        .descriptorCount = 1,
+        .descriptorCount = descriptorCount,
         .stageFlags = stageFlags,
         .pImmutableSamplers = nullptr,
     };
@@ -25,14 +26,20 @@ void DescriptorSetLayoutBuilder::clear() {
 
 std::optional<DescriptorSetLayout> DescriptorSetLayoutBuilder::build(
     DescriptorSetLayout::DefaultType defaultType,
-    void* pNext,
     VkDescriptorSetLayoutCreateFlags flags
 ) {
+    uint32_t bindingCount = static_cast<uint32_t>(_bindings.size());
+    std::vector<VkDescriptorBindingFlags> bindingFlags(bindingCount, VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
+    VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+        .bindingCount = bindingCount,
+        .pBindingFlags = bindingFlags.data(),
+    };
     VkDescriptorSetLayoutCreateInfo layoutInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        .pNext = pNext,
+        .pNext = &bindingFlagsInfo,
         .flags = flags,
-        .bindingCount = static_cast<uint32_t>(_bindings.size()),
+        .bindingCount = bindingCount,
         .pBindings = _bindings.data(),
     };
 

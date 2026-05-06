@@ -142,10 +142,11 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
     };
     pipelineLayoutInfo.pSetLayouts = setLayouts.data();
 
-    VkPushConstantRange pushConstantRange{};
-    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    pushConstantRange.offset = 0;
-    pushConstantRange.size = sizeof(DrawPushConstants);
+    VkPushConstantRange pushConstantRange{
+        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        .offset = 0,
+        .size = sizeof(DrawPushConstants)
+    };
 
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;

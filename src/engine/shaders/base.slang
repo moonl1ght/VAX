@@ -3,6 +3,9 @@
 [vk::binding(0, 0)]
 ConstantBuffer<UniformBufferObject> ubo;
 
+[vk::binding(1, 0)]
+StructuredBuffer<PBRMaterial> materials;
+
 // [vk::binding(1, 0)]
 // Sampler2D texSampler;
 

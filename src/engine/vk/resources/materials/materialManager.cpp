@@ -1,4 +1,5 @@
 #include "materialManager.h"
+#include <numeric>
 
 using namespace vax;
 
@@ -29,6 +30,20 @@ bool MaterialManager::_updateBuffer(MaterialId id, PBRMaterial material) {
     PBRMaterial* materialPtr = static_cast<PBRMaterial*>(*mappedMemory);
     materialPtr[id] = material;
     return true;
+}
+
+std::vector<MaterialId> MaterialManager::insertMaterials(std::vector<PBRMaterial> materials) {
+    if (_materials.size() + materials.size() >= vax::MAX_MATERIALS) return {};
+    if (materials.empty()) return {};
+    if (!_buffer) return {};
+    auto mappedMemory = _buffer->mappedMemory();
+    if (!mappedMemory.has_value()) return {};
+    PBRMaterial* materialPtr = static_cast<PBRMaterial*>(*mappedMemory);
+    memcpy(materialPtr + _materials.size(), materials.data(), materials.size() * sizeof(PBRMaterial));
+    std::vector<MaterialId> ids(materials.size());
+    std::iota(ids.begin(), ids.end(), _materials.size() - 1);
+    _materials.insert(_materials.end(), materials.begin(), materials.end());
+    return ids;
 }
 
 MaterialId MaterialManager::insert(PBRMaterial material) {

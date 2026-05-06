@@ -52,13 +52,13 @@ namespace vax::objects {
             return *this;
         }
 
-        bool draw(VkCommandBuffer commandBuffer) const;
+        // bool draw(VkCommandBuffer commandBuffer) const;
 
-        void forceDraw(
-            vax::vk::QueueManager& queueManager,
-            vax::vk::CommandManager& commandManager,
-            VkCommandBuffer commandBuffer
-        );
+        // void forceDraw(
+        //     vax::vk::QueueManager& queueManager,
+        //     vax::vk::CommandManager& commandManager,
+        //     VkCommandBuffer commandBuffer
+        // );
 
         bool loadBuffers(
             vax::vk::QueueManager& queueManager,

@@ -19,14 +19,14 @@ namespace vax::vk {
         void addBinding(
             uint32_t binding,
             VkDescriptorType type,
-            VkShaderStageFlags stageFlags
+            VkShaderStageFlags stageFlags,
+            uint32_t descriptorCount
         );
 
         void clear();
 
         std::optional<DescriptorSetLayout> build(
             DescriptorSetLayout::DefaultType defaultType,
-            void* pNext = nullptr,
             VkDescriptorSetLayoutCreateFlags flags = 0
         );
 

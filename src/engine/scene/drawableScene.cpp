@@ -24,6 +24,7 @@ void vax::DrawableScene::update(float deltaTime) {
 }
 
 void vax::DrawableScene::load(VkQueue submitQueue) {
+    _resourceManager.setup();
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
     _sceneUniformBuffers.reserve(vax::MAX_FRAMES_IN_FLIGHT);
     // _sceneUniformBuffersMapped.resize(vax::MAX_FRAMES_IN_FLIGHT);
@@ -47,7 +48,8 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
 
         // _sceneUniformBuffers[i].bind(_sceneUniformBuffersMapped[i]);
     }
-    auto model = _modelLoader.loadModel(RES_PATH("assets/models/helmet.glb"), submitQueue);
+    auto model = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
+    model->loadMesh(*_vkEngine.get().queueManager, *_vkEngine.get().commandManager);
     // texture = TextureLoader(vkEngine).loadTexture(RES_PATH("assets/models/room/viking_room.png"));
     _ubo.cameraPosition = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     _ubo.view = glm::mat4(1.0f);

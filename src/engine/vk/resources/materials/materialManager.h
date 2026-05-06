@@ -26,9 +26,13 @@ namespace vax {
 
         MaterialId insert(PBRMaterial material);
 
+        std::vector<MaterialId> insertMaterials(std::vector<PBRMaterial> materials);
+
         std::optional<PBRMaterial> find(MaterialId id);
 
         void deleteMaterial(MaterialId id);
+
+        const vax::vk::Buffer& materialBuffer() const { return *_buffer; }
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("MaterialManager");

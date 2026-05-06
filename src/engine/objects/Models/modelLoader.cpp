@@ -28,9 +28,10 @@ PBRMaterial processMaterial(aiMaterial* mat) {
     aiColor4D color;
     ai_real factor;
 
-    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &color)) {
+    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_BASE_COLOR, &color)) {
         material.baseColor = glm::vec4(color.r, color.g, color.b, color.a);
     }
+    std::cout << "baseColor: " << material.baseColor.r << " " << material.baseColor.g << " " << material.baseColor.b << " " << material.baseColor.a << std::endl;
     if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_EMISSIVE, &color)) {
         material.emissiveFactorAlphaCutoff = glm::vec4(color.r, color.g, color.b, 0.5f);
     }
@@ -64,6 +65,7 @@ void processNode(
     uint32_t& vertexOffset,
     uint32_t& indexOffset,
     uint32_t depth,
+    std::vector<MaterialId>& materialIds,
     const vax::utils::Logger& logger
 ) {
     glm::mat4 transform = parentTransform * toGlm(node->mTransformation);
@@ -76,7 +78,7 @@ void processNode(
             .indexCount = mesh->mNumFaces * 3,
             .firstIndex = indexOffset,
             .vertexOffset = vertexOffset,
-            .materialIndex = mesh->mMaterialIndex
+            .materialIndex = materialIds[mesh->mMaterialIndex]
         };
         submeshes.push_back(submesh);
         // submesh.debugPrint(logger);
@@ -115,6 +117,7 @@ void processNode(
             vertexOffset,
             indexOffset,
             depth + 1,
+            materialIds,
             logger
         );
     }
@@ -159,6 +162,12 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
         materials.push_back(processMaterial(scene->mMaterials[i]));
     }
 
+    auto materialIds = _resourceManager.get().materialManager().insertMaterials(materials);
+    if (materialIds.size() != materials.size()) {
+        _logger.error("Failed to load materials");
+        return std::nullopt;
+    }
+
     processNode(
         scene,
         scene->mRootNode,
@@ -169,6 +178,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
         currentVertexOffset,
         currentIndexOffset,
         0,
+        materialIds,
         _logger
     );
 
@@ -180,5 +190,6 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
 
     auto drawableModel = vax::objects::DrawableModel(_resourceManager.get().meshManager(), mesh->first);
     drawableModel._mesh = (*mesh).second;
+    drawableModel._submeshes = submeshes;
     return std::make_optional(drawableModel);
 }

@@ -20,7 +20,9 @@ float4 fragMain(FragmentInput input)
     : SV_Target
 {
     float val = edgeFactor(input.baryCoords, 1.0);
+
+    float4 color = materials[pushConstants.materialIndex].baseColor;
     
-    return lerp(float4(1, 1, 1, 1), float4(0, 0, 0, 1), 1.0 - val);
+    return lerp(color, float4(0, 0, 0, 1), 1.0 - val);
     // return color;
 }

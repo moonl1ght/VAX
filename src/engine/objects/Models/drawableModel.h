@@ -34,6 +34,11 @@ namespace vax::objects {
 
         ~DrawableModel() {};
 
+        bool loadMesh(
+            vax::vk::QueueManager& queueManager,
+            vax::vk::CommandManager& commandManager
+        );
+
         void draw(
             vax::vk::Engine* vkEngine,
             VkCommandBuffer commandBuffer,
@@ -50,5 +55,6 @@ namespace vax::objects {
 
         // TODO: remove this will need to use mesh manager to get the mesh
         vax::objects::Mesh* _mesh;
+        std::vector<vax::objects::Submesh> _submeshes;
     };
 }

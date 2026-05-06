@@ -2,35 +2,35 @@
 
 using namespace vax;
 
-bool vax::objects::Mesh::draw(
-    VkCommandBuffer commandBuffer
-) const {
-    if (!_isLoaded || !vertexBuffer.has_value() || !indexBuffer.has_value()) {
-        _logger.warning("Mesh is not loaded, skipping draw");
-        return false;
-    }
-    VkBuffer vertexBuffers[] = { vertexBuffer.value().vkBuffer() };
-    VkDeviceSize offsets[] = { 0 };
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, indexBuffer.value().vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(_indices.size()), 1, 0, 0, 0);
-    return true;
-}
+// bool vax::objects::Mesh::draw(
+//     VkCommandBuffer commandBuffer
+// ) const {
+//     if (!_isLoaded || !vertexBuffer.has_value() || !indexBuffer.has_value()) {
+//         _logger.warning("Mesh is not loaded, skipping draw");
+//         return false;
+//     }
+//     VkBuffer vertexBuffers[] = { vertexBuffer.value().vkBuffer() };
+//     VkDeviceSize offsets[] = { 0 };
+//     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+//     vkCmdBindIndexBuffer(commandBuffer, indexBuffer.value().vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
+//     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(_indices.size()), 1, 0, 0, 0);
+//     return true;
+// }
 
-void vax::objects::Mesh::forceDraw(
-    vax::vk::QueueManager& queueManager,
-    vax::vk::CommandManager& commandManager,
-    VkCommandBuffer commandBuffer
-) {
-    if (!_isLoaded || !vertexBuffer.has_value() || !indexBuffer.has_value()) {
-        loadBuffers(queueManager, commandManager);
-    }
-    VkBuffer vertexBuffers[] = { vertexBuffer.value().vkBuffer() };
-    VkDeviceSize offsets[] = { 0 };
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, indexBuffer.value().vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(_indices.size()), 1, 0, 0, 0);
-}
+// void vax::objects::Mesh::forceDraw(
+//     vax::vk::QueueManager& queueManager,
+//     vax::vk::CommandManager& commandManager,
+//     VkCommandBuffer commandBuffer
+// ) {
+//     if (!_isLoaded || !vertexBuffer.has_value() || !indexBuffer.has_value()) {
+//         loadBuffers(queueManager, commandManager);
+//     }
+//     VkBuffer vertexBuffers[] = { vertexBuffer.value().vkBuffer() };
+//     VkDeviceSize offsets[] = { 0 };
+//     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+//     vkCmdBindIndexBuffer(commandBuffer, indexBuffer.value().vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
+//     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(_indices.size()), 1, 0, 0, 0);
+// }
 
 bool vax::objects::Mesh::loadBuffers(
     vax::vk::QueueManager& queueManager,
