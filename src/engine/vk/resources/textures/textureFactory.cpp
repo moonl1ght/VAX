@@ -5,7 +5,7 @@
 using namespace vax::textures;
 using namespace vax;
 
-std::optional<Texture> TextureFactory::makeDepthTexture(
+std::optional<Texture> TextureFactory::makeDepthTextureDetached(
     VkFormat format,
     vax::math::SizeUI size
 ) {
@@ -35,7 +35,26 @@ std::optional<Texture> TextureFactory::makeDepthTexture(
     return std::make_optional(std::move(texture));
 }
 
-std::optional<Texture> TextureFactory::makeTexture(
+std::optional<TextureManager::TextureResource> TextureFactory::makeDepthTexture(
+    VkFormat format,
+    math::SizeUI size
+) {
+    auto texture = makeDepthTextureDetached(format, size);
+    if (!texture) {
+        return std::nullopt;
+    }
+    if (_textureManager) {
+        auto attached = _textureManager->attach(std::move(*texture));
+        if (attached) {
+            return std::make_optional(std::move(*attached));
+        }
+        _logger.error("Failed to attach depth texture to manager");
+        return std::nullopt;
+    }
+    return std::nullopt;
+}
+
+std::optional<Texture> TextureFactory::makeTextureDetached(
     VkFormat format,
     math::SizeUI size
 ) {
@@ -70,5 +89,25 @@ std::optional<Texture> TextureFactory::makeTexture(
         return std::make_optional(std::move(texture));
     }
     _logger.error("Failed to create render destination texture!");
+    return std::nullopt;
+}
+
+
+std::optional<TextureManager::TextureResource> TextureFactory::makeTexture(
+    VkFormat format,
+    math::SizeUI size
+) {
+    auto texture = makeTextureDetached(format, size);
+    if (!texture) {
+        return std::nullopt;
+    }
+    if (_textureManager) {
+        auto attached = _textureManager->attach(std::move(*texture));
+        if (attached) {
+            return std::make_optional(std::move(*attached));
+        }
+        _logger.error("Failed to attach texture to manager");
+        return std::nullopt;
+    }
     return std::nullopt;
 }

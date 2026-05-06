@@ -3,6 +3,7 @@
 #include "luna.h"
 #include "bufferManager.h"
 #include "meshManager.h"
+#include "textureManager.h"
 
 namespace vax {
     class ResourceManager final {

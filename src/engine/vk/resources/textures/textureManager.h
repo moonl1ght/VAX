@@ -6,12 +6,22 @@
 #include "resourceHandle.h"
 #include <unordered_map>
 
+namespace vax::textures {
+    class TextureFactory;
+}
+
 namespace vax {
     class TextureManager final {
     public:
         using TextureResource = std::pair<TextureHandle, textures::Texture*>;
 
-        explicit TextureManager(const vk::Device& device) : _device(device) {};
+        explicit TextureManager(
+            const vk::Device& device,
+            VmaAllocator allocator
+        )
+            : _device(device)
+            , _allocator(allocator) {
+        };
 
         ~TextureManager() {
             fullCleanup();
@@ -24,11 +34,7 @@ namespace vax {
 
         void fullCleanup();
 
-        // std::optional<BufferResource> allocateBuffer(
-        //     VkDeviceSize size,
-        //     VkBufferUsageFlags usage,
-        //     VkMemoryPropertyFlags properties
-        // );
+        vax::textures::TextureFactory createTextureFactory() const;
 
         std::optional<TextureResource> find(TextureHandle handle);
 
@@ -36,10 +42,13 @@ namespace vax {
 
         std::optional<textures::Texture> detach(TextureHandle handle);
 
+        std::optional<TextureResource> attach(textures::Texture&& texture);
+
     private:
         utils::Logger _logger = utils::Logger("TextureManager");
 
         std::reference_wrapper<const vk::Device> _device;
+        VmaAllocator _allocator;
         // TODO: change to vector + use generation for stability
         // maybe vector of vectors of buffers?
         std::unordered_map<TextureId, textures::Texture> _pool;

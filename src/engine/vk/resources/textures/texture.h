@@ -103,7 +103,7 @@ namespace vax::textures {
         }
 
         ~Texture() {
-            _destroy(true);
+            cleanup();
         }
 
         void cleanup();
@@ -145,6 +145,6 @@ namespace vax::textures {
         std::reference_wrapper<const vax::vk::Device> _device;
         bool _isDetached = true;
 
-        void _destroy(bool inDestructor);
+        void _destroy();
     };
 }

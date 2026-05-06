@@ -15,7 +15,7 @@ std::optional<std::unique_ptr<RenderDestination>> RenderDestinationBuilder::buil
     auto depthTexture = textures::TextureFactory(
         _device.get(), _allocator
     )
-        .makeDepthTexture(depthFormat, math::SizeUI(_swapchain.get().swapchainExtent));
+        .makeDepthTextureDetached(depthFormat, math::SizeUI(_swapchain.get().swapchainExtent));
 
     if (!depthTexture.has_value()) {
         return std::nullopt;
@@ -38,7 +38,7 @@ std::optional<std::unique_ptr<RenderDestination>> RenderDestinationBuilder::buil
     }
 
     auto drawImage = textures::TextureFactory(_device.get(), _allocator)
-        .makeTexture(VK_FORMAT_R16G16B16A16_SFLOAT, vax::math::SizeUI(_swapchain.get().swapchainExtent));
+        .makeTextureDetached(VK_FORMAT_R16G16B16A16_SFLOAT, vax::math::SizeUI(_swapchain.get().swapchainExtent));
     if (!drawImage.has_value()) {
         return std::nullopt;
     }

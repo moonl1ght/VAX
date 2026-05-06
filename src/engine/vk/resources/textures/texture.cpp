@@ -6,14 +6,10 @@ using namespace vax::textures;
 using namespace vax;
 
 void Texture::cleanup() {
-    if (isDetached()) _destroy(false);
+    if (isDetached()) _destroy();
 }
 
-void Texture::_destroy(bool inDestructor) {
-    if (inDestructor && !_isDetached) {
-        _logger.error("Texture must be detached before destruction");
-        return;
-    }
+void Texture::_destroy() {
     if (_imageView != VK_NULL_HANDLE) {
         vkDestroyImageView(_device.get().vkDevice, _imageView, nullptr);
         _imageView = VK_NULL_HANDLE;
@@ -58,7 +54,7 @@ bool vax::textures::Texture::copyTo(vax::textures::Texture& other, VkCommandBuff
     }
 
     if (other.isValid()) {
-        other._destroy(false);
+        other._destroy();
     }
 
     VkImageBlit2 blitRegion{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr };
