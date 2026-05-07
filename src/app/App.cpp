@@ -1,4 +1,5 @@
 #include "app.h"
+#include "profiler.h"
 
 using namespace vax;
 
@@ -72,10 +73,12 @@ void App::mainLoop() {
         }
         SDL_Delay(16);
         loopUpdate();
+        FrameMark;
     }
 }
 
 void App::loopUpdate() {
+    ZoneScoped;
     _uiLayer->update();
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();

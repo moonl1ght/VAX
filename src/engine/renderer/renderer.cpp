@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "profiler.h"
 #include "renderDestination.h"
 #include "imageUtils.h"
 #include "pipeline.h"
@@ -12,6 +13,7 @@ void Renderer::prepare() {
 }
 
 bool Renderer::render(DrawableScene* scene, float deltaTime) {
+    ZoneScopedN("Renderer::render");
     vkWaitForFences(
         _vkEngine.get().device->vkDevice,
         1,
@@ -108,6 +110,7 @@ bool Renderer::render(DrawableScene* scene, float deltaTime) {
 bool Renderer::recordCommandBuffer(
     VkCommandBuffer commandBuffer, uint32_t imageIndex, DrawableScene* scene, float deltaTime
 ) {
+    ZoneScopedN("Renderer::recordCommandBuffer");
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 

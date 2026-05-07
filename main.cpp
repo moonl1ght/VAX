@@ -2,9 +2,17 @@
 
 #include "app.h"
 #include "window.h"
+#include "profiler.h"
 
 int main() {
+#ifdef TRACY_ENABLE
+    while (!tracy::GetProfiler().IsConnected()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+#endif
+
     printf("SDL version: %d.%d.%d\n", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
+
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("SDL_Init failed: %s", SDL_GetError());
         return 1;

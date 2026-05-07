@@ -25,6 +25,7 @@ else()
     find_package(tinyobjloader REQUIRED FATAL_ERROR)
 endif()
 find_package(imgui REQUIRED CONFIG)
+find_package(Tracy REQUIRED)
 foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
     if(DEFINED imgui_PACKAGE_FOLDER_${_cfg})
         set(IMGUI_PACKAGE_DIR "${imgui_PACKAGE_FOLDER_${_cfg}}")
@@ -186,6 +187,7 @@ if(WIN32)
             vk-bootstrap::vk-bootstrap
             SDL3::SDL3
             glm::glm
+            Tracy::TracyClient
         )
     endif(VULKAN_FOUND)
 else()
@@ -201,6 +203,7 @@ else()
             tinyobjloader::tinyobjloader
             SDL3::SDL3
             glm::glm
+            Tracy::TracyClient
         )
     endif(VULKAN_FOUND)
 endif()
