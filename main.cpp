@@ -3,8 +3,14 @@
 #include "app.h"
 #include "window.h"
 #include "profiler.h"
+#ifdef _WIN32
+#include "renderdoc.h"
+#endif
 
 int main() {
+#ifdef _WIN32
+    vax::RenderDoc::init();
+#endif
 #ifdef TRACY_ENABLE
     while (!tracy::GetProfiler().IsConnected()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));

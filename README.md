@@ -43,6 +43,13 @@ cmake --preset luna
 cmake --build build
 ```
 
+## Debugging Slang Shaders
+
+To debug Slang source (not SPIR-V) in RenderDoc or a shader debugger:
+
+1. Add `-g -O0` flags to the Slang compilation command
+2. Comment `float3 baryCoords : SV_Barycentrics;` in shaders - this built-in is incompatible with Slang-level debug info
+
 ## Requirements
 
 - CMake 3.10+

@@ -36,7 +36,7 @@ namespace vax {
             VkInstanceCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
             createInfo.pApplicationInfo = &appInfo;
-            createInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+            createInfo.flags = 0;
 
             auto extensions = getRequiredExtensions();
             createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
@@ -82,7 +82,6 @@ namespace vax {
             if (enableValidationLayers) {
                 extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
             }
-            extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
             extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 #ifdef _WIN32
             extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);

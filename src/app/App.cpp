@@ -1,5 +1,6 @@
 #include "app.h"
 #include "profiler.h"
+#include "renderdoc.h"
 
 using namespace vax;
 
