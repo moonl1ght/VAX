@@ -59,8 +59,8 @@ bool vax::vk::CommandManager::createCommandBuffer() {
 CommandBuffer vax::vk::CommandManager::createSingleTimeCommandBuffer() {
     VkCommandBufferAllocateInfo allocInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandPool = commandPool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1
     };
 

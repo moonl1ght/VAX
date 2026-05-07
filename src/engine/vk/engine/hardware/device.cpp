@@ -56,36 +56,36 @@ int Device::createLogicalDevice(
 
     VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures{
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+        .pNext = nullptr,
+        .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
         .descriptorBindingPartiallyBound = VK_TRUE,
         .runtimeDescriptorArray = VK_TRUE,
-        .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
-        .pNext = nullptr
     };
 
     VkPhysicalDeviceFeatures2 deviceFeatures{
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        .pNext = &descriptorIndexingFeatures,
         .features = {
             .samplerAnisotropy = VK_TRUE
         },
-        .pNext = &descriptorIndexingFeatures
     };
 
     VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures{
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+        .pNext = &deviceFeatures,
         .bufferDeviceAddress = VK_TRUE,
-        .pNext = &deviceFeatures
     };
 
     VkPhysicalDeviceSynchronization2Features synchronization2Features{
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+        .pNext = &bufferDeviceAddressFeatures,
         .synchronization2 = VK_TRUE,
-        .pNext = &bufferDeviceAddressFeatures
     };
 
     VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR fragmentShaderBarycentricFeatures{
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR,
+        .pNext = &synchronization2Features,
         .fragmentShaderBarycentric = VK_TRUE,
-        .pNext = &synchronization2Features
     };
 
     if (enableValidationLayers && MACOS) {

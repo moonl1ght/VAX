@@ -32,8 +32,13 @@ void DescriptorSetWriter::writeBuffer(
     _writes.push_back(write);
 }
 
-void DescriptorSetWriter::writeTexture(textures::Texture* texture, uint32_t binding, uint32_t offset) {
-    auto imageInfoOpt = texture->descriptorImageInfo();
+void DescriptorSetWriter::writeTexture(
+    const vax::textures::Texture& texture,
+    uint32_t binding,
+    VkDescriptorType descriptorType,
+    uint32_t descriptorCount
+) {
+    auto imageInfoOpt = texture.descriptorImageInfo();
     if (!imageInfoOpt) {
         _logger.error("Failed to write descriptor image info");
         return;
@@ -46,28 +51,8 @@ void DescriptorSetWriter::writeTexture(textures::Texture* texture, uint32_t bind
         .dstSet = _descriptorSet,
         .dstBinding = binding,
         .dstArrayElement = 0,
-        .descriptorCount = 1,
-        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        .pImageInfo = &imageInfo
-    };
-
-    _writes.push_back(write);
-}
-
-void DescriptorSetWriter::writeStorageImage(VkImageView imageView, uint32_t binding) {
-    VkDescriptorImageInfo& imageInfo = _imageInfos.emplace_back(VkDescriptorImageInfo{
-        .sampler = VK_NULL_HANDLE,
-        .imageView = imageView,
-        .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-    });
-
-    VkWriteDescriptorSet write{
-        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = _descriptorSet,
-        .dstBinding = binding,
-        .dstArrayElement = 0,
-        .descriptorCount = 1,
-        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+        .descriptorCount = descriptorCount,
+        .descriptorType = descriptorType,
         .pImageInfo = &imageInfo
     };
 

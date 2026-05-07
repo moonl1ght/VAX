@@ -32,8 +32,13 @@ namespace vax::vk {
             VkDescriptorType descriptorType,
             uint32_t descriptorCount = 1
         );
-        void writeTexture(vax::textures::Texture* texture, uint32_t binding, uint32_t offset = 0);
-        void writeStorageImage(VkImageView imageView, uint32_t binding);
+
+        void writeTexture(
+            const vax::textures::Texture& texture,
+            uint32_t binding,
+            VkDescriptorType descriptorType,
+            uint32_t descriptorCount
+        );
 
         VkDescriptorSet getDescriptorSet() const { return _descriptorSet; }
 

@@ -28,7 +28,7 @@ PBRMaterial processMaterial(aiMaterial* mat) {
     aiColor4D color;
     ai_real factor;
 
-    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_BASE_COLOR, &color)) {
+    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &color)) {
         material.baseColor = glm::vec4(color.r, color.g, color.b, color.a);
     }
     std::cout << "baseColor: " << material.baseColor.r << " " << material.baseColor.g << " " << material.baseColor.b << " " << material.baseColor.a << std::endl;
@@ -51,6 +51,13 @@ PBRMaterial processMaterial(aiMaterial* mat) {
         ) {
         material.occlusionStrength = factor;
     }
+
+    aiString diffuseTextureName;
+
+    mat->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseTextureName);
+
+
+    std::cout << "diffuseTextureName: " << diffuseTextureName.C_Str() << std::endl;
 
     return material;
 }
@@ -105,6 +112,8 @@ void processNode(
         vertexOffset += mesh->mNumVertices;
         indexOffset += submesh.indexCount;
     }
+
+   
 
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {
         processNode(
