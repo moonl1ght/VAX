@@ -18,6 +18,7 @@ namespace vax {
     class TextureManager final {
     public:
         using TextureResource = std::pair<TextureHandle, textures::Texture*>;
+        using SamplerResource = std::pair<SamplerHandle, vax::textures::Sampler*>;
 
         explicit TextureManager(
             const vk::Device& device,
@@ -48,9 +49,18 @@ namespace vax {
 
         std::optional<TextureResource> attach(textures::Texture&& texture);
 
+        std::optional<SamplerResource> findSampler(SamplerHandle handle);
+
+        bool deleteSampler(SamplerHandle handle);
+
+        std::optional<SamplerResource> insertSampler(vax::textures::Sampler&& sampler);
+
+        std::optional<SamplerResource> getPBRSampler();
+
         void updateDescriptorWriterWithAllTextures(
             vax::vk::DescriptorSetWriter& descriptorWriter,
-            uint32_t binding
+            uint32_t binding,
+            bool useSampler
         ) const;
 
     private:
@@ -61,6 +71,8 @@ namespace vax {
         // TODO: change to vector + use generation for stability
         // maybe vector of vectors of buffers?
         std::unordered_map<TextureId, textures::Texture> _pool;
+        std::unordered_map<SamplerId, vax::textures::Sampler> _samplerPool;
         TextureId _lastId = 0;
+        SamplerId _lastSamplerId = PBRSamplerId;
     };
 }

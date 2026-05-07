@@ -35,10 +35,10 @@ void DescriptorSetWriter::writeBuffer(
 void DescriptorSetWriter::writeTexture(
     const vax::textures::Texture& texture,
     uint32_t binding,
-    VkDescriptorType descriptorType,
+    bool useSampler,
     uint32_t arrayElement
 ) {
-    auto imageInfoOpt = texture.descriptorImageInfo();
+    auto imageInfoOpt = useSampler ? texture.descriptorImageInfo() : texture.descriptorImageInfoNoSampler();
     if (!imageInfoOpt) {
         _logger.error("Failed to write descriptor image info");
         return;
@@ -52,7 +52,7 @@ void DescriptorSetWriter::writeTexture(
         .dstBinding = binding,
         .dstArrayElement = arrayElement,
         .descriptorCount = 1,
-        .descriptorType = descriptorType,
+        .descriptorType = useSampler ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
         .pImageInfo = &imageInfo
     };
 
@@ -62,28 +62,50 @@ void DescriptorSetWriter::writeTexture(
 void DescriptorSetWriter::writeTextures(
     const std::vector<const vax::textures::Texture*>& textures,
     uint32_t binding,
-    VkDescriptorType descriptorType
+    bool useSampler
 ) {
     std::vector<VkDescriptorImageInfo> imageInfos;
     imageInfos.reserve(textures.size());
     for (const auto& texture : textures) {
-        auto imageInfoOpt = texture->descriptorImageInfo();
+        auto imageInfoOpt = useSampler ? texture->descriptorImageInfo() : texture->descriptorImageInfoNoSampler();
         if (!imageInfoOpt) {
             _logger.error("Failed to write descriptor image info");
             return;
         }
-        imageInfos.push_back(imageInfoOpt.value());
+        imageInfos.push_back(*imageInfoOpt);
     }
-    _imageInfos.insert(_imageInfos.end(), imageInfos.begin(), imageInfos.end());
+    auto& imageInfosSaved = _imageInfosArray.emplace_back(imageInfos);
 
     VkWriteDescriptorSet write{
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
         .dstSet = _descriptorSet,
         .dstBinding = binding,
         .dstArrayElement = 0,
-        .descriptorCount = static_cast<uint32_t>(imageInfos.size()),
-        .descriptorType = descriptorType,
-        .pImageInfo = imageInfos.data()
+        .descriptorCount = static_cast<uint32_t>(imageInfosSaved.size()),
+        .descriptorType = useSampler ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+        .pImageInfo = imageInfosSaved.data()
+    };
+
+    _writes.push_back(write);
+}
+
+void DescriptorSetWriter::writeSampler(
+    const vax::textures::Sampler& sampler,
+    uint32_t binding,
+    uint32_t arrayElement
+) {
+    VkDescriptorImageInfo& samplerInfo = _imageInfos.emplace_back(VkDescriptorImageInfo{
+        .sampler = sampler.vkSampler,
+    });
+
+    VkWriteDescriptorSet write{
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = _descriptorSet,
+        .dstBinding = binding,
+        .dstArrayElement = arrayElement,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
+        .pImageInfo = &samplerInfo
     };
 
     _writes.push_back(write);
@@ -104,4 +126,5 @@ void DescriptorSetWriter::clear() {
     _writes.clear();
     _bufferInfos.clear();
     _imageInfos.clear();
+    _imageInfosArray.clear();
 }

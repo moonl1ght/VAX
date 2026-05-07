@@ -19,7 +19,8 @@ typedef float4 vec4;
 
 #endif
 
-#define MAX_TEXTURES 1000
+#define MAX_TEXTURES 500
+#define MAX_SAMPLERS 1
 constexpr uint32_t NO_TEXTURE_FLAG = 0xFFFFFFFF;
 
 enum ObjectFlags {
@@ -49,10 +50,10 @@ typedef struct {
     uint32_t normalMapTextureIndex;
     uint32_t roughnessTextureIndex;
     uint32_t metalnessTextureIndex;
-
     uint32_t aoTextureIndex;
     uint32_t emissiveTextureIndex;
-    uint32_t padding[2]; // 8 bytes
+    uint32_t samplerIndex;
+    uint32_t padding; // 4 bytes
 } PBRMaterial;
 
 #endif  // shaderUniforms_h

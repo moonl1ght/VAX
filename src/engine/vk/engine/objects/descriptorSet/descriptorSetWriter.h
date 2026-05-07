@@ -10,6 +10,7 @@ namespace vax::vk {
 
 namespace vax::textures {
     class Texture;
+    class Sampler;
 }
 
 namespace vax::vk {
@@ -21,6 +22,7 @@ namespace vax::vk {
         )
             : _device(device)
             , _descriptorSet(descriptorSet) {
+            _writes.reserve(100);
         }
 
         ~DescriptorSetWriter() {}
@@ -36,14 +38,20 @@ namespace vax::vk {
         void writeTexture(
             const vax::textures::Texture& texture,
             uint32_t binding,
-            VkDescriptorType descriptorType,
+            bool useSampler,
             uint32_t arrayElement = 0
         );
 
         void writeTextures(
             const std::vector<const vax::textures::Texture*>& textures,
             uint32_t binding,
-            VkDescriptorType descriptorType
+            bool useSampler
+        );
+
+        void writeSampler(
+            const vax::textures::Sampler& sampler,
+            uint32_t binding,
+            uint32_t arrayElement = 0
         );
 
         VkDescriptorSet getDescriptorSet() const { return _descriptorSet; }
@@ -59,5 +67,6 @@ namespace vax::vk {
         std::vector<VkWriteDescriptorSet> _writes;
         std::deque<VkDescriptorBufferInfo> _bufferInfos;
         std::deque<VkDescriptorImageInfo> _imageInfos;
+        std::deque<std::vector<VkDescriptorImageInfo>> _imageInfosArray;
     };
 }

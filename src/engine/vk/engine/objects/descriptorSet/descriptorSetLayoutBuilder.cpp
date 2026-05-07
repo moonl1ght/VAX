@@ -29,7 +29,10 @@ std::optional<DescriptorSetLayout> DescriptorSetLayoutBuilder::build(
     VkDescriptorSetLayoutCreateFlags flags
 ) {
     uint32_t bindingCount = static_cast<uint32_t>(_bindings.size());
-    std::vector<VkDescriptorBindingFlags> bindingFlags(bindingCount, VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
+    std::vector<VkDescriptorBindingFlags> bindingFlags(
+        bindingCount,
+        VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT
+    );
     VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
         .bindingCount = bindingCount,
@@ -38,7 +41,7 @@ std::optional<DescriptorSetLayout> DescriptorSetLayoutBuilder::build(
     VkDescriptorSetLayoutCreateInfo layoutInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         .pNext = &bindingFlagsInfo,
-        .flags = flags,
+        .flags = flags | VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
         .bindingCount = bindingCount,
         .pBindings = _bindings.data(),
     };

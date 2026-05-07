@@ -67,3 +67,6 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     //     model->mesh->loadBuffers(*vkEngine->queueManager, *vkEngine->commandManager);
     // }
 }
+
+void vax::DrawableScene::draw() {
+}

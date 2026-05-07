@@ -10,7 +10,10 @@ namespace vax::textures {
 
         static std::optional<vax::textures::Sampler> createSampler(const vax::vk::Device& device);
 
-        explicit Sampler(VkSampler vkSampler, const vax::vk::Device& device) : vkSampler(vkSampler), _device(device) {}
+        explicit Sampler(
+            VkSampler vkSampler,
+            const vax::vk::Device& device
+        ) : vkSampler(vkSampler), _device(device) {}
 
         Sampler(const Sampler& other) = delete;
 

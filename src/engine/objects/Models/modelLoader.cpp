@@ -16,9 +16,8 @@ constexpr glm::mat4 toGlm(const aiMatrix4x4& m) {
     };
 }
 
-void loadTexture(
+uint32_t loadTexture(
     aiString& textureName,
-    PBRMaterial& material,
     VkQueue submitQueue,
     vax::textures::TextureLoader& textureLoader,
     const aiScene* scene
@@ -34,14 +33,13 @@ void loadTexture(
             std::string name = "baseColorTexture_" + std::string(textureName.C_Str());
             auto texture = textureLoader.loadTexture(name, data, submitQueue);
             if (texture.has_value()) {
-                std::cout << "Loaded embedded baseColorTexture: " << texture->first.id() << std::endl;
-                material.baseColorTextureIndex = texture->first.id();
+                return texture->first.id();
             }
         }
         else {
             auto texture = textureLoader.loadTexture(textureName.C_Str(), submitQueue);
             if (texture.has_value()) {
-                material.baseColorTextureIndex = texture->first.id();
+                return texture->first.id();
             }
         }
     }
@@ -51,7 +49,8 @@ PBRMaterial processMaterial(
     aiMaterial* mat,
     VkQueue submitQueue,
     vax::textures::TextureLoader& textureLoader,
-    const aiScene* scene
+    const aiScene* scene,
+    vax::SamplerId samplerId
 ) {
     PBRMaterial material{
         .baseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -100,13 +99,6 @@ PBRMaterial processMaterial(
     aiString aoTextureName;
     aiString emissiveTextureName;
 
-    // mat->GetTextureCount(aiTextureType_BASE_COLOR);
-    // mat->GetTextureCount(aiTextureType_NORMALS);
-    // mat->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS);
-    // mat->GetTextureCount(aiTextureType_METALNESS);
-    // mat->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION);
-    // mat->GetTextureCount(aiTextureType_EMISSIVE);
-
     mat->GetTexture(aiTextureType_BASE_COLOR, 0, &baseColorTextureName);
     mat->GetTexture(aiTextureType_NORMALS, 0, &normalMapTextureName);
     mat->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessTextureName);
@@ -114,15 +106,13 @@ PBRMaterial processMaterial(
     mat->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoTextureName);
     mat->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveTextureName);
 
-    loadTexture(baseColorTextureName, material, submitQueue, textureLoader, scene);
-
-
-    // std::cout << "baseColorTextureName: " << baseColorTextureName.C_Str() << std::endl;
-    // std::cout << "normalMapTextureName: " << normalMapTextureName.C_Str() << std::endl;
-    // std::cout << "roughnessTextureName: " << roughnessTextureName.C_Str() << std::endl;
-    // std::cout << "metalnessTextureName: " << metalnessTextureName.C_Str() << std::endl;
-    // std::cout << "aoTextureName: " << aoTextureName.C_Str() << std::endl;
-    // std::cout << "emissiveTextureName: " << emissiveTextureName.C_Str() << std::endl;
+    material.baseColorTextureIndex = loadTexture(baseColorTextureName, submitQueue, textureLoader, scene);
+    material.normalMapTextureIndex = loadTexture(normalMapTextureName, submitQueue, textureLoader, scene);
+    material.roughnessTextureIndex = loadTexture(roughnessTextureName, submitQueue, textureLoader, scene);
+    material.metalnessTextureIndex = loadTexture(metalnessTextureName, submitQueue, textureLoader, scene);
+    material.aoTextureIndex = loadTexture(aoTextureName, submitQueue, textureLoader, scene);
+    material.emissiveTextureIndex = loadTexture(emissiveTextureName, submitQueue, textureLoader, scene);
+    material.samplerIndex = samplerId;
 
     return material;
 }
@@ -216,6 +206,12 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
         totalIndexCount += scene->mMeshes[i]->mNumFaces * 3;
     }
 
+    auto sampler = _resourceManager.get().textureManager().getPBRSampler();
+    if (!sampler) {
+        _logger.error("Failed to create sampler");
+        return std::nullopt;
+    }
+
     std::vector<Vertex> modelVertices;
     modelVertices.reserve(totalVertexCount);
 
@@ -231,7 +227,9 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     std::vector<PBRMaterial> materials;
     materials.reserve(scene->mNumMaterials);
     for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
-        materials.push_back(processMaterial(scene->mMaterials[i], submitQueue, _textureLoader.get(), scene));
+        materials.push_back(
+            processMaterial(scene->mMaterials[i], submitQueue, _textureLoader.get(), scene, sampler->first.id())
+        );
     }
 
     auto materialIds = _resourceManager.get().materialManager().insertMaterials(materials);

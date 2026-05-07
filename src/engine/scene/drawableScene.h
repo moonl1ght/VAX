@@ -36,6 +36,7 @@ namespace vax {
 
         void load(VkQueue submitQueue);
         void update(float deltaTime);
+        void draw();
 
         std::vector<vax::objects::DrawableModel>& getDrawableModels() {
             return _drawableModels;
@@ -65,6 +66,9 @@ namespace vax {
         vax::objects::ModelLoader _modelLoader;
         vax::objects::PrimitivesBuilder _primitivesBuilder;
         UniformBufferObject _ubo;
-        std::vector<vax::objects::DrawableModel> _drawableModels; // TODO: change to value type
+        std::vector<vax::objects::DrawableModel> _drawableModels;
+
+        bool _needsUpdateMaterialsSSBO = true;
+        bool _needsUpdateTexturesSSBO = true;
     };
 }

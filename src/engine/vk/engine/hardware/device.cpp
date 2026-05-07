@@ -58,6 +58,9 @@ int Device::createLogicalDevice(
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
         .pNext = nullptr,
         .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
+        .descriptorBindingUniformBufferUpdateAfterBind = VK_TRUE,
+        .descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE,
+        .descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
         .descriptorBindingPartiallyBound = VK_TRUE,
         .runtimeDescriptorArray = VK_TRUE,
     };
@@ -172,4 +175,10 @@ bool Device::load(VkInstance instance, VkSurfaceKHR surface, bool enableValidati
     }
     _logger.error("Failed to load device!");
     return false;
+}
+
+VkPhysicalDeviceProperties Device::getPhysicalDeviceProperties() const {
+    VkPhysicalDeviceProperties properties;
+    vkGetPhysicalDeviceProperties(vkPhysicalDevice, &properties);
+    return properties;
 }

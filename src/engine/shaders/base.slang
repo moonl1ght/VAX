@@ -7,10 +7,10 @@ ConstantBuffer<UniformBufferObject> ubo;
 StructuredBuffer<PBRMaterial> materials;
 
 [vk::binding(2, 0)]
-Sampler2D texSampler[MAX_TEXTURES];
+SamplerState globalSamplers[MAX_SAMPLERS];
 
-// [vk::binding(1, 0)]
-// Sampler2D texSampler;
+[vk::binding(3, 0)]
+Texture2D globalTextures[MAX_TEXTURES];
 
 [vk::push_constant]
 DrawPushConstants pushConstants;

@@ -10,6 +10,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_beta.h>
+#include <vulkan/vulkan_core.h>
 #include <set>
 #include <optional>
 #include <vector>

@@ -61,7 +61,7 @@ namespace vax::textures {
             , _id(other._id)
         {
             other._name.clear();
-            other._sampler = nullptr;
+            other._sampler = std::nullopt;
             other._image = VK_NULL_HANDLE;
             other._allocation = VK_NULL_HANDLE;
             other._imageView = VK_NULL_HANDLE;
@@ -92,7 +92,7 @@ namespace vax::textures {
                 other._image = VK_NULL_HANDLE;
                 other._allocation = VK_NULL_HANDLE;
                 other._imageView = VK_NULL_HANDLE;
-                other._sampler = nullptr;
+                other._sampler = std::nullopt;
                 other._size = vax::math::SizeUI::zero();
                 other._format = VK_FORMAT_UNDEFINED;
                 other._aspectMask = VK_IMAGE_ASPECT_NONE;
@@ -126,16 +126,22 @@ namespace vax::textures {
 
         std::optional<VkDescriptorImageInfo> descriptorImageInfo() const;
 
+        std::optional<VkDescriptorImageInfo> descriptorImageInfoNoSampler() const;
+
+        std::optional<VkDescriptorImageInfo> descriptorImageInfo(const Sampler& sampler) const;
+
         vax::math::SizeUI size() const { return _size; }
 
         uint32_t width() const { return _size.width; }
 
         uint32_t height() const { return _size.height; }
 
+        void createSampler();
+
     private:
         vax::utils::Logger _logger = vax::utils::Logger("Texture");
         vax::math::SizeUI _size = vax::math::SizeUI::zero();
-        std::unique_ptr<vax::textures::Sampler> _sampler = nullptr;
+        std::optional<vax::textures::Sampler> _sampler = std::nullopt;
         VkFormat _format = VK_FORMAT_UNDEFINED;
         VkImageAspectFlags _aspectMask = VK_IMAGE_ASPECT_NONE;
         std::string _name;

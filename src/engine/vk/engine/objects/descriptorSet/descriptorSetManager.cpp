@@ -1,5 +1,4 @@
 #include "descriptorSetManager.h"
-#include "vkEngine.h"
 #include "vkUtils.h"
 #include "descriptorSetLayoutBuilder.h"
 
@@ -21,19 +20,25 @@ bool DescriptorSetManager::setup() {
 bool DescriptorSetManager::createDescriptorSetPool() {
     uint32_t uniformBufferCount = 1;
     uint32_t materialBufferCount = 1;
-    uint32_t imageSamplerCount = vax::MAX_GLOBAL_TEXTURES;
-    uint32_t maxUniformBufferSets = static_cast<uint32_t>(_maxFramesInFlight) * uniformBufferCount;
-    uint32_t maxMaterialSets = static_cast<uint32_t>(_maxFramesInFlight) * materialBufferCount;
-    uint32_t maxImageSamplerSets = static_cast<uint32_t>(_maxFramesInFlight) * imageSamplerCount;
+    uint32_t samplerCount = vax::MAX_GLOBAL_SAMPLERS;
+    uint32_t textureCount = vax::MAX_GLOBAL_TEXTURES;
+    // auto samplersImageLimit = _device.get().getPhysicalDeviceProperties().limits.maxPerStageDescriptorSamplers;
+    uint32_t maxUniformBuffers = static_cast<uint32_t>(_maxFramesInFlight) * uniformBufferCount;
+    uint32_t maxMaterials = static_cast<uint32_t>(_maxFramesInFlight) * materialBufferCount;
+    uint32_t maxTextures = static_cast<uint32_t>(_maxFramesInFlight) * textureCount;
+    uint32_t maxSamplers = static_cast<uint32_t>(_maxFramesInFlight) * samplerCount;
+    // maxImageSamplerSets = std::min(maxImageSamplerSets, samplersImageLimit);
 
     std::vector<VkDescriptorPoolSize> poolSizes = {
-        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBufferSets },
-        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, maxMaterialSets },
-        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxImageSamplerSets }
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBuffers },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, maxMaterials },
+        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, maxTextures },
+        { VK_DESCRIPTOR_TYPE_SAMPLER, maxSamplers }
     };
 
     VkDescriptorPoolCreateInfo poolInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
         .maxSets = static_cast<uint32_t>(_maxFramesInFlight),
         .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
         .pPoolSizes = poolSizes.data(),
@@ -97,7 +102,13 @@ bool DescriptorSetManager::createDefaultDescriptorSetLayouts() {
     );
     builder.addBinding(
         2,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        VK_DESCRIPTOR_TYPE_SAMPLER,
+        VK_SHADER_STAGE_FRAGMENT_BIT,
+        vax::MAX_GLOBAL_SAMPLERS
+    );
+    builder.addBinding(
+        3,
+        VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         vax::MAX_GLOBAL_TEXTURES
     );

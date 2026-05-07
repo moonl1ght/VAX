@@ -21,6 +21,8 @@ namespace vax::vk {
 
         utils::QueueFamilyIndices getQueueFamilyIndices() const { return _indices; }
 
+        VkPhysicalDeviceProperties getPhysicalDeviceProperties() const;
+
     private:
         vax::utils::Logger _logger = vax::utils::Logger("Device");
 

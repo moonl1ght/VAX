@@ -81,9 +81,6 @@ std::optional<Texture> TextureFactory::makeTextureDetached(
             VK_IMAGE_ASPECT_COLOR_BIT
         );
         texture.loadImageView();
-        if (auto sampler = vax::textures::Sampler::createSampler(_device.get())) {
-            texture._sampler = std::make_unique<vax::textures::Sampler>(std::move(*sampler));
-        }
         return std::make_optional(std::move(texture));
     }
     _logger.error("Failed to create render destination texture!");

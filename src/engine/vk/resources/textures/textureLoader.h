@@ -5,6 +5,7 @@
 #include "texture.h"
 #include "textureManager.h"
 #include "commandManager.h"
+#include <span>
 
 namespace vax::textures {
     class TextureLoader final {
