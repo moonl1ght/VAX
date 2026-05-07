@@ -38,6 +38,6 @@ namespace vax {
         // TODO: change to vector + use generation for stability
         // maybe vector of vectors of buffers?
         std::unordered_map<MeshId, vax::objects::Mesh> _pool;
-        MeshId _lastId = 1;
+        MeshId _lastId = 0;
     };
 }

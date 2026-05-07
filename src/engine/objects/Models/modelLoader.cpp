@@ -16,22 +16,63 @@ constexpr glm::mat4 toGlm(const aiMatrix4x4& m) {
     };
 }
 
-PBRMaterial processMaterial(aiMaterial* mat) {
+void loadTexture(
+    aiString& textureName,
+    PBRMaterial& material,
+    VkQueue submitQueue,
+    vax::textures::TextureLoader& textureLoader,
+    const aiScene* scene
+) {
+    if (textureName.length > 0) {
+        const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(textureName.C_Str());
+        if (embeddedTexture) {
+            void* textData = embeddedTexture->pcData;
+            auto width = embeddedTexture->mWidth;
+            auto height = embeddedTexture->mHeight;
+            auto size = height == 0 ? width : width * height;
+            auto data = std::span<unsigned char>(reinterpret_cast<unsigned char*>(textData), size);
+            std::string name = "baseColorTexture_" + std::string(textureName.C_Str());
+            auto texture = textureLoader.loadTexture(name, data, submitQueue);
+            if (texture.has_value()) {
+                std::cout << "Loaded embedded baseColorTexture: " << texture->first.id() << std::endl;
+                material.baseColorTextureIndex = texture->first.id();
+            }
+        }
+        else {
+            auto texture = textureLoader.loadTexture(textureName.C_Str(), submitQueue);
+            if (texture.has_value()) {
+                material.baseColorTextureIndex = texture->first.id();
+            }
+        }
+    }
+}
+
+PBRMaterial processMaterial(
+    aiMaterial* mat,
+    VkQueue submitQueue,
+    vax::textures::TextureLoader& textureLoader,
+    const aiScene* scene
+) {
     PBRMaterial material{
         .baseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
         .metallicFactor = 1.0f,
         .roughnessFactor = 1.0f,
         .normalScale = 1.0f,
         .occlusionStrength = 1.0f,
-        .emissiveFactorAlphaCutoff = glm::vec4(0.0f, 0.0f, 0.0f, 0.5f)
+        .emissiveFactorAlphaCutoff = glm::vec4(0.0f, 0.0f, 0.0f, 0.5f),
+        .baseColorTextureIndex = NO_TEXTURE_FLAG,
+        .normalMapTextureIndex = NO_TEXTURE_FLAG,
+        .roughnessTextureIndex = NO_TEXTURE_FLAG,
+        .metalnessTextureIndex = NO_TEXTURE_FLAG,
+        .aoTextureIndex = NO_TEXTURE_FLAG,
+        .emissiveTextureIndex = NO_TEXTURE_FLAG
     };
     aiColor4D color;
     ai_real factor;
 
-    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &color)) {
+    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_BASE_COLOR, &color)) {
         material.baseColor = glm::vec4(color.r, color.g, color.b, color.a);
     }
-    std::cout << "baseColor: " << material.baseColor.r << " " << material.baseColor.g << " " << material.baseColor.b << " " << material.baseColor.a << std::endl;
     if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_EMISSIVE, &color)) {
         material.emissiveFactorAlphaCutoff = glm::vec4(color.r, color.g, color.b, 0.5f);
     }
@@ -52,12 +93,36 @@ PBRMaterial processMaterial(aiMaterial* mat) {
         material.occlusionStrength = factor;
     }
 
-    aiString diffuseTextureName;
+    aiString baseColorTextureName;
+    aiString normalMapTextureName;
+    aiString roughnessTextureName;
+    aiString metalnessTextureName;
+    aiString aoTextureName;
+    aiString emissiveTextureName;
 
-    mat->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseTextureName);
+    // mat->GetTextureCount(aiTextureType_BASE_COLOR);
+    // mat->GetTextureCount(aiTextureType_NORMALS);
+    // mat->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS);
+    // mat->GetTextureCount(aiTextureType_METALNESS);
+    // mat->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION);
+    // mat->GetTextureCount(aiTextureType_EMISSIVE);
+
+    mat->GetTexture(aiTextureType_BASE_COLOR, 0, &baseColorTextureName);
+    mat->GetTexture(aiTextureType_NORMALS, 0, &normalMapTextureName);
+    mat->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessTextureName);
+    mat->GetTexture(aiTextureType_METALNESS, 0, &metalnessTextureName);
+    mat->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoTextureName);
+    mat->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveTextureName);
+
+    loadTexture(baseColorTextureName, material, submitQueue, textureLoader, scene);
 
 
-    std::cout << "diffuseTextureName: " << diffuseTextureName.C_Str() << std::endl;
+    // std::cout << "baseColorTextureName: " << baseColorTextureName.C_Str() << std::endl;
+    // std::cout << "normalMapTextureName: " << normalMapTextureName.C_Str() << std::endl;
+    // std::cout << "roughnessTextureName: " << roughnessTextureName.C_Str() << std::endl;
+    // std::cout << "metalnessTextureName: " << metalnessTextureName.C_Str() << std::endl;
+    // std::cout << "aoTextureName: " << aoTextureName.C_Str() << std::endl;
+    // std::cout << "emissiveTextureName: " << emissiveTextureName.C_Str() << std::endl;
 
     return material;
 }
@@ -113,8 +178,6 @@ void processNode(
         indexOffset += submesh.indexCount;
     }
 
-   
-
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {
         processNode(
             scene,
@@ -168,7 +231,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     std::vector<PBRMaterial> materials;
     materials.reserve(scene->mNumMaterials);
     for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
-        materials.push_back(processMaterial(scene->mMaterials[i]));
+        materials.push_back(processMaterial(scene->mMaterials[i], submitQueue, _textureLoader.get(), scene));
     }
 
     auto materialIds = _resourceManager.get().materialManager().insertMaterials(materials);

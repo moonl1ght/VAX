@@ -19,8 +19,11 @@ typedef float4 vec4;
 
 #endif
 
+#define MAX_TEXTURES 1000
+constexpr uint32_t NO_TEXTURE_FLAG = 0xFFFFFFFF;
+
 enum ObjectFlags {
-    None = 0,
+    NoFlags = 0,
     IsWireframe = 1 << 0, // 0001
 };
 
@@ -41,6 +44,15 @@ typedef struct {
     vec4 baseColor; 
     float metallicFactor, roughnessFactor, normalScale, occlusionStrength; // vec4
     vec4 emissiveFactorAlphaCutoff;
+
+    uint32_t baseColorTextureIndex;
+    uint32_t normalMapTextureIndex;
+    uint32_t roughnessTextureIndex;
+    uint32_t metalnessTextureIndex;
+
+    uint32_t aoTextureIndex;
+    uint32_t emissiveTextureIndex;
+    uint32_t padding[2]; // 8 bytes
 } PBRMaterial;
 
 #endif  // shaderUniforms_h

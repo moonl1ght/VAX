@@ -30,14 +30,20 @@ namespace vax::vk {
             uint32_t binding,
             uint32_t offset,
             VkDescriptorType descriptorType,
-            uint32_t descriptorCount = 1
+            uint32_t arrayElement = 0
         );
 
         void writeTexture(
             const vax::textures::Texture& texture,
             uint32_t binding,
             VkDescriptorType descriptorType,
-            uint32_t descriptorCount
+            uint32_t arrayElement = 0
+        );
+
+        void writeTextures(
+            const std::vector<const vax::textures::Texture*>& textures,
+            uint32_t binding,
+            VkDescriptorType descriptorType
         );
 
         VkDescriptorSet getDescriptorSet() const { return _descriptorSet; }

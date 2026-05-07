@@ -6,6 +6,9 @@ ConstantBuffer<UniformBufferObject> ubo;
 [vk::binding(1, 0)]
 StructuredBuffer<PBRMaterial> materials;
 
+[vk::binding(2, 0)]
+Sampler2D texSampler[MAX_TEXTURES];
+
 // [vk::binding(1, 0)]
 // Sampler2D texSampler;
 

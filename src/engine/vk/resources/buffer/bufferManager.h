@@ -42,6 +42,6 @@ namespace vax {
         // TODO: change to vector + use generation for stability
         // maybe vector of vectors of buffers?
         std::unordered_map<BufferId, vax::vk::Buffer> _pool;
-        BufferId _lastId = 1;
+        BufferId _lastId = 0;
     };
 }

@@ -11,7 +11,7 @@ void DescriptorSetWriter::writeBuffer(
     uint32_t binding,
     uint32_t offset,
     VkDescriptorType descriptorType,
-    uint32_t descriptorCount
+    uint32_t arrayElement
 ) {
     VkDescriptorBufferInfo& bufferInfo = _bufferInfos.emplace_back(VkDescriptorBufferInfo{
         .buffer = buffer.vkBuffer(),
@@ -23,8 +23,8 @@ void DescriptorSetWriter::writeBuffer(
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
         .dstSet = _descriptorSet,
         .dstBinding = binding,
-        .dstArrayElement = 0,
-        .descriptorCount = descriptorCount,
+        .dstArrayElement = arrayElement,
+        .descriptorCount = 1,
         .descriptorType = descriptorType,
         .pBufferInfo = &bufferInfo
     };
@@ -36,7 +36,7 @@ void DescriptorSetWriter::writeTexture(
     const vax::textures::Texture& texture,
     uint32_t binding,
     VkDescriptorType descriptorType,
-    uint32_t descriptorCount
+    uint32_t arrayElement
 ) {
     auto imageInfoOpt = texture.descriptorImageInfo();
     if (!imageInfoOpt) {
@@ -50,10 +50,40 @@ void DescriptorSetWriter::writeTexture(
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
         .dstSet = _descriptorSet,
         .dstBinding = binding,
-        .dstArrayElement = 0,
-        .descriptorCount = descriptorCount,
+        .dstArrayElement = arrayElement,
+        .descriptorCount = 1,
         .descriptorType = descriptorType,
         .pImageInfo = &imageInfo
+    };
+
+    _writes.push_back(write);
+}
+
+void DescriptorSetWriter::writeTextures(
+    const std::vector<const vax::textures::Texture*>& textures,
+    uint32_t binding,
+    VkDescriptorType descriptorType
+) {
+    std::vector<VkDescriptorImageInfo> imageInfos;
+    imageInfos.reserve(textures.size());
+    for (const auto& texture : textures) {
+        auto imageInfoOpt = texture->descriptorImageInfo();
+        if (!imageInfoOpt) {
+            _logger.error("Failed to write descriptor image info");
+            return;
+        }
+        imageInfos.push_back(imageInfoOpt.value());
+    }
+    _imageInfos.insert(_imageInfos.end(), imageInfos.begin(), imageInfos.end());
+
+    VkWriteDescriptorSet write{
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = _descriptorSet,
+        .dstBinding = binding,
+        .dstArrayElement = 0,
+        .descriptorCount = static_cast<uint32_t>(imageInfos.size()),
+        .descriptorType = descriptorType,
+        .pImageInfo = imageInfos.data()
     };
 
     _writes.push_back(write);

@@ -10,6 +10,10 @@ namespace vax::textures {
     class TextureFactory;
 }
 
+namespace vax::vk {
+    class DescriptorSetWriter;
+}
+
 namespace vax {
     class TextureManager final {
     public:
@@ -44,6 +48,11 @@ namespace vax {
 
         std::optional<TextureResource> attach(textures::Texture&& texture);
 
+        void updateDescriptorWriterWithAllTextures(
+            vax::vk::DescriptorSetWriter& descriptorWriter,
+            uint32_t binding
+        ) const;
+
     private:
         utils::Logger _logger = utils::Logger("TextureManager");
 
@@ -52,6 +61,6 @@ namespace vax {
         // TODO: change to vector + use generation for stability
         // maybe vector of vectors of buffers?
         std::unordered_map<TextureId, textures::Texture> _pool;
-        TextureId _lastId = NullTextureId;
+        TextureId _lastId = 0;
     };
 }

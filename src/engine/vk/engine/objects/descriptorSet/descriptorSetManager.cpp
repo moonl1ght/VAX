@@ -21,17 +21,15 @@ bool DescriptorSetManager::setup() {
 bool DescriptorSetManager::createDescriptorSetPool() {
     uint32_t uniformBufferCount = 1;
     uint32_t materialBufferCount = 1;
-    // uint32_t imageSamplerCount = 1;
+    uint32_t imageSamplerCount = vax::MAX_GLOBAL_TEXTURES;
     uint32_t maxUniformBufferSets = static_cast<uint32_t>(_maxFramesInFlight) * uniformBufferCount;
     uint32_t maxMaterialSets = static_cast<uint32_t>(_maxFramesInFlight) * materialBufferCount;
-    // uint32_t maxImageSamplerSets = static_cast<uint32_t>(_maxFramesInFlight) * imageSamplerCount;
-    // uint32_t maxDrawBackgroundSets = static_cast<uint32_t>(_maxFramesInFlight) * 1;
+    uint32_t maxImageSamplerSets = static_cast<uint32_t>(_maxFramesInFlight) * imageSamplerCount;
 
     std::vector<VkDescriptorPoolSize> poolSizes = {
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBufferSets },
         { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, maxMaterialSets },
-        // { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxImageSamplerSets },
-        // { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, maxDrawBackgroundSets }
+        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxImageSamplerSets }
     };
 
     VkDescriptorPoolCreateInfo poolInfo{
@@ -96,6 +94,12 @@ bool DescriptorSetManager::createDefaultDescriptorSetLayouts() {
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         1
+    );
+    builder.addBinding(
+        2,
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        VK_SHADER_STAGE_FRAGMENT_BIT,
+        vax::MAX_GLOBAL_TEXTURES
     );
     auto baseDescriptorSetLayout = builder.build(DescriptorSetLayout::DefaultType::BASE);
     builder.clear();

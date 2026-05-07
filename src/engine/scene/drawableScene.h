@@ -53,6 +53,10 @@ namespace vax {
             return _resourceManager.materialManager().materialBuffer();
         }
 
+        vax::TextureManager& textureManager() {
+            return _resourceManager.textureManager();
+        }
+
     private:
         std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
         std::reference_wrapper<vax::vk::Engine> _vkEngine;

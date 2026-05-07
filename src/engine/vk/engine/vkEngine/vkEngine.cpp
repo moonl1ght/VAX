@@ -50,7 +50,6 @@ bool vax::vk::Engine::setup() {
         vulkanApiVersion
     ).build();
     if (instanceOptional.has_value()) {
-        std::cout << "Instance created" << instanceOptional.value() << std::endl;
         instance = *instanceOptional;
     }
     else {

@@ -21,8 +21,9 @@ float4 fragMain(FragmentInput input)
 {
     float val = edgeFactor(input.baryCoords, 1.0);
 
-    float4 color = materials[pushConstants.materialIndex].baseColor;
-    
+    // float4 color = materials[pushConstants.materialIndex].baseColor;
+
+    float4 color = texSampler[0].Sample(input.uv);
     return lerp(color, float4(0, 0, 0, 1), 1.0 - val);
     // return color;
 }

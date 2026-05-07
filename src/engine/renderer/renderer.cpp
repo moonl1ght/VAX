@@ -167,6 +167,9 @@ bool Renderer::recordCommandBuffer(
         descriptorSetWriter.value().writeBuffer(
             scene->getMaterialBuffer(), 1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
         );
+        scene->textureManager().updateDescriptorWriterWithAllTextures(
+            *descriptorSetWriter, 2
+        );
         // descriptorSetWriter.value().writeBuffer(scene->getMaterialBuffers()[_currentFrame], 1);
         // descriptorSet.writeTexture(scene->texture, 1);
         descriptorSetWriter->update();

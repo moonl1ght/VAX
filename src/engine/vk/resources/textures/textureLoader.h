@@ -25,11 +25,23 @@ namespace vax::textures {
         TextureLoader& operator=(TextureLoader&& other) noexcept = delete;
 
         std::optional<TextureManager::TextureResource> loadTexture(std::string path, VkQueue submitQueue);
+        std::optional<TextureManager::TextureResource> loadTexture(
+            std::string name, std::span<unsigned char> data, VkQueue submitQueue
+        );
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("TextureLoader");
         std::reference_wrapper<const vax::vk::Device> _device;
         std::reference_wrapper<vax::TextureManager> _textureManager;
         std::reference_wrapper<vax::vk::CommandManager> _commandManager;
+
+        std::optional<TextureManager::TextureResource> _loadTexture(
+            std::string name,
+            unsigned char* pixels,
+            VkQueue submitQueue,
+            int texWidth,
+            int texHeight,
+            int texChannels
+        );
     };
 }
