@@ -4,10 +4,10 @@ using namespace vax::objects;
 
 
 bool DrawableModel::loadMesh(
-    vax::vk::QueueManager& queueManager,
-    vax::vk::CommandManager& commandManager
+    VkQueue submitQueue,
+    vax::vk::CommandBuffer& commandBuffer
 ) {
-    return _mesh->loadBuffers(queueManager, commandManager);
+    return _mesh->loadBuffers(submitQueue, commandBuffer);
 }
 
 void DrawableModel::draw(
@@ -23,11 +23,7 @@ void DrawableModel::draw(
     vkCmdBindIndexBuffer(commandBuffer, _mesh->indexBuffer.value().vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
     for (auto& submesh : _submeshes) {
         DrawPushConstants drawPushConstants{};
-        // drawPushConstants.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
-        // drawPushConstants.model = transform.getModelMatrix();
-        drawPushConstants.model = glm::rotate(
-            transform.getModelMatrix(), time * glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f)
-        );
+        drawPushConstants.model = transform.getModelMatrix();
         drawPushConstants.flags = ObjectFlags::NoFlags;
 
         vkCmdPushConstants(

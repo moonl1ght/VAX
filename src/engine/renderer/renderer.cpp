@@ -38,6 +38,7 @@ bool Renderer::render(DrawableScene* scene, float deltaTime) {
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         _vkEngine.get().resize();
+        scene->resize();
         return false;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -196,9 +197,9 @@ bool Renderer::_updateCommandBuffer(
 void Renderer::_setViewportAndScissor(VkCommandBuffer commandBuffer) {
     VkViewport viewport{
         .x = 0.0f,
-        .y = 0.0f,
+        .y = static_cast<float>(_vkEngine.get().swapchain->swapchainExtent.height),
         .width = static_cast<float>(_vkEngine.get().swapchain->swapchainExtent.width),
-        .height = static_cast<float>(_vkEngine.get().swapchain->swapchainExtent.height),
+        .height = -static_cast<float>(_vkEngine.get().swapchain->swapchainExtent.height),
         .minDepth = 0.0f,
         .maxDepth = 1.0f
     };

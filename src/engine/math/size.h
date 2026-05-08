@@ -16,8 +16,18 @@ namespace vax::math {
 
         Size_t(VkExtent2D extent) : width(static_cast<T>(extent.width)), height(static_cast<T>(extent.height)) {}
 
-        double whRatio() const noexcept { return static_cast<double>(width) / static_cast<double>(height); }
-        double hwRatio() const noexcept { return static_cast<double>(height) / static_cast<double>(width); }
+        double whRatio() const noexcept { 
+            if (height == 0) {
+                return 0;
+            }
+            return static_cast<double>(width) / static_cast<double>(height);
+        }
+        double hwRatio() const noexcept { 
+            if (width == 0) {
+                return 0;
+            }
+            return static_cast<double>(height) / static_cast<double>(width); 
+        }
 
         VkExtent2D toExtent2D() const noexcept {
             return VkExtent2D{ static_cast<uint32_t>(width), static_cast<uint32_t>(height) };

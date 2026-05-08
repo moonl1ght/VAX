@@ -7,8 +7,7 @@
 #include "resourceUtils.h"
 
 namespace vax::vk {
-    class QueueManager;
-    class CommandManager;
+    class CommandBuffer;
 }
 
 namespace vax {
@@ -101,8 +100,8 @@ namespace vax::vk {
         std::optional<void*> mappedMemory() const;
 
         bool copyBufferToSync(
-            const QueueManager& queueManager,
-            CommandManager& commandManager,
+            VkQueue submitQueue,
+            vax::vk::CommandBuffer& commandBuffer,
             Buffer& dstBuffer,
             VkDeviceSize size
         ) const;

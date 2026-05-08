@@ -71,6 +71,9 @@ void TextureManager::updateDescriptorWriterWithAllTextures(
         textures[texture.id()] = &texture;
     }
 
+    if (textures.empty()) {
+        return;
+    }
     descriptorWriter.writeTextures(textures, binding, useSampler);
 }
 

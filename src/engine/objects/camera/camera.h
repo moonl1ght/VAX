@@ -2,16 +2,17 @@
 
 #include "luna.h"
 #include "vaxMath.h"
+#include "shaderUniforms.h"
 
 namespace vax::objects {
-    class Camera {
+    class Camera final{
     public:
         enum class Projection {
             perspective, orthographic
         };
 
         explicit Camera(
-            vax::math::SizeUI viewPortSize,
+            vax::math::SizeUI viewPortSize = vax::math::SizeUI::zero(),
             Projection projection = Projection::perspective,
             glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f),
@@ -39,7 +40,6 @@ namespace vax::objects {
         glm::mat4 projectionMatrix();
         glm::mat4 viewMatrix();
 
-
         void setViewPortSize(vax::math::SizeUI viewPortSize);
 
         void setProjection(Projection projection);
@@ -57,6 +57,8 @@ namespace vax::objects {
         void setFarPlane(double farPlane);
 
         void setViewSize(double viewSize);
+
+        UniformBufferObject getUniformBufferObject();
 
         // void rotate(simd_float2 delta);
         // void setPosition(simd_float3 position);

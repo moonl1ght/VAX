@@ -35,8 +35,8 @@ namespace vax::objects {
         ~DrawableModel() {};
 
         bool loadMesh(
-            vax::vk::QueueManager& queueManager,
-            vax::vk::CommandManager& commandManager
+            VkQueue submitQueue,
+            vax::vk::CommandBuffer& commandBuffer
         );
 
         void draw(

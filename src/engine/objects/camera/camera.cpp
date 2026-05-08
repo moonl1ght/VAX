@@ -79,6 +79,9 @@ void Camera::updateViewMatrix() {
 }
 
 void Camera::updateProjectionMatrix() {
+    if (_whAspectRatio == 0) {
+        return;
+    }
     switch (_projection) {
     case Projection::perspective:
         _savedProjectionMatrix = glm::perspective(
@@ -101,4 +104,12 @@ void Camera::updateProjectionMatrix() {
         _savedProjectionMatrix[1][1] *= -1;
         break;
     }
+}
+
+UniformBufferObject Camera::getUniformBufferObject() {
+    return {
+        .view = viewMatrix(),
+        .proj = projectionMatrix(),
+        .cameraPosition = glm::vec4(_position, 1.0f)
+    };
 }

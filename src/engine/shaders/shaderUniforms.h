@@ -46,6 +46,8 @@ enum VertexInputIndices {
 #define MAX_TEXTURES 500
 #define MAX_SAMPLERS 1
 static constexpr uint32_t NO_TEXTURE_FLAG = 0xFFFFFFFF;
+static constexpr uint32_t NO_MATERIAL_INDEX = 0xFFFFFFFF;
+static constexpr uint32_t NO_SAMPLER_INDEX = 0xFFFFFFFF;
 
 enum ObjectFlags {
     NoFlags = 0,
@@ -58,26 +60,26 @@ struct UniformBufferObject {
     vec4 cameraPosition;
 };
 
-typedef struct {
+struct DrawPushConstants {
     mat4 model; // 64 bytes
     uint32_t flags; // 4 bytes
-    uint32_t materialIndex; // 4 bytes
+    uint32_t materialIndex = NO_MATERIAL_INDEX; // 4 bytes
     uint32_t padding[2]; // 8 bytes
-} DrawPushConstants;
+};
 
-typedef struct {
+struct PBRMaterial {
     vec4 baseColor; 
     float metallicFactor, roughnessFactor, normalScale, occlusionStrength; // vec4
     vec4 emissiveFactorAlphaCutoff;
 
-    uint32_t baseColorTextureIndex;
-    uint32_t normalMapTextureIndex;
-    uint32_t roughnessTextureIndex;
-    uint32_t metalnessTextureIndex;
-    uint32_t aoTextureIndex;
-    uint32_t emissiveTextureIndex;
-    uint32_t samplerIndex;
+    uint32_t baseColorTextureIndex = NO_TEXTURE_FLAG;
+    uint32_t normalMapTextureIndex = NO_TEXTURE_FLAG;
+    uint32_t roughnessTextureIndex = NO_TEXTURE_FLAG;
+    uint32_t metalnessTextureIndex = NO_TEXTURE_FLAG;
+    uint32_t aoTextureIndex = NO_TEXTURE_FLAG;
+    uint32_t emissiveTextureIndex = NO_TEXTURE_FLAG;
+    uint32_t samplerIndex = NO_SAMPLER_INDEX;
     uint32_t padding; // 4 bytes
-} PBRMaterial;
+};
 
 #endif  // shaderUniforms_h

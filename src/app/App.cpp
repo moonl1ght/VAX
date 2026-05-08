@@ -33,6 +33,7 @@ bool App::setup() {
     _renderer->prepare();
 
     _drawableScene = std::make_unique<DrawableScene>(*_engine);
+    _drawableScene->resize();
     _drawableScene->load(_engine->queueManager->graphicsQueue);
 
     return true;

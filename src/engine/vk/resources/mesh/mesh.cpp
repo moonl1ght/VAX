@@ -33,8 +33,8 @@ using namespace vax;
 // }
 
 bool vax::objects::Mesh::loadBuffers(
-    vax::vk::QueueManager& queueManager,
-    vax::vk::CommandManager& commandManager
+    VkQueue submitQueue,
+    vax::vk::CommandBuffer& commandBuffer
 ) {
     VkDeviceSize bufferSize = sizeof(_vertices[0]) * _vertices.size();
     VkDeviceSize indexBufferSize = sizeof(_indices[0]) * _indices.size();
@@ -69,7 +69,7 @@ bool vax::objects::Mesh::loadBuffers(
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
         ).value());
         stagingBuffer.copyBufferToSync(
-            queueManager, commandManager, vertexBuffer.value(), bufferSize
+            submitQueue, commandBuffer, vertexBuffer.value(), bufferSize
         );
 
         if (!_indices.empty()) {
@@ -87,7 +87,7 @@ bool vax::objects::Mesh::loadBuffers(
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
             ).value());
             stagingIndexBuffer.copyBufferToSync(
-                queueManager, commandManager, indexBuffer.value(), indexBufferSize
+                submitQueue, commandBuffer, indexBuffer.value(), indexBufferSize
             );
         }
     }

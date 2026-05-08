@@ -10,6 +10,7 @@
 #include "resourceManager.h"
 #include "descriptorSetWriter.h"
 #include "renderContext.h"
+#include "camera.h"
 
 namespace vax {
     struct SceneUpdateContext {
@@ -25,7 +26,14 @@ namespace vax {
                 *vkEngine.device, _resourceManager.textureManager(), *vkEngine.commandManager
             ))
             , _modelLoader(vax::objects::ModelLoader(_resourceManager, _textureLoader))
-            , _primitivesBuilder(vax::objects::PrimitivesBuilder(_resourceManager.meshManager())) {
+            , _primitivesBuilder(
+                vax::objects::PrimitivesBuilder(
+                    _resourceManager.meshManager(),
+                    _resourceManager.materialManager(),
+                    *_vkEngine.get().commandManager,
+                    *_vkEngine.get().queueManager
+                )
+            ) {
         };
 
         ~DrawableScene() {
@@ -39,6 +47,8 @@ namespace vax {
         DrawableScene& operator=(DrawableScene&& other) noexcept = delete;
 
         void load(VkQueue submitQueue);
+
+        void resize();
 
         void prepareForDraw(vax::renderer::RenderCallContext renderCallContext);
 
@@ -58,6 +68,7 @@ namespace vax {
         vax::textures::TextureLoader _textureLoader;
         vax::objects::ModelLoader _modelLoader;
         vax::objects::PrimitivesBuilder _primitivesBuilder;
+        vax::objects::Camera _mainCamera;
         UniformBufferObject _ubo;
         std::vector<vax::objects::DrawableModel> _drawableModels;
 

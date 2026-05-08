@@ -61,8 +61,8 @@ namespace vax::objects {
         // );
 
         bool loadBuffers(
-            vax::vk::QueueManager& queueManager,
-            vax::vk::CommandManager& commandManager
+            VkQueue submitQueue,
+            vax::vk::CommandBuffer& commandBuffer
         );
 
         bool isLoaded() const { return _isLoaded; }

@@ -1,7 +1,6 @@
 #include "buffer.h"
 #include "vkEngine.h"
-#include "commandManager.h"
-#include "queueManager.h"
+#include "commandBuffer.h"
 
 using namespace vax::vk;
 
@@ -99,12 +98,11 @@ bool Buffer::fill(const void* fillData) {
 }
 
 bool vax::vk::Buffer::copyBufferToSync(
-    const QueueManager& queueManager,
-    CommandManager& commandManager,
+    VkQueue submitQueue,
+    vax::vk::CommandBuffer& commandBuffer,
     Buffer& dstBuffer,
     VkDeviceSize size
 ) const {
-    auto commandBuffer = commandManager.createSingleTimeCommandBuffer();
     commandBuffer.begin();
 
     VkBufferCopy copyRegion{};
@@ -118,8 +116,8 @@ bool vax::vk::Buffer::copyBufferToSync(
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer.vkCommandBuffer;
 
-    vkQueueSubmit(queueManager.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(queueManager.graphicsQueue);
+    vkQueueSubmit(submitQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(submitQueue);
     return true;
 }
 

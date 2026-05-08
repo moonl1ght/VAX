@@ -1,14 +1,15 @@
 #pragma once
 
 #include "luna.h"
+#include "shaderUniforms.h"
 
 namespace vax::objects {
     class Submesh final {
     public:
-        uint32_t indexCount;
-        uint32_t firstIndex;
-        uint32_t vertexOffset;
-        uint32_t materialIndex;
+        uint32_t indexCount = 0;
+        uint32_t firstIndex = 0;
+        uint32_t vertexOffset = 0;
+        uint32_t materialIndex = NO_MATERIAL_INDEX;
 
         void debugPrint(const vax::utils::Logger& logger) const;
     };
