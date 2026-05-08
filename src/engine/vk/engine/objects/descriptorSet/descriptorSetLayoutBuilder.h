@@ -26,7 +26,7 @@ namespace vax::vk {
         void clear();
 
         std::optional<DescriptorSetLayout> build(
-            DescriptorSetLayout::DefaultType defaultType,
+            DescriptorSetLayout::SetType setType,
             VkDescriptorSetLayoutCreateFlags flags = 0
         );
 

@@ -4,6 +4,7 @@ struct FragmentInput
 {
     float4 position : SV_Position;
     float3 normal : NORMAL;
+    float3 tangent : TANGENT;
     float2 uv : TEXCOORD0;
     float3 baryCoords : SV_Barycentrics;
 };

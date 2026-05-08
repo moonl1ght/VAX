@@ -153,37 +153,65 @@ bool Renderer::recordCommandBuffer(
 
     if (auto mappedMemory = scene->getSceneUniformBuffers()[_currentFrame]->mappedMemory()) {
         memcpy(mappedMemory.value(), &scene->getUBO(), sizeof(scene->getUBO()));
-    } else {
+    }
+    else {
         _logger.error("Failed to get mapped memory!");
     }
 
-    auto descriptorSetWriter = _vkEngine.get().descriptorSetManager->getDefaultDescriptorSetWriter(
-        _currentFrame, vax::vk::DescriptorSetLayout::DefaultType::BASE
+    auto frameDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+        _currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
     );
-    if (descriptorSetWriter.has_value()) {
-        descriptorSetWriter.value().writeBuffer(
-            *scene->getSceneUniformBuffers()[_currentFrame], 0, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+    if (frameDescriptorSetWriter.has_value()) {
+        frameDescriptorSetWriter.value().writeBuffer(
+            *scene->getSceneUniformBuffers()[_currentFrame],
+            FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX, 0,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
         );
-        descriptorSetWriter.value().writeBuffer(
-            scene->getMaterialBuffer(), 1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
-        );
-        descriptorSetWriter.value().writeSampler(
-            *scene->textureManager().getGlobalSampler(GlobalSampler::PBRSampler).value().second, 2, 0
-        );
-        scene->textureManager().updateDescriptorWriterWithAllTextures(
-            *descriptorSetWriter, 3, false
-        );
+        // descriptorSetWriter.value().writeBuffer(
+        //     scene->getMaterialBuffer(), 1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+        // );
+        // descriptorSetWriter.value().writeSampler(
+        //     *scene->textureManager().getGlobalSampler(GlobalSampler::PBRSampler).value().second, 2, 0
+        // );
+        // scene->textureManager().updateDescriptorWriterWithAllTextures(
+        //     *descriptorSetWriter, 3, false
+        // );
         // descriptorSetWriter.value().writeBuffer(scene->getMaterialBuffers()[_currentFrame], 1);
         // descriptorSet.writeTexture(scene->texture, 1);
-        descriptorSetWriter->update();
+        frameDescriptorSetWriter->update();
     }
     else {
         _logger.error("Failed to get default descriptor set writer!");
         return false;
     }
-    VkDescriptorSet descriptorSet = descriptorSetWriter.value().getDescriptorSet();
-    std::vector<VkDescriptorSet> descriptorSets = { descriptorSet };
+    VkDescriptorSet frameDescriptorSet = frameDescriptorSetWriter.value().getDescriptorSet();
 
+    auto globalDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+        _currentFrame, vax::vk::DescriptorSetLayout::SetType::GLOBAL
+    );
+    if (globalDescriptorSetWriter.has_value()) {
+        globalDescriptorSetWriter.value().writeBuffer(
+            scene->getMaterialBuffer(),
+            GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX, 0,
+            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+        );
+        globalDescriptorSetWriter.value().writeSampler(
+            *scene->textureManager().getGlobalSampler(GlobalSampler::PBRSampler).value().second,
+            GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 0
+        );
+        scene->textureManager().updateDescriptorWriterWithAllTextures(
+            *globalDescriptorSetWriter,
+            GlobalBindingIndices::GLOBAL_TEXTURE_INDEX,
+            false
+        );
+        globalDescriptorSetWriter.value().update();
+    }
+    else {
+        _logger.error("Failed to get default descriptor set writer!");
+        return false;
+    }
+    VkDescriptorSet globalDescriptorSet = globalDescriptorSetWriter.value().getDescriptorSet();
+    std::vector<VkDescriptorSet> descriptorSets = { globalDescriptorSet, frameDescriptorSet };
     vkCmdBindDescriptorSets(
         commandBuffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,

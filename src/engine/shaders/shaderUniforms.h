@@ -20,10 +20,10 @@ typedef float4 vec4;
 #endif
 
 enum SetIndices {
-    PER_FRAME_SET_INDEX = 0,
-    GLOBAL_SET_INDEX = 1,
-    PER_RENDER_PASS_SET_INDEX = 2,
-    PER_DRAW_SET_INDEX = 3,
+    GLOBAL_SET_INDEX = 0,
+    PER_FRAME_SET_INDEX = 1,
+    // PER_RENDER_PASS_SET_INDEX = 2,
+    // PER_DRAW_SET_INDEX = 3,
 };
 
 enum FrameBindingIndices {
@@ -45,7 +45,7 @@ enum VertexInputIndices {
 
 #define MAX_TEXTURES 500
 #define MAX_SAMPLERS 1
-constexpr uint32_t NO_TEXTURE_FLAG = 0xFFFFFFFF;
+static constexpr uint32_t NO_TEXTURE_FLAG = 0xFFFFFFFF;
 
 enum ObjectFlags {
     NoFlags = 0,

@@ -7,11 +7,12 @@ using namespace vax;
 
 void DescriptorSetManager::cleanup() {
     vkDestroyDescriptorPool(_device.get().vkDevice, _descriptorPool, nullptr);
-    _defaultDescriptorSetLayouts.clear();
+    _globalDescriptorSetLayout = std::nullopt;
+    _perFrameDescriptorSetLayout = std::nullopt;
 }
 
 bool DescriptorSetManager::setup() {
-    if (!createDefaultDescriptorSetLayouts()) {
+    if (!createDescriptorSetLayouts()) {
         return false;
     }
     return createDescriptorSetPool();
@@ -39,7 +40,7 @@ bool DescriptorSetManager::createDescriptorSetPool() {
     VkDescriptorPoolCreateInfo poolInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
-        .maxSets = static_cast<uint32_t>(_maxFramesInFlight),
+        .maxSets = static_cast<uint32_t>(_maxFramesInFlight) * vax::MAX_DESCRIPTOR_SETS,
         .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
         .pPoolSizes = poolSizes.data(),
     };
@@ -52,72 +53,116 @@ bool DescriptorSetManager::createDescriptorSetPool() {
     return true;
 }
 
-std::optional<DescriptorSetWriter> DescriptorSetManager::getDefaultDescriptorSetWriter(
-    uint32_t frameIndex, DescriptorSetLayout::DefaultType type
+const DescriptorSetLayout* DescriptorSetManager::getDescriptorSetLayout(
+    DescriptorSetLayout::SetType setType
+) const {
+    if (setType == DescriptorSetLayout::SetType::GLOBAL) {
+        return &_globalDescriptorSetLayout.value();
+    }
+    else if (setType == DescriptorSetLayout::SetType::PER_FRAME) {
+        return &_perFrameDescriptorSetLayout.value();
+    }
+    return nullptr;
+}
+
+std::optional<DescriptorSetWriter> createOrGetDescriptorSet(
+    const Device& device,
+    std::vector<VkDescriptorSet>& descriptorSets,
+    const DescriptorSetLayout& descriptorSetLayout,
+    const VkDescriptorPool descriptorPool,
+    const uint32_t maxFramesInFlight,
+    const uint32_t frameIndex
 ) {
-    size_t typeIndex = static_cast<size_t>(type);
-    if (_defaultDescriptorSets[typeIndex].size() == _maxFramesInFlight) {
+    if (descriptorSets.size() == maxFramesInFlight) {
         return std::make_optional<DescriptorSetWriter>(
-            _device.get(),
-            _defaultDescriptorSets[typeIndex][frameIndex]
+            device,
+            descriptorSets[frameIndex]
         );
     }
     std::vector<VkDescriptorSetLayout> layouts(
-        static_cast<size_t>(_maxFramesInFlight),
-        _defaultDescriptorSetLayouts[typeIndex].getVkDescriptorSetLayout()
+        static_cast<size_t>(maxFramesInFlight),
+        descriptorSetLayout.getVkDescriptorSetLayout()
     );
     VkDescriptorSetAllocateInfo allocInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .descriptorPool = _descriptorPool,
-        .descriptorSetCount = static_cast<uint32_t>(_maxFramesInFlight),
+        .descriptorPool = descriptorPool,
+        .descriptorSetCount = static_cast<uint32_t>(maxFramesInFlight),
         .pSetLayouts = layouts.data(),
     };
-    _defaultDescriptorSets[typeIndex].resize(_maxFramesInFlight);
-    auto result = vkAllocateDescriptorSets(
-        _device.get().vkDevice, &allocInfo, _defaultDescriptorSets[typeIndex].data()
-    );
+    auto result = vkAllocateDescriptorSets(device.vkDevice, &allocInfo, descriptorSets.data());
     if (result != VK_SUCCESS) {
-        _logger.error("Failed to allocate descriptor set!");
         return std::nullopt;
     }
     return std::make_optional<DescriptorSetWriter>(
-        _device.get(),
-        _defaultDescriptorSets[typeIndex][frameIndex]
+        device,
+        descriptorSets[frameIndex]
     );
 }
 
-bool DescriptorSetManager::createDefaultDescriptorSetLayouts() {
-    DescriptorSetLayoutBuilder builder(_device.get());
-    builder.addBinding(
-        0,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-        1
-    );
-    builder.addBinding(
-        1,
+std::optional<DescriptorSetWriter> DescriptorSetManager::getDescriptorSetWriter(
+    uint32_t frameIndex, DescriptorSetLayout::SetType setType
+) {
+    switch (setType) {
+    case DescriptorSetLayout::SetType::GLOBAL:
+        return createOrGetDescriptorSet(
+            _device.get(),
+            _globalDescriptorSets,
+            _globalDescriptorSetLayout.value(),
+            _descriptorPool,
+            _maxFramesInFlight,
+            frameIndex
+        );
+    case DescriptorSetLayout::SetType::PER_FRAME:
+        return createOrGetDescriptorSet(
+            _device.get(),
+            _perFrameDescriptorSets,
+            _perFrameDescriptorSetLayout.value(),
+            _descriptorPool,
+            _maxFramesInFlight,
+            frameIndex
+        );
+    default:
+        _logger.error("Invalid descriptor set type!");
+        return std::nullopt;
+    }
+}
+
+bool DescriptorSetManager::createDescriptorSetLayouts() {
+    DescriptorSetLayoutBuilder globalBuilder(_device.get());
+    globalBuilder.addBinding(
+        GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         1
     );
-    builder.addBinding(
-        2,
+    globalBuilder.addBinding(
+        GlobalBindingIndices::GLOBAL_SAMPLER_INDEX,
         VK_DESCRIPTOR_TYPE_SAMPLER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         vax::MAX_GLOBAL_SAMPLERS
     );
-    builder.addBinding(
-        3,
+    globalBuilder.addBinding(
+        GlobalBindingIndices::GLOBAL_TEXTURE_INDEX,
         VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         vax::MAX_GLOBAL_TEXTURES
     );
-    auto baseDescriptorSetLayout = builder.build(DescriptorSetLayout::DefaultType::BASE);
-    builder.clear();
-    if (!baseDescriptorSetLayout) {
+    DescriptorSetLayoutBuilder perFrameBuilder(_device.get());
+    perFrameBuilder.addBinding(
+        FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        1
+    );
+    auto globalDescriptorSetLayout = globalBuilder.build(DescriptorSetLayout::SetType::GLOBAL);
+    auto perFrameDescriptorSetLayout = perFrameBuilder.build(DescriptorSetLayout::SetType::PER_FRAME);
+    globalBuilder.clear();
+    perFrameBuilder.clear();
+    if (!globalDescriptorSetLayout || !perFrameDescriptorSetLayout) {
         _logger.error("Failed to create base descriptor set layout!");
         return false;
     }
-    _defaultDescriptorSetLayouts.push_back(std::move(baseDescriptorSetLayout.value()));
+    _globalDescriptorSetLayout = std::move(globalDescriptorSetLayout.value());
+    _perFrameDescriptorSetLayout = std::move(perFrameDescriptorSetLayout.value());
     return true;
 }

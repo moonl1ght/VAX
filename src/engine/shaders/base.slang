@@ -34,6 +34,8 @@ struct VertexOutput {
 
     float3 normal : NORMAL;
 
+    float3 tangent : TANGENT;
+
     float2 uv : TEXCOORD0;
 };
 

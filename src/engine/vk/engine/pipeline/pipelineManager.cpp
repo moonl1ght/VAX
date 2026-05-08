@@ -122,34 +122,43 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR
     };
-    VkPipelineDynamicStateCreateInfo dynamicState{};
-    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-    dynamicState.pDynamicStates = dynamicStates.data();
+    VkPipelineDynamicStateCreateInfo dynamicState{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+        .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
+        .pDynamicStates = dynamicStates.data()
+    };
 
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    // pipelineLayoutInfo.setLayoutCount = 1;
-    auto globalDescriptorSetLayout = _descriptorSetManager.get().getDefaultDescriptorSetLayout(
-        DescriptorSetLayout::DefaultType::BASE
-    ).getVkDescriptorSetLayout();
-    // auto objectDescriptorSetLayout = _descriptorSetManager->getObjectDescriptorSetLayout();
-    // pipelineLayoutInfo.pSetLayouts = &globalDescriptorSetLayout;
-    pipelineLayoutInfo.setLayoutCount = 1;
+    auto globalDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout(
+        DescriptorSetLayout::SetType::GLOBAL
+    );
+    if (!globalDescriptorSetLayout) {
+        _logger.error("Failed to get global descriptor set layout!");
+        return false;
+    }
+    auto perFrameDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout(
+        DescriptorSetLayout::SetType::PER_FRAME
+    );
+    if (!perFrameDescriptorSetLayout) {
+        _logger.error("Failed to get per frame descriptor set layout!");
+        return false;
+    }
     std::vector<VkDescriptorSetLayout> setLayouts = {
-        globalDescriptorSetLayout
+        globalDescriptorSetLayout->getVkDescriptorSetLayout(),
+        perFrameDescriptorSetLayout->getVkDescriptorSetLayout()
         // objectDescriptorSetLayout
     };
-    pipelineLayoutInfo.pSetLayouts = setLayouts.data();
-
     VkPushConstantRange pushConstantRange{
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         .offset = 0,
         .size = sizeof(DrawPushConstants)
     };
-
-    pipelineLayoutInfo.pushConstantRangeCount = 1;
-    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+        .pSetLayouts = setLayouts.data(),
+        .setLayoutCount = static_cast<uint32_t>(setLayouts.size()),
+        .pPushConstantRanges = &pushConstantRange,
+        .pushConstantRangeCount = 1
+    };
 
     auto result = vkCreatePipelineLayout(
         _device.get().vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout

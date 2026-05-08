@@ -154,6 +154,7 @@ void processNode(
             pos = transform * pos;
             vertex.position = glm::vec3(pos);
             vertex.normal = normalMatrix * glm::vec3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
+            vertex.tangent = normalMatrix * glm::vec3(mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z);
             if (mesh->mTextureCoords[0]) {
                 vertex.uv = { mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y };
             }

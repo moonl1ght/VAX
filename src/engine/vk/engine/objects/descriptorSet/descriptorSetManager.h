@@ -14,7 +14,8 @@ namespace vax::vk {
         )
             : _device(device)
             , _maxFramesInFlight(maxFramesInFlight) {
-            _defaultDescriptorSets.resize(1);
+            _globalDescriptorSets.reserve(_maxFramesInFlight);
+            _perFrameDescriptorSets.reserve(_maxFramesInFlight);
         };
 
         ~DescriptorSetManager() {};
@@ -28,26 +29,26 @@ namespace vax::vk {
 
         void cleanup();
 
-        std::optional<DescriptorSetWriter> getDefaultDescriptorSetWriter(
-            uint32_t frameIndex, DescriptorSetLayout::DefaultType type
+        std::optional<DescriptorSetWriter> getDescriptorSetWriter(
+            uint32_t frameIndex, DescriptorSetLayout::SetType setType
         );
 
-        const DescriptorSetLayout& getDefaultDescriptorSetLayout(DescriptorSetLayout::DefaultType type) const {
-            return _defaultDescriptorSetLayouts[static_cast<size_t>(type)];
-        }
+        const DescriptorSetLayout* getDescriptorSetLayout(DescriptorSetLayout::SetType setType) const;
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("DescriptorSetManager");
         std::reference_wrapper<const vax::vk::Device> _device;
         const int32_t _maxFramesInFlight;
 
-        std::vector<DescriptorSetLayout> _defaultDescriptorSetLayouts;
+        std::optional<DescriptorSetLayout> _globalDescriptorSetLayout = std::nullopt;
+        std::optional<DescriptorSetLayout> _perFrameDescriptorSetLayout = std::nullopt;
 
         VkDescriptorPool _descriptorPool = VK_NULL_HANDLE;
 
-        std::vector<std::vector<VkDescriptorSet>> _defaultDescriptorSets;
+        std::vector<VkDescriptorSet> _globalDescriptorSets;
+        std::vector<VkDescriptorSet> _perFrameDescriptorSets;
 
-        bool createDefaultDescriptorSetLayouts();
+        bool createDescriptorSetLayouts();
         bool createDescriptorSetPool();
     };
 }

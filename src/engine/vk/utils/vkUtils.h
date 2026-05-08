@@ -8,6 +8,7 @@ namespace vax {
     constexpr int MAX_GLOBAL_TEXTURES = MAX_TEXTURES;
     constexpr int MAX_MATERIALS = 500;
     constexpr int MAX_GLOBAL_SAMPLERS = MAX_SAMPLERS;
+    constexpr int MAX_DESCRIPTOR_SETS = 4;
 }
 
 #define VK_CHECK(x) \

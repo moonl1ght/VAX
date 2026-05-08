@@ -25,7 +25,7 @@ void DescriptorSetLayoutBuilder::clear() {
 }
 
 std::optional<DescriptorSetLayout> DescriptorSetLayoutBuilder::build(
-    DescriptorSetLayout::DefaultType defaultType,
+    DescriptorSetLayout::SetType setType,
     VkDescriptorSetLayoutCreateFlags flags
 ) {
     uint32_t bindingCount = static_cast<uint32_t>(_bindings.size());
@@ -52,5 +52,5 @@ std::optional<DescriptorSetLayout> DescriptorSetLayoutBuilder::build(
         return std::nullopt;
     }
 
-    return std::make_optional<DescriptorSetLayout>(_device, descriptorSetLayout, defaultType);
+    return std::make_optional<DescriptorSetLayout>(_device, descriptorSetLayout, setType);
 }
