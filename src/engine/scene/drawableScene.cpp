@@ -18,7 +18,7 @@ void DrawableScene::prepareForDraw(renderer::RenderCallContext renderCallContext
 
 void DrawableScene::update(SceneUpdateContext sceneUpdateContext) {
     _sceneUpdateContext = sceneUpdateContext;
-    auto cameraPos = glm::vec3(0.0f, 0.1f, 5.0f);
+    auto cameraPos = glm::vec3(0.0f, 0.0f, -5.0f);
     _mainCamera.setPosition(cameraPos);
     _ubo = _mainCamera.getUniformBufferObject();
     // _ubo.cameraPosition = glm::vec4(cameraPos, 1.0f);
@@ -77,14 +77,19 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     // // _drawableModels.emplace_back(Primitives2D::createPlane());
     // _drawableModels[1]->transform.position = glm::vec3(0.0f, 0.0f, -0.5f);
     auto cube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Gray);
-    auto zcube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Blue);
+    auto zcube = _primitivesBuilder.createCube(0.5f, vax::ColorPalette::Blue);
     auto ycube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Green);
     auto xcube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Red);
+    xcube->transform.position = glm::vec3(2.0f, 0.0f, 0.0f);
+    ycube->transform.position = glm::vec3(0.0f, 2.0f, 0.0f);
+    zcube->transform.position = glm::vec3(0.0f, 0.0f, 2.0f);
 
     // _drawableModels.push_back(std::move(cube.value()));
     // _drawableModels.push_back(std::move(zcube.value()));
-    // _drawableModels.push_back(std::move(ycube.value()));
+    _drawableModels.push_back(std::move(ycube.value()));
     _drawableModels.push_back(std::move(xcube.value()));
+    _drawableModels.push_back(std::move(cube.value()));
+    _drawableModels.push_back(std::move(zcube.value()));
     // for (auto& model : _drawableModels) {
     //     model->_mesh->loadBuffers(*_vkEngine.get().queueManager, *_vkEngine.get().commandManager);
     // }

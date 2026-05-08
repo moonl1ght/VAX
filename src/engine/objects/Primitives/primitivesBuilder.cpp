@@ -45,7 +45,7 @@ std::optional<DrawableModel> PrimitivesBuilder::createCube(float size, vax::Colo
     PBRMaterial material{
         .baseColor = color,
     };
-    material.baseColorTextureIndex = 1;
+    material.baseColorTextureIndex = NO_TEXTURE_FLAG;
     auto materialIndex = _materialManager.get().insert(material);
     Submesh submesh{
         .materialIndex = materialIndex,

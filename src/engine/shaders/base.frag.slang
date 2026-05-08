@@ -24,14 +24,16 @@ float4 fragMain(FragmentInput input)
 
     // return float4(1, 1, 0, 1);
 
+    // return materials[pushConstants.materialIndex].baseColor;
+
     uint baseColorTextureIndex = materials[pushConstants.materialIndex].baseColorTextureIndex;
 
     // float4 color = materials[pushConstants.materialIndex].baseColor;
     if (baseColorTextureIndex == NO_TEXTURE_FLAG) {
-        return float4(0, 1, 0, 1);
-        // return materials[pushConstants.materialIndex].baseColor;
+        // return float4(0, 1, 0, 1);
+        return materials[pushConstants.materialIndex].baseColor;
     }
-    return float4(0, 0, (float)baseColorTextureIndex, 1);
+    // return float4(0, 0, (float)baseColorTextureIndex, 1);
 
     float4 color = globalTextures[baseColorTextureIndex].Sample(
         globalSamplers[0], input.uv

@@ -70,11 +70,12 @@ glm::mat4 Camera::viewMatrix() {
 void Camera::updateViewMatrix() {
     float distance = glm::distance(_position, _target);
     if (glm::abs(distance) < epsilon) {
+        // TODO: Check if this is correct
         glm::mat4 rotationMat = vax::math::eulerAngleXYZRotationMatrix(_rotation);
         _savedViewMatrix = glm::transpose(rotationMat) * glm::translate(glm::mat4(1.0f), -_position);
     }
     else {
-        _savedViewMatrix = glm::lookAt(_position, _target, glm::vec3(0.0f, 0.0f, 1.0f));
+        _savedViewMatrix = glm::lookAt(_position, _target, glm::vec3(0.0f, 1.0f, 0.0f));
     }
 }
 
@@ -90,7 +91,7 @@ void Camera::updateProjectionMatrix() {
             static_cast<float>(_nearPlane),
             static_cast<float>(_farPlane)
         );
-        _savedProjectionMatrix[1][1] *= -1;
+        // _savedProjectionMatrix[1][1] *= -1;
         break;
     case Projection::orthographic:
         _savedProjectionMatrix = glm::ortho(
@@ -101,7 +102,7 @@ void Camera::updateProjectionMatrix() {
             _nearPlane,
             _farPlane
         );
-        _savedProjectionMatrix[1][1] *= -1;
+        // _savedProjectionMatrix[1][1] *= -1;
         break;
     }
 }

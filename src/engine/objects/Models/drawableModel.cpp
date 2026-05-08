@@ -25,7 +25,8 @@ void DrawableModel::draw(
         DrawPushConstants drawPushConstants{};
         drawPushConstants.model = transform.getModelMatrix();
         drawPushConstants.flags = ObjectFlags::NoFlags;
-
+        drawPushConstants.materialIndex = submesh.materialIndex;
+        
         vkCmdPushConstants(
             commandBuffer,
             pipelineManager.getPipelineLayout(),
