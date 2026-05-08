@@ -27,6 +27,11 @@ namespace vax::vk {
 
         ~DescriptorSetWriter() {}
 
+        DescriptorSetWriter(const DescriptorSetWriter&) = delete;
+        DescriptorSetWriter& operator=(const DescriptorSetWriter&) = delete;
+        DescriptorSetWriter(DescriptorSetWriter&& other) noexcept = delete;
+        DescriptorSetWriter& operator=(DescriptorSetWriter&& other) noexcept = delete;
+
         void writeBuffer(
             const Buffer& buffer,
             uint32_t binding,

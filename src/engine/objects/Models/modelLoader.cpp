@@ -154,7 +154,9 @@ void processNode(
             pos = transform * pos;
             vertex.position = glm::vec3(pos);
             vertex.normal = normalMatrix * glm::vec3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
-            vertex.tangent = normalMatrix * glm::vec3(mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z);
+            if (mesh->mTangents) {
+                vertex.tangent = normalMatrix * glm::vec3(mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z);
+            }
             if (mesh->mTextureCoords[0]) {
                 vertex.uv = { mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y };
             }
@@ -193,7 +195,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(
         path,
-        aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs
+        aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace
         | aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder
     );
 

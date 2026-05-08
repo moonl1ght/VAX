@@ -154,10 +154,10 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
     };
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .pSetLayouts = setLayouts.data(),
         .setLayoutCount = static_cast<uint32_t>(setLayouts.size()),
-        .pPushConstantRanges = &pushConstantRange,
-        .pushConstantRangeCount = 1
+        .pSetLayouts = setLayouts.data(),
+        .pushConstantRangeCount = 1,
+        .pPushConstantRanges = &pushConstantRange
     };
 
     auto result = vkCreatePipelineLayout(

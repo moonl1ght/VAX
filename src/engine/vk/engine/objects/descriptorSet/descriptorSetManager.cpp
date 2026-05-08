@@ -89,6 +89,7 @@ std::optional<DescriptorSetWriter> createOrGetDescriptorSet(
         .descriptorSetCount = static_cast<uint32_t>(maxFramesInFlight),
         .pSetLayouts = layouts.data(),
     };
+    descriptorSets.resize(maxFramesInFlight, VK_NULL_HANDLE);
     auto result = vkAllocateDescriptorSets(device.vkDevice, &allocInfo, descriptorSets.data());
     if (result != VK_SUCCESS) {
         return std::nullopt;

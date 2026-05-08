@@ -184,7 +184,7 @@ bool Renderer::recordCommandBuffer(
         _logger.error("Failed to get default descriptor set writer!");
         return false;
     }
-    VkDescriptorSet frameDescriptorSet = frameDescriptorSetWriter.value().getDescriptorSet();
+    VkDescriptorSet frameDescriptorSet = frameDescriptorSetWriter->getDescriptorSet();
 
     auto globalDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
         _currentFrame, vax::vk::DescriptorSetLayout::SetType::GLOBAL
@@ -204,13 +204,13 @@ bool Renderer::recordCommandBuffer(
             GlobalBindingIndices::GLOBAL_TEXTURE_INDEX,
             false
         );
-        globalDescriptorSetWriter.value().update();
+        globalDescriptorSetWriter->update();
     }
     else {
         _logger.error("Failed to get default descriptor set writer!");
         return false;
     }
-    VkDescriptorSet globalDescriptorSet = globalDescriptorSetWriter.value().getDescriptorSet();
+    VkDescriptorSet globalDescriptorSet = globalDescriptorSetWriter->getDescriptorSet();
     std::vector<VkDescriptorSet> descriptorSets = { globalDescriptorSet, frameDescriptorSet };
     vkCmdBindDescriptorSets(
         commandBuffer,
