@@ -1,12 +1,13 @@
 #include "renderer.h"
-#include "profiler.h"
 #include "renderDestination.h"
 #include "imageUtils.h"
 #include "pipeline.h"
 #include "descriptorSetManager.h"
 #include "vkEngine.h"
 #include "imgui_impl_vulkan.h"
+#include "rendererPass.h"
 
+using namespace vax::renderer;
 using namespace vax;
 
 void Renderer::prepare() {
@@ -14,6 +15,10 @@ void Renderer::prepare() {
 
 bool Renderer::render(DrawableScene* scene, float deltaTime) {
     ZoneScopedN("Renderer::render");
+    scene->prepareForDraw(renderer::RenderCallContext{
+        .currentFrame = _currentFrame
+    });
+
     vkWaitForFences(
         _vkEngine.get().device->vkDevice,
         1,
@@ -47,29 +52,33 @@ bool Renderer::render(DrawableScene* scene, float deltaTime) {
     );
 
     vkResetCommandBuffer(_vkEngine.get().commandManager->commandBuffers[_currentFrame], 0);
-    auto recordResult = recordCommandBuffer(
-        _vkEngine.get().commandManager->commandBuffers[_currentFrame], imageIndex, scene, deltaTime
+    auto updateResult = _updateCommandBuffer(
+        _vkEngine.get().commandManager->commandBuffers[_currentFrame],
+        imageIndex,
+        scene
     );
-    if (!recordResult) {
-        _logger.error("Failed to record command buffer!");
+    if (!updateResult) {
+        _logger.error("Failed to update command buffer!");
         return false;
     }
 
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-    VkSemaphore waitSemaphores[] = { _vkEngine.get().syncObjectsManager->getImageAvailableSemaphores()[_currentFrame] };
+    VkSemaphore waitSemaphores[] = {
+        _vkEngine.get().syncObjectsManager->getImageAvailableSemaphores()[_currentFrame]
+    };
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitStages;
-
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &_vkEngine.get().commandManager->commandBuffers[_currentFrame];
-
-    VkSemaphore signalSemaphores[] = { _vkEngine.get().syncObjectsManager->getRenderFinishedSemaphores()[_currentFrame] };
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
+    VkSemaphore signalSemaphores[] = {
+        _vkEngine.get().syncObjectsManager->getRenderFinishedSemaphores()[_currentFrame]
+    };
+    VkSubmitInfo submitInfo{
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = waitSemaphores,
+        .pWaitDstStageMask = waitStages,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &_vkEngine.get().commandManager->commandBuffers[_currentFrame],
+        .signalSemaphoreCount = 1,
+        .pSignalSemaphores = signalSemaphores
+    };
 
     if (!VK_CHECK(
         vkQueueSubmit(
@@ -82,15 +91,15 @@ bool Renderer::render(DrawableScene* scene, float deltaTime) {
         return false;
     }
 
-    VkPresentInfoKHR presentInfo{};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
-
     VkSwapchainKHR swapChains[] = { _vkEngine.get().swapchain->swapchain };
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = &imageIndex;
+    VkPresentInfoKHR presentInfo{
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = signalSemaphores,
+        .swapchainCount = 1,
+        .pSwapchains = swapChains,
+        .pImageIndices = &imageIndex
+    };
 
     result = vkQueuePresentKHR(_vkEngine.get().queueManager->presentQueue, &presentInfo);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _vkEngine.get().framebufferResized) {
@@ -107,129 +116,75 @@ bool Renderer::render(DrawableScene* scene, float deltaTime) {
     return true;
 }
 
-bool Renderer::recordCommandBuffer(
-    VkCommandBuffer commandBuffer, uint32_t imageIndex, DrawableScene* scene, float deltaTime
+bool Renderer::_updateCommandBuffer(
+    VkCommandBuffer commandBuffer,
+    uint32_t imageIndex,
+    vax::DrawableScene* scene
 ) {
-    ZoneScopedN("Renderer::recordCommandBuffer");
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    ZoneScopedN("Renderer::updateCommandBuffer");
+    VkCommandBufferBeginInfo beginInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    };
 
     if (!VK_CHECK(vkBeginCommandBuffer(commandBuffer, &beginInfo))) {
         _logger.error("Failed to begin recording command buffer!");
         return false;
     }
 
-    VkRenderPassBeginInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = _vkEngine.get().renderPass->getVkRenderPass();
-    renderPassInfo.framebuffer = _vkEngine.get().renderDestination->swapchainFramebuffers[imageIndex];
-    renderPassInfo.renderArea.offset = { 0, 0 };
-    renderPassInfo.renderArea.extent = _vkEngine.get().swapchain->swapchainExtent;
+    _setViewportAndScissor(commandBuffer);
+
+    if (!_updateGlobalDescriptorSet(commandBuffer, scene)) {
+        _logger.error("Failed to update global descriptor set!");
+        return false;
+    }
 
     std::array<VkClearValue, 2> clearValues{};
     clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
     clearValues[1].depthStencil = { 1.0f, 0 };
-
-    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    renderPassInfo.pClearValues = clearValues.data();
-
-    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _vkEngine.get().pipelineManager->getPipeline());
-
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float)_vkEngine.get().swapchain->swapchainExtent.width;
-    viewport.height = (float)_vkEngine.get().swapchain->swapchainExtent.height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = _vkEngine.get().swapchain->swapchainExtent;
-    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-    if (auto mappedMemory = scene->getSceneUniformBuffers()[_currentFrame]->mappedMemory()) {
-        memcpy(mappedMemory.value(), &scene->getUBO(), sizeof(scene->getUBO()));
-    }
-    else {
-        _logger.error("Failed to get mapped memory!");
-    }
-
-    auto frameDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
-        _currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
-    );
-    if (frameDescriptorSetWriter.has_value()) {
-        frameDescriptorSetWriter.value().writeBuffer(
-            *scene->getSceneUniformBuffers()[_currentFrame],
-            FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX, 0,
-            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+    VkRenderPassBeginInfo renderPassInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .renderPass = _vkEngine.get().renderPass->getVkRenderPass(),
+        .framebuffer = _vkEngine.get().renderDestination->swapchainFramebuffers[imageIndex],
+        .renderArea = {
+            .offset = { 0, 0 },
+            .extent = _vkEngine.get().swapchain->swapchainExtent
+        },
+        .clearValueCount = 2,
+        .pClearValues = clearValues.data()
+    };
+    RendererPass renderPass(renderPassInfo);
+    renderPass.pass(commandBuffer, [&]() {
+        vkCmdBindPipeline(
+            commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _vkEngine.get().pipelineManager->getPipeline()
         );
-        // descriptorSetWriter.value().writeBuffer(
-        //     scene->getMaterialBuffer(), 1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
-        // );
-        // descriptorSetWriter.value().writeSampler(
-        //     *scene->textureManager().getGlobalSampler(GlobalSampler::PBRSampler).value().second, 2, 0
-        // );
-        // scene->textureManager().updateDescriptorWriterWithAllTextures(
-        //     *descriptorSetWriter, 3, false
-        // );
-        // descriptorSetWriter.value().writeBuffer(scene->getMaterialBuffers()[_currentFrame], 1);
-        // descriptorSet.writeTexture(scene->texture, 1);
+
+        auto frameDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+            _currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
+        );
+
+        if (!frameDescriptorSetWriter.has_value()) {
+            _logger.error("Failed to get default descriptor set writer!");
+            return;
+        }
+        scene->writeFrameDescriptorSet(*frameDescriptorSetWriter);
         frameDescriptorSetWriter->update();
-    }
-    else {
-        _logger.error("Failed to get default descriptor set writer!");
-        return false;
-    }
-    VkDescriptorSet frameDescriptorSet = frameDescriptorSetWriter->getDescriptorSet();
-
-    auto globalDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
-        _currentFrame, vax::vk::DescriptorSetLayout::SetType::GLOBAL
-    );
-    if (globalDescriptorSetWriter.has_value()) {
-        globalDescriptorSetWriter.value().writeBuffer(
-            scene->getMaterialBuffer(),
-            GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX, 0,
-            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+        VkDescriptorSet frameDescriptorSet = frameDescriptorSetWriter->getDescriptorSet();
+        std::vector<VkDescriptorSet> descriptorSets = { frameDescriptorSet };
+        vkCmdBindDescriptorSets(
+            commandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            _vkEngine.get().pipelineManager->getPipelineLayout(),
+            SetIndices::PER_FRAME_SET_INDEX,
+            static_cast<uint32_t>(descriptorSets.size()),
+            descriptorSets.data(),
+            0,
+            nullptr
         );
-        globalDescriptorSetWriter.value().writeSampler(
-            *scene->textureManager().getGlobalSampler(GlobalSampler::PBRSampler).value().second,
-            GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 0
-        );
-        scene->textureManager().updateDescriptorWriterWithAllTextures(
-            *globalDescriptorSetWriter,
-            GlobalBindingIndices::GLOBAL_TEXTURE_INDEX,
-            false
-        );
-        globalDescriptorSetWriter->update();
-    }
-    else {
-        _logger.error("Failed to get default descriptor set writer!");
-        return false;
-    }
-    VkDescriptorSet globalDescriptorSet = globalDescriptorSetWriter->getDescriptorSet();
-    std::vector<VkDescriptorSet> descriptorSets = { globalDescriptorSet, frameDescriptorSet };
-    vkCmdBindDescriptorSets(
-        commandBuffer,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        _vkEngine.get().pipelineManager->getPipelineLayout(),
-        0,
-        static_cast<uint32_t>(descriptorSets.size()),
-        descriptorSets.data(),
-        0,
-        nullptr
-    );
 
-    for (auto& drawableModel : scene->getDrawableModels()) {
-        drawableModel.draw(&_vkEngine.get(), commandBuffer, *(_vkEngine.get().pipelineManager), deltaTime);
-    }
+        scene->draw(commandBuffer);
 
-    _uiLayer.get().render(commandBuffer);
-
-    vkCmdEndRenderPass(commandBuffer);
+        _uiLayer.get().render(commandBuffer);
+    });
 
     if (!VK_CHECK(vkEndCommandBuffer(commandBuffer))) {
         _logger.error("Failed to end command buffer!");
@@ -238,3 +193,44 @@ bool Renderer::recordCommandBuffer(
     return true;
 }
 
+void Renderer::_setViewportAndScissor(VkCommandBuffer commandBuffer) {
+    VkViewport viewport{
+        .x = 0.0f,
+        .y = 0.0f,
+        .width = static_cast<float>(_vkEngine.get().swapchain->swapchainExtent.width),
+        .height = static_cast<float>(_vkEngine.get().swapchain->swapchainExtent.height),
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f
+    };
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{
+        .offset = { 0, 0 },
+        .extent = _vkEngine.get().swapchain->swapchainExtent
+    };
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+}
+
+bool Renderer::_updateGlobalDescriptorSet(VkCommandBuffer commandBuffer, vax::DrawableScene* scene) {
+    auto globalDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+        _currentFrame, vax::vk::DescriptorSetLayout::SetType::GLOBAL
+    );
+    if (!globalDescriptorSetWriter.has_value()) {
+        return false;
+    }
+    scene->writeGlobalDescriptorSet(*globalDescriptorSetWriter);
+    globalDescriptorSetWriter->update();
+    VkDescriptorSet globalDescriptorSet = globalDescriptorSetWriter->getDescriptorSet();
+    std::vector<VkDescriptorSet> descriptorSets = { globalDescriptorSet };
+    vkCmdBindDescriptorSets(
+        commandBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        _vkEngine.get().pipelineManager->getPipelineLayout(),
+        SetIndices::GLOBAL_SET_INDEX,
+        static_cast<uint32_t>(descriptorSets.size()),
+        descriptorSets.data(),
+        0,
+        nullptr
+    );
+    return true;
+}

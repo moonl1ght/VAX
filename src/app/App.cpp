@@ -29,7 +29,7 @@ bool App::setup() {
     _uiLayer = std::make_unique<ui::UILayer>(*_engine, *_window);
     _uiLayer->setup();
 
-    _renderer = std::make_unique<Renderer>(*_engine, *_uiLayer);
+    _renderer = std::make_unique<renderer::Renderer>(*_engine, *_uiLayer);
     _renderer->prepare();
 
     _drawableScene = std::make_unique<DrawableScene>(*_engine);
@@ -84,7 +84,10 @@ void App::loopUpdate() {
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
     float timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-    _drawableScene->update(timestamp);
+    vax::SceneUpdateContext sceneUpdateContext{
+        .deltaTime = timestamp
+    };
+    _drawableScene->update(sceneUpdateContext);
     if (!_renderer->render(_drawableScene.get(), timestamp)) {
         _logger.error("Failed to render scene!");
     }

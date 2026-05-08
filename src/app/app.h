@@ -25,7 +25,7 @@ namespace vax {
 
         std::unique_ptr<vax::vk::Window> _window;
         std::unique_ptr<vax::vk::Engine> _engine;
-        std::unique_ptr<Renderer> _renderer;
+        std::unique_ptr<vax::renderer::Renderer> _renderer;
         std::unique_ptr<DrawableScene> _drawableScene;
         std::unique_ptr<vax::ui::UILayer> _uiLayer;
 

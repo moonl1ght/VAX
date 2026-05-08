@@ -2,18 +2,22 @@
 
 #include "luna.h"
 #include "drawableModel.h"
-#include "texture.h"
 #include "shaderUniforms.h"
 #include "modelLoader.h"
 #include "primitivesBuilder.h"
 #include "vkEngine.h"
 #include "textureLoader.h"
 #include "resourceManager.h"
+#include "descriptorSetWriter.h"
+#include "renderContext.h"
 
 namespace vax {
+    struct SceneUpdateContext {
+        float deltaTime;
+    };
+
     class DrawableScene final {
     public:
-
         DrawableScene(vax::vk::Engine& vkEngine)
             : _vkEngine(vkEngine)
             , _resourceManager(vax::ResourceManager(*vkEngine.device, vkEngine.allocator))
@@ -35,30 +39,19 @@ namespace vax {
         DrawableScene& operator=(DrawableScene&& other) noexcept = delete;
 
         void load(VkQueue submitQueue);
-        void update(float deltaTime);
-        void draw();
 
-        std::vector<vax::objects::DrawableModel>& getDrawableModels() {
-            return _drawableModels;
-        }
+        void prepareForDraw(vax::renderer::RenderCallContext renderCallContext);
 
-        const UniformBufferObject& getUBO() const {
-            return _ubo;
-        }
+        void update(vax::SceneUpdateContext sceneUpdateContext);
 
-        std::vector<vax::vk::Buffer*>& getSceneUniformBuffers() {
-            return _sceneUniformBuffers;
-        }
+        bool writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter);
 
-        const vax::vk::Buffer& getMaterialBuffer() {
-            return _resourceManager.materialManager().materialBuffer();
-        }
+        bool writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter);
 
-        vax::TextureManager& textureManager() {
-            return _resourceManager.textureManager();
-        }
+        void draw(VkCommandBuffer commandBuffer);
 
     private:
+        vax::utils::Logger _logger = vax::utils::Logger("DrawableScene");
         std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
         std::reference_wrapper<vax::vk::Engine> _vkEngine;
         vax::ResourceManager _resourceManager;
@@ -70,5 +63,8 @@ namespace vax {
 
         bool _needsUpdateMaterialsSSBO = true;
         bool _needsUpdateTexturesSSBO = true;
+
+        vax::renderer::RenderCallContext _renderCallContext;
+        vax::SceneUpdateContext _sceneUpdateContext;
     };
 }

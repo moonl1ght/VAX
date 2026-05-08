@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include "profiler.h"
 
 #define LOG_INFO(message) vax::utils::Logger::getInstance().info(message)
 #define LOG_ERROR(message) vax::utils::Logger::getInstance().error(message)

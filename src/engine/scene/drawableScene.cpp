@@ -6,7 +6,18 @@
 
 using namespace vax;
 
-void vax::DrawableScene::update(float deltaTime) {
+void DrawableScene::prepareForDraw(renderer::RenderCallContext renderCallContext) {
+    _renderCallContext = renderCallContext;
+    if (auto mappedMemory = _sceneUniformBuffers[renderCallContext.currentFrame]->mappedMemory()) {
+        memcpy(mappedMemory.value(), &_ubo, sizeof(_ubo));
+    }
+    else {
+        _logger.error("Failed to get mapped memory!");
+    }
+}
+
+void DrawableScene::update(SceneUpdateContext sceneUpdateContext) {
+    _sceneUpdateContext = sceneUpdateContext;
     auto cameraPos = glm::vec3(2.0f, 2.0f, 2.0f);
     _ubo.cameraPosition = glm::vec4(cameraPos, 1.0f);
     // _ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -68,5 +79,44 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     // }
 }
 
-void vax::DrawableScene::draw() {
+bool vax::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter) {
+    auto globalSampler = _resourceManager.textureManager().getGlobalSampler(GlobalSampler::PBRSampler);
+    if (!globalSampler.has_value()) {
+        return false;
+    }
+    descriptorSetWriter.writeBuffer(
+        _resourceManager.materialManager().materialBuffer(),
+        GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX, 0,
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+    );
+    descriptorSetWriter.writeSampler(
+        *globalSampler->second,
+        GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 0
+    );
+    _resourceManager.textureManager().updateDescriptorWriterWithAllTextures(
+        descriptorSetWriter,
+        GlobalBindingIndices::GLOBAL_TEXTURE_INDEX,
+        false
+    );
+    return true;
+}
+
+bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter) {
+    descriptorSetWriter.writeBuffer(
+        *_sceneUniformBuffers[_renderCallContext.currentFrame],
+        FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX, 0,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+    );
+    return true;
+}
+
+void vax::DrawableScene::draw(VkCommandBuffer commandBuffer) {
+    for (auto& drawableModel : _drawableModels) {
+        drawableModel.draw(
+            &_vkEngine.get(),
+            commandBuffer, 
+            *(_vkEngine.get().pipelineManager),
+            _sceneUpdateContext.deltaTime
+        );
+    }
 }
