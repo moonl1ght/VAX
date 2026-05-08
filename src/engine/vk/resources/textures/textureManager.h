@@ -26,6 +26,7 @@ namespace vax {
         )
             : _device(device)
             , _allocator(allocator) {
+            _globalSamplers.reserve(vax::MAX_GLOBAL_SAMPLERS);
         };
 
         ~TextureManager() {
@@ -39,6 +40,8 @@ namespace vax {
 
         void fullCleanup();
 
+        bool setup();
+
         vax::textures::TextureFactory createTextureFactory() const;
 
         std::optional<TextureResource> find(TextureHandle handle);
@@ -49,13 +52,7 @@ namespace vax {
 
         std::optional<TextureResource> attach(textures::Texture&& texture);
 
-        std::optional<SamplerResource> findSampler(SamplerHandle handle);
-
-        bool deleteSampler(SamplerHandle handle);
-
-        std::optional<SamplerResource> insertSampler(vax::textures::Sampler&& sampler);
-
-        std::optional<SamplerResource> getPBRSampler();
+        std::optional<SamplerResource> getGlobalSampler(vax::GlobalSampler sampler);
 
         void updateDescriptorWriterWithAllTextures(
             vax::vk::DescriptorSetWriter& descriptorWriter,
@@ -71,8 +68,7 @@ namespace vax {
         // TODO: change to vector + use generation for stability
         // maybe vector of vectors of buffers?
         std::unordered_map<TextureId, textures::Texture> _pool;
-        std::unordered_map<SamplerId, vax::textures::Sampler> _samplerPool;
+        std::vector<vax::textures::Sampler> _globalSamplers;
         TextureId _lastId = 0;
-        SamplerId _lastSamplerId = PBRSamplerId;
     };
 }

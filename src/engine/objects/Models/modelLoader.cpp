@@ -35,14 +35,17 @@ uint32_t loadTexture(
             if (texture.has_value()) {
                 return texture->first.id();
             }
+            return NO_TEXTURE_FLAG;
         }
         else {
             auto texture = textureLoader.loadTexture(textureName.C_Str(), submitQueue);
             if (texture.has_value()) {
                 return texture->first.id();
             }
+            return NO_TEXTURE_FLAG;
         }
     }
+    return NO_TEXTURE_FLAG;
 }
 
 PBRMaterial processMaterial(
@@ -206,11 +209,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
         totalIndexCount += scene->mMeshes[i]->mNumFaces * 3;
     }
 
-    auto sampler = _resourceManager.get().textureManager().getPBRSampler();
-    if (!sampler) {
-        _logger.error("Failed to create sampler");
-        return std::nullopt;
-    }
+    auto pbrSamplerId = static_cast<vax::SamplerId>(vax::GlobalSampler::PBRSampler);
 
     std::vector<Vertex> modelVertices;
     modelVertices.reserve(totalVertexCount);
@@ -228,7 +227,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     materials.reserve(scene->mNumMaterials);
     for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
         materials.push_back(
-            processMaterial(scene->mMaterials[i], submitQueue, _textureLoader.get(), scene, sampler->first.id())
+            processMaterial(scene->mMaterials[i], submitQueue, _textureLoader.get(), scene, pbrSamplerId)
         );
     }
 

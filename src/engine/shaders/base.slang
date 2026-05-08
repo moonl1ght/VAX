@@ -1,28 +1,31 @@
 #include "shaderUniforms.h"
 
-[vk::binding(0, 0)]
+[vk::binding(FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX, SetIndices::PER_FRAME_SET_INDEX)]
 ConstantBuffer<UniformBufferObject> ubo;
 
-[vk::binding(1, 0)]
+[vk::binding(GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX, SetIndices::GLOBAL_SET_INDEX)]
 StructuredBuffer<PBRMaterial> materials;
 
-[vk::binding(2, 0)]
+[vk::binding(GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, SetIndices::GLOBAL_SET_INDEX)]
 SamplerState globalSamplers[MAX_SAMPLERS];
 
-[vk::binding(3, 0)]
+[vk::binding(GlobalBindingIndices::GLOBAL_TEXTURE_INDEX, SetIndices::GLOBAL_SET_INDEX)]
 Texture2D globalTextures[MAX_TEXTURES];
 
 [vk::push_constant]
 DrawPushConstants pushConstants;
 
 struct VertexInput {
-    [vk::location(0)]
+    [vk::location(VertexInputIndices::VERTEX_INPUT_POSITION_INDEX)]
     float3 position;
 
-    [vk::location(1)]
+    [vk::location(VertexInputIndices::VERTEX_INPUT_NORMAL_INDEX)]
     float3 normal;
 
-    [vk::location(2)]
+    [vk::location(VertexInputIndices::VERTEX_INPUT_TANGENT_INDEX)]
+    float3 tangent;
+
+    [vk::location(VertexInputIndices::VERTEX_INPUT_UV_INDEX)]
     float2 uv;
 };
 

@@ -12,5 +12,6 @@ void ResourceManager::cleanup() {
 
 bool ResourceManager::setup() {
     if (!_materialManager.setup()) return false;
+    if (!_textureManager.setup()) return false;
     return true;
 }

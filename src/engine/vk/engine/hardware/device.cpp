@@ -59,8 +59,8 @@ int Device::createLogicalDevice(
         .pNext = nullptr,
         .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
         .descriptorBindingUniformBufferUpdateAfterBind = VK_TRUE,
-        .descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE,
         .descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
+        .descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE,
         .descriptorBindingPartiallyBound = VK_TRUE,
         .runtimeDescriptorArray = VK_TRUE,
     };

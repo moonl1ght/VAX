@@ -168,7 +168,7 @@ bool Renderer::recordCommandBuffer(
             scene->getMaterialBuffer(), 1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
         );
         descriptorSetWriter.value().writeSampler(
-            *scene->textureManager().getPBRSampler().value().second, 2, 0
+            *scene->textureManager().getGlobalSampler(GlobalSampler::PBRSampler).value().second, 2, 0
         );
         scene->textureManager().updateDescriptorWriterWithAllTextures(
             *descriptorSetWriter, 3, false

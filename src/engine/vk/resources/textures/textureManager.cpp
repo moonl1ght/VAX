@@ -5,6 +5,18 @@
 using namespace vax;
 using namespace vax::textures;
 
+bool TextureManager::setup() {
+    for (size_t i = 0; i < vax::MAX_GLOBAL_SAMPLERS; ++i) {
+        if (auto sampler = vax::textures::Sampler::createSampler(_device.get())) {
+            _globalSamplers.push_back(std::move(*sampler));
+        } else {
+            _logger.error("Failed to create global sampler");
+            return false;
+        }
+    }
+    return true;
+}
+
 void TextureManager::fullCleanup() {
     for (auto& [id, texture] : _pool) {
         texture._destroy();
@@ -62,35 +74,11 @@ void TextureManager::updateDescriptorWriterWithAllTextures(
     descriptorWriter.writeTextures(textures, binding, useSampler);
 }
 
-std::optional<TextureManager::SamplerResource> TextureManager::findSampler(SamplerHandle handle) {
-    auto it = _samplerPool.find(handle.id());
-    if (it == _samplerPool.end()) return std::nullopt;
-    return std::make_pair(handle, &it->second);
-}
-
-bool TextureManager::deleteSampler(SamplerHandle handle) {
-    auto it = _samplerPool.find(handle.id());
-    if (it == _samplerPool.end()) return false;
-    _samplerPool.erase(it);
-    return true;
-}
-
-std::optional<TextureManager::SamplerResource> TextureManager::insertSampler(vax::textures::Sampler&& sampler) {
-    auto [it, inserted] = _samplerPool.try_emplace(_lastSamplerId++, std::move(sampler));
-    if (!inserted) {
-        _logger.error("Failed to insert sampler to manager");
+std::optional<TextureManager::SamplerResource> TextureManager::getGlobalSampler(GlobalSampler sampler) {
+    auto index = static_cast<uint32_t>(sampler);
+    if (index >= _globalSamplers.size()) {
+        _logger.error("Global sampler index out of bounds");
         return std::nullopt;
     }
-    return std::make_pair(it->first, &it->second);
-}
-
-std::optional<TextureManager::SamplerResource> TextureManager::getPBRSampler() {
-    auto it = _samplerPool.find(PBRSamplerId);
-    if (it != _samplerPool.end()) {
-        return std::make_pair(SamplerHandle(PBRSamplerId), &it->second);
-    }
-    if (auto sampler = vax::textures::Sampler::createSampler(_device.get())) {
-        return insertSampler(std::move(*sampler));
-    }
-    return std::nullopt;
+    return std::make_pair(SamplerHandle(index), &_globalSamplers[index]);
 }
