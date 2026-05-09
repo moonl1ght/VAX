@@ -48,8 +48,8 @@ std::optional<DrawableModel> PrimitivesBuilder::createCube(float size, vax::Colo
     material.baseColorTextureIndex = NO_TEXTURE_FLAG;
     auto materialIndex = _materialManager.get().insert(material);
     Submesh submesh{
+        .indexCount = static_cast<uint32_t>(mesh->second->indices().size()),
         .materialIndex = materialIndex,
-        .indexCount = static_cast<uint32_t>(mesh->second->indices().size())
     };
     auto drawableModel = vax::objects::DrawableModel(_meshManager.get(), mesh.value().first);
     drawableModel._mesh = mesh.value().second;

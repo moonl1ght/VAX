@@ -11,13 +11,14 @@
 #include "descriptorSetWriter.h"
 #include "renderContext.h"
 #include "camera.h"
+#include "inputController.h"
 
 namespace vax {
     struct SceneUpdateContext {
         float deltaTime;
     };
 
-    class DrawableScene final {
+    class DrawableScene final: public vax::input::InputController::Observer {
     public:
         DrawableScene(vax::vk::Engine& vkEngine)
             : _vkEngine(vkEngine)
@@ -39,6 +40,9 @@ namespace vax {
         ~DrawableScene() {
             _drawableModels.clear();
             _resourceManager.cleanup();
+            if (_inputController) {
+                _inputController->removeObserver(this);
+            }
         };
 
         DrawableScene(const DrawableScene& other) = delete;
@@ -59,6 +63,8 @@ namespace vax {
         bool writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter);
 
         void draw(VkCommandBuffer commandBuffer);
+
+        void onMouseMove(const glm::vec2& position);
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("DrawableScene");

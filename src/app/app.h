@@ -7,11 +7,14 @@
 #include "logger.h"
 #include "uiLayer.h"
 #include "drawableScene.h"
+#include "inputController.h"
 
 namespace vax {
     class App final {
     public:
-        App() {};
+        App() {
+            _inputController = vax::input::InputController();
+        };
         ~App() {};
 
         bool run();
@@ -22,6 +25,8 @@ namespace vax {
 
     private:
         utils::Logger _logger = utils::Logger("App");
+
+        vax::input::InputController _inputController;
 
         std::unique_ptr<vax::vk::Window> _window;
         std::unique_ptr<vax::vk::Engine> _engine;

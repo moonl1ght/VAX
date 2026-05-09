@@ -35,6 +35,7 @@ bool App::setup() {
     _drawableScene = std::make_unique<DrawableScene>(*_engine);
     _drawableScene->resize();
     _drawableScene->load(_engine->queueManager->graphicsQueue);
+    _inputController.addObserver(_drawableScene.get());
 
     return true;
 }
@@ -61,17 +62,13 @@ void App::mainLoop() {
     static bool running = true;
     while (running) {
         SDL_Event event;
-        try {
-            while (SDL_PollEvent(&event)) {
-                _uiLayer->processEvents(event);
-                if (event.type == SDL_EVENT_QUIT) {
-                    running = false;
-                    break;
-                }
+        while (SDL_PollEvent(&event)) {
+            _inputController.handleEvent(event);
+            _uiLayer->processEvents(event);
+            if (event.type == SDL_EVENT_QUIT) {
+                running = false;
+                break;
             }
-        }
-        catch (const std::exception& e) {
-            _logger.error("Failed to poll events: {}", e.what());
         }
         SDL_Delay(16);
         loopUpdate();

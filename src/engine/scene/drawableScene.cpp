@@ -18,7 +18,7 @@ void DrawableScene::prepareForDraw(renderer::RenderCallContext renderCallContext
 
 void DrawableScene::update(SceneUpdateContext sceneUpdateContext) {
     _sceneUpdateContext = sceneUpdateContext;
-    auto cameraPos = glm::vec3(0.0f, 0.0f, -5.0f);
+    auto cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
     _mainCamera.setPosition(cameraPos);
     _ubo = _mainCamera.getUniformBufferObject();
     // _ubo.cameraPosition = glm::vec4(cameraPos, 1.0f);
@@ -135,4 +135,8 @@ void vax::DrawableScene::draw(VkCommandBuffer commandBuffer) {
             _sceneUpdateContext.deltaTime
         );
     }
+}
+
+void vax::DrawableScene::onMouseMove(const glm::vec2& position) {
+    std::cout << "Mouse move from DrawableScene: " << position.x << ", " << position.y << std::endl;
 }
