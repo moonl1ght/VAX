@@ -106,6 +106,7 @@ bool Renderer::render(DrawableScene* scene, float deltaTime) {
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _vkEngine.get().framebufferResized) {
         _vkEngine.get().framebufferResized = false;
         _vkEngine.get().resize();
+        scene->resize();
         return false;
     }
     else if (result != VK_SUCCESS) {
