@@ -5,7 +5,7 @@
 #include "shaderUniforms.h"
 
 namespace vax::objects {
-    class Camera final{
+    class Camera final {
     public:
         enum class Projection {
             perspective, orthographic
@@ -58,9 +58,11 @@ namespace vax::objects {
 
         void setViewSize(double viewSize);
 
+        void setRotationSpeed(float rotationSpeed);
+
         UniformBufferObject getUniformBufferObject();
 
-        // void rotate(simd_float2 delta);
+        void rotateBy(glm::vec2 delta);
         // void setPosition(simd_float3 position);
         // void precalculateMatrices();
 
@@ -73,7 +75,9 @@ namespace vax::objects {
         double _nearPlane;
         double _farPlane;
         double _viewSize;
+        float _rotationSpeed = 0.002f;
         glm::vec3 _target;
+
 
         double _whAspectRatio;
         glm::mat4 _savedProjectionMatrix;

@@ -64,7 +64,7 @@ namespace vax {
 
         void draw(VkCommandBuffer commandBuffer);
 
-        void onMouseMove(const glm::vec2& position);
+        void onMouseMove(const vax::input::MouseMoveValue& value);
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("DrawableScene");

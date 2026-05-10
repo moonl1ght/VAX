@@ -18,8 +18,8 @@ void DrawableScene::prepareForDraw(renderer::RenderCallContext renderCallContext
 
 void DrawableScene::update(SceneUpdateContext sceneUpdateContext) {
     _sceneUpdateContext = sceneUpdateContext;
-    auto cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
-    _mainCamera.setPosition(cameraPos);
+    // auto cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
+    // _mainCamera.setPosition(cameraPos);
     _ubo = _mainCamera.getUniformBufferObject();
     // _ubo.cameraPosition = glm::vec4(cameraPos, 1.0f);
     // _ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -69,9 +69,11 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     // auto model = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
     // model->loadMesh(*_vkEngine.get().queueManager, *_vkEngine.get().commandManager);
     // texture = TextureLoader(vkEngine).loadTexture(RES_PATH("assets/models/room/viking_room.png"));
-    _ubo.cameraPosition = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    _ubo.view = glm::mat4(1.0f);
-    _ubo.proj = glm::mat4(1.0f);
+    auto cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
+    _mainCamera.setPosition(cameraPos);
+    // _ubo.cameraPosition = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    // _ubo.view = glm::mat4(1.0f);
+    // _ubo.proj = glm::mat4(1.0f);
     // _drawableModels.emplace_back(_modelLoader.loadModel(RES_PATH("assets/models/room/viking_room.obj")).value());
     // // _drawableModels.emplace_back(Primitives2D::createPlane());
     // // _drawableModels.emplace_back(Primitives2D::createPlane());
@@ -137,6 +139,6 @@ void vax::DrawableScene::draw(VkCommandBuffer commandBuffer) {
     }
 }
 
-void vax::DrawableScene::onMouseMove(const glm::vec2& position) {
-    std::cout << "Mouse move from DrawableScene: " << position.x << ", " << position.y << std::endl;
+void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {
+    _mainCamera.rotateBy(value.delta);
 }

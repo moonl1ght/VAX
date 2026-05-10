@@ -3,6 +3,11 @@
 #include "luna.h"
 
 namespace vax::input {
+    struct MouseMoveValue {
+        glm::vec2 position;
+        glm::vec2 delta;
+    };
+
     class InputController final {
     public:
         class Observer {
@@ -20,9 +25,9 @@ namespace vax::input {
         void addObserver(TObserver* obj) {
             obj->_inputController = this;
 
-            auto mouseMoveWrapper = [](void* inst, const glm::vec2& pos)
+            auto mouseMoveWrapper = [](void* inst, const vax::input::MouseMoveValue& value)
                 {
-                    static_cast<TObserver*>(inst)->onMouseMove(pos);
+                    static_cast<TObserver*>(inst)->onMouseMove(value);
                 };
 
             if (_observerCount < _observers.size()) {
@@ -56,10 +61,11 @@ namespace vax::input {
     private:
         struct ObserverSlot {
             void* instance;
-            void (*mouseMoveFunc)(void*, const glm::vec2&);
+            void (*mouseMoveFunc)(void*, const vax::input::MouseMoveValue&);
         };
         std::vector<ObserverSlot> _observers;
         int _observerCount = 0;
         bool _isLeftButtonDown = false;
+        
     };
 }

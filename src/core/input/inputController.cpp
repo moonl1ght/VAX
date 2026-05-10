@@ -16,9 +16,12 @@ void InputController::handleEvent(const SDL_Event& event) {
     }
     if (_isLeftButtonDown) {
         if (event.type == SDL_EVENT_MOUSE_MOTION) {
-            std::cout << "Mouse motion: " << event.motion.x << ", " << event.motion.y << std::endl;
             for (int i = 0; i < _observerCount; ++i) {
-                _observers[i].mouseMoveFunc(_observers[i].instance, glm::vec2(event.motion.x, event.motion.y));
+                MouseMoveValue value = {
+                    .position = glm::vec2(event.motion.x, event.motion.y),
+                    .delta = glm::vec2(event.motion.xrel, event.motion.yrel)
+                };
+                _observers[i].mouseMoveFunc(_observers[i].instance, value);
             }
         }
     }
