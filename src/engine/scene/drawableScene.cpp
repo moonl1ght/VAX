@@ -66,7 +66,11 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
 
         // _sceneUniformBuffers[i].bind(_sceneUniformBuffersMapped[i]);
     }
-    // auto model = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
+    auto model = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
+    auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
+    model->loadMesh(submitQueue, commandBuffer);
+    commandBuffer.end();
+    // _vkEngine.get().commandManager->endSingleTimeCommands(commandBuffer);
     // model->loadMesh(*_vkEngine.get().queueManager, *_vkEngine.get().commandManager);
     // texture = TextureLoader(vkEngine).loadTexture(RES_PATH("assets/models/room/viking_room.png"));
     auto cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
@@ -88,6 +92,7 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
 
     // _drawableModels.push_back(std::move(cube.value()));
     // _drawableModels.push_back(std::move(zcube.value()));
+    _drawableModels.push_back(std::move(model.value()));
     _drawableModels.push_back(std::move(ycube.value()));
     _drawableModels.push_back(std::move(xcube.value()));
     _drawableModels.push_back(std::move(cube.value()));

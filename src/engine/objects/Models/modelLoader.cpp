@@ -196,7 +196,6 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     const aiScene* scene = importer.ReadFile(
         path,
         aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace
-        | aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder
     );
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
