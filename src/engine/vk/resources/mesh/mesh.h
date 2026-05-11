@@ -25,6 +25,7 @@ namespace vax::objects {
 
         Mesh(Mesh&& other) noexcept 
             : _device(other._device)
+            , _name(other._name)
             , _vertices(std::move(other._vertices))
             , _indices(std::move(other._indices))
             , _isLoaded(other._isLoaded)
@@ -35,12 +36,14 @@ namespace vax::objects {
             other._isLoaded = false;
             other._id = vax::NullId;
             other._isDetached = true;
+            other._name.clear();
         }
 
         Mesh& operator=(Mesh&& other) noexcept {
             if (this != &other) {
                 cleanup();
                 _device = other._device;
+                _name = std::move(other._name);
                 _vertices = std::move(other._vertices);
                 _indices = std::move(other._indices);
                 vertexBuffer = std::move(other.vertexBuffer);
@@ -52,16 +55,7 @@ namespace vax::objects {
             return *this;
         }
 
-        // bool draw(VkCommandBuffer commandBuffer) const;
-
-        // void forceDraw(
-        //     vax::vk::QueueManager& queueManager,
-        //     vax::vk::CommandManager& commandManager,
-        //     VkCommandBuffer commandBuffer
-        // );
-
         bool loadBuffers(
-            VkQueue submitQueue,
             vax::vk::CommandBuffer& commandBuffer
         );
 
@@ -85,13 +79,21 @@ namespace vax::objects {
 
         void cleanup();
 
+        void cleanupStagingBuffers();
+
+        void setName(const std::string& name) { _name = name; }
+
     private:
         utils::Logger _logger = utils::Logger("Mesh");
 
         std::reference_wrapper<const vax::vk::Device> _device;
+        std::string _name;
 
         std::vector<Vertex> _vertices;
         std::vector<uint32_t> _indices;
+
+        std::optional<vax::vk::Buffer> _stagingVertexBuffer = std::nullopt;
+        std::optional<vax::vk::Buffer> _stagingIndexBuffer = std::nullopt;
 
         bool _isLoaded = false;
         MeshId _id = vax::NullId;

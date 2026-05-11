@@ -7,7 +7,7 @@ using namespace vax::textures;
 
 bool TextureManager::setup() {
     for (size_t i = 0; i < vax::MAX_GLOBAL_SAMPLERS; ++i) {
-        if (auto sampler = vax::textures::Sampler::createSampler(_device.get())) {
+        if (auto sampler = vax::textures::Sampler::createSampler(_device.get(), "global_sampler_" + std::to_string(i))) {
             _globalSamplers.push_back(std::move(*sampler));
         } else {
             _logger.error("Failed to create global sampler");

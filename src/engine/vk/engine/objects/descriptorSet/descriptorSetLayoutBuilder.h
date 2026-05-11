@@ -7,7 +7,12 @@
 namespace vax::vk {
     class DescriptorSetLayoutBuilder final {
     public:
-        explicit DescriptorSetLayoutBuilder(const vax::vk::Device& device) : _device(device) {}
+        explicit DescriptorSetLayoutBuilder(
+            const vax::vk::Device& device,
+            const std::string& name
+        ) : _device(device)
+            , _name(name) {
+        }
 
         ~DescriptorSetLayoutBuilder() {}
 
@@ -34,5 +39,6 @@ namespace vax::vk {
         vax::utils::Logger _logger = vax::utils::Logger("DescriptorSetLayoutBuilder");
         std::reference_wrapper<const vax::vk::Device> _device;
         std::vector<VkDescriptorSetLayoutBinding> _bindings;
+        std::string _name;
     };
 }

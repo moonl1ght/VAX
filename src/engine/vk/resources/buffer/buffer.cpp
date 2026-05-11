@@ -1,5 +1,4 @@
 #include "buffer.h"
-#include "vkEngine.h"
 #include "commandBuffer.h"
 
 using namespace vax::vk;
@@ -8,12 +7,14 @@ using namespace vax;
 
 std::optional<Buffer> Buffer::allocateAndFillData(
     const vax::vk::Device& device,
+    std::string name,
     const void* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
     VkMemoryPropertyFlags properties
 ) {
     auto buffer = Buffer(device);
+    buffer._name = name;
     buffer._size = size;
     if (!buffer._allocate(usage, properties)) return std::nullopt;
     if (!buffer.fill(data)) return std::nullopt;
@@ -22,11 +23,13 @@ std::optional<Buffer> Buffer::allocateAndFillData(
 
 std::optional<Buffer> Buffer::allocate(
     const vax::vk::Device& device,
+    std::string name,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
     VkMemoryPropertyFlags properties
 ) {
     auto buffer = Buffer(device);
+    buffer._name = name;
     buffer._size = size;
     if (!buffer._allocate(usage, properties)) return std::nullopt;
     return buffer;
@@ -97,28 +100,14 @@ bool Buffer::fill(const void* fillData) {
     return true;
 }
 
-bool vax::vk::Buffer::copyBufferToSync(
-    VkQueue submitQueue,
+void vax::vk::Buffer::copyBufferCommand(
     vax::vk::CommandBuffer& commandBuffer,
     Buffer& dstBuffer,
     VkDeviceSize size
 ) const {
-    commandBuffer.begin();
-
     VkBufferCopy copyRegion{};
     copyRegion.size = size;
     vkCmdCopyBuffer(commandBuffer.vkCommandBuffer, _vkBuffer, dstBuffer._vkBuffer, 1, &copyRegion);
-
-    commandBuffer.end();
-
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer.vkCommandBuffer;
-
-    vkQueueSubmit(submitQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(submitQueue);
-    return true;
 }
 
 bool Buffer::isEmpty() const {
@@ -147,6 +136,16 @@ bool Buffer::_allocate(
     if (vkCreateBuffer(_device.get().vkDevice, &bufferInfo, nullptr, &_vkBuffer) != VK_SUCCESS) {
         _logger.error("failed to create buffer!");
         return false;
+    }
+
+    if (!_name.empty()) {
+        VkDebugUtilsObjectNameInfoEXT nameInfo{
+            .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+            .objectType = VK_OBJECT_TYPE_BUFFER,
+            .objectHandle = reinterpret_cast<size_t>(_vkBuffer),
+            .pObjectName = _name.c_str(),
+        };
+        vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
     }
 
     VkMemoryRequirements memRequirements;

@@ -24,6 +24,7 @@ namespace vax {
         void fullCleanup();
 
         std::optional<BufferResource> allocateBuffer(
+            std::string name,
             VkDeviceSize size,
             VkBufferUsageFlags usage,
             VkMemoryPropertyFlags properties

@@ -129,7 +129,7 @@ std::optional<DescriptorSetWriter> DescriptorSetManager::getDescriptorSetWriter(
 }
 
 bool DescriptorSetManager::createDescriptorSetLayouts() {
-    DescriptorSetLayoutBuilder globalBuilder(_device.get());
+    DescriptorSetLayoutBuilder globalBuilder(_device.get(), "global_descriptor_set_layout");
     globalBuilder.addBinding(
         GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
@@ -148,7 +148,7 @@ bool DescriptorSetManager::createDescriptorSetLayouts() {
         VK_SHADER_STAGE_FRAGMENT_BIT,
         vax::MAX_GLOBAL_TEXTURES
     );
-    DescriptorSetLayoutBuilder perFrameBuilder(_device.get());
+    DescriptorSetLayoutBuilder perFrameBuilder(_device.get(), "per_frame_descriptor_set_layout");
     perFrameBuilder.addBinding(
         FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,

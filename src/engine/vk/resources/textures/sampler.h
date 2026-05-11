@@ -8,7 +8,10 @@ namespace vax::textures {
     public:
         VkSampler vkSampler = VK_NULL_HANDLE;
 
-        static std::optional<vax::textures::Sampler> createSampler(const vax::vk::Device& device);
+        static std::optional<vax::textures::Sampler> createSampler(
+            const vax::vk::Device& device,
+            std::string name
+        );
 
         explicit Sampler(
             VkSampler vkSampler,
@@ -40,8 +43,11 @@ namespace vax::textures {
 
         ~Sampler() { vkDestroySampler(_device.get().vkDevice, vkSampler, nullptr); }
 
+        void setName(const std::string& name) { _name = name; }
+
     private:
         vax::utils::Logger _logger = vax::utils::Logger("Sampler");
+        std::string _name;
         std::reference_wrapper<const vax::vk::Device> _device;
     };
 }

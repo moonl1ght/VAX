@@ -18,7 +18,6 @@ std::optional<TextureManager::TextureResource> TextureLoader::loadTexture(
     stbi_uc* pixels = stbi_load_from_memory(
         data.data(), data.size(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha
     );
-    VkDeviceSize imageSize = texWidth * texHeight * 4;
     if (!pixels) {
         _logger.error("Failed to load pixels");
         return std::nullopt;
@@ -46,9 +45,10 @@ std::optional<TextureManager::TextureResource> TextureLoader::_loadTexture(
     int texHeight,
     int texChannels
 ) {
-    VkDeviceSize imageSize = texWidth * texHeight * texChannels;
+    VkDeviceSize imageSize = texWidth * texHeight * 4;
     auto stagingBuffer = vk::Buffer::allocateAndFillData(
         _device.get(),
+        name + "_texture_staging_buffer",
         pixels,
         imageSize,
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
@@ -76,6 +76,7 @@ std::optional<TextureManager::TextureResource> TextureLoader::_loadTexture(
 
     auto textureTaskScheduler = textures::TextureTaskScheduler(_device.get(), _commandManager.get());
 
+    // TODO: fix loading for batch loading of textures
     auto commandBuffer = _commandManager.get().createSingleTimeCommandBuffer();
     auto taskSchedulerInline = TextureTaskSchedulerInline(_device.get(), commandBuffer);
     commandBuffer.begin();

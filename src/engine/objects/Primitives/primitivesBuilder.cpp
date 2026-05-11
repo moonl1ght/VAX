@@ -39,8 +39,6 @@ std::optional<DrawableModel> PrimitivesBuilder::createCube(float size, vax::Colo
         mesh.value().second->addIndex(offset + 2);
         mesh.value().second->addIndex(offset + 3);
     }
-    auto commandBuffer = _commandManager.get().createSingleTimeCommandBuffer();
-    mesh->second->loadBuffers(_queueManager.get().graphicsQueue, commandBuffer);
 
     PBRMaterial material{
         .baseColor = color,

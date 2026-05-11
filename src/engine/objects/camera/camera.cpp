@@ -18,6 +18,7 @@ void Camera::setProjection(Projection projection) {
 
 void Camera::setPosition(glm::vec3 position) {
     _position = position;
+    _updateRotationForPosition();
     _isViewDirty = true;
 }
 
@@ -55,19 +56,19 @@ void Camera::setViewSize(double viewSize) {
 
 glm::mat4 Camera::projectionMatrix() {
     if (_isProjectionDirty) {
-        updateProjectionMatrix();
+        _updateProjectionMatrix();
     }
     return _savedProjectionMatrix;
 }
 
 glm::mat4 Camera::viewMatrix() {
     if (_isViewDirty) {
-        updateViewMatrix();
+        _updateViewMatrix();
     }
     return _savedViewMatrix;
 }
 
-void Camera::updateViewMatrix() {
+void Camera::_updateViewMatrix() {
     float distance = glm::distance(_position, _target);
     if (glm::abs(distance) < epsilon) {
         // TODO: Check if this is correct
@@ -79,7 +80,7 @@ void Camera::updateViewMatrix() {
     }
 }
 
-void Camera::updateProjectionMatrix() {
+void Camera::_updateProjectionMatrix() {
     if (_whAspectRatio == 0) {
         return;
     }
@@ -134,4 +135,13 @@ void Camera::rotateBy(glm::vec2 delta) {
     auto rotatedVector = rotateMatrix * distanceVector;
     _position = glm::vec3(rotatedVector.x, rotatedVector.y, rotatedVector.z);
     _isViewDirty = true;
+}
+
+void Camera::_updateRotationForPosition() {
+    auto x = _position.x;
+    auto y = _position.y;
+    auto z = _position.z;
+    _rotation.y = -std::atan2(x, z);
+    float groundDist = std::sqrt(x * x + z * z);
+    _rotation.x = std::atan2(-y, groundDist);
 }

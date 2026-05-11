@@ -11,6 +11,7 @@ bool MaterialManager::setup() {
     VkDeviceSize bufferSize = sizeof(PBRMaterial) * vax::MAX_MATERIALS;
     auto allocation = vk::Buffer::allocate(
         _device.get(),
+        "global_material_buffer",
         bufferSize,
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -41,7 +42,7 @@ std::vector<MaterialId> MaterialManager::insertMaterials(std::vector<PBRMaterial
     PBRMaterial* materialPtr = static_cast<PBRMaterial*>(*mappedMemory);
     memcpy(materialPtr + _materials.size(), materials.data(), materials.size() * sizeof(PBRMaterial));
     std::vector<MaterialId> ids(materials.size());
-    std::iota(ids.begin(), ids.end(), _materials.size() - 1);
+    std::iota(ids.begin(), ids.end(), _materials.size());
     _materials.insert(_materials.end(), materials.begin(), materials.end());
     return ids;
 }

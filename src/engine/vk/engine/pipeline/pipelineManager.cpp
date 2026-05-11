@@ -168,6 +168,14 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
         return false;
     }
 
+    VkDebugUtilsObjectNameInfoEXT nameInfo{
+        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        .objectType = VK_OBJECT_TYPE_PIPELINE_LAYOUT,
+        .objectHandle = reinterpret_cast<size_t>(_pipelineLayout),
+        .pObjectName = "base_graphics_pipeline_layout",
+    };
+    vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
+
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
@@ -193,6 +201,14 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
         _logger.error("failed to create graphics pipeline!");
         return false;
     }
+
+    VkDebugUtilsObjectNameInfoEXT baseGraphicsPipelineNameInfo{
+        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        .objectType = VK_OBJECT_TYPE_PIPELINE,
+        .objectHandle = reinterpret_cast<size_t>(_pipeline),
+        .pObjectName = "base_graphics_pipeline",
+    };
+    vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &baseGraphicsPipelineNameInfo);
 
     vkDestroyShaderModule(_device.get().vkDevice, fragShaderModule.value(), nullptr);
     vkDestroyShaderModule(_device.get().vkDevice, vertShaderModule.value(), nullptr);

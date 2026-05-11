@@ -21,6 +21,7 @@ namespace vax::vk {
 
         static std::optional<Buffer> allocateAndFillData(
             const vax::vk::Device& device,
+            std::string name,
             const void* data,
             VkDeviceSize size,
             VkBufferUsageFlags usage,
@@ -29,6 +30,7 @@ namespace vax::vk {
 
         static std::optional<Buffer> allocate(
             const vax::vk::Device& device,
+            std::string name,
             VkDeviceSize size,
             VkBufferUsageFlags usage,
             VkMemoryPropertyFlags properties
@@ -99,8 +101,7 @@ namespace vax::vk {
 
         std::optional<void*> mappedMemory() const;
 
-        bool copyBufferToSync(
-            VkQueue submitQueue,
+        void copyBufferCommand(
             vax::vk::CommandBuffer& commandBuffer,
             Buffer& dstBuffer,
             VkDeviceSize size
@@ -124,10 +125,13 @@ namespace vax::vk {
 
         bool isDetached() const { return _isDetached; }
 
+        const std::string& name() const { return _name; }
+
     private:
         vax::utils::Logger _logger = vax::utils::Logger("Buffer");
         std::reference_wrapper<const vax::vk::Device> _device;
 
+        std::string _name;
         BufferId _id = vax::NullBufferId;
         VkBuffer _vkBuffer = VK_NULL_HANDLE;
         VkDeviceMemory _vkBufferMemory = VK_NULL_HANDLE;

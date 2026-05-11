@@ -10,11 +10,13 @@ void BufferManager::fullCleanup() {
 }
 
 std::optional<BufferManager::BufferResource> BufferManager::allocateBuffer(
+    std::string name,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
     VkMemoryPropertyFlags properties
 ) {
     auto buffer = vk::Buffer(_device.get());
+    buffer._name = name;
     buffer._size = size;
     buffer._id = _lastId++;
     if (!buffer._allocate(usage, properties)) return std::nullopt;

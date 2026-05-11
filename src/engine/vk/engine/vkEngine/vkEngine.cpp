@@ -62,6 +62,7 @@ bool vax::vk::Engine::setup() {
             instance = VK_NULL_HANDLE;
         }
     );
+    vax::vk::utils::setPfnSetDebugUtilsObjectNameEXT(instance);
 
     if (!setupDebugMessenger()) return false;
 

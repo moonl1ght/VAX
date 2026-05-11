@@ -4,10 +4,9 @@ using namespace vax::objects;
 
 
 bool DrawableModel::loadMesh(
-    VkQueue submitQueue,
     vax::vk::CommandBuffer& commandBuffer
 ) {
-    return _mesh->loadBuffers(submitQueue, commandBuffer);
+    return _mesh->loadBuffers(commandBuffer);
 }
 
 void DrawableModel::draw(
@@ -24,7 +23,13 @@ void DrawableModel::draw(
     for (auto& submesh : _submeshes) {
         DrawPushConstants drawPushConstants{};
         drawPushConstants.model = transform.getModelMatrix();
-        drawPushConstants.flags = ObjectFlags::NoFlags;
+
+        uint32_t flags = ObjectFlags::NoFlags;
+        if (_settings.useWireframe) {
+            flags |= ObjectFlags::IsWireframe;
+        }
+
+        drawPushConstants.flags = flags;
         drawPushConstants.materialIndex = submesh.materialIndex;
         
         vkCmdPushConstants(

@@ -17,6 +17,10 @@ namespace vax::objects {
 namespace vax::objects {
     class DrawableModel : public Model {
     public:
+        struct Settings {
+            bool useWireframe = false;
+        };
+
         friend class vax::objects::PrimitivesBuilder;
         friend class vax::objects::ModelLoader;
 
@@ -35,7 +39,6 @@ namespace vax::objects {
         ~DrawableModel() {};
 
         bool loadMesh(
-            VkQueue submitQueue,
             vax::vk::CommandBuffer& commandBuffer
         );
 
@@ -45,6 +48,10 @@ namespace vax::objects {
             const vax::vk::PipelineManager& pipelineManager,
             float time
         );
+
+        Settings& settings() { return _settings; }
+        const Settings& settings() const { return _settings; }
+        void setSettings(const Settings& settings) { _settings = settings; }
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("DrawableModel");
@@ -56,5 +63,6 @@ namespace vax::objects {
         // TODO: remove this will need to use mesh manager to get the mesh
         vax::objects::Mesh* _mesh;
         std::vector<vax::objects::Submesh> _submeshes;
+        Settings _settings;
     };
 }

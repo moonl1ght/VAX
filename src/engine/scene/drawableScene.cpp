@@ -18,22 +18,7 @@ void DrawableScene::prepareForDraw(renderer::RenderCallContext renderCallContext
 
 void DrawableScene::update(SceneUpdateContext sceneUpdateContext) {
     _sceneUpdateContext = sceneUpdateContext;
-    // auto cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
-    // _mainCamera.setPosition(cameraPos);
     _ubo = _mainCamera.getUniformBufferObject();
-    // _ubo.cameraPosition = glm::vec4(cameraPos, 1.0f);
-    // _ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f) / 3, glm::vec3(0.0f, 0.0f, 1.0f));
-    // _ubo.view = glm::lookAt(cameraPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    // auto swapchainExtent = _vkEngine.get().swapchain->swapchainExtent;
-    // auto swapchainWidth = swapchainExtent.width;
-    // auto swapchainHeight = swapchainExtent.height;
-    // _ubo.proj = glm::perspective(
-    //     glm::radians(45.0f),
-    //     swapchainWidth / (float) swapchainHeight,
-    //     0.1f,
-    //     10.0f
-    // );
-    // _ubo.proj[1][1] *= -1;
 }
 
 void vax::DrawableScene::resize() {
@@ -49,6 +34,7 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     for (size_t i = 0; i < vax::MAX_FRAMES_IN_FLIGHT; i++) {
         auto& bufferManager = _resourceManager.bufferManager();
         auto allocation = bufferManager.allocateBuffer(
+            "frame_uniform_buffer",
             bufferSize,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -66,14 +52,18 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
 
         // _sceneUniformBuffers[i].bind(_sceneUniformBuffersMapped[i]);
     }
-    auto model = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
+    auto gizmo = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
+    auto helmet = _modelLoader.loadModel(RES_PATH("assets/models/helmet.glb"), submitQueue);
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
-    model->loadMesh(submitQueue, commandBuffer);
+    commandBuffer.begin();
+    gizmo->loadMesh(commandBuffer);
+    helmet->loadMesh(commandBuffer);
     commandBuffer.end();
+    commandBuffer.submitAndWait(submitQueue);
     // _vkEngine.get().commandManager->endSingleTimeCommands(commandBuffer);
     // model->loadMesh(*_vkEngine.get().queueManager, *_vkEngine.get().commandManager);
     // texture = TextureLoader(vkEngine).loadTexture(RES_PATH("assets/models/room/viking_room.png"));
-    auto cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
+    auto cameraPos = glm::vec3(2.0f, 2.0f, 2.0f);
     _mainCamera.setPosition(cameraPos);
     // _ubo.cameraPosition = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     // _ubo.view = glm::mat4(1.0f);
@@ -82,24 +72,23 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     // // _drawableModels.emplace_back(Primitives2D::createPlane());
     // // _drawableModels.emplace_back(Primitives2D::createPlane());
     // _drawableModels[1]->transform.position = glm::vec3(0.0f, 0.0f, -0.5f);
-    auto cube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Gray);
-    auto zcube = _primitivesBuilder.createCube(0.5f, vax::ColorPalette::Blue);
-    auto ycube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Green);
-    auto xcube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Red);
-    xcube->transform.position = glm::vec3(2.0f, 0.0f, 0.0f);
-    ycube->transform.position = glm::vec3(0.0f, 2.0f, 0.0f);
-    zcube->transform.position = glm::vec3(0.0f, 0.0f, 2.0f);
+    // auto cube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Gray);
+    // auto zcube = _primitivesBuilder.createCube(0.5f, vax::ColorPalette::Blue);
+    // auto ycube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Green);
+    // auto xcube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Red);
+    // xcube->transform.position = glm::vec3(2.0f, 0.0f, 0.0f);
+    // ycube->transform.position = glm::vec3(0.0f, 2.0f, 0.0f);
+    // zcube->transform.position = glm::vec3(0.0f, 0.0f, 2.0f);
 
     // _drawableModels.push_back(std::move(cube.value()));
     // _drawableModels.push_back(std::move(zcube.value()));
-    _drawableModels.push_back(std::move(model.value()));
-    _drawableModels.push_back(std::move(ycube.value()));
-    _drawableModels.push_back(std::move(xcube.value()));
-    _drawableModels.push_back(std::move(cube.value()));
-    _drawableModels.push_back(std::move(zcube.value()));
-    // for (auto& model : _drawableModels) {
-    //     model->_mesh->loadBuffers(*_vkEngine.get().queueManager, *_vkEngine.get().commandManager);
-    // }
+    _drawableModels.push_back(std::move(helmet.value()));
+    _drawableModels.push_back(std::move(gizmo.value()));
+    // _drawableModels.push_back(std::move(helmet.value()));
+    // _drawableModels.push_back(std::move(ycube.value()));
+    // _drawableModels.push_back(std::move(xcube.value()));
+    // _drawableModels.push_back(std::move(cube.value()));
+    // _drawableModels.push_back(std::move(zcube.value()));
 }
 
 bool vax::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter) {

@@ -33,8 +33,8 @@ namespace vax::objects {
             , _farPlane(farPlane)
             , _viewSize(viewSize)
         {
-            updateViewMatrix();
-            updateProjectionMatrix();
+            _updateViewMatrix();
+            _updateProjectionMatrix();
         };
 
         glm::mat4 projectionMatrix();
@@ -85,7 +85,8 @@ namespace vax::objects {
         bool _isViewDirty = false;
         bool _isProjectionDirty = false;
 
-        void updateViewMatrix();
-        void updateProjectionMatrix();
+        void _updateViewMatrix();
+        void _updateProjectionMatrix();
+        void _updateRotationForPosition();
     };
 }

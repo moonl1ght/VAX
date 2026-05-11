@@ -21,6 +21,13 @@ std::optional<Texture> TextureFactory::makeDepthTextureDetached(
         _logger.error("Failed to create depth texture!");
         return std::nullopt;
     }
+    VkDebugUtilsObjectNameInfoEXT nameInfo{
+        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        .objectType = VK_OBJECT_TYPE_IMAGE,
+        .objectHandle = reinterpret_cast<size_t>(imageResult->first),
+        .pObjectName = "depth_texture",
+    };
+    vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
     auto [depthImage, allocation] = imageResult.value();
     auto texture = vax::textures::Texture(
         _device.get(),
@@ -80,6 +87,15 @@ std::optional<Texture> TextureFactory::makeTextureDetached(
             format,
             VK_IMAGE_ASPECT_COLOR_BIT
         );
+        if (!name.empty()) {
+            VkDebugUtilsObjectNameInfoEXT nameInfo{
+                .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+                .objectType = VK_OBJECT_TYPE_IMAGE,
+                .objectHandle = reinterpret_cast<size_t>(image),
+                .pObjectName = name.c_str(),
+            };
+            vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
+        }
         texture.loadImageView();
         return std::make_optional(std::move(texture));
     }

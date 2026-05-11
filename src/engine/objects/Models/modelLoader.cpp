@@ -30,7 +30,7 @@ uint32_t loadTexture(
             auto height = embeddedTexture->mHeight;
             auto size = height == 0 ? width : width * height;
             auto data = std::span<unsigned char>(reinterpret_cast<unsigned char*>(textData), size);
-            std::string name = "baseColorTexture_" + std::string(textureName.C_Str());
+            std::string name = std::string(scene->mRootNode->mName.C_Str()) + "_baseColorTexture_" + std::string(textureName.C_Str());
             auto texture = textureLoader.loadTexture(name, data, submitQueue);
             if (texture.has_value()) {
                 return texture->first.id();
@@ -256,6 +256,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     auto mesh = _resourceManager.get().meshManager().createEmptyMesh();
     if (!mesh) return std::nullopt;
 
+    (*mesh).second->setName(path);
     (*mesh).second->setVertices(modelVertices);
     (*mesh).second->setIndices(modelIndices);
 

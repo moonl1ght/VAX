@@ -77,7 +77,7 @@ void Texture::createSampler() {
     if (_sampler.has_value()) {
         return;
     }
-    if (auto sampler = vax::textures::Sampler::createSampler(_device.get())) {
+    if (auto sampler = vax::textures::Sampler::createSampler(_device.get(), _name + "_texture_sampler")) {
         _sampler = std::make_optional(std::move(*sampler));
     }
 }

@@ -24,6 +24,16 @@ namespace vax {
 
 namespace vax::vk::utils {
 
+    inline PFN_vkSetDebugUtilsObjectNameEXT pfnSetDebugUtilsObjectNameEXT = nullptr;
+
+    inline void setPfnSetDebugUtilsObjectNameEXT(VkInstance instance) {
+        if (pfnSetDebugUtilsObjectNameEXT == nullptr) {
+            pfnSetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetInstanceProcAddr(
+                instance, "vkSetDebugUtilsObjectNameEXT"
+            );
+        }
+    }
+
     struct SwapChainSupportDetails {
         VkSurfaceCapabilitiesKHR capabilities;
         std::vector<VkSurfaceFormatKHR> formats;

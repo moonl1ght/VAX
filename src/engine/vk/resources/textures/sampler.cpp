@@ -3,7 +3,10 @@
 using namespace vax::textures;
 using namespace vax;
 
-std::optional<Sampler> Sampler::createSampler(const vk::Device& device) {
+std::optional<Sampler> Sampler::createSampler(
+    const vk::Device& device,
+    std::string name
+) {
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(device.vkPhysicalDevice, &properties);
 
@@ -27,6 +30,15 @@ std::optional<Sampler> Sampler::createSampler(const vk::Device& device) {
     if (vkCreateSampler(device.vkDevice, &samplerInfo, nullptr, &vkSampler) != VK_SUCCESS) {
         utils::Logger::getInstance().error("failed to create texture sampler!");
         return std::nullopt;
+    }
+    if (!name.empty()) {
+        VkDebugUtilsObjectNameInfoEXT nameInfo{
+            .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+            .objectType = VK_OBJECT_TYPE_SAMPLER,
+            .objectHandle = reinterpret_cast<size_t>(vkSampler),
+            .pObjectName = name.c_str(),
+        };
+        vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(device.vkDevice, &nameInfo);
     }
     return Sampler(vkSampler, device);
 }

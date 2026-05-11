@@ -33,7 +33,6 @@ using namespace vax;
 // }
 
 bool vax::objects::Mesh::loadBuffers(
-    VkQueue submitQueue,
     vax::vk::CommandBuffer& commandBuffer
 ) {
     VkDeviceSize bufferSize = sizeof(_vertices[0]) * _vertices.size();
@@ -41,6 +40,7 @@ bool vax::objects::Mesh::loadBuffers(
     if (MACOS) {
         vertexBuffer.emplace(vk::Buffer::allocateAndFillData(
             _device.get(),
+            _name + "_vertex_buffer",
             _vertices.data(),
             bufferSize,
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -49,45 +49,56 @@ bool vax::objects::Mesh::loadBuffers(
 
         indexBuffer.emplace(vk::Buffer::allocateAndFillData(
             _device.get(),
+            _name + "_index_buffer",
             _indices.data(),
             indexBufferSize,
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
         ).value());
     } else {
-        auto stagingBuffer = vk::Buffer::allocateAndFillData(
+        _stagingVertexBuffer = vk::Buffer::allocateAndFillData(
             _device.get(),
+            _name + "_vertex_buffer_staging",
             _vertices.data(),
             bufferSize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-        ).value();
-        vertexBuffer.emplace(vk::Buffer::allocate(
+        );
+        vertexBuffer = vk::Buffer::allocate(
             _device.get(),
+            _name + "_vertex_buffer",
             bufferSize,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-        ).value());
-        stagingBuffer.copyBufferToSync(
-            submitQueue, commandBuffer, vertexBuffer.value(), bufferSize
+        );
+        if (!_stagingVertexBuffer.has_value() && !vertexBuffer.has_value()) {
+            return false;
+        }
+        _stagingVertexBuffer->copyBufferCommand(
+            commandBuffer, *vertexBuffer, bufferSize
         );
 
         if (!_indices.empty()) {
-            auto stagingIndexBuffer = vk::Buffer::allocateAndFillData(
+            _stagingIndexBuffer = vk::Buffer::allocateAndFillData(
                 _device.get(),
+                _name + "_index_buffer_staging",
                 _indices.data(),
                 indexBufferSize,
                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-            ).value();
-            indexBuffer.emplace(vk::Buffer::allocate(
+            );
+            indexBuffer = vk::Buffer::allocate(
                 _device.get(),
+                _name + "_index_buffer",
                 indexBufferSize,
                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-            ).value());
-            stagingIndexBuffer.copyBufferToSync(
-                submitQueue, commandBuffer, indexBuffer.value(), indexBufferSize
+            );
+            if (!_stagingIndexBuffer.has_value() && !indexBuffer.has_value()) {
+                return false;
+            }
+            _stagingIndexBuffer->copyBufferCommand(
+                commandBuffer, *indexBuffer, indexBufferSize
             );
         }
     }
@@ -117,4 +128,15 @@ void vax::objects::Mesh::_destroy() {
 
 void vax::objects::Mesh::_detach() {
     _isDetached = true;
+}
+
+void vax::objects::Mesh::cleanupStagingBuffers() {
+    if (_stagingVertexBuffer.has_value()) {
+        _stagingVertexBuffer->cleanup();
+    }
+    if (_stagingIndexBuffer.has_value()) {
+        _stagingIndexBuffer->cleanup();
+    }
+    _stagingVertexBuffer = std::nullopt;
+    _stagingIndexBuffer = std::nullopt;
 }
