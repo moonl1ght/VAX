@@ -166,7 +166,7 @@ void processNode(
         for (unsigned int f = 0; f < mesh->mNumFaces; ++f) {
             const aiFace& face = mesh->mFaces[f];
             for (unsigned int j = 0; j < face.mNumIndices; ++j) {
-                indices.push_back(face.mIndices[j] + vertexOffset);
+                indices.push_back(face.mIndices[j]);
             }
         }
 
