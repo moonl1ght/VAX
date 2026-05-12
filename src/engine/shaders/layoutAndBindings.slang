@@ -1,4 +1,4 @@
-#include "shaderUniforms.h"
+import uniforms;
 
 [vk::binding(FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX, SetIndices::PER_FRAME_SET_INDEX)]
 ConstantBuffer<UniformBufferObject> ubo;
@@ -27,6 +27,12 @@ struct VertexInput {
 
     [vk::location(VertexInputIndices::VERTEX_INPUT_UV_INDEX)]
     float2 uv;
+
+    [vk::location(VertexInputIndices::VERTEX_INPUT_UV_2_INDEX)]
+    float2 uv2;
+
+    [vk::location(VertexInputIndices::VERTEX_INPUT_PACKED_COLOR_INDEX)]
+    uint packedColor;
 };
 
 struct VertexOutput {
@@ -37,5 +43,9 @@ struct VertexOutput {
     float3 tangent : TANGENT;
 
     float2 uv : TEXCOORD0;
+
+    float2 uv2 : TEXCOORD1;
+
+    uint packedColor : PACKED_COLOR;
 };
 

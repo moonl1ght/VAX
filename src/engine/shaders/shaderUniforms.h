@@ -41,10 +41,19 @@ enum VertexInputIndices {
     VERTEX_INPUT_NORMAL_INDEX = 1,
     VERTEX_INPUT_TANGENT_INDEX = 2,
     VERTEX_INPUT_UV_INDEX = 3,
+    VERTEX_INPUT_UV_2_INDEX = 4,
+    VERTEX_INPUT_PACKED_COLOR_INDEX = 5
 };
 
-#define MAX_TEXTURES 500
-#define MAX_SAMPLERS 1
+enum VertexInputIndicesNoTangent {
+    VERTEX_INPUT_COLOR_INDEX_NT = 0,
+    VERTEX_INPUT_POSITION_INDEX_NT = 1,
+    VERTEX_INPUT_NORMAL_INDEX_NT = 2,
+    VERTEX_INPUT_UV_INDEX_NT = 3,
+    VERTEX_INPUT_UV_2_INDEX_NT = 4
+};
+
+enum { MAX_TEXTURES = 500, MAX_SAMPLERS = 1 };
 static constexpr uint32_t NO_TEXTURE_FLAG = 0xFFFFFFFF;
 static constexpr uint32_t NO_MATERIAL_INDEX = 0xFFFFFFFF;
 static constexpr uint32_t NO_SAMPLER_INDEX = 0xFFFFFFFF;
@@ -52,6 +61,7 @@ static constexpr uint32_t NO_SAMPLER_INDEX = 0xFFFFFFFF;
 enum ObjectFlags {
     NoFlags = 0,
     IsWireframe = 1 << 0, // 0001
+    NoTangent = 1 << 1, // 0010
 };
 
 struct UniformBufferObject {
@@ -68,18 +78,31 @@ struct DrawPushConstants {
 };
 
 struct PBRMaterial {
-    vec4 baseColor; 
+    vec4 baseColor;
     float metallicFactor, roughnessFactor, normalScale, occlusionStrength; // vec4
     vec4 emissiveFactorAlphaCutoff;
 
     uint32_t baseColorTextureIndex = NO_TEXTURE_FLAG;
+    uint32_t baseColorTextureSamplerIndex = NO_SAMPLER_INDEX;
+    uint32_t baseColorTextureUVIndex = 0;
+
     uint32_t normalMapTextureIndex = NO_TEXTURE_FLAG;
-    uint32_t roughnessTextureIndex = NO_TEXTURE_FLAG;
-    uint32_t metalnessTextureIndex = NO_TEXTURE_FLAG;
+    uint32_t normalMapTextureSamplerIndex = NO_SAMPLER_INDEX;
+    uint32_t normalMapTextureUVIndex = 0;
+
+    uint32_t metallicRoughnessTextureIndex = NO_TEXTURE_FLAG;
+    uint32_t metallicRoughnessTextureSamplerIndex = NO_SAMPLER_INDEX;
+    uint32_t metallicRoughnessTextureUVIndex = 0;
+
     uint32_t aoTextureIndex = NO_TEXTURE_FLAG;
+    uint32_t aoTextureSamplerIndex = NO_SAMPLER_INDEX;
+    uint32_t aoTextureUVIndex = 0;
+
     uint32_t emissiveTextureIndex = NO_TEXTURE_FLAG;
-    uint32_t samplerIndex = NO_SAMPLER_INDEX;
-    uint32_t padding; // 4 bytes
+    uint32_t emissiveTextureSamplerIndex = NO_SAMPLER_INDEX;
+    uint32_t emissiveTextureUVIndex = 0;
+
+    uint32_t alphaMode = 0;
 };
 
 #endif  // shaderUniforms_h

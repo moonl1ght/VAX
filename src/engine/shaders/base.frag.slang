@@ -1,4 +1,7 @@
-import base;
+import layoutAndBindings;
+import common;
+import uniforms;
+import sharedUtils;
 
 struct FragmentInput
 {
@@ -6,6 +9,8 @@ struct FragmentInput
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
     float2 uv : TEXCOORD0;
+    float2 uv2 : TEXCOORD1;
+    uint packedColor : PACKED_COLOR;
     float3 baryCoords : SV_Barycentrics;
 };
 
@@ -20,23 +25,7 @@ float edgeFactor(float3 barycoords, float thickness)
 float4 fragMain(FragmentInput input)
     : SV_Target
 {
-
-    // return float4(1, 1, 0, 1);
-
-    // return materials[pushConstants.materialIndex].baseColor;
-
-    uint baseColorTextureIndex = materials[pushConstants.materialIndex].baseColorTextureIndex;
-
-    // float4 color = materials[pushConstants.materialIndex].baseColor;
-    if (baseColorTextureIndex == NO_TEXTURE_FLAG) {
-        // return float4(0, 1, 0, 1);
-        return materials[pushConstants.materialIndex].baseColor;
-    }
-    // return float4(0, 0, (float)baseColorTextureIndex, 1);
-
-    float4 color = globalTextures[baseColorTextureIndex].Sample(
-        globalSamplers[0], input.uv
-    );
+    float4 color = sampleBaseColor(pushConstants.materialIndex, input.uv);
     if ((pushConstants.flags & ObjectFlags::IsWireframe) != 0) {
         float val = edgeFactor(input.baryCoords, 1.0);
         return lerp(color, float4(0, 0, 0, 1), 1.0 - val);

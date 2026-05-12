@@ -3,6 +3,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/GltfMaterial.h>
+#include "shaderSharedUtils.h"
 
 using namespace vax::objects;
 using namespace vax;
@@ -63,11 +64,21 @@ PBRMaterial processMaterial(
         .occlusionStrength = 1.0f,
         .emissiveFactorAlphaCutoff = glm::vec4(0.0f, 0.0f, 0.0f, 0.5f),
         .baseColorTextureIndex = NO_TEXTURE_FLAG,
+        .baseColorTextureSamplerIndex = NO_SAMPLER_INDEX,
+        .baseColorTextureUVIndex = 0,
         .normalMapTextureIndex = NO_TEXTURE_FLAG,
-        .roughnessTextureIndex = NO_TEXTURE_FLAG,
-        .metalnessTextureIndex = NO_TEXTURE_FLAG,
+        .normalMapTextureSamplerIndex = NO_SAMPLER_INDEX,
+        .normalMapTextureUVIndex = 0,
+        .metallicRoughnessTextureIndex = NO_TEXTURE_FLAG,
+        .metallicRoughnessTextureSamplerIndex = NO_SAMPLER_INDEX,
+        .metallicRoughnessTextureUVIndex = 0,
         .aoTextureIndex = NO_TEXTURE_FLAG,
-        .emissiveTextureIndex = NO_TEXTURE_FLAG
+        .aoTextureSamplerIndex = NO_SAMPLER_INDEX,
+        .aoTextureUVIndex = 0,
+        .emissiveTextureIndex = NO_TEXTURE_FLAG,
+        .emissiveTextureSamplerIndex = NO_SAMPLER_INDEX,
+        .emissiveTextureUVIndex = 0,
+        .alphaMode = 0
     };
     aiColor4D color;
     ai_real factor;
@@ -97,25 +108,33 @@ PBRMaterial processMaterial(
 
     aiString baseColorTextureName;
     aiString normalMapTextureName;
-    aiString roughnessTextureName;
-    aiString metalnessTextureName;
+    aiString metallicRoughnessTextureName;
     aiString aoTextureName;
     aiString emissiveTextureName;
 
-    mat->GetTexture(aiTextureType_BASE_COLOR, 0, &baseColorTextureName);
-    mat->GetTexture(aiTextureType_NORMALS, 0, &normalMapTextureName);
-    mat->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessTextureName);
-    mat->GetTexture(aiTextureType_METALNESS, 0, &metalnessTextureName);
-    mat->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoTextureName);
-    mat->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveTextureName);
+    mat->GetTexture(
+        aiTextureType_BASE_COLOR, 0, &baseColorTextureName, nullptr, &material.baseColorTextureUVIndex
+    );
+    mat->GetTexture(aiTextureType_NORMALS, 0, &normalMapTextureName, nullptr, &material.normalMapTextureUVIndex);
+    mat->GetTexture(
+        aiTextureType_DIFFUSE_ROUGHNESS, 0,
+        &metallicRoughnessTextureName, nullptr, &material.metallicRoughnessTextureUVIndex
+    );
+    mat->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoTextureName, nullptr, &material.aoTextureUVIndex);
+    mat->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveTextureName, nullptr, &material.emissiveTextureUVIndex);
 
     material.baseColorTextureIndex = loadTexture(baseColorTextureName, submitQueue, textureLoader, scene);
+    material.baseColorTextureSamplerIndex = samplerId;
     material.normalMapTextureIndex = loadTexture(normalMapTextureName, submitQueue, textureLoader, scene);
-    material.roughnessTextureIndex = loadTexture(roughnessTextureName, submitQueue, textureLoader, scene);
-    material.metalnessTextureIndex = loadTexture(metalnessTextureName, submitQueue, textureLoader, scene);
+    material.normalMapTextureSamplerIndex = samplerId;
+    material.metallicRoughnessTextureIndex = loadTexture(
+        metallicRoughnessTextureName, submitQueue, textureLoader, scene
+    );
+    material.metallicRoughnessTextureSamplerIndex = samplerId;
     material.aoTextureIndex = loadTexture(aoTextureName, submitQueue, textureLoader, scene);
+    material.aoTextureSamplerIndex = samplerId;
     material.emissiveTextureIndex = loadTexture(emissiveTextureName, submitQueue, textureLoader, scene);
-    material.samplerIndex = samplerId;
+    material.emissiveTextureSamplerIndex = samplerId;
 
     return material;
 }
@@ -146,11 +165,12 @@ void processNode(
             .materialIndex = materialIds[mesh->mMaterialIndex]
         };
         submeshes.push_back(submesh);
-        // submesh.debugPrint(logger);
+        submesh.debugPrint(logger);
 
         for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
             Vertex vertex;
             glm::vec4 pos = glm::vec4(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z, 1.0f);
+            // std::cout << "pos: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
             pos = transform * pos;
             vertex.position = glm::vec3(pos);
             vertex.normal = normalMatrix * glm::vec3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
@@ -160,7 +180,25 @@ void processNode(
             if (mesh->mTextureCoords[0]) {
                 vertex.uv = { mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y };
             }
+            if (mesh->mTextureCoords[1]) {
+                vertex.uv2 = { mesh->mTextureCoords[1][v].x, mesh->mTextureCoords[1][v].y };
+            }
+            if (mesh->mColors[0]) {
+                glm::vec4 color = glm::vec4(
+                    mesh->mColors[0][v].r, mesh->mColors[0][v].g, mesh->mColors[0][v].b, mesh->mColors[0][v].a
+                );
+                vertex.packedColor = packRGBA(color);
+            }
+
+            // if (submeshes.size() > 3) {
+            //     std::cout << "pos: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+            //     std::cout << "vertex: " << vertex.position.x << ", " << vertex.position.y << ", " << vertex.position.z << std::endl;
+            //     std::cout << "normal: " << vertex.normal.x << ", " << vertex.normal.y << ", " << vertex.normal.z << std::endl;
+            //     std::cout << "tangent: " << vertex.tangent.x << ", " << vertex.tangent.y << ", " << vertex.tangent.z << std::endl;
+            //     std::cout << "uv: " << vertex.uv.x << ", " << vertex.uv.y << std::endl;
+            // }
             vertices.push_back(vertex);
+            // std::cout << "vertices size: " << vertices.size() << std::endl;
         }
 
         for (unsigned int f = 0; f < mesh->mNumFaces; ++f) {
@@ -256,6 +294,10 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     auto mesh = _resourceManager.get().meshManager().createEmptyMesh();
     if (!mesh) return std::nullopt;
 
+    std::cout << "total vertex count: " << totalVertexCount << std::endl;
+    std::cout << "total index count: " << totalIndexCount << std::endl;
+    std::cout << "modelVertices size: " << modelVertices.size() << std::endl;
+    std::cout << "modelIndices size: " << modelIndices.size() << std::endl;
     (*mesh).second->setName(path);
     (*mesh).second->setVertices(modelVertices);
     (*mesh).second->setIndices(modelIndices);

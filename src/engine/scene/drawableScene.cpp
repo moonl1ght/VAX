@@ -54,10 +54,12 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     }
     auto gizmo = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
     auto helmet = _modelLoader.loadModel(RES_PATH("assets/models/helmet.glb"), submitQueue);
+    // auto cube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Gray);
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
     commandBuffer.begin();
     gizmo->loadMesh(commandBuffer);
     helmet->loadMesh(commandBuffer);
+    // cube->loadMesh(commandBuffer);
     commandBuffer.end();
     commandBuffer.submitAndWait(submitQueue);
     // _vkEngine.get().commandManager->endSingleTimeCommands(commandBuffer);
@@ -72,7 +74,6 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     // // _drawableModels.emplace_back(Primitives2D::createPlane());
     // // _drawableModels.emplace_back(Primitives2D::createPlane());
     // _drawableModels[1]->transform.position = glm::vec3(0.0f, 0.0f, -0.5f);
-    // auto cube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Gray);
     // auto zcube = _primitivesBuilder.createCube(0.5f, vax::ColorPalette::Blue);
     // auto ycube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Green);
     // auto xcube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Red);
@@ -84,6 +85,7 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     // _drawableModels.push_back(std::move(zcube.value()));
     _drawableModels.push_back(std::move(helmet.value()));
     _drawableModels.push_back(std::move(gizmo.value()));
+    // _drawableModels.push_back(std::move(cube.value()));
     // _drawableModels.push_back(std::move(helmet.value()));
     // _drawableModels.push_back(std::move(ycube.value()));
     // _drawableModels.push_back(std::move(xcube.value()));

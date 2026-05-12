@@ -1,4 +1,5 @@
-import base;
+import layoutAndBindings;
+import sharedUtils;
 
 [shader("vertex")]
 VertexOutput vertMain(VertexInput input) {
@@ -7,5 +8,7 @@ VertexOutput vertMain(VertexInput input) {
     output.normal = input.normal;
     output.tangent = input.tangent;
     output.uv = input.uv;
+    output.uv2 = input.uv2;
+    output.packedColor = input.packedColor;
     return output;
 }

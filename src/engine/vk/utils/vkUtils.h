@@ -63,5 +63,4 @@ namespace vax::vk::utils {
     );
 
     VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
-
 }
