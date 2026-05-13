@@ -5,23 +5,16 @@ project(Luna VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_LIST_DIR}/build/)
 
-# target_include_directories(Luna PRIVATE ${PROJECT_SOURCE_DIR}/include ${CONAN_INCLUDE_DIRS})
 find_package(Vulkan REQUIRED FATAL_ERROR)
-find_package(glfw3 REQUIRED FATAL_ERROR)
 
-# set(CMAKE_PREFIX_PATH="build/assimp-config.cmake")
-# set(-DCMAKE_TOOLCHAIN_FILE="build/assimp-config.cmake")
 find_package(assimp REQUIRED FATAL_ERROR)
 find_package(glm REQUIRED)
 find_package(nlohmann_json REQUIRED FATAL_ERROR)
-find_package(vk-bootstrap REQUIRED FATAL_ERROR)
 if(WIN32)
     list(APPEND CMAKE_PREFIX_PATH "C:/msys64/mingw64/lib/cmake/SDL3")
     find_package(SDL3 REQUIRED)
-    # find_package(imgui REQUIRED)
 else()
     find_package(SDL3 REQUIRED FATAL_ERROR)
-    # find_package(imgui REQUIRED)
     find_package(tinyobjloader REQUIRED FATAL_ERROR)
 endif()
 find_package(imgui REQUIRED CONFIG)
@@ -36,7 +29,6 @@ if(NOT IMGUI_PACKAGE_DIR)
     message(FATAL_ERROR "Could not determine imgui package folder from Conan variables.")
 endif()
 
-# find_package(glm REQUIRED FATAL_ERROR)
 if(DEFINED ENV{VULKAN_SDK})
     message(STATUS "VULKAN_SDK is set to: $ENV{VULKAN_SDK}")
 else()
@@ -68,8 +60,6 @@ if(NOT SLANG_COMPILER)
 endif()
 message(STATUS "Found slangc: ${SLANG_COMPILER}")
 
-# add_subdirectory(src/)
-# target_sources(src/**.cpp)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 file(GLOB_RECURSE all_SRCS
@@ -170,11 +160,6 @@ target_include_directories(Luna PRIVATE
     "${IMGUI_PACKAGE_DIR}/res/bindings"
 )
 
-# target_link_libraries(Luna)
-# add_executable(Luna main.cpp ${PROJECT_SOURCE_DIR}/src/apps/App.hpp ${PROJECT_SOURCE_DIR}/src/apps/App.cpp ${PROJECT_SOURCE_DIR}/src/apps/SimpleApp.hpp ${PROJECT_SOURCE_DIR}/src/apps/SimpleApp.cpp)
-
-# target_include_directories(your_executable_name PRIVATE ${PROJECT_SOURCE_DIR}/include ${CONAN_INCLUDE_DIRS})
-# find_package(nlohmann REQUIRED FATAL_ERROR)
 if(WIN32)
     if(VULKAN_FOUND)
         message(STATUS "Found Vulkan. Including and linking...")
@@ -184,7 +169,6 @@ if(WIN32)
             Vulkan::Vulkan
             nlohmann_json::nlohmann_json
             assimp::assimp
-            vk-bootstrap::vk-bootstrap
             SDL3::SDL3
             glm::glm
             Tracy::TracyClient
@@ -199,7 +183,6 @@ else()
             Vulkan::Vulkan
             nlohmann_json::nlohmann_json
             assimp::assimp
-            vk-bootstrap::vk-bootstrap
             tinyobjloader::tinyobjloader
             SDL3::SDL3
             glm::glm

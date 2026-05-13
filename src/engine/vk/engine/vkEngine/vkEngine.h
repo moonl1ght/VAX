@@ -23,7 +23,7 @@ namespace vax::vk {
 namespace vax::vk {
     class Engine final {
     public:
-        const uint32_t vulkanApiVersion = VK_API_VERSION_1_3;
+        const uint32_t vulkanApiVersion = VK_API_VERSION_1_4;
 
         const bool enableValidationLayers = true;
 
