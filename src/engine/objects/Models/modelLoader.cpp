@@ -89,6 +89,10 @@ PBRMaterial processMaterial(
     if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_EMISSIVE, &color)) {
         material.emissiveFactorAlphaCutoff = glm::vec4(color.r, color.g, color.b, 0.5f);
     }
+    ai_real alphaCutoff;
+    if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_GLTF_ALPHACUTOFF, &alphaCutoff)) {
+        material.emissiveFactorAlphaCutoff.w = alphaCutoff;
+    }
     if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_METALLIC_FACTOR, &factor)) {
         material.metallicFactor = factor;
     }
@@ -170,12 +174,16 @@ void processNode(
         for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
             Vertex vertex;
             glm::vec4 pos = glm::vec4(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z, 1.0f);
-            // std::cout << "pos: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
             pos = transform * pos;
             vertex.position = glm::vec3(pos);
             vertex.normal = normalMatrix * glm::vec3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
-            if (mesh->mTangents) {
-                vertex.tangent = normalMatrix * glm::vec3(mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z);
+            if (mesh->HasTangentsAndBitangents()) {
+                aiVector3D n = mesh->mNormals[i];
+                aiVector3D t = mesh->mTangents[i];
+                aiVector3D b = mesh->mBitangents[i];
+
+                float w = ((n ^ t) * b < 0.0f) ? -1.0f : 1.0f;
+                vertex.tangent = glm::vec4(t.x, t.y, t.z, w);
             }
             if (mesh->mTextureCoords[0]) {
                 vertex.uv = { mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y };
@@ -189,16 +197,7 @@ void processNode(
                 );
                 vertex.packedColor = packRGBA(color);
             }
-
-            // if (submeshes.size() > 3) {
-            //     std::cout << "pos: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-            //     std::cout << "vertex: " << vertex.position.x << ", " << vertex.position.y << ", " << vertex.position.z << std::endl;
-            //     std::cout << "normal: " << vertex.normal.x << ", " << vertex.normal.y << ", " << vertex.normal.z << std::endl;
-            //     std::cout << "tangent: " << vertex.tangent.x << ", " << vertex.tangent.y << ", " << vertex.tangent.z << std::endl;
-            //     std::cout << "uv: " << vertex.uv.x << ", " << vertex.uv.y << std::endl;
-            // }
             vertices.push_back(vertex);
-            // std::cout << "vertices size: " << vertices.size() << std::endl;
         }
 
         for (unsigned int f = 0; f < mesh->mNumFaces; ++f) {

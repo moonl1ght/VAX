@@ -2,12 +2,15 @@ import layoutAndBindings;
 import common;
 import uniforms;
 import sharedUtils;
+import pbr;
+import math;
 
 struct FragmentInput
 {
     float4 position : SV_Position;
+    float4 tangent : TANGENT;
+    float3 worldPosition : WORLD_POSITION;
     float3 normal : NORMAL;
-    float3 tangent : TANGENT;
     float2 uv : TEXCOORD0;
     float2 uv2 : TEXCOORD1;
     uint packedColor : PACKED_COLOR;
@@ -25,11 +28,67 @@ float edgeFactor(float3 barycoords, float thickness)
 float4 fragMain(FragmentInput input)
     : SV_Target
 {
-    float4 color = sampleBaseColor(pushConstants.materialIndex, input.uv);
-    if ((pushConstants.flags & ObjectFlags::IsWireframe) != 0) {
+    PBRMaterial material = materials[pushConstants.materialIndex];
+    float2[2] UVs = float2[2](input.uv, input.uv2);
+
+    float4 albedo = sampleBaseColor(material, UVs[material.baseColorTextureUVIndex]);
+    float4 metallicRoughness = sampleMetallicRoughness(material, UVs[material.metallicRoughnessTextureUVIndex]);
+    float4 ao = sampleAmbientOcclusion(material, UVs[material.aoTextureUVIndex]);
+    float4 emissive = sampleEmissive(material, UVs[material.emissiveTextureUVIndex]);
+
+    if ((pushConstants.flags & ObjectFlags::NoTangent) != 0)
+    {
+        // TODO: implement tangent calculation on fly
+        return float4(1.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    float3x3 modelMatrix3 = float3x3(
+        pushConstants.model[0].xyz,
+        pushConstants.model[1].xyz,
+        pushConstants.model[2].xyz
+    );
+    // TODO: move to push constants
+    float3x3 normalMatrix = transpose(inverse3x3(modelMatrix3));
+
+    float3 normal = normalize(mul(normalMatrix, input.normal));
+    float3 tangent = normalize(mul(normalMatrix, input.tangent.xyz));
+
+    tangent = normalize(tangent - dot(tangent, normal) * normal);
+
+    float3 bitangent = cross(normal, tangent) * input.tangent.w;
+    float3x3 TBN = float3x3(tangent, bitangent, normal);
+    float4 sampledNormal = sampleNormalMap(material, UVs[material.normalMapTextureUVIndex]);
+
+    float3 finalNormal = normalize(mul(TBN, sampledNormal.xyz * 2.0 - 1.0));
+
+    PBRProperties pbrProperties = calculatePBRPropertiesMetallicRoughness(
+        material,
+        albedo,
+        finalNormal,
+        ubo.cameraPosition.xyz,
+        input.worldPosition,
+        metallicRoughness
+    );
+
+    float3 color = float3(0.0f, 0.0f, 0.0f);
+
+    float3 lightPos = float3(0, 0, -2);
+    color += calculatePBRLightContribution(
+        pbrProperties, normalize(lightPos - input.worldPosition), float3(1.0f)
+    );
+    // // ambient occlusion
+    // color = color * (ao.r < 0.01f ? 1.0f : ao.r);
+    // // emissive
+    // color = pow(emissive.rgb + color, float3(1.0f / 2.2f));
+
+
+    if ((pushConstants.flags & ObjectFlags::IsWireframe) != 0)
+    {
         float val = edgeFactor(input.baryCoords, 1.0);
-        return lerp(color, float4(0, 0, 0, 1), 1.0 - val);
-    } else {
-        return color;
+        return lerp(albedo, float4(0, 0, 0, 1), 1.0 - val);
+    }
+    else
+    {
+        return float4(color, 1.0f);
     }
 }

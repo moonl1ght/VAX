@@ -19,28 +19,30 @@ struct VertexInput {
     [vk::location(VertexInputIndices::VERTEX_INPUT_POSITION_INDEX)]
     float3 position;
 
-    [vk::location(VertexInputIndices::VERTEX_INPUT_NORMAL_INDEX)]
-    float3 normal;
+    [vk::location(VertexInputIndices::VERTEX_INPUT_PACKED_COLOR_INDEX)]
+    uint packedColor;
 
     [vk::location(VertexInputIndices::VERTEX_INPUT_TANGENT_INDEX)]
-    float3 tangent;
+    float4 tangent;
+
+    [vk::location(VertexInputIndices::VERTEX_INPUT_NORMAL_INDEX)]
+    float3 normal;
 
     [vk::location(VertexInputIndices::VERTEX_INPUT_UV_INDEX)]
     float2 uv;
 
     [vk::location(VertexInputIndices::VERTEX_INPUT_UV_2_INDEX)]
     float2 uv2;
-
-    [vk::location(VertexInputIndices::VERTEX_INPUT_PACKED_COLOR_INDEX)]
-    uint packedColor;
 };
 
 struct VertexOutput {
     float4 position : SV_Position;
 
-    float3 normal : NORMAL;
+    float4 tangent : TANGENT;
 
-    float3 tangent : TANGENT;
+    float3 worldPosition : WORLD_POSITION;
+
+    float3 normal : NORMAL;
 
     float2 uv : TEXCOORD0;
 
