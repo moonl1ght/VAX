@@ -5,8 +5,7 @@ import sharedUtils;
 import pbr;
 import math;
 
-struct FragmentInput
-{
+struct FragmentInput {
     float4 position : SV_Position;
     float4 tangent : TANGENT;
     float3 worldPosition : WORLD_POSITION;
@@ -14,11 +13,10 @@ struct FragmentInput
     float2 uv : TEXCOORD0;
     float2 uv2 : TEXCOORD1;
     uint packedColor : PACKED_COLOR;
-    float3 baryCoords : SV_Barycentrics;
+    // float3 baryCoords : SV_Barycentrics;
 };
 
-float edgeFactor(float3 barycoords, float thickness)
-{
+float edgeFactor(float3 barycoords, float thickness) {
     float edgeIntensity = min(barycoords.x, min(barycoords.y, barycoords.z));
     float lineSmoothing = fwidth(edgeIntensity);
     return smoothstep(0.0, lineSmoothing * thickness, edgeIntensity);
@@ -26,8 +24,7 @@ float edgeFactor(float3 barycoords, float thickness)
 
 [shader("fragment")]
 float4 fragMain(FragmentInput input)
-    : SV_Target
-{
+    : SV_Target {
     PBRMaterial material = materials[pushConstants.materialIndex];
     float2[2] UVs = float2[2](input.uv, input.uv2);
 
@@ -36,30 +33,22 @@ float4 fragMain(FragmentInput input)
     float4 ao = sampleAmbientOcclusion(material, UVs[material.aoTextureUVIndex]);
     float4 emissive = sampleEmissive(material, UVs[material.emissiveTextureUVIndex]);
 
-    if ((pushConstants.flags & ObjectFlags::NoTangent) != 0)
-    {
-        // TODO: implement tangent calculation on fly
-        return float4(1.0f, 0.0f, 0.0f, 1.0f);
+    float3 finalNormal = normalize(input.normal);
+    float2 normalUV = UVs[material.normalMapTextureUVIndex];
+    float4 sampledNormal = sampleNormalMap(material, normalUV);
+    if ((pushConstants.flags & ObjectFlags::NoTangent) != 0) {
+        finalNormal = perturbNormal(finalNormal, input.worldPosition, sampledNormal.xyz, normalUV);
+    } else {
+        float3 normal = normalize(mul(pushConstants.normalMatrix, input.normal));
+        float3 tangent = normalize(mul(pushConstants.normalMatrix, input.tangent.xyz));
+
+        tangent = normalize(tangent - dot(tangent, normal) * normal);
+
+        float3 bitangent = cross(normal, tangent) * input.tangent.w;
+        float3x3 TBN = float3x3(tangent, bitangent, normal);
+
+        finalNormal = normalize(mul(TBN, sampledNormal.xyz * 2.0 - 1.0));
     }
-
-    float3x3 modelMatrix3 = float3x3(
-        pushConstants.model[0].xyz,
-        pushConstants.model[1].xyz,
-        pushConstants.model[2].xyz
-    );
-    // TODO: move to push constants
-    float3x3 normalMatrix = transpose(inverse3x3(modelMatrix3));
-
-    float3 normal = normalize(mul(normalMatrix, input.normal));
-    float3 tangent = normalize(mul(normalMatrix, input.tangent.xyz));
-
-    tangent = normalize(tangent - dot(tangent, normal) * normal);
-
-    float3 bitangent = cross(normal, tangent) * input.tangent.w;
-    float3x3 TBN = float3x3(tangent, bitangent, normal);
-    float4 sampledNormal = sampleNormalMap(material, UVs[material.normalMapTextureUVIndex]);
-
-    float3 finalNormal = normalize(mul(TBN, sampledNormal.xyz * 2.0 - 1.0));
 
     PBRProperties pbrProperties = calculatePBRPropertiesMetallicRoughness(
         material,
@@ -67,28 +56,23 @@ float4 fragMain(FragmentInput input)
         finalNormal,
         ubo.cameraPosition.xyz,
         input.worldPosition,
-        metallicRoughness
-    );
+        metallicRoughness);
 
     float3 color = float3(0.0f, 0.0f, 0.0f);
 
-    float3 lightPos = float3(0, 0, -2);
+    float3 lightPos = float3(0, 1, -1);
     color += calculatePBRLightContribution(
-        pbrProperties, normalize(lightPos - input.worldPosition), float3(1.0f)
-    );
+        pbrProperties, normalize(lightPos - input.worldPosition), float3(1.0f));
     // // ambient occlusion
     // color = color * (ao.r < 0.01f ? 1.0f : ao.r);
     // // emissive
     // color = pow(emissive.rgb + color, float3(1.0f / 2.2f));
 
-
-    if ((pushConstants.flags & ObjectFlags::IsWireframe) != 0)
-    {
-        float val = edgeFactor(input.baryCoords, 1.0);
-        return lerp(albedo, float4(0, 0, 0, 1), 1.0 - val);
-    }
-    else
-    {
+    if ((pushConstants.flags & ObjectFlags::IsWireframe) != 0) {
+        // float val = edgeFactor(input.baryCoords, 1.0);
+        // return lerp(albedo, float4(0, 0, 0, 1), 1.0 - val);
+        return float4(1.0f, 0.0f, 0.0f, 1.0f);
+    } else {
         return float4(color, 1.0f);
     }
 }

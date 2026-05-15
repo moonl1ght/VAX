@@ -19,6 +19,7 @@ namespace vax::objects {
     public:
         struct Settings {
             bool useWireframe = false;
+            bool hasTangents = false;
         };
 
         friend class vax::objects::PrimitivesBuilder;

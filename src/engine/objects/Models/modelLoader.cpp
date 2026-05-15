@@ -154,10 +154,11 @@ void processNode(
     uint32_t& indexOffset,
     uint32_t depth,
     std::vector<MaterialId>& materialIds,
+    bool& hasTangents,
     const vax::utils::Logger& logger
 ) {
     glm::mat4 transform = parentTransform * toGlm(node->mTransformation);
-    glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(transform)));
+    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(transform)));
 
     for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
         const aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
@@ -178,12 +179,14 @@ void processNode(
             vertex.position = glm::vec3(pos);
             vertex.normal = normalMatrix * glm::vec3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
             if (mesh->HasTangentsAndBitangents()) {
-                aiVector3D n = mesh->mNormals[i];
-                aiVector3D t = mesh->mTangents[i];
-                aiVector3D b = mesh->mBitangents[i];
+                aiVector3D n = mesh->mNormals[v];
+                aiVector3D t = mesh->mTangents[v];
+                aiVector3D b = mesh->mBitangents[v];
 
                 float w = ((n ^ t) * b < 0.0f) ? -1.0f : 1.0f;
-                vertex.tangent = glm::vec4(t.x, t.y, t.z, w);
+                glm::vec3 tangentWorld = normalMatrix * glm::vec3(t.x, t.y, t.z);
+                vertex.tangent = glm::vec4(tangentWorld, w);
+                hasTangents = true;
             }
             if (mesh->mTextureCoords[0]) {
                 vertex.uv = { mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y };
@@ -223,6 +226,7 @@ void processNode(
             indexOffset,
             depth + 1,
             materialIds,
+            hasTangents,
             logger
         );
     }
@@ -232,7 +236,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(
         path,
-        aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace
+        aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs
     );
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -275,7 +279,8 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
         _logger.error("Failed to load materials");
         return std::nullopt;
     }
-
+    
+    bool hasTangents = false;
     processNode(
         scene,
         scene->mRootNode,
@@ -287,16 +292,13 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
         currentIndexOffset,
         0,
         materialIds,
+        hasTangents,
         _logger
     );
 
     auto mesh = _resourceManager.get().meshManager().createEmptyMesh();
     if (!mesh) return std::nullopt;
 
-    std::cout << "total vertex count: " << totalVertexCount << std::endl;
-    std::cout << "total index count: " << totalIndexCount << std::endl;
-    std::cout << "modelVertices size: " << modelVertices.size() << std::endl;
-    std::cout << "modelIndices size: " << modelIndices.size() << std::endl;
     (*mesh).second->setName(path);
     (*mesh).second->setVertices(modelVertices);
     (*mesh).second->setIndices(modelIndices);
@@ -304,5 +306,6 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     auto drawableModel = vax::objects::DrawableModel(_resourceManager.get().meshManager(), mesh->first);
     drawableModel._mesh = (*mesh).second;
     drawableModel._submeshes = submeshes;
+    drawableModel._settings.hasTangents = hasTangents;
     return std::make_optional(drawableModel);
 }

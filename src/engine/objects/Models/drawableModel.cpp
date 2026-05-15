@@ -23,10 +23,14 @@ void DrawableModel::draw(
     for (auto& submesh : _submeshes) {
         DrawPushConstants drawPushConstants{};
         drawPushConstants.model = transform.getModelMatrix();
+        drawPushConstants.normalMatrix = transform.getNormalMatrix();
 
         uint32_t flags = ObjectFlags::NoFlags;
         if (_settings.useWireframe) {
             flags |= ObjectFlags::IsWireframe;
+        }
+        if (!_settings.hasTangents) {
+            flags |= ObjectFlags::NoTangent;
         }
 
         drawPushConstants.flags = flags;

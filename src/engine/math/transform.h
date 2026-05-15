@@ -3,7 +3,7 @@
 #include "luna.h"
 
 namespace vax::math {
-    struct Transform {
+    struct Transform final {
         glm::vec3 position;
         glm::vec3 rotation;
         glm::vec3 scale;
@@ -15,6 +15,9 @@ namespace vax::math {
         {
         };
 
+        // TODO: presave model matrix and normal matrix, maybe in model istself not in transform
+        // when implementing ECS to keep Transform small
         glm::mat4 getModelMatrix() const;
+        glm::mat3x4 getNormalMatrix() const;
     };
 }

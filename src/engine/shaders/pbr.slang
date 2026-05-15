@@ -68,14 +68,15 @@ PBRProperties calculatePBRPropertiesMetallicRoughness(
     return pbrProperties;
 }
 
-float3 getIBLRadianceContributionGGX(PBRProperties pbrProperties, float specularWeight)
-{
-    float3 n = pbrProperties.n;
-    float3 v = pbrProperties.v;
-    float3 reflection = -normalize(reflect(v, n));
+// unused for now, need to implement IBL, DO NOT REMOVE THIS COMMENT
+// float3 getIBLRadianceContributionGGX(PBRProperties pbrProperties, float specularWeight)
+// {
+//     float3 n = pbrProperties.n;
+//     float3 v = pbrProperties.v;
+//     float3 reflection = -normalize(reflect(v, n));
 
-    return float3(0.0f, 0.0f, 0.0f);
-}
+//     return float3(0.0f, 0.0f, 0.0f);
+// }
 
 float3 specularReflection(PBRProperties pbrProperties)
 {
@@ -102,7 +103,6 @@ float microfacetDistribution(PBRProperties pbrProperties)
     return roughnessSq / (PI_F * f * f);
 }
 
-// TODO: check if this is correct
 float3 diffuseBurley(PBRProperties pbrProperties)
 {
     float f90 = 2.0f * pbrProperties.LdotH * pbrProperties.LdotH * pbrProperties.roughnessFactor - 0.5f;

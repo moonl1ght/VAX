@@ -11,7 +11,7 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
     auto shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/base.vert.spv"));
     auto vertShaderModule = shaderBuilder.build(_device.get().vkDevice);
 
-    shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/base.frag.spv"));
+    shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/pbr.frag.spv"));
     auto fragShaderModule = shaderBuilder.build(_device.get().vkDevice);
 
     shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/background.comp.spv"));

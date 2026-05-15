@@ -1,20 +1,18 @@
 static const float PI_F = 3.14159265359f;
 
-float3x3 inverse3x3(float3x3 m)
-{
-    float det = m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2]) -
-                m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
-                m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
-    float invDet = 1.0f / det;
-    float3x3 inv;
-    inv[0][0] = (m[1][1] * m[2][2] - m[2][1] * m[1][2]) * invDet;
-    inv[0][1] = (m[0][2] * m[2][1] - m[0][1] * m[2][2]) * invDet;
-    inv[0][2] = (m[0][1] * m[1][2] - m[0][2] * m[1][1]) * invDet;
-    inv[1][0] = (m[1][2] * m[2][0] - m[1][0] * m[2][2]) * invDet;
-    inv[1][1] = (m[0][0] * m[2][2] - m[0][2] * m[2][0]) * invDet;
-    inv[1][2] = (m[1][0] * m[0][2] - m[0][0] * m[1][2]) * invDet;
-    inv[2][0] = (m[1][0] * m[2][1] - m[2][0] * m[1][1]) * invDet;
-    inv[2][1] = (m[2][0] * m[0][1] - m[0][0] * m[2][1]) * invDet;
-    inv[2][2] = (m[0][0] * m[1][1] - m[1][0] * m[0][1]) * invDet;
-    return inv;
+float3 perturbNormal(float3 n, float3 worldPos, float3 normalSample, float2 uv) {
+    float3 localNormal = normalSample * 2.0 - 1.0;
+
+    float3 dp1 = ddx(worldPos);
+    float3 dp2 = ddy(worldPos);
+    float2 duv1 = ddx(uv);
+    float2 duv2 = ddy(uv);
+
+    float3 dp2perp = cross(dp2, n);
+    float3 dp1perp = cross(n, dp1);
+    float3 T = dp2perp * duv1.x + dp1perp * duv2.x;
+    float3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+
+    float invmax = rsqrt(max(dot(T, T), dot(B, B)));
+    return normalize(T * (localNormal.x * invmax) + B * (localNormal.y * invmax) + n * localNormal.z);
 }
