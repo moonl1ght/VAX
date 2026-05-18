@@ -22,7 +22,11 @@ namespace vax::vk {
             , _shaderModuleBuilder(device) {
         };
 
-        ~PipelineManager() {};
+        ~PipelineManager() {
+            for (auto& [name, pipelineLayout] : _pipelineLayouts) {
+                vkDestroyPipelineLayout(_device.get().vkDevice, pipelineLayout, nullptr);
+            }
+        };
 
         PipelineManager(const PipelineManager&) = delete;
         PipelineManager& operator=(const PipelineManager&) = delete;
@@ -32,6 +36,7 @@ namespace vax::vk {
         bool setup(const vax::vk::RenderPass& renderPass);
 
         const vax::vk::Pipeline* getPipeline(vax::vk::PipelineName pipelineName) const;
+        VkPipelineLayout getPipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) const;
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("PipelineManager");
@@ -40,8 +45,13 @@ namespace vax::vk {
         vax::vk::ShaderModuleBuilder _shaderModuleBuilder;
 
         std::unordered_map<std::string, vax::vk::Pipeline> _pipelines;
+        std::unordered_map<std::string, VkPipelineLayout> _pipelineLayouts;
+
+        bool _createBackgroundPipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName);
+        bool _createBasePipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName);
 
         bool _createPBRPipeline(const vax::vk::RenderPass& renderPass);
         bool _createBackgroundPipeline(const vax::vk::RenderPass& renderPass);
+        bool _createBasePipeline(const vax::vk::RenderPass& renderPass);
     };
 }

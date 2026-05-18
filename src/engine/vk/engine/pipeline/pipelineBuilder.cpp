@@ -74,8 +74,36 @@ void ComputePipelineBuilder::setShaderStage(VkShaderStageFlagBits stage, VkShade
 
 // MARK: - GraphicsPipelineBuilder
 
-std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(vax::vk::PipelineName pipelineName) {
-    auto pipelineNameString = vax::vk::Pipeline::pipelineNameToString(pipelineName);
+VkPipelineLayout GraphicsPipelineBuilder::buildPipelineLayout(std::string name) {
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+        .setLayoutCount = static_cast<uint32_t>(_descriptorSetLayouts.size()),
+        .pSetLayouts = _descriptorSetLayouts.data(),
+        .pushConstantRangeCount = 1,
+        .pPushConstantRanges = &_pushConstantRange
+    };
+    VkPipelineLayout pipelineLayout;
+    auto result = vkCreatePipelineLayout(
+        _device.get().vkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout
+    );
+    if (result != VK_SUCCESS) {
+        _logger.error("failed to create pipeline layout!");
+        return VK_NULL_HANDLE;
+    }
+
+    VkDebugUtilsObjectNameInfoEXT nameInfo{
+        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        .objectType = VK_OBJECT_TYPE_PIPELINE_LAYOUT,
+        .objectHandle = reinterpret_cast<size_t>(pipelineLayout),
+        .pObjectName = (name + "_pipeline_layout").c_str(),
+    };
+    vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
+    return pipelineLayout;
+}
+
+std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(
+    std::string name, VkPipelineLayout pipelineLayout
+) {
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         .topology = _topology,
@@ -130,29 +158,6 @@ std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(vax::vk::Pipelin
         .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
         .pDynamicStates = dynamicStates.data(),
     };
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .setLayoutCount = static_cast<uint32_t>(_descriptorSetLayouts.size()),
-        .pSetLayouts = _descriptorSetLayouts.data(),
-        .pushConstantRangeCount = 1,
-        .pPushConstantRanges = &_pushConstantRange
-    };
-    VkPipelineLayout pipelineLayout;
-    auto result = vkCreatePipelineLayout(
-        _device.get().vkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout
-    );
-    if (result != VK_SUCCESS) {
-        _logger.error("failed to create pipeline layout!");
-        return std::nullopt;
-    }
-
-    VkDebugUtilsObjectNameInfoEXT nameInfo{
-        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
-        .objectType = VK_OBJECT_TYPE_PIPELINE_LAYOUT,
-        .objectHandle = reinterpret_cast<size_t>(pipelineLayout),
-        .pObjectName = (pipelineNameString + "_pipeline_layout").c_str(),
-    };
-    vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
         .vertexBindingDescriptionCount = 1,
@@ -191,11 +196,11 @@ std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(vax::vk::Pipelin
         .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
         .objectType = VK_OBJECT_TYPE_PIPELINE,
         .objectHandle = reinterpret_cast<size_t>(pipeline),
-        .pObjectName = (pipelineNameString + "_pipeline").c_str(),
+        .pObjectName = (name + "_pipeline").c_str(),
     };
     vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &baseGraphicsPipelineNameInfo);
     return vax::vk::Pipeline(
-        _device.get(), pipelineNameString, vax::vk::PipelineType::RENDER, pipelineLayout, pipeline
+        _device.get(), name, vax::vk::PipelineType::RENDER, pipelineLayout, pipeline
     );
 }
 

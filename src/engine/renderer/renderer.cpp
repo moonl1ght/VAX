@@ -135,12 +135,12 @@ bool Renderer::_updateCommandBuffer(
 
     _setViewportAndScissor(commandBuffer);
 
-    auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::PBR);
-    if (!pipeline) {
-        _logger.error("Failed to get PBR pipeline!");
+    auto pipelineLayout = _vkEngine.get().pipelineManager->getPipelineLayout(vax::vk::PipelineLayoutName::BASE);
+    if (!pipelineLayout) {
+        _logger.error("Failed to get base pipeline layout!");
         return false;
     }
-    if (!_updateGlobalDescriptorSet(commandBuffer, scene, *pipeline)) {
+    if (!_updateGlobalDescriptorSet(commandBuffer, scene, pipelineLayout)) {
         _logger.error("Failed to update global descriptor set!");
         return false;
     }
@@ -161,13 +161,6 @@ bool Renderer::_updateCommandBuffer(
     };
     RendererPass renderPass(renderPassInfo);
     renderPass.pass(commandBuffer, [&]() {
-        if (!pipeline) {
-            _logger.error("Failed to get PBR pipeline!");
-            return;
-        }
-        vkCmdBindPipeline(
-            commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline
-        );
 
         auto frameDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
             _currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
@@ -184,7 +177,7 @@ bool Renderer::_updateCommandBuffer(
         vkCmdBindDescriptorSets(
             commandBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
-            pipeline->vkPipelineLayout,
+            pipelineLayout,
             SetIndices::PER_FRAME_SET_INDEX,
             static_cast<uint32_t>(descriptorSets.size()),
             descriptorSets.data(),
@@ -192,7 +185,26 @@ bool Renderer::_updateCommandBuffer(
             nullptr
         );
 
+        auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::PBR);
+        if (!pipeline) {
+            _logger.error("Failed to get PBR pipeline!");
+            return;
+        }
+        vkCmdBindPipeline(
+            commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline
+        );
+
         scene->draw(commandBuffer, *pipeline);
+
+        auto gizmoPipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::BASE);
+        if (!gizmoPipeline) {
+            _logger.error("Failed to get gizmo pipeline!");
+            return;
+        }
+        vkCmdBindPipeline(
+            commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, gizmoPipeline->vkPipeline
+        );
+        scene->drawGizmo(commandBuffer, *gizmoPipeline);
 
         if (!_drawBackground(commandBuffer, scene)) {
             _logger.error("Failed to draw background!");
@@ -230,7 +242,7 @@ void Renderer::_setViewportAndScissor(VkCommandBuffer commandBuffer) {
 bool Renderer::_updateGlobalDescriptorSet(
     VkCommandBuffer commandBuffer,
     vax::DrawableScene* scene,
-    const vax::vk::Pipeline& pipeline
+    VkPipelineLayout pipelineLayout
 ) {
     auto globalDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
         _currentFrame, vax::vk::DescriptorSetLayout::SetType::GLOBAL
@@ -245,7 +257,7 @@ bool Renderer::_updateGlobalDescriptorSet(
     vkCmdBindDescriptorSets(
         commandBuffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
-        pipeline.vkPipelineLayout,
+        pipelineLayout,
         SetIndices::GLOBAL_SET_INDEX,
         static_cast<uint32_t>(descriptorSets.size()),
         descriptorSets.data(),

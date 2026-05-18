@@ -4,9 +4,15 @@
 #include "device.h"
 
 namespace vax::vk {
+    enum class PipelineLayoutName: uint32_t {
+        BACKGROUND = 0,
+        BASE = 1
+    };
+
     enum class PipelineName: uint32_t {
         BACKGROUND = 0,
-        PBR = 1
+        PBR = 1,
+        BASE = 2
     };
 
     enum class PipelineType {
@@ -21,7 +27,16 @@ namespace vax::vk {
             switch (name) {
             case PipelineName::BACKGROUND:   return "background_pipeline";
             case PipelineName::PBR: return "pbr_pipeline";
+            case PipelineName::BASE: return "base_pipeline";
             default: return "unknown_pipeline";
+            }
+        };
+
+        static std::string pipelineLayoutNameToString(PipelineLayoutName name) {
+            switch (name) {
+            case PipelineLayoutName::BACKGROUND: return "background_pipeline_layout";
+            case PipelineLayoutName::BASE: return "base_pipeline_layout";
+            default: return "unknown_pipeline_layout";
             }
         };
 
@@ -81,7 +96,6 @@ namespace vax::vk {
         };
 
         ~Pipeline() {
-            vkDestroyPipelineLayout(_device.get().vkDevice, vkPipelineLayout, nullptr);
             vkDestroyPipeline(_device.get().vkDevice, vkPipeline, nullptr);
         };
 

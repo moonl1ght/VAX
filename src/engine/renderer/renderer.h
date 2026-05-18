@@ -45,7 +45,7 @@ namespace vax::renderer {
         bool _updateGlobalDescriptorSet(
             VkCommandBuffer commandBuffer,
             vax::DrawableScene* scene,
-            const vax::vk::Pipeline& pipeline
+            VkPipelineLayout pipelineLayout
         );
 
         bool _drawBackground(

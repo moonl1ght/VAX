@@ -22,7 +22,9 @@ namespace vax::vk {
 
         virtual ~PipelineBuilder() = default;
 
-        virtual std::optional<vax::vk::Pipeline> build(vax::vk::PipelineName pipelineName) = 0;
+        virtual std::optional<vax::vk::Pipeline> build(
+            vax::vk::PipelineName pipelineName
+        ) = 0;
 
     protected:
         std::reference_wrapper<const vax::vk::Device> _device;
@@ -30,10 +32,10 @@ namespace vax::vk {
 
     // MARK: - ComputePipelineBuilder
 
-    class ComputePipelineBuilder final : public PipelineBuilder {
+    class ComputePipelineBuilder final {
     public:
 
-        explicit ComputePipelineBuilder(const vax::vk::Device& device) : PipelineBuilder(device) {};
+        explicit ComputePipelineBuilder(const vax::vk::Device& device) : _device(device) {};
 
         ~ComputePipelineBuilder() {
             if (_pipelineLayout != VK_NULL_HANDLE && !_isPipelineLayoutTransferred) {
@@ -41,7 +43,7 @@ namespace vax::vk {
             }
         };
 
-        std::optional<vax::vk::Pipeline> build(vax::vk::PipelineName pipelineName) override;
+        std::optional<vax::vk::Pipeline> build(vax::vk::PipelineName pipelineName);
 
         bool setPipelineLayout(VkPipelineLayoutCreateInfo pipelineLayoutInfo);
 
@@ -52,6 +54,7 @@ namespace vax::vk {
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("ComputePipelineBuilder");
+        std::reference_wrapper<const vax::vk::Device> _device;
         VkPipelineLayout _pipelineLayout = VK_NULL_HANDLE;
         VkPipelineShaderStageCreateInfo _shaderStageInfo = {};
         bool _isPipelineLayoutTransferred = false;
@@ -59,12 +62,13 @@ namespace vax::vk {
 
     // MARK: - GraphicsPipelineBuilder
 
-    class GraphicsPipelineBuilder final : public PipelineBuilder {
+    class GraphicsPipelineBuilder final {
     public:
 
-        explicit GraphicsPipelineBuilder(const vax::vk::Device& device) : PipelineBuilder(device) {};
+        explicit GraphicsPipelineBuilder(const vax::vk::Device& device) : _device(device) {};
 
-        std::optional<vax::vk::Pipeline> build(vax::vk::PipelineName pipelineName) override;
+        std::optional<vax::vk::Pipeline> build(std::string name, VkPipelineLayout pipelineLayout);
+        VkPipelineLayout buildPipelineLayout(std::string name);
 
         void addShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name);
         void addVertexInputInfo(
@@ -87,6 +91,7 @@ namespace vax::vk {
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("GraphicsPipelineBuilder");
+        std::reference_wrapper<const vax::vk::Device> _device;
         std::vector<VkPipelineShaderStageCreateInfo> _shaderStages;
         VkVertexInputBindingDescription _bindingDescription = {};
         std::vector<VkVertexInputAttributeDescription> _attributeDescriptions;

@@ -67,6 +67,8 @@ namespace vax {
 
         void drawBackground(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
 
+        void drawGizmo(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
+
         void onMouseMove(const vax::input::MouseMoveValue& value);
 
     private:
@@ -81,6 +83,7 @@ namespace vax {
         UniformBufferObject _ubo;
         std::vector<vax::objects::DrawableModel> _drawableModels;
         std::optional<vax::objects::DrawableModel> _background;
+        std::optional<vax::objects::DrawableModel> _gizmo;
 
         bool _needsUpdateMaterialsSSBO = true;
         bool _needsUpdateTexturesSSBO = true;

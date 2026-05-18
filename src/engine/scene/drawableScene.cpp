@@ -52,20 +52,19 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
 
         // _sceneUniformBuffers[i].bind(_sceneUniformBuffersMapped[i]);
     }
-    auto background = _primitivesBuilder.createBackground();
-    if (!background) {
+_background = _primitivesBuilder.createBackground();
+    if (!_background) {
         _logger.error("Failed to create background!");
         return;
     }
-    _background = std::make_optional(std::move(background.value()));
-    auto gizmo = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
+    _gizmo = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
     auto helmet = _modelLoader.loadModel(RES_PATH("assets/models/helmet.glb"), submitQueue);
     // auto cube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Gray);
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
     commandBuffer.begin();
-    gizmo->loadMesh(commandBuffer);
+    _gizmo->loadMesh(commandBuffer);
     helmet->loadMesh(commandBuffer);
-    background->loadMesh(commandBuffer);
+    _background->loadMesh(commandBuffer);
     // cube->loadMesh(commandBuffer);
     commandBuffer.end();
     commandBuffer.submitAndWait(submitQueue);
@@ -91,7 +90,6 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     // _drawableModels.push_back(std::move(cube.value()));
     // _drawableModels.push_back(std::move(zcube.value()));
     _drawableModels.push_back(std::move(helmet.value()));
-    _drawableModels.push_back(std::move(gizmo.value()));
     // _drawableModels.push_back(std::move(cube.value()));
     // _drawableModels.push_back(std::move(helmet.value()));
     // _drawableModels.push_back(std::move(ycube.value()));
@@ -145,6 +143,16 @@ void vax::DrawableScene::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipe
 void vax::DrawableScene::drawBackground(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
     if (!_background) return;
     _background->draw(
+        &_vkEngine.get(),
+        commandBuffer, 
+        pipeline.vkPipelineLayout,
+        _sceneUpdateContext.deltaTime
+    );
+}
+
+void vax::DrawableScene::drawGizmo(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
+    if (!_gizmo) return;
+    _gizmo->draw(
         &_vkEngine.get(),
         commandBuffer, 
         pipeline.vkPipelineLayout,
