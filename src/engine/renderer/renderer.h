@@ -42,6 +42,10 @@ namespace vax::renderer {
         );
 
         void _setViewportAndScissor(VkCommandBuffer commandBuffer);
-        bool _updateGlobalDescriptorSet(VkCommandBuffer commandBuffer, vax::DrawableScene* scene);
+        bool _updateGlobalDescriptorSet(
+            VkCommandBuffer commandBuffer,
+            vax::DrawableScene* scene,
+            const vax::vk::Pipeline& pipeline
+        );
     };
 }

@@ -60,13 +60,12 @@ float4 fragMain(FragmentInput input)
 
     float3 color = float3(0.0f, 0.0f, 0.0f);
 
-    float3 lightPos = float3(0, 1, -1);
-    color += calculatePBRLightContribution(
-        pbrProperties, normalize(lightPos - input.worldPosition), float3(1.0f));
-    // // ambient occlusion
-    // color = color * (ao.r < 0.01f ? 1.0f : ao.r);
-    // // emissive
-    // color = pow(emissive.rgb + color, float3(1.0f / 2.2f));
+    float3 lightPos = float3(0, 0, -10);
+    color += calculatePBRLightContribution(pbrProperties, normalize(lightPos - input.worldPosition), float3(1.0f));
+    // ambient occlusion
+    color = color * (ao.r < 0.01f ? 1.0f : ao.r);
+    // emissive
+    color = pow(emissive.rgb + color, float3(1.0f / 2.2f));
 
     if ((pushConstants.flags & ObjectFlags::IsWireframe) != 0) {
         // float val = edgeFactor(input.baryCoords, 1.0);

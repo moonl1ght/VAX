@@ -6,128 +6,66 @@
 #include "shaderUniforms.h"
 
 using namespace vax::vk;
+using namespace vax;
 
-bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
-    auto shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/base.vert.spv"));
-    auto vertShaderModule = shaderBuilder.build(_device.get().vkDevice);
+bool PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
+    if (!_createPBRPipeline(renderPass)) {
+        _logger.error("Failed to create PBR pipeline!");
+        return false;
+    }
+    // if (!_createBackgroundPipeline()) {
+    //     _logger.error("Failed to create background pipeline!");
+    //     return false;
+    // }
+    return true;
+}
 
-    shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/pbr.frag.spv"));
-    auto fragShaderModule = shaderBuilder.build(_device.get().vkDevice);
+const vax::vk::Pipeline* vax::vk::PipelineManager::getPipeline(vax::vk::PipelineName pipelineName) const {
+    if (_pipelines.find(vax::vk::Pipeline::pipelineNameToString(pipelineName)) == _pipelines.end()) {
+        _logger.error("Pipeline not found!");
+        return nullptr;
+    }
+    return &_pipelines.at(vax::vk::Pipeline::pipelineNameToString(pipelineName));
+}
 
-    shaderBuilder = vax::ShaderModuleBuilder(SRC_PATH("engine/shaders/out/background.comp.spv"));
-    auto backgroundShaderModule = shaderBuilder.build(_device.get().vkDevice);
+bool vax::vk::PipelineManager::_createBackgroundPipeline() {
+    auto pipelineBuilder = vax::vk::ComputePipelineBuilder(_device.get());
+    auto computeShaderModule = _shaderModuleBuilder.build(SRC_PATH("engine/shaders/out/background.comp.spv"));
+    if (!computeShaderModule) {
+        _logger.error("Failed to build compute shader module!");
+        return false;
+    }
+    pipelineBuilder.setShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, computeShaderModule.value(), "main");
+    auto pipeline = pipelineBuilder.build(vax::vk::PipelineName::BACKGROUND);
+    if (!pipeline) {
+        _logger.error("Failed to create background pipeline!");
+        return false;
+    }
+    _pipelines.emplace(
+        vax::vk::Pipeline::pipelineNameToString(vax::vk::PipelineName::BACKGROUND), std::move(*pipeline)
+    );
+    vkDestroyShaderModule(_device.get().vkDevice, computeShaderModule.value(), nullptr);
+    return true;
+}
 
-    if (!vertShaderModule || !fragShaderModule || !backgroundShaderModule) {
-        LOG_ERROR("Failed to build shader module!");
+bool vax::vk::PipelineManager::_createPBRPipeline(const vax::vk::RenderPass& renderPass) {
+    auto vertShaderModule = _shaderModuleBuilder.build(SRC_PATH("engine/shaders/out/base.vert.spv"));
+
+    auto fragShaderModule = _shaderModuleBuilder.build(SRC_PATH("engine/shaders/out/pbr.frag.spv"));
+    if (!vertShaderModule || !fragShaderModule) {
+        _logger.error("Failed to build shader module!");
         return false;
     }
 
-    // vax::vk::ComputePipelineBuilder backgroundPipelineBuilder(_device.get());
-    // VkPipelineLayoutCreateInfo computeLayoutInfo{};
-    // computeLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    // computeLayoutInfo.pNext = nullptr;
-    // auto drawBackgroundDescriptorSetLayout = _descriptorSetManager.get().getDrawBackgroundDescriptorSetLayout();
-    // computeLayoutInfo.pSetLayouts = &drawBackgroundDescriptorSetLayout;
-    // computeLayoutInfo.setLayoutCount = 1;
-    // if (!backgroundPipelineBuilder.setPipelineLayout(computeLayoutInfo)) {
-    //     return false;
-    // }
-
-    // backgroundPipelineBuilder.setShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, backgroundShaderModule.value(), "main");
-    // auto backgroundPipeline = backgroundPipelineBuilder.build();
-    // if (backgroundPipeline.has_value()) {
-    //     _backgroundPipeline = std::move(*backgroundPipeline);
-    // }
-    // else {
-    //     return false;
-    // }
-
-    VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertShaderStageInfo.module = vertShaderModule.value();
-    vertShaderStageInfo.pName = "main";
-
-    VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-    fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragShaderStageInfo.module = fragShaderModule.value();
-    fragShaderStageInfo.pName = "main";
-
-    VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-
+    auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
+    pipelineBuilder.addShaderStage(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule.value(), "main");
+    pipelineBuilder.addShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule.value(), "main");
     auto bindingDescription = vax::objects::Vertex::getBindingDescription();
     auto attributeDescriptions = vax::objects::Vertex::getAttributeDescriptions();
-
-    vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    // vertexInputInfo.vertexBindingDescriptionCount = 0;
-    // vertexInputInfo.vertexAttributeDescriptionCount = 0;
-
-    VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-    inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    inputAssembly.primitiveRestartEnable = VK_FALSE;
-
-    VkPipelineViewportStateCreateInfo viewportState{};
-    viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewportState.viewportCount = 1;
-    viewportState.scissorCount = 1;
-
-    VkPipelineRasterizationStateCreateInfo rasterizer{};
-    rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterizer.depthClampEnable = VK_FALSE;
-    rasterizer.rasterizerDiscardEnable = VK_FALSE;
-    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterizer.lineWidth = 1.0f;
-    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-    rasterizer.depthBiasEnable = VK_FALSE;
-
-    VkPipelineMultisampleStateCreateInfo multisampling{};
-    multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisampling.sampleShadingEnable = VK_FALSE;
-    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-    VkPipelineDepthStencilStateCreateInfo depthStencil{};
-    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencil.depthTestEnable = VK_TRUE;
-    depthStencil.depthWriteEnable = VK_TRUE;
-    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-    depthStencil.depthBoundsTestEnable = VK_FALSE;
-    depthStencil.stencilTestEnable = VK_FALSE;
-
-    VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    colorBlendAttachment.blendEnable = VK_FALSE;
-
-    VkPipelineColorBlendStateCreateInfo colorBlending{};
-    colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorBlending.logicOpEnable = VK_FALSE;
-    colorBlending.logicOp = VK_LOGIC_OP_COPY;
-    colorBlending.attachmentCount = 1;
-    colorBlending.pAttachments = &colorBlendAttachment;
-    colorBlending.blendConstants[0] = 0.0f;
-    colorBlending.blendConstants[1] = 0.0f;
-    colorBlending.blendConstants[2] = 0.0f;
-    colorBlending.blendConstants[3] = 0.0f;
-
-    std::vector<VkDynamicState> dynamicStates = {
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR
-    };
-    VkPipelineDynamicStateCreateInfo dynamicState{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-        .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
-        .pDynamicStates = dynamicStates.data()
-    };
-
+    auto attributeDescriptionsVector = std::vector<VkVertexInputAttributeDescription>(
+        attributeDescriptions.begin(), attributeDescriptions.end()
+    );
+    pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
     auto globalDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout(
         DescriptorSetLayout::SetType::GLOBAL
     );
@@ -135,6 +73,7 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
         _logger.error("Failed to get global descriptor set layout!");
         return false;
     }
+    pipelineBuilder.addDescriptorSetLayout(globalDescriptorSetLayout->getVkDescriptorSetLayout());
     auto perFrameDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout(
         DescriptorSetLayout::SetType::PER_FRAME
     );
@@ -142,76 +81,20 @@ bool vax::vk::PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
         _logger.error("Failed to get per frame descriptor set layout!");
         return false;
     }
-    std::vector<VkDescriptorSetLayout> setLayouts = {
-        globalDescriptorSetLayout->getVkDescriptorSetLayout(),
-        perFrameDescriptorSetLayout->getVkDescriptorSetLayout()
-        // objectDescriptorSetLayout
-    };
-    VkPushConstantRange pushConstantRange{
+    pipelineBuilder.addDescriptorSetLayout(perFrameDescriptorSetLayout->getVkDescriptorSetLayout());
+    pipelineBuilder.setPushConstantRange({
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         .offset = 0,
         .size = sizeof(DrawPushConstants)
-    };
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .setLayoutCount = static_cast<uint32_t>(setLayouts.size()),
-        .pSetLayouts = setLayouts.data(),
-        .pushConstantRangeCount = 1,
-        .pPushConstantRanges = &pushConstantRange
-    };
-
-    auto result = vkCreatePipelineLayout(
-        _device.get().vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout
-    );
-    if (result != VK_SUCCESS) {
-        _logger.error("failed to create pipeline layout!");
+    });
+    pipelineBuilder.setRenderPass(renderPass.getVkRenderPass());
+    auto pipeline = pipelineBuilder.build(vax::vk::PipelineName::PBR);
+    if (!pipeline) {
+        _logger.error("Failed to create PBR pipeline!");
         return false;
     }
-
-    VkDebugUtilsObjectNameInfoEXT nameInfo{
-        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
-        .objectType = VK_OBJECT_TYPE_PIPELINE_LAYOUT,
-        .objectHandle = reinterpret_cast<size_t>(_pipelineLayout),
-        .pObjectName = "base_graphics_pipeline_layout",
-    };
-    vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
-
-    VkGraphicsPipelineCreateInfo pipelineInfo{};
-    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = 2;
-    pipelineInfo.pStages = shaderStages;
-    pipelineInfo.pVertexInputState = &vertexInputInfo;
-    pipelineInfo.pInputAssemblyState = &inputAssembly;
-    pipelineInfo.pViewportState = &viewportState;
-    pipelineInfo.pRasterizationState = &rasterizer;
-    pipelineInfo.pMultisampleState = &multisampling;
-    pipelineInfo.pDepthStencilState = &depthStencil;
-    pipelineInfo.pColorBlendState = &colorBlending;
-    pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = _pipelineLayout;
-    pipelineInfo.renderPass = renderPass.getVkRenderPass();
-    // pipelineInfo.renderPass = vkEngine->renderPassManager->getRenderPass();
-    pipelineInfo.subpass = 0;
-    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-
-    auto pipelineResult = vkCreateGraphicsPipelines(
-        _device.get().vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline
-    );
-    if (pipelineResult != VK_SUCCESS) {
-        _logger.error("failed to create graphics pipeline!");
-        return false;
-    }
-
-    VkDebugUtilsObjectNameInfoEXT baseGraphicsPipelineNameInfo{
-        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
-        .objectType = VK_OBJECT_TYPE_PIPELINE,
-        .objectHandle = reinterpret_cast<size_t>(_pipeline),
-        .pObjectName = "base_graphics_pipeline",
-    };
-    vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &baseGraphicsPipelineNameInfo);
-
+    _pipelines.emplace(vax::vk::Pipeline::pipelineNameToString(vax::vk::PipelineName::PBR), std::move(*pipeline));
     vkDestroyShaderModule(_device.get().vkDevice, fragShaderModule.value(), nullptr);
     vkDestroyShaderModule(_device.get().vkDevice, vertShaderModule.value(), nullptr);
-    vkDestroyShaderModule(_device.get().vkDevice, backgroundShaderModule.value(), nullptr);
     return true;
 }

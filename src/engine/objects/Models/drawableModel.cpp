@@ -12,7 +12,7 @@ bool DrawableModel::loadMesh(
 void DrawableModel::draw(
     vax::vk::Engine* vkEngine,
     VkCommandBuffer commandBuffer,
-    const vax::vk::PipelineManager& pipelineManager,
+    VkPipelineLayout pipelineLayout,
     float time
 ) {
     if (!_mesh->isLoaded()) return;
@@ -38,7 +38,7 @@ void DrawableModel::draw(
         
         vkCmdPushConstants(
             commandBuffer,
-            pipelineManager.getPipelineLayout(),
+            pipelineLayout,
             VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0,
             sizeof(DrawPushConstants),
@@ -54,5 +54,4 @@ void DrawableModel::draw(
             0
         );
     }
-    // _mesh->forceDraw(*vkEngine->queueManager, *vkEngine->commandManager, commandBuffer);
 }

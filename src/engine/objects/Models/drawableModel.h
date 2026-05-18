@@ -46,7 +46,7 @@ namespace vax::objects {
         void draw(
             vax::vk::Engine* vkEngine,
             VkCommandBuffer commandBuffer,
-            const vax::vk::PipelineManager& pipelineManager,
+            VkPipelineLayout pipelineLayout,
             float time
         );
 

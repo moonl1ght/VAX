@@ -12,6 +12,7 @@
 #include "renderContext.h"
 #include "camera.h"
 #include "inputController.h"
+#include "pipeline.h"
 
 namespace vax {
     struct SceneUpdateContext {
@@ -62,7 +63,7 @@ namespace vax {
 
         bool writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter);
 
-        void draw(VkCommandBuffer commandBuffer);
+        void draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
 
         void onMouseMove(const vax::input::MouseMoveValue& value);
 

@@ -4,6 +4,11 @@
 #include "device.h"
 
 namespace vax::vk {
+    enum class PipelineName: uint32_t {
+        BACKGROUND = 0,
+        PBR = 1
+    };
+
     enum class PipelineType {
         RENDER,
         COMPUTE,
@@ -12,22 +17,64 @@ namespace vax::vk {
 
     class Pipeline final {
     public:
+        static std::string pipelineNameToString(PipelineName name) {
+            switch (name) {
+            case PipelineName::BACKGROUND:   return "background_pipeline";
+            case PipelineName::PBR: return "pbr_pipeline";
+            default: return "unknown_pipeline";
+            }
+        };
+
+        std::string name = "";
         PipelineType pipelineType = PipelineType::UNKNOWN;
         VkPipelineLayout vkPipelineLayout = VK_NULL_HANDLE;
         VkPipeline vkPipeline = VK_NULL_HANDLE;
 
         Pipeline(const Pipeline& other) = delete;
         Pipeline& operator=(const Pipeline& other) = delete;
-        Pipeline(Pipeline&& other) = delete;
-        Pipeline& operator=(Pipeline&& other) = delete;
+
+        Pipeline(Pipeline&& other) noexcept
+            : _device(other._device)
+            , name(other.name)
+            , pipelineType(other.pipelineType)
+            , vkPipelineLayout(other.vkPipelineLayout)
+            , vkPipeline(other.vkPipeline) {
+            other.pipelineType = PipelineType::UNKNOWN;
+            other.vkPipelineLayout = VK_NULL_HANDLE;
+            other.vkPipeline = VK_NULL_HANDLE;
+            other.name.clear();
+        };
+
+        Pipeline& operator=(Pipeline&& other) noexcept {
+            if (this != &other) {
+                if (vkPipelineLayout != VK_NULL_HANDLE) {
+                    vkDestroyPipelineLayout(_device.get().vkDevice, vkPipelineLayout, nullptr);
+                }
+                if (vkPipeline != VK_NULL_HANDLE) {
+                    vkDestroyPipeline(_device.get().vkDevice, vkPipeline, nullptr);
+                }
+                _device = other._device;
+                pipelineType = other.pipelineType;
+                vkPipelineLayout = other.vkPipelineLayout;
+                vkPipeline = other.vkPipeline;
+                name = other.name;
+                other.pipelineType = PipelineType::UNKNOWN;
+                other.vkPipelineLayout = VK_NULL_HANDLE;
+                other.vkPipeline = VK_NULL_HANDLE;
+                other.name.clear();
+            }
+            return *this;
+        };
 
         explicit Pipeline(
             const vax::vk::Device& device,
+            std::string name,
             PipelineType pipelineType,
             VkPipelineLayout pipelineLayout,
             VkPipeline pipeline
         ) noexcept
             : _device(device)
+            , name(name)
             , pipelineType(pipelineType)
             , vkPipelineLayout(pipelineLayout)
             , vkPipeline(pipeline) {

@@ -5,6 +5,7 @@
 #include "device.h"
 #include "luna.h"
 #include "pipeline.h"
+#include "shaderModuleBuilder.h"
 
 namespace vax::vk {
     class RenderPass;
@@ -16,13 +17,12 @@ namespace vax::vk {
         PipelineManager(
             const vax::vk::Device& device,
             const vax::vk::DescriptorSetManager& descriptorSetManager)
-            : _device(device), _descriptorSetManager(descriptorSetManager) {
+            : _device(device)
+            , _descriptorSetManager(descriptorSetManager)
+            , _shaderModuleBuilder(device) {
         };
 
-        ~PipelineManager() {
-            vkDestroyPipelineLayout(_device.get().vkDevice, _pipelineLayout, nullptr);
-            vkDestroyPipeline(_device.get().vkDevice, _pipeline, nullptr);
-        };
+        ~PipelineManager() {};
 
         PipelineManager(const PipelineManager&) = delete;
         PipelineManager& operator=(const PipelineManager&) = delete;
@@ -31,23 +31,17 @@ namespace vax::vk {
 
         bool setup(const vax::vk::RenderPass& renderPass);
 
-        VkPipeline getPipeline() const { return _pipeline; }
-        VkPipelineLayout getPipelineLayout() const { return _pipelineLayout; }
-        const vax::vk::Pipeline& getBackgroundPipeline() const {
-            if (!_backgroundPipeline) {
-                throw std::runtime_error("Background pipeline not found!");
-            }
-            return *_backgroundPipeline;
-        };
+        const vax::vk::Pipeline* getPipeline(vax::vk::PipelineName pipelineName) const;
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("PipelineManager");
         std::reference_wrapper<const vax::vk::Device> _device;
         std::reference_wrapper<const vax::vk::DescriptorSetManager> _descriptorSetManager;
+        vax::vk::ShaderModuleBuilder _shaderModuleBuilder;
 
-        VkPipelineLayout _pipelineLayout = VK_NULL_HANDLE;
-        VkPipeline _pipeline = VK_NULL_HANDLE;
+        std::unordered_map<std::string, vax::vk::Pipeline> _pipelines;
 
-        std::unique_ptr<vax::vk::Pipeline> _backgroundPipeline = nullptr;
+        bool _createPBRPipeline(const vax::vk::RenderPass& renderPass);
+        bool _createBackgroundPipeline();
     };
 }

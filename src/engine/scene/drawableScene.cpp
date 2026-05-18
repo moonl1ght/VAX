@@ -124,12 +124,12 @@ bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& d
     return true;
 }
 
-void vax::DrawableScene::draw(VkCommandBuffer commandBuffer) {
+void vax::DrawableScene::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
     for (auto& drawableModel : _drawableModels) {
         drawableModel.draw(
             &_vkEngine.get(),
             commandBuffer, 
-            *(_vkEngine.get().pipelineManager),
+            pipeline.vkPipelineLayout,
             _sceneUpdateContext.deltaTime
         );
     }
