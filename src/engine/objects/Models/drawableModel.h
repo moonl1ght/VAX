@@ -20,6 +20,7 @@ namespace vax::objects {
         struct Settings {
             bool useWireframe = false;
             bool hasTangents = false;
+            bool skipPushConstants = false;
         };
 
         friend class vax::objects::PrimitivesBuilder;
@@ -36,6 +37,12 @@ namespace vax::objects {
             : _meshManager(meshManager)
             , _meshHandle(meshHandle) {
         };
+
+        DrawableModel(DrawableModel&& other) noexcept = default;
+        DrawableModel& operator=(DrawableModel&& other) noexcept = default;
+
+        DrawableModel(const DrawableModel& other) = default;
+        DrawableModel& operator=(const DrawableModel& other) = default;
 
         ~DrawableModel() {};
 
@@ -62,7 +69,7 @@ namespace vax::objects {
         vax::MeshHandle _meshHandle;
 
         // TODO: remove this will need to use mesh manager to get the mesh
-        vax::objects::Mesh* _mesh;
+        vax::objects::MeshPBR* _mesh;
         std::vector<vax::objects::Submesh> _submeshes;
         Settings _settings;
     };

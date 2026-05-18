@@ -11,7 +11,7 @@ namespace vax {
         T id() const { return _id; }
 
     private:
-        const T _id = NullId;
+        T _id = NullId;
     };
 
     using MeshHandle = ResourceHandle<MeshId, NullMeshId>;

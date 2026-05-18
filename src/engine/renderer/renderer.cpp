@@ -194,6 +194,11 @@ bool Renderer::_updateCommandBuffer(
 
         scene->draw(commandBuffer, *pipeline);
 
+        if (!_drawBackground(commandBuffer, scene)) {
+            _logger.error("Failed to draw background!");
+            return;
+        }
+
         _uiLayer.get().render(commandBuffer);
     });
 
@@ -247,5 +252,22 @@ bool Renderer::_updateGlobalDescriptorSet(
         0,
         nullptr
     );
+    return true;
+}
+
+bool Renderer::_drawBackground(
+    VkCommandBuffer commandBuffer,
+    vax::DrawableScene* scene
+) {
+    auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::BACKGROUND);
+    if (!pipeline) {
+        _logger.error("Failed to get background pipeline!");
+        return false;
+    }
+    vkCmdBindPipeline(
+        commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline
+    );
+
+    scene->drawBackground(commandBuffer, *pipeline);
     return true;
 }

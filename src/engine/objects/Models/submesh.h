@@ -4,8 +4,7 @@
 #include "shaderUniforms.h"
 
 namespace vax::objects {
-    class Submesh final {
-    public:
+    struct Submesh final {
         uint32_t indexCount = 0;
         uint32_t firstIndex = 0;
         uint32_t vertexOffset = 0;

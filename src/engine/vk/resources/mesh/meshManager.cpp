@@ -10,7 +10,7 @@ void vax::MeshManager::fullCleanup() {
 }
 
 std::optional<MeshManager::MeshResource> MeshManager::createEmptyMesh() {
-    auto mesh = vax::objects::Mesh(_device.get());
+    auto mesh = vax::objects::MeshPBR(_device.get());
     mesh._id = _lastId++;
     auto [it, inserted] = _pool.try_emplace(mesh.id(), std::move(mesh));
     if (!inserted) {
@@ -34,7 +34,7 @@ bool MeshManager::deleteMesh(vax::MeshHandle handle) {
     return true;
 }
 
-std::optional<vax::objects::Mesh> MeshManager::detach(vax::MeshHandle handle) {
+std::optional<vax::objects::MeshPBR> MeshManager::detach(vax::MeshHandle handle) {
     auto it = _pool.find(handle.id());
     if (it == _pool.end()) return std::nullopt;
     it->second._detach();

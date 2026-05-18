@@ -8,7 +8,7 @@
 namespace vax {
     class MeshManager final {
     public:
-        using MeshResource = std::pair<vax::MeshHandle, vax::objects::Mesh*>;
+        using MeshResource = std::pair<vax::MeshHandle, vax::objects::MeshPBR*>;
 
         explicit MeshManager(const vax::vk::Device& device) : _device(device) {};
 
@@ -29,7 +29,7 @@ namespace vax {
 
         bool deleteMesh(vax::MeshHandle handle);
 
-        std::optional<vax::objects::Mesh> detach(vax::MeshHandle handle);
+        std::optional<vax::objects::MeshPBR> detach(vax::MeshHandle handle);
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("BufferManager");
@@ -37,7 +37,7 @@ namespace vax {
         std::reference_wrapper<const vax::vk::Device> _device;
         // TODO: change to vector + use generation for stability
         // maybe vector of vectors of buffers?
-        std::unordered_map<MeshId, vax::objects::Mesh> _pool;
+        std::unordered_map<MeshId, vax::objects::MeshPBR> _pool;
         MeshId _lastId = 0;
     };
 }

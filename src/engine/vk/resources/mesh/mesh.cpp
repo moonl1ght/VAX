@@ -2,37 +2,8 @@
 
 using namespace vax;
 
-// bool vax::objects::Mesh::draw(
-//     VkCommandBuffer commandBuffer
-// ) const {
-//     if (!_isLoaded || !vertexBuffer.has_value() || !indexBuffer.has_value()) {
-//         _logger.warning("Mesh is not loaded, skipping draw");
-//         return false;
-//     }
-//     VkBuffer vertexBuffers[] = { vertexBuffer.value().vkBuffer() };
-//     VkDeviceSize offsets[] = { 0 };
-//     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-//     vkCmdBindIndexBuffer(commandBuffer, indexBuffer.value().vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
-//     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(_indices.size()), 1, 0, 0, 0);
-//     return true;
-// }
-
-// void vax::objects::Mesh::forceDraw(
-//     vax::vk::QueueManager& queueManager,
-//     vax::vk::CommandManager& commandManager,
-//     VkCommandBuffer commandBuffer
-// ) {
-//     if (!_isLoaded || !vertexBuffer.has_value() || !indexBuffer.has_value()) {
-//         loadBuffers(queueManager, commandManager);
-//     }
-//     VkBuffer vertexBuffers[] = { vertexBuffer.value().vkBuffer() };
-//     VkDeviceSize offsets[] = { 0 };
-//     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-//     vkCmdBindIndexBuffer(commandBuffer, indexBuffer.value().vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
-//     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(_indices.size()), 1, 0, 0, 0);
-// }
-
-bool vax::objects::Mesh::loadBuffers(
+template<typename VertexType>
+bool vax::objects::Mesh<VertexType>::loadBuffers(
     vax::vk::CommandBuffer& commandBuffer
 ) {
     VkDeviceSize bufferSize = sizeof(_vertices[0]) * _vertices.size();
@@ -106,11 +77,13 @@ bool vax::objects::Mesh::loadBuffers(
     return true;
 }
 
-void vax::objects::Mesh::cleanup() {
+template<typename VertexType>
+void vax::objects::Mesh<VertexType>::cleanup() {
     if (isDetached()) _destroy();
 }
 
-void vax::objects::Mesh::_destroy() {
+template<typename VertexType>
+void vax::objects::Mesh<VertexType>::_destroy() {
     if (vertexBuffer.has_value()) {
         vertexBuffer.value().cleanup();
     }
@@ -126,11 +99,13 @@ void vax::objects::Mesh::_destroy() {
     _isLoaded = false;
 }
 
-void vax::objects::Mesh::_detach() {
+template<typename VertexType>
+void vax::objects::Mesh<VertexType>::_detach() {
     _isDetached = true;
 }
 
-void vax::objects::Mesh::cleanupStagingBuffers() {
+template<typename VertexType>
+void vax::objects::Mesh<VertexType>::cleanupStagingBuffers() {
     if (_stagingVertexBuffer.has_value()) {
         _stagingVertexBuffer->cleanup();
     }
@@ -140,3 +115,6 @@ void vax::objects::Mesh::cleanupStagingBuffers() {
     _stagingVertexBuffer = std::nullopt;
     _stagingIndexBuffer = std::nullopt;
 }
+
+template class vax::objects::Mesh<vax::objects::Vertex>;
+template class vax::objects::Mesh<vax::objects::VertexPUV>;

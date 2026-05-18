@@ -34,6 +34,7 @@ namespace vax::objects {
         PrimitivesBuilder& operator=(PrimitivesBuilder&& other) noexcept = delete;
 
         std::optional<vax::objects::DrawableModel> createCube(float size, vax::Color color);
+        std::optional<vax::objects::DrawableModel> createBackground();
 
     private:
         std::reference_wrapper<vax::MeshManager> _meshManager;

@@ -10,6 +10,7 @@ namespace vax {
 }
 
 namespace vax::objects {
+    template<typename VertexType>
     class Mesh final {
     public:
         friend class vax::MeshManager;
@@ -65,13 +66,13 @@ namespace vax::objects {
 
         MeshId id() const { return _id; }
 
-        std::vector<Vertex>& vertices() { return _vertices; }
+        std::vector<VertexType>& vertices() { return _vertices; }
 
         std::vector<uint32_t>& indices() { return _indices; }
 
-        void setVertices(const std::vector<Vertex>& vertices) { _vertices = vertices; }
+        void setVertices(const std::vector<VertexType>& vertices) { _vertices = vertices; }
 
-        void addVertex(const Vertex& vertex) { _vertices.push_back(vertex); }
+        void addVertex(const VertexType& vertex) { _vertices.push_back(vertex); }
 
         void setIndices(const std::vector<uint32_t>& indices) { _indices = indices; }
 
@@ -89,7 +90,7 @@ namespace vax::objects {
         std::reference_wrapper<const vax::vk::Device> _device;
         std::string _name;
 
-        std::vector<Vertex> _vertices;
+        std::vector<VertexType> _vertices;
         std::vector<uint32_t> _indices;
 
         std::optional<vax::vk::Buffer> _stagingVertexBuffer = std::nullopt;
@@ -103,4 +104,7 @@ namespace vax::objects {
 
         void _detach();
     };
+
+    using MeshPBR = Mesh<Vertex>;
+    using MeshPUV = Mesh<VertexPUV>;
 }

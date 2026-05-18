@@ -39,6 +39,11 @@ enum GlobalBindingIndices {
     GLOBAL_TEXTURE_INDEX = 3,
 };
 
+enum VertexInputIndicesPUV {
+    VERTEX_INPUT_PUV_POSITION_INDEX = 0,
+    VERTEX_INPUT_PUV_UV_INDEX = 1,
+};
+
 enum VertexInputIndices {
     VERTEX_INPUT_POSITION_INDEX = 0,
     VERTEX_INPUT_PACKED_COLOR_INDEX = 1,

@@ -47,5 +47,10 @@ namespace vax::renderer {
             vax::DrawableScene* scene,
             const vax::vk::Pipeline& pipeline
         );
+
+        bool _drawBackground(
+            VkCommandBuffer commandBuffer,
+            vax::DrawableScene* scene
+        );
     };
 }

@@ -35,6 +35,14 @@ struct VertexInput {
     float2 uv2;
 };
 
+struct VertexInputPUV {
+    [vk::location(VertexInputIndicesPUV::VERTEX_INPUT_PUV_POSITION_INDEX)]
+    float3 position;
+
+    [vk::location(VertexInputIndicesPUV::VERTEX_INPUT_PUV_UV_INDEX)]
+    float2 uv;
+};
+
 struct VertexOutput {
     float4 position : SV_Position;
 

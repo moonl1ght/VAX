@@ -13,10 +13,10 @@ bool PipelineManager::setup(const vax::vk::RenderPass& renderPass) {
         _logger.error("Failed to create PBR pipeline!");
         return false;
     }
-    // if (!_createBackgroundPipeline()) {
-    //     _logger.error("Failed to create background pipeline!");
-    //     return false;
-    // }
+    if (!_createBackgroundPipeline(renderPass)) {
+        _logger.error("Failed to create background pipeline!");
+        return false;
+    }
     return true;
 }
 
@@ -28,23 +28,33 @@ const vax::vk::Pipeline* vax::vk::PipelineManager::getPipeline(vax::vk::Pipeline
     return &_pipelines.at(vax::vk::Pipeline::pipelineNameToString(pipelineName));
 }
 
-bool vax::vk::PipelineManager::_createBackgroundPipeline() {
-    auto pipelineBuilder = vax::vk::ComputePipelineBuilder(_device.get());
-    auto computeShaderModule = _shaderModuleBuilder.build(SRC_PATH("engine/shaders/out/background.comp.spv"));
-    if (!computeShaderModule) {
-        _logger.error("Failed to build compute shader module!");
+bool vax::vk::PipelineManager::_createBackgroundPipeline(const vax::vk::RenderPass& renderPass) {
+    auto vertShaderModule = _shaderModuleBuilder.build(SRC_PATH("engine/shaders/out/background.vert.spv"));
+
+    auto fragShaderModule = _shaderModuleBuilder.build(SRC_PATH("engine/shaders/out/background.frag.spv"));
+    if (!vertShaderModule || !fragShaderModule) {
+        _logger.error("Failed to build shader module!");
         return false;
     }
-    pipelineBuilder.setShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, computeShaderModule.value(), "main");
+
+    auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
+    pipelineBuilder.addShaderStage(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule.value(), "main");
+    pipelineBuilder.addShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule.value(), "main");
+    auto bindingDescription = vax::objects::Vertex::getBindingDescription();
+    auto attributeDescriptions = vax::objects::Vertex::getAttributeDescriptions();
+    auto attributeDescriptionsVector = std::vector<VkVertexInputAttributeDescription>(
+        attributeDescriptions.begin(), attributeDescriptions.end()
+    );
+    pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
+    pipelineBuilder.setRenderPass(renderPass.getVkRenderPass());
     auto pipeline = pipelineBuilder.build(vax::vk::PipelineName::BACKGROUND);
     if (!pipeline) {
         _logger.error("Failed to create background pipeline!");
         return false;
     }
-    _pipelines.emplace(
-        vax::vk::Pipeline::pipelineNameToString(vax::vk::PipelineName::BACKGROUND), std::move(*pipeline)
-    );
-    vkDestroyShaderModule(_device.get().vkDevice, computeShaderModule.value(), nullptr);
+    _pipelines.emplace(vax::vk::Pipeline::pipelineNameToString(vax::vk::PipelineName::BACKGROUND), std::move(*pipeline));
+    vkDestroyShaderModule(_device.get().vkDevice, fragShaderModule.value(), nullptr);
+    vkDestroyShaderModule(_device.get().vkDevice, vertShaderModule.value(), nullptr);
     return true;
 }
 

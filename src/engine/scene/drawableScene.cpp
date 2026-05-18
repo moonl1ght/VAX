@@ -52,6 +52,12 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
 
         // _sceneUniformBuffers[i].bind(_sceneUniformBuffersMapped[i]);
     }
+    auto background = _primitivesBuilder.createBackground();
+    if (!background) {
+        _logger.error("Failed to create background!");
+        return;
+    }
+    _background = std::make_optional(std::move(background.value()));
     auto gizmo = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
     auto helmet = _modelLoader.loadModel(RES_PATH("assets/models/helmet.glb"), submitQueue);
     // auto cube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Gray);
@@ -59,6 +65,7 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     commandBuffer.begin();
     gizmo->loadMesh(commandBuffer);
     helmet->loadMesh(commandBuffer);
+    background->loadMesh(commandBuffer);
     // cube->loadMesh(commandBuffer);
     commandBuffer.end();
     commandBuffer.submitAndWait(submitQueue);
@@ -133,6 +140,16 @@ void vax::DrawableScene::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipe
             _sceneUpdateContext.deltaTime
         );
     }
+}
+
+void vax::DrawableScene::drawBackground(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
+    if (!_background) return;
+    _background->draw(
+        &_vkEngine.get(),
+        commandBuffer, 
+        pipeline.vkPipelineLayout,
+        _sceneUpdateContext.deltaTime
+    );
 }
 
 void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {

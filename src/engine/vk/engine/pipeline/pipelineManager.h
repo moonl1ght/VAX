@@ -42,6 +42,6 @@ namespace vax::vk {
         std::unordered_map<std::string, vax::vk::Pipeline> _pipelines;
 
         bool _createPBRPipeline(const vax::vk::RenderPass& renderPass);
-        bool _createBackgroundPipeline();
+        bool _createBackgroundPipeline(const vax::vk::RenderPass& renderPass);
     };
 }
