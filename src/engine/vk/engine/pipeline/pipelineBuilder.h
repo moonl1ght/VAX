@@ -6,6 +6,14 @@
 
 namespace vax::vk {
 
+    struct DepthStencilState {
+        bool depthTestEnable = true;
+        bool depthWriteEnable = true;
+        VkCompareOp depthCompareOp = VK_COMPARE_OP_LESS;
+        bool depthBoundsTestEnable = false;
+        bool stencilTestEnable = false;
+    };
+
     // MARK: - PipelineBuilder
 
     class PipelineBuilder {
@@ -73,6 +81,9 @@ namespace vax::vk {
         void setRenderPass(VkRenderPass renderPass) {
             _renderPass = renderPass;
         }
+        void setDepthStencilState(DepthStencilState depthStencilState) {
+            _depthStencilState = depthStencilState;
+        }
 
     private:
         vax::utils::Logger _logger = vax::utils::Logger("GraphicsPipelineBuilder");
@@ -83,5 +94,6 @@ namespace vax::vk {
         VkPrimitiveTopology _topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         VkPushConstantRange _pushConstantRange = {};
         VkRenderPass _renderPass = VK_NULL_HANDLE;
+        DepthStencilState _depthStencilState = {};
     };
 }

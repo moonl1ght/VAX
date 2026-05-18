@@ -47,6 +47,10 @@ bool vax::vk::PipelineManager::_createBackgroundPipeline(const vax::vk::RenderPa
     );
     pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
     pipelineBuilder.setRenderPass(renderPass.getVkRenderPass());
+    pipelineBuilder.setDepthStencilState({
+        .depthWriteEnable = false,
+        .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
+    });
     auto pipeline = pipelineBuilder.build(vax::vk::PipelineName::BACKGROUND);
     if (!pipeline) {
         _logger.error("Failed to create background pipeline!");

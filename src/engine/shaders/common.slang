@@ -41,7 +41,7 @@ float4 sampleEmissive(PBRMaterial material, float2 uv) {
     uint emissiveTextureIndex = material.emissiveTextureIndex;
     uint emissiveTextureSamplerIndex = material.emissiveTextureSamplerIndex;
     if (emissiveTextureIndex == NO_TEXTURE_FLAG)
-        return float4(1.0f, 1.0f, 1.0f, 1.0f);
+        return float4(0.0f, 0.0f, 0.0f, 1.0f);
     return globalTextures[emissiveTextureIndex].Sample(
         globalSamplers[emissiveTextureSamplerIndex], uv
     );

@@ -103,11 +103,11 @@ std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(vax::vk::Pipelin
     };
     VkPipelineDepthStencilStateCreateInfo depthStencil{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-        .depthTestEnable = VK_TRUE,
-        .depthWriteEnable = VK_TRUE,
-        .depthCompareOp = VK_COMPARE_OP_LESS,
-        .depthBoundsTestEnable = VK_FALSE,
-        .stencilTestEnable = VK_FALSE,
+        .depthTestEnable = _depthStencilState.depthTestEnable,
+        .depthWriteEnable = _depthStencilState.depthWriteEnable,
+        .depthCompareOp = _depthStencilState.depthCompareOp,
+        .depthBoundsTestEnable = _depthStencilState.depthBoundsTestEnable,
+        .stencilTestEnable = _depthStencilState.stencilTestEnable,
     };
     VkPipelineColorBlendAttachmentState colorBlendAttachment{
         .blendEnable = VK_FALSE,
