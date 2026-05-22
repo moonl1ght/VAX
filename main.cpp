@@ -19,7 +19,7 @@ int main() {
 
     printf("SDL version: %d.%d.%d\n", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#if defined(__linux__)
     SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11");
 #endif
     if (!SDL_Init(SDL_INIT_VIDEO)) {

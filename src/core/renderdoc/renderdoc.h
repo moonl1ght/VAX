@@ -23,13 +23,15 @@ class RenderDoc {
 
         auto getApi = reinterpret_cast<pRENDERDOC_GetAPI>(GetProcAddress(mod, "RENDERDOC_GetAPI"));
 #elif defined(__linux__)
-        void *mod = dlopen("librenderdoc.so", RTLD_NOW | RTLD_NOLOAD);
-        if (!mod)
-            mod = dlopen("librenderdoc.so", RTLD_NOW);
-        if (!mod)
-            return;
-
-        auto getApi = reinterpret_cast<pRENDERDOC_GetAPI>(dlsym(mod, "RENDERDOC_GetAPI"));
+        auto getApi = reinterpret_cast<pRENDERDOC_GetAPI>(dlsym(RTLD_DEFAULT, "RENDERDOC_GetAPI"));
+        if (!getApi) {
+            void *mod = dlopen("/opt/renderdoc/lib/librenderdoc.so", RTLD_NOW | RTLD_NOLOAD);
+            if (!mod)
+                mod = dlopen("/opt/renderdoc/lib/librenderdoc.so", RTLD_NOW);
+            if (!mod)
+                return;
+            getApi = reinterpret_cast<pRENDERDOC_GetAPI>(dlsym(mod, "RENDERDOC_GetAPI"));
+        }
 #endif
 #if defined(_WIN32) || defined(__linux__)
         if (!getApi)

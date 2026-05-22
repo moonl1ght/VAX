@@ -1,5 +1,4 @@
 #include "app.h"
-#include "profiler.h"
 #include "renderdoc.h"
 
 using namespace vax;
@@ -11,14 +10,14 @@ bool App::run() {
     try {
         mainLoop();
         cleanup();
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         _logger.error("Failed to run app: {}", e.what());
     }
     return true;
 }
 
 bool App::setup() {
+    RenderDoc::init();
     _window = std::make_unique<vk::Window>();
     if (!_window->load()) {
         return false;
@@ -82,9 +81,7 @@ void App::loopUpdate() {
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
     float timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-    vax::SceneUpdateContext sceneUpdateContext{
-        .deltaTime = timestamp
-    };
+    vax::SceneUpdateContext sceneUpdateContext{.deltaTime = timestamp};
     _drawableScene->update(sceneUpdateContext);
     if (!_renderer->render(_drawableScene.get(), timestamp)) {
         _logger.error("Failed to render scene!");
