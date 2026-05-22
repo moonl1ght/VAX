@@ -36,10 +36,10 @@ namespace vax {
             VkInstanceCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
             createInfo.pApplicationInfo = &appInfo;
-#ifdef _WIN32
-            createInfo.flags = 0;
-#else
+#ifdef __APPLE__
             createInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#else
+            createInfo.flags = 0;
 #endif
 
             auto extensions = getRequiredExtensions();

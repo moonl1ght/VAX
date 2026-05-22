@@ -9,12 +9,7 @@ bool vax::vk::Window::load() {
         return false;
     }
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
-    window = SDL_CreateWindow(
-        "Luna",
-        width,
-        height,
-        window_flags
-    );
+    window = SDL_CreateWindow("Luna", width, height, window_flags);
     if (window == nullptr) {
         _logger.error("Failed to create window");
         return false;
