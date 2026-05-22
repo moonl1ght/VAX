@@ -1,27 +1,24 @@
 #include "modelLoader.h"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <assimp/GltfMaterial.h>
 #include "shaderSharedUtils.h"
+#include <assimp/GltfMaterial.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
 
 using namespace vax::objects;
 using namespace vax;
 
 constexpr glm::mat4 toGlm(const aiMatrix4x4& m) {
     return {
-        m.a1, m.b1, m.c1, m.d1,
-        m.a2, m.b2, m.c2, m.d2,
-        m.a3, m.b3, m.c3, m.d3,
-        m.a4, m.b4, m.c4, m.d4
+        {m.a1, m.b1, m.c1, m.d1},
+        {m.a2, m.b2, m.c2, m.d2},
+        {m.a3, m.b3, m.c3, m.d3},
+        {m.a4, m.b4, m.c4, m.d4},
     };
 }
 
 uint32_t loadTexture(
-    aiString& textureName,
-    VkQueue submitQueue,
-    vax::textures::TextureLoader& textureLoader,
-    const aiScene* scene
+    aiString& textureName, VkQueue submitQueue, vax::textures::TextureLoader& textureLoader, const aiScene* scene
 ) {
     if (textureName.length > 0) {
         const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(textureName.C_Str());
@@ -31,14 +28,14 @@ uint32_t loadTexture(
             auto height = embeddedTexture->mHeight;
             auto size = height == 0 ? width : width * height;
             auto data = std::span<unsigned char>(reinterpret_cast<unsigned char*>(textData), size);
-            std::string name = std::string(scene->mRootNode->mName.C_Str()) + "_baseColorTexture_" + std::string(textureName.C_Str());
+            std::string name =
+                std::string(scene->mRootNode->mName.C_Str()) + "_baseColorTexture_" + std::string(textureName.C_Str());
             auto texture = textureLoader.loadTexture(name, data, submitQueue);
             if (texture.has_value()) {
                 return texture->first.id();
             }
             return NO_TEXTURE_FLAG;
-        }
-        else {
+        } else {
             auto texture = textureLoader.loadTexture(textureName.C_Str(), submitQueue);
             if (texture.has_value()) {
                 return texture->first.id();
@@ -102,11 +99,8 @@ PBRMaterial processMaterial(
     if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_GLTF_TEXTURE_SCALE(aiTextureType_NORMALS, 0), &factor)) {
         material.normalScale = factor;
     }
-    if (
-        AI_SUCCESS == aiGetMaterialFloat(
-            mat, AI_MATKEY_GLTF_TEXTURE_SCALE(aiTextureType_AMBIENT_OCCLUSION, 0), &factor
-        )
-        ) {
+    if (AI_SUCCESS ==
+        aiGetMaterialFloat(mat, AI_MATKEY_GLTF_TEXTURE_SCALE(aiTextureType_AMBIENT_OCCLUSION, 0), &factor)) {
         material.occlusionStrength = factor;
     }
 
@@ -116,13 +110,14 @@ PBRMaterial processMaterial(
     aiString aoTextureName;
     aiString emissiveTextureName;
 
-    mat->GetTexture(
-        aiTextureType_BASE_COLOR, 0, &baseColorTextureName, nullptr, &material.baseColorTextureUVIndex
-    );
+    mat->GetTexture(aiTextureType_BASE_COLOR, 0, &baseColorTextureName, nullptr, &material.baseColorTextureUVIndex);
     mat->GetTexture(aiTextureType_NORMALS, 0, &normalMapTextureName, nullptr, &material.normalMapTextureUVIndex);
     mat->GetTexture(
-        aiTextureType_DIFFUSE_ROUGHNESS, 0,
-        &metallicRoughnessTextureName, nullptr, &material.metallicRoughnessTextureUVIndex
+        aiTextureType_DIFFUSE_ROUGHNESS,
+        0,
+        &metallicRoughnessTextureName,
+        nullptr,
+        &material.metallicRoughnessTextureUVIndex
     );
     mat->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoTextureName, nullptr, &material.aoTextureUVIndex);
     mat->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveTextureName, nullptr, &material.emissiveTextureUVIndex);
@@ -131,9 +126,8 @@ PBRMaterial processMaterial(
     material.baseColorTextureSamplerIndex = samplerId;
     material.normalMapTextureIndex = loadTexture(normalMapTextureName, submitQueue, textureLoader, scene);
     material.normalMapTextureSamplerIndex = samplerId;
-    material.metallicRoughnessTextureIndex = loadTexture(
-        metallicRoughnessTextureName, submitQueue, textureLoader, scene
-    );
+    material.metallicRoughnessTextureIndex =
+        loadTexture(metallicRoughnessTextureName, submitQueue, textureLoader, scene);
     material.metallicRoughnessTextureSamplerIndex = samplerId;
     material.aoTextureIndex = loadTexture(aoTextureName, submitQueue, textureLoader, scene);
     material.aoTextureSamplerIndex = samplerId;
@@ -189,10 +183,10 @@ void processNode(
                 hasTangents = true;
             }
             if (mesh->mTextureCoords[0]) {
-                vertex.uv = { mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y };
+                vertex.uv = {mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y};
             }
             if (mesh->mTextureCoords[1]) {
-                vertex.uv2 = { mesh->mTextureCoords[1][v].x, mesh->mTextureCoords[1][v].y };
+                vertex.uv2 = {mesh->mTextureCoords[1][v].x, mesh->mTextureCoords[1][v].y};
             }
             if (mesh->mColors[0]) {
                 glm::vec4 color = glm::vec4(
@@ -234,10 +228,7 @@ void processNode(
 
 std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQueue submitQueue) {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(
-        path,
-        aiProcess_Triangulate | aiProcess_FlipUVs
-    );
+    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         _logger.error("Failed to load model: " + std::string(importer.GetErrorString()));
@@ -279,7 +270,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
         _logger.error("Failed to load materials");
         return std::nullopt;
     }
-    
+
     bool hasTangents = false;
     processNode(
         scene,
@@ -297,7 +288,8 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     );
 
     auto mesh = _resourceManager.get().meshManager().createEmptyMesh();
-    if (!mesh) return std::nullopt;
+    if (!mesh)
+        return std::nullopt;
 
     (*mesh).second->setName(path);
     (*mesh).second->setVertices(modelVertices);

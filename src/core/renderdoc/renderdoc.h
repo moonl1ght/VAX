@@ -43,10 +43,10 @@ class RenderDoc {
         _api = api;
 
         const std::string capturePath = RELATIVE_PATH("captures/capture");
-        _api->SetCaptureFilePathTemplate(capturePath.c_str());
-        RENDERDOC_OverlayBits overlayBits =
-            static_cast<RENDERDOC_OverlayBits>(eRENDERDOC_Overlay_Enabled | eRENDERDOC_Overlay_CaptureList);
-        // RENDERDOC_OverlayBits overlayBits = eRENDERDOC_Overlay_None;
+        // _api->SetCaptureFilePathTemplate(capturePath.c_str());
+        // RENDERDOC_OverlayBits overlayBits =
+        //     static_cast<RENDERDOC_OverlayBits>(eRENDERDOC_Overlay_Enabled | eRENDERDOC_Overlay_CaptureList);
+        RENDERDOC_OverlayBits overlayBits = eRENDERDOC_Overlay_None;
         _api->MaskOverlayBits(overlayBits, overlayBits);
 #endif
     }

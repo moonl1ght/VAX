@@ -3,8 +3,8 @@
 
 #ifdef __cplusplus
 
-#include <glm/glm.hpp>
 #include <glm/ext/matrix_float3x4.hpp>
+#include <glm/glm.hpp>
 
 using mat4 = glm::mat4;
 using mat3 = glm::mat3x4; // for cpu padding
@@ -12,7 +12,7 @@ using vec2 = glm::vec2;
 using vec3 = glm::vec3;
 using vec4 = glm::vec4;
 
-#else  // Slang
+#else // Slang
 
 typedef float4x4 mat4;
 typedef float3x3 mat3;
@@ -69,7 +69,8 @@ static constexpr uint32_t NO_SAMPLER_INDEX = 0xFFFFFFFF;
 enum ObjectFlags {
     NoFlags = 0,
     IsWireframe = 1 << 0, // 0001
-    NoTangent = 1 << 1, // 0010
+    NoTangent = 1 << 1,   // 0010
+    PrecomputedMVP = 1 << 2, // 0100
 };
 
 struct UniformBufferObject {
@@ -81,11 +82,11 @@ struct UniformBufferObject {
 // TODO: now it uses normalMatrix that is for non uniform scaled objects if more data in the PushConstant is needed
 // another Push constat layout is needed as well
 struct DrawPushConstants {
-    mat4 model; // 64 bytes
-    mat3 normalMatrix; // 48 (with padding) bytes
-    uint32_t flags; // 4 bytes
+    mat4 model;                                 // 64 bytes
+    mat3 normalMatrix;                          // 48 (with padding) bytes
+    uint32_t flags;                             // 4 bytes
     uint32_t materialIndex = NO_MATERIAL_INDEX; // 4 bytes
-    uint32_t padding[2]; // 8 bytes
+    uint32_t padding[2];                        // 8 bytes
 };
 
 struct PBRMaterial {
@@ -116,4 +117,4 @@ struct PBRMaterial {
     uint32_t alphaMode = 0;
 };
 
-#endif  // shaderUniforms_h
+#endif // shaderUniforms_h

@@ -26,7 +26,7 @@ inline vec4 unpackRGBA(uint32_t rgba) {
     return vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 }
 
-#else  // Slang
+#else // Slang
 
 typedef float4x4 mat4;
 typedef float2 vec2;
@@ -49,6 +49,6 @@ float4 unpackRGBA(uint rgba) {
     return float4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
 }
 
-#endif  // __cplusplus
+#endif // __cplusplus
 
-#endif  // shaderSharedUtils_h
+#endif // shaderSharedUtils_h

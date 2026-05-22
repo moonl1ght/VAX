@@ -2,22 +2,15 @@
 
 using namespace vax::objects;
 
-
-bool DrawableModel::loadMesh(
-    vax::vk::CommandBuffer& commandBuffer
-) {
-    return _mesh->loadBuffers(commandBuffer);
-}
+bool DrawableModel::loadMesh(vax::vk::CommandBuffer& commandBuffer) { return _mesh->loadBuffers(commandBuffer); }
 
 void DrawableModel::draw(
-    vax::vk::Engine* vkEngine,
-    VkCommandBuffer commandBuffer,
-    VkPipelineLayout pipelineLayout,
-    float time
+    vax::vk::Engine* vkEngine, VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, float time
 ) {
-    if (!_mesh->isLoaded()) return;
-    VkBuffer vertexBuffers[] = { _mesh->vertexBuffer->vkBuffer() };
-    VkDeviceSize offsets[] = { 0 };
+    if (!_mesh->isLoaded())
+        return;
+    VkBuffer vertexBuffers[] = {_mesh->vertexBuffer->vkBuffer()};
+    VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(commandBuffer, _mesh->indexBuffer->vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
     DrawPushConstants drawPushConstants{};
@@ -47,13 +40,6 @@ void DrawableModel::draw(
             );
         }
 
-        vkCmdDrawIndexed(
-            commandBuffer,
-            submesh.indexCount,
-            1,
-            submesh.firstIndex,
-            submesh.vertexOffset,
-            0
-        );
+        vkCmdDrawIndexed(commandBuffer, submesh.indexCount, 1, submesh.firstIndex, submesh.vertexOffset, 0);
     }
 }

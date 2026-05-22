@@ -1,8 +1,8 @@
 #include "drawableScene.h"
-#include "textureLoader.h"
 #include "modelLoader.h"
-#include "swapchain.h"
 #include "primitivesBuilder.h"
+#include "swapchain.h"
+#include "textureLoader.h"
 
 using namespace vax;
 
@@ -10,8 +10,7 @@ void DrawableScene::prepareForDraw(renderer::RenderCallContext renderCallContext
     _renderCallContext = renderCallContext;
     if (auto mappedMemory = _sceneUniformBuffers[renderCallContext.currentFrame]->mappedMemory()) {
         memcpy(mappedMemory.value(), &_ubo, sizeof(_ubo));
-    }
-    else {
+    } else {
         _logger.error("Failed to get mapped memory!");
     }
 }
@@ -33,26 +32,18 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     // _sceneUniformBuffersMapped.resize(vax::MAX_FRAMES_IN_FLIGHT);
     for (size_t i = 0; i < vax::MAX_FRAMES_IN_FLIGHT; i++) {
         auto& bufferManager = _resourceManager.bufferManager();
-        auto allocation = bufferManager.allocateBuffer(
-            "frame_uniform_buffer",
-            bufferSize,
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-        ).value();
+        auto allocation = bufferManager
+                              .allocateBuffer(
+                                  "frame_uniform_buffer",
+                                  bufferSize,
+                                  VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                              )
+                              .value();
         allocation.second->map();
         _sceneUniformBuffers.push_back(allocation.second);
-        // vkMapMemory(
-        //     _vkEngine.get().device->vkDevice,
-        //     _sceneUniformBuffers[i]->vkBufferMemory(),
-        //     0,
-        //     bufferSize,
-        //     0,
-        //     &_sceneUniformBuffersMapped[i]
-        // );
-
-        // _sceneUniformBuffers[i].bind(_sceneUniformBuffersMapped[i]);
     }
-_background = _primitivesBuilder.createBackground();
+    _background = _primitivesBuilder.createBackground();
     if (!_background) {
         _logger.error("Failed to create background!");
         return;
@@ -73,29 +64,8 @@ _background = _primitivesBuilder.createBackground();
     // texture = TextureLoader(vkEngine).loadTexture(RES_PATH("assets/models/room/viking_room.png"));
     auto cameraPos = glm::vec3(2.0f, 2.0f, 2.0f);
     _mainCamera.setPosition(cameraPos);
-    // _ubo.cameraPosition = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    // _ubo.view = glm::mat4(1.0f);
-    // _ubo.proj = glm::mat4(1.0f);
-    // _drawableModels.emplace_back(_modelLoader.loadModel(RES_PATH("assets/models/room/viking_room.obj")).value());
-    // // _drawableModels.emplace_back(Primitives2D::createPlane());
-    // // _drawableModels.emplace_back(Primitives2D::createPlane());
-    // _drawableModels[1]->transform.position = glm::vec3(0.0f, 0.0f, -0.5f);
-    // auto zcube = _primitivesBuilder.createCube(0.5f, vax::ColorPalette::Blue);
-    // auto ycube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Green);
-    // auto xcube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Red);
-    // xcube->transform.position = glm::vec3(2.0f, 0.0f, 0.0f);
-    // ycube->transform.position = glm::vec3(0.0f, 2.0f, 0.0f);
-    // zcube->transform.position = glm::vec3(0.0f, 0.0f, 2.0f);
 
-    // _drawableModels.push_back(std::move(cube.value()));
-    // _drawableModels.push_back(std::move(zcube.value()));
     _drawableModels.push_back(std::move(helmet.value()));
-    // _drawableModels.push_back(std::move(cube.value()));
-    // _drawableModels.push_back(std::move(helmet.value()));
-    // _drawableModels.push_back(std::move(ycube.value()));
-    // _drawableModels.push_back(std::move(xcube.value()));
-    // _drawableModels.push_back(std::move(cube.value()));
-    // _drawableModels.push_back(std::move(zcube.value()));
 }
 
 bool vax::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter) {
@@ -105,25 +75,21 @@ bool vax::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& 
     }
     descriptorSetWriter.writeBuffer(
         _resourceManager.materialManager().materialBuffer(),
-        GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX, 0,
+        GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX,
+        0,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );
-    descriptorSetWriter.writeSampler(
-        *globalSampler->second,
-        GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 0
-    );
-    _resourceManager.textureManager().updateDescriptorWriterWithAllTextures(
-        descriptorSetWriter,
-        GlobalBindingIndices::GLOBAL_TEXTURE_INDEX,
-        false
-    );
+    descriptorSetWriter.writeSampler(*globalSampler->second, GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 0);
+    _resourceManager.textureManager()
+        .updateDescriptorWriterWithAllTextures(descriptorSetWriter, GlobalBindingIndices::GLOBAL_TEXTURE_INDEX, false);
     return true;
 }
 
 bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter) {
     descriptorSetWriter.writeBuffer(
         *_sceneUniformBuffers[_renderCallContext.currentFrame],
-        FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX, 0,
+        FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
+        0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     );
     return true;
@@ -131,35 +97,20 @@ bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& d
 
 void vax::DrawableScene::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
     for (auto& drawableModel : _drawableModels) {
-        drawableModel.draw(
-            &_vkEngine.get(),
-            commandBuffer, 
-            pipeline.vkPipelineLayout,
-            _sceneUpdateContext.deltaTime
-        );
+        drawableModel.draw(&_vkEngine.get(), commandBuffer, pipeline.vkPipelineLayout, _sceneUpdateContext.deltaTime);
     }
 }
 
 void vax::DrawableScene::drawBackground(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
-    if (!_background) return;
-    _background->draw(
-        &_vkEngine.get(),
-        commandBuffer, 
-        pipeline.vkPipelineLayout,
-        _sceneUpdateContext.deltaTime
-    );
+    if (!_background)
+        return;
+    _background->draw(&_vkEngine.get(), commandBuffer, pipeline.vkPipelineLayout, _sceneUpdateContext.deltaTime);
 }
 
 void vax::DrawableScene::drawGizmo(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
-    if (!_gizmo) return;
-    _gizmo->draw(
-        &_vkEngine.get(),
-        commandBuffer, 
-        pipeline.vkPipelineLayout,
-        _sceneUpdateContext.deltaTime
-    );
+    if (!_gizmo)
+        return;
+    _gizmo->draw(&_vkEngine.get(), commandBuffer, pipeline.vkPipelineLayout, _sceneUpdateContext.deltaTime);
 }
 
-void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {
-    _mainCamera.rotateBy(value.delta);
-}
+void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) { _mainCamera.rotateBy(value.delta); }

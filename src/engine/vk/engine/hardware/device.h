@@ -11,10 +11,10 @@ class Device final {
 
     Device() {}
 
-    Device(const Device &other) = delete;
-    Device(Device &&other) = delete;
-    Device &operator=(const Device &other) = delete;
-    Device &operator=(Device &&other) = delete;
+    Device(const Device& other) = delete;
+    Device(Device&& other) = delete;
+    Device& operator=(const Device& other) = delete;
+    Device& operator=(Device&& other) = delete;
 
     bool load(VkInstance instance, VkSurfaceKHR surface, bool enableValidationLayers);
     void destroy();
@@ -29,14 +29,14 @@ class Device final {
     utils::QueueFamilyIndices _indices;
 
     int createLogicalDevice(
-        const VkPhysicalDevice &physicalDevice,
-        const VkSurfaceKHR &surface,
-        VkDevice &device,
+        const VkPhysicalDevice& physicalDevice,
+        const VkSurfaceKHR& surface,
+        VkDevice& device,
         bool enableValidationLayers
     );
 
-    bool isDeviceSuitable(const VkPhysicalDevice &device, const VkSurfaceKHR &surface);
+    bool isDeviceSuitable(const VkPhysicalDevice& device, const VkSurfaceKHR& surface);
 
-    int pickPhysicalDevice(const VkInstance &instance, const VkSurfaceKHR &surface, VkPhysicalDevice &physicalDevice);
+    int pickPhysicalDevice(const VkInstance& instance, const VkSurfaceKHR& surface, VkPhysicalDevice& physicalDevice);
 };
 } // namespace vax::vk

@@ -2,7 +2,7 @@
 
 using namespace vax::vk;
 
-std::vector<const char *> deviceExtensions = {
+std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
     VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME
@@ -17,7 +17,7 @@ bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
 
     std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
-    for (const auto &extension : availableExtensions) {
+    for (const auto& extension : availableExtensions) {
         requiredExtensions.erase(extension.extensionName);
     }
 
@@ -32,7 +32,7 @@ void Device::destroy() {
 }
 
 int Device::createLogicalDevice(
-    const VkPhysicalDevice &physicalDevice, const VkSurfaceKHR &surface, VkDevice &device, bool enableValidationLayers
+    const VkPhysicalDevice& physicalDevice, const VkSurfaceKHR& surface, VkDevice& device, bool enableValidationLayers
 ) {
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -110,7 +110,7 @@ int Device::createLogicalDevice(
     return EXIT_SUCCESS;
 }
 
-bool Device::isDeviceSuitable(const VkPhysicalDevice &device, const VkSurfaceKHR &surface) {
+bool Device::isDeviceSuitable(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
     utils::QueueFamilyIndices indices = utils::findQueueFamilies(device, surface);
 
     bool extensionsSupported = checkDeviceExtensionSupport(device);
@@ -128,7 +128,7 @@ bool Device::isDeviceSuitable(const VkPhysicalDevice &device, const VkSurfaceKHR
 }
 
 int Device::pickPhysicalDevice(
-    const VkInstance &instance, const VkSurfaceKHR &surface, VkPhysicalDevice &physicalDevice
+    const VkInstance& instance, const VkSurfaceKHR& surface, VkPhysicalDevice& physicalDevice
 ) {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
@@ -141,7 +141,7 @@ int Device::pickPhysicalDevice(
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-    for (const auto &device : devices) {
+    for (const auto& device : devices) {
         if (isDeviceSuitable(device, surface)) {
             physicalDevice = device;
             break;

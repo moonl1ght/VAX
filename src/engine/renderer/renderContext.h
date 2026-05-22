@@ -3,7 +3,7 @@
 #include "luna.h"
 
 namespace vax::renderer {
-    struct RenderCallContext {
-        uint32_t currentFrame;
-    };
-}
+struct RenderCallContext {
+    uint32_t currentFrame;
+};
+} // namespace vax::renderer
