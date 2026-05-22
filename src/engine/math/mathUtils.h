@@ -20,7 +20,7 @@ namespace vax::math {
         return transform;
     }
 
-    constexpr glm::mat4 eulerAngleXYZRotationMatrix(const glm::vec3& rotation) {
+    inline glm::mat4 eulerAngleXYZRotationMatrix(const glm::vec3& rotation) {
         glm::mat4 rotationM = glm::mat4(1.0f);
         rotationM = glm::rotate(rotationM, rotation.z, glm::vec3(0, 0, 1));
         rotationM = glm::rotate(rotationM, rotation.y, glm::vec3(0, 1, 0));

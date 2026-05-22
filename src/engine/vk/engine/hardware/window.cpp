@@ -1,8 +1,9 @@
 #include "window.h"
 
 using namespace vax::vk;
+using namespace vax;
 
-bool Window::load() {
+bool vax::vk::Window::load() {
     if (!SDL_Vulkan_LoadLibrary(NULL)) {
         _logger.error("Failed to load Vulkan library: {}", SDL_GetError());
         return false;
@@ -21,7 +22,7 @@ bool Window::load() {
     return true;
 }
 
-bool Window::createSurface(VkInstance instance) {
+bool vax::vk::Window::createSurface(VkInstance instance) {
     _instance = instance;
     if (!SDL_Vulkan_CreateSurface(window, instance, nullptr, &surface)) {
         _logger.error("Failed to create surface");
@@ -30,7 +31,7 @@ bool Window::createSurface(VkInstance instance) {
     return true;
 }
 
-void Window::destroySurface() {
+void vax::vk::Window::destroySurface() {
     if (surface != VK_NULL_HANDLE && _instance != VK_NULL_HANDLE) {
         _logger.info("Destroying surface...");
         vkDestroySurfaceKHR(_instance, surface, nullptr);
@@ -39,7 +40,7 @@ void Window::destroySurface() {
     }
 }
 
-void Window::destroyWindow() {
+void vax::vk::Window::destroyWindow() {
     if (window != nullptr) {
         _logger.info("Destroying window...");
         SDL_DestroyWindow(window);
@@ -47,7 +48,7 @@ void Window::destroyWindow() {
     }
 }
 
-void Window::destroy() {
+void vax::vk::Window::destroy() {
     destroyWindow();
     destroySurface();
 }

@@ -3,6 +3,7 @@
 #include "luna.h"
 #include "vkEngine.h"
 #include "window.h"
+#undef Status
 #include "imgui.h"
 
 namespace vax::ui {

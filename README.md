@@ -43,6 +43,11 @@ cmake --preset luna
 cmake --build build
 ```
 
+### linux
+```bash
+conan install . --output-folder=build --build=missing --profile=linuxprofile
+```
+
 ## Debugging Slang Shaders
 
 To debug Slang source (not SPIR-V) in RenderDoc or a shader debugger:

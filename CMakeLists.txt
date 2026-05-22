@@ -41,6 +41,8 @@ if(WIN32)
     file(GLOB _SLANG_BIN_HINTS "C:/slang-*/bin")
 elseif(APPLE)
     file(GLOB _SLANG_BIN_HINTS "/Applications/Slang.app/Contents/MacOS/bin")
+else()
+    file(GLOB _SLANG_BIN_HINTS "/usr/slang/bin")
 endif()
 
 if(APPLE)
@@ -52,9 +54,11 @@ find_program(SLANG_COMPILER slangc HINTS
     ${_SLANG_BIN_HINTS}
     $ENV{VULKAN_SDK}/Bin
     $ENV{VULKAN_SDK}/Bin32
+    /usr/slang/bin
     /usr/bin
     /usr/local/bin
 )
+
 if(NOT SLANG_COMPILER)
     message(FATAL_ERROR "slangc not found. Install Slang and ensure it is on PATH or set SLANG_DIR.")
 endif()
