@@ -141,9 +141,10 @@ bool Renderer::_updateCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imag
 
     RendererPass renderPass(renderPassInfo);
     renderPass.pass(commandBuffer, [&]() {
-        auto frameDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
-            _currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
-        );
+        auto frameDescriptorSetWriter =
+            _vkEngine.get()
+                .descriptorSetManager
+                ->getDescriptorSetWriter(_currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME);
 
         if (!frameDescriptorSetWriter.has_value()) {
             _logger.error("Failed to get default descriptor set writer!");
@@ -211,9 +212,9 @@ void Renderer::_setViewportAndScissor(VkCommandBuffer commandBuffer) {
 bool Renderer::_updateGlobalDescriptorSet(
     VkCommandBuffer commandBuffer, vax::DrawableScene* scene, VkPipelineLayout pipelineLayout
 ) {
-    auto globalDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
-        _currentFrame, vax::vk::DescriptorSetLayout::SetType::GLOBAL
-    );
+    auto globalDescriptorSetWriter =
+        _vkEngine.get()
+            .descriptorSetManager->getDescriptorSetWriter(_currentFrame, vax::vk::DescriptorSetLayout::SetType::GLOBAL);
     if (!globalDescriptorSetWriter.has_value()) {
         return false;
     }
@@ -252,15 +253,16 @@ bool Renderer::_drawGizmo(VkCommandBuffer commandBuffer, vax::DrawableScene* sce
         .clearValue = {.depthStencil = {1.0f, 0}},
     };
 
+    auto xOffset = static_cast<float>(_vkEngine.get().swapchain->swapchainExtent.width - 256);
     VkClearRect clearRect{
-        .rect = {.offset = {10, 10}, .extent = {256, 256}},
+        .rect = {.offset = {static_cast<int32_t>(xOffset), 0}, .extent = {256, 256}},
         .baseArrayLayer = 0,
         .layerCount = 1,
     };
 
     VkViewport viewport{
-        .x = 100.0f,
-        .y = 10.0f + 256.0f,
+        .x = xOffset,
+        .y = 256.0f,
         .width = 256.0f,
         .height = -256.0f,
         .minDepth = 0.0f,
@@ -268,7 +270,7 @@ bool Renderer::_drawGizmo(VkCommandBuffer commandBuffer, vax::DrawableScene* sce
     };
 
     VkRect2D scissor{
-        .offset = {10, 10},
+        .offset = {static_cast<int32_t>(xOffset), 0},
         .extent = {256, 256},
     };
 

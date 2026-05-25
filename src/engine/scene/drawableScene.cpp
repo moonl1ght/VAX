@@ -49,7 +49,8 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
         return;
     }
     _gizmo = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
-    auto helmet = _modelLoader.loadModel(RES_PATH("assets/models/helmet.glb"), submitQueue);
+    _gizmo->setSettings({.precomputedMVP = true});
+    auto helmet = _modelLoader.loadModel(RES_PATH("assets/models/rover_s1.glb"), submitQueue);
     // auto cube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Gray);
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
     commandBuffer.begin();
@@ -64,6 +65,11 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     // texture = TextureLoader(vkEngine).loadTexture(RES_PATH("assets/models/room/viking_room.png"));
     auto cameraPos = glm::vec3(2.0f, 2.0f, 2.0f);
     _mainCamera.setPosition(cameraPos);
+    _gizmoCamera.setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
+    _gizmoCamera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));
+    _gizmoCamera.setViewPortSize(math::SizeUI(256, 256));
+    _gizmoCamera.setProjection(objects::Camera::Projection::orthographic);
+    _gizmoCamera.setViewSize(1.5f);
 
     _drawableModels.push_back(std::move(helmet.value()));
 }
@@ -110,7 +116,14 @@ void vax::DrawableScene::drawBackground(VkCommandBuffer commandBuffer, const vax
 void vax::DrawableScene::drawGizmo(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
     if (!_gizmo)
         return;
+    auto viewMatrix = _gizmoCamera.viewMatrix();
+    auto projectionMatrix = _gizmoCamera.projectionMatrix();
+    auto viewProjectionMatrix = projectionMatrix * viewMatrix;
+    _gizmo->transformHandle.setModelMatrix(viewProjectionMatrix);
     _gizmo->draw(&_vkEngine.get(), commandBuffer, pipeline.vkPipelineLayout, _sceneUpdateContext.deltaTime);
 }
 
-void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) { _mainCamera.rotateBy(value.delta); }
+void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {
+    _mainCamera.rotateBy(value.delta);
+    _gizmoCamera.rotateBy(value.delta);
+}

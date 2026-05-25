@@ -9,15 +9,11 @@
 using namespace vax::textures;
 using namespace vax;
 
-std::optional<TextureManager::TextureResource> TextureLoader::loadTexture(
-    std::string name,
-    std::span<unsigned char> data,
-    VkQueue submitQueue
-) {
+std::optional<TextureManager::TextureResource>
+TextureLoader::loadTexture(std::string name, std::span<unsigned char> data, VkQueue submitQueue) {
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load_from_memory(
-        data.data(), data.size(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha
-    );
+    stbi_uc* pixels =
+        stbi_load_from_memory(data.data(), data.size(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     if (!pixels) {
         _logger.error("Failed to load pixels");
         return std::nullopt;
@@ -25,9 +21,7 @@ std::optional<TextureManager::TextureResource> TextureLoader::loadTexture(
     return _loadTexture(name, pixels, submitQueue, texWidth, texHeight, texChannels);
 }
 
-std::optional<TextureManager::TextureResource> TextureLoader::loadTexture(
-    std::string path, VkQueue submitQueue
-) {
+std::optional<TextureManager::TextureResource> TextureLoader::loadTexture(std::string path, VkQueue submitQueue) {
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     if (!pixels) {
@@ -38,12 +32,7 @@ std::optional<TextureManager::TextureResource> TextureLoader::loadTexture(
 }
 
 std::optional<TextureManager::TextureResource> TextureLoader::_loadTexture(
-    std::string name,
-    unsigned char* pixels,
-    VkQueue submitQueue,
-    int texWidth,
-    int texHeight,
-    int texChannels
+    std::string name, unsigned char* pixels, VkQueue submitQueue, int texWidth, int texHeight, int texChannels
 ) {
     VkDeviceSize imageSize = texWidth * texHeight * 4;
     auto stagingBuffer = vk::Buffer::allocateAndFillData(
@@ -81,10 +70,7 @@ std::optional<TextureManager::TextureResource> TextureLoader::_loadTexture(
     auto taskSchedulerInline = TextureTaskSchedulerInline(_device.get(), commandBuffer);
     commandBuffer.begin();
     taskSchedulerInline.transitionTextureLayout(
-        *(texture->second),
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_IMAGE_ASPECT_COLOR_BIT
+        *(texture->second), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT
     );
     taskSchedulerInline.copyBufferToTexture(*stagingBuffer, *(texture->second));
     taskSchedulerInline.transitionTextureLayout(

@@ -1,34 +1,34 @@
 #pragma once
 
-#include "luna.h"
-#include "device.h"
 #include "commandBuffer.h"
+#include "device.h"
+#include "luna.h"
 
 namespace vax::vk {
-    class CommandManager final {
-    public:
+class CommandManager final {
+  public:
+    VkCommandPool commandPool = VK_NULL_HANDLE;
+    std::vector<VkCommandBuffer> commandBuffers;
 
-        VkCommandPool commandPool = VK_NULL_HANDLE;
-        std::vector<VkCommandBuffer> commandBuffers;
+    explicit CommandManager(const vax::vk::Device& device)
+        : _device(device) {};
 
-        explicit CommandManager(const vax::vk::Device& device) : _device(device) {};
+    CommandManager(const CommandManager& other) = delete;
+    CommandManager(CommandManager&& other) noexcept = delete;
+    CommandManager& operator=(const CommandManager& other) = delete;
+    CommandManager& operator=(CommandManager&& other) noexcept = delete;
 
-        CommandManager(const CommandManager& other) = delete;
-        CommandManager(CommandManager&& other) noexcept = delete;
-        CommandManager& operator=(const CommandManager& other) = delete;
-        CommandManager& operator=(CommandManager&& other) noexcept = delete;
+    bool setup();
 
-        bool setup();
+    void cleanup();
 
-        void cleanup();
+    vax::vk::CommandBuffer createSingleTimeCommandBuffer();
 
-        vax::vk::CommandBuffer createSingleTimeCommandBuffer();
+  private:
+    vax::utils::Logger _logger = vax::utils::Logger("CommandManager");
+    std::reference_wrapper<const vax::vk::Device> _device;
 
-    private:
-        vax::utils::Logger _logger = vax::utils::Logger("CommandManager");
-        std::reference_wrapper<const vax::vk::Device> _device;
-
-        bool createCommandPool();
-        bool createCommandBuffer();
-    };
-}
+    bool createCommandPool();
+    bool createCommandBuffer();
+};
+} // namespace vax::vk

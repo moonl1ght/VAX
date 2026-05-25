@@ -5,8 +5,10 @@
 using namespace vax::vk;
 
 bool Swapchain::setup() {
-    if (!createSwapchain()) return false;
-    if (!createImageViews()) return false;
+    if (!createSwapchain())
+        return false;
+    if (!createImageViews())
+        return false;
     return true;
 }
 
@@ -22,19 +24,16 @@ void Swapchain::cleanup() {
 bool Swapchain::recreate() {
     cleanup();
 
-    if (!setup()) return false;
+    if (!setup())
+        return false;
 
     return true;
 }
 
 VkSurfaceFormatKHR Swapchain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
     for (const auto& availableFormat : availableFormats) {
-        if (
-            availableFormat.format ==
-            VK_FORMAT_B8G8R8A8_SRGB &&
-            availableFormat.colorSpace ==
-            VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-            ) {
+        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
+            availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return availableFormat;
         }
     }
@@ -48,31 +47,24 @@ VkPresentModeKHR Swapchain::chooseSwapPresentMode(const std::vector<VkPresentMod
 VkExtent2D Swapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
-    }
-    else {
+    } else {
         int width, height;
         SDL_GetWindowSizeInPixels(_window.get().window, &width, &height);
 
-        VkExtent2D actualExtent = {
-            static_cast<uint32_t>(width),
-            static_cast<uint32_t>(height)
-        };
+        VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
-        actualExtent.width = std::clamp(
-            actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width
-        );
-        actualExtent.height = std::clamp(
-            actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height
-        );
+        actualExtent.width =
+            std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+        actualExtent.height =
+            std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
         return actualExtent;
     }
 }
 
 bool Swapchain::createSwapchain() {
-    utils::SwapChainSupportDetails swapChainSupport = utils::querySwapChainSupport(
-        _device.get().vkPhysicalDevice, _window.get().surface
-    );
+    utils::SwapChainSupportDetails swapChainSupport =
+        utils::querySwapChainSupport(_device.get().vkPhysicalDevice, _window.get().surface);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -95,22 +87,19 @@ bool Swapchain::createSwapchain() {
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-    utils::QueueFamilyIndices indices = utils::findQueueFamilies(
-        _device.get().vkPhysicalDevice, _window.get().surface
-    );
+    utils::QueueFamilyIndices indices = utils::findQueueFamilies(_device.get().vkPhysicalDevice, _window.get().surface);
     if (!indices.isComplete()) {
         _logger.error("Queue family indices are not complete!");
         return false;
     }
 
-    uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+    uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
     if (indices.graphicsFamily != indices.presentFamily) {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;
         createInfo.pQueueFamilyIndices = queueFamilyIndices;
-    }
-    else {
+    } else {
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.queueFamilyIndexCount = 0;
         createInfo.pQueueFamilyIndices = nullptr;
@@ -150,8 +139,7 @@ bool Swapchain::createImageViews() {
         );
         if (swapchainImageView) {
             swapchainImageViews[i] = *swapchainImageView;
-        }
-        else {
+        } else {
             _logger.error("Failed to create swap chain image view!");
             return false;
         }

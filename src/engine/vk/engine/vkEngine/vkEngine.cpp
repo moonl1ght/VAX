@@ -1,11 +1,11 @@
 #include "vkEngine.h"
-#include "textureLoader.h"
-#include "texture.h"
 #include "renderDestination.h"
-#include "vk_debug.h"
-#include "vkInstanceBuilder.h"
-#include "renderPassBuilder.h"
 #include "renderDestinationBuilder.h"
+#include "renderPassBuilder.h"
+#include "texture.h"
+#include "textureLoader.h"
+#include "vkInstanceBuilder.h"
+#include "vk_debug.h"
 
 using namespace vax::vk;
 
@@ -18,8 +18,7 @@ VkResult CreateDebugUtilsMessengerEXT(
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-    }
-    else {
+    } else {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     }
 }
@@ -43,55 +42,37 @@ void validationLayersDestroyDebugUtilsMessengerEXT(
 }
 
 bool vax::vk::Engine::setup() {
-    std::optional<VkInstance> instanceOptional = vax::VkInstanceBuilder(
-        deletionQueue,
-        enableValidationLayers,
-        validationLayers,
-        vulkanApiVersion
-    ).build();
+    std::optional<VkInstance> instanceOptional =
+        vax::VkInstanceBuilder(deletionQueue, enableValidationLayers, validationLayers, vulkanApiVersion).build();
     if (instanceOptional.has_value()) {
         instance = *instanceOptional;
-    }
-    else {
+    } else {
         return false;
     }
-    deletionQueue.push_function(
-        [&]() {
-            _logger.debug("Destroying instance...");
-            vkDestroyInstance(instance, nullptr);
-            instance = VK_NULL_HANDLE;
-        }
-    );
+    deletionQueue.push_function([&]() {
+        _logger.debug("Destroying instance...");
+        vkDestroyInstance(instance, nullptr);
+        instance = VK_NULL_HANDLE;
+    });
     vax::vk::utils::setPfnSetDebugUtilsObjectNameEXT(instance);
 
-    if (!setupDebugMessenger()) return false;
+    if (!setupDebugMessenger())
+        return false;
 
     _window.get().createSurface(instance);
-    deletionQueue.push_function(
-        [&]() {
-            _window.get().destroySurface();
-        }
-    );
+    deletionQueue.push_function([&]() { _window.get().destroySurface(); });
 
     device = std::make_unique<Device>();
     if (!device->load(instance, _window.get().surface, enableValidationLayers)) {
         return false;
     }
 
-    deletionQueue.push_function(
-        [&]() {
-            device->destroy();
-        }
-    );
+    deletionQueue.push_function([&]() { device->destroy(); });
 
     queueManager = std::make_unique<QueueManager>();
     queueManager->setup(*device);
 
-    deletionQueue.push_function(
-        [&]() {
-            queueManager = nullptr;
-        }
-    );
+    deletionQueue.push_function([&]() { queueManager = nullptr; });
 
     _logger.info("Creating allocator...");
     if (!VK_CHECK(createAllocator())) {
@@ -99,84 +80,60 @@ bool vax::vk::Engine::setup() {
         return false;
     }
 
-    deletionQueue.push_function(
-        [&]() {
-            _logger.debug("Destroying allocator...");
-            vmaDestroyAllocator(allocator);
-        }
-    );
+    deletionQueue.push_function([&]() {
+        _logger.debug("Destroying allocator...");
+        vmaDestroyAllocator(allocator);
+    });
 
     commandManager = std::make_unique<CommandManager>(*device);
-    if (!commandManager->setup()) return false;
-    deletionQueue.push_function(
-        [&]() {
-            commandManager->cleanup();
-        }
-    );
+    if (!commandManager->setup())
+        return false;
+    deletionQueue.push_function([&]() { commandManager->cleanup(); });
 
     syncObjectsManager = std::make_unique<SyncObjectsManager>(*device);
-    if (!syncObjectsManager->setup()) return false;
-    deletionQueue.push_function(
-        [&]() {
-            syncObjectsManager->cleanup();
-        }
-    );
+    if (!syncObjectsManager->setup())
+        return false;
+    deletionQueue.push_function([&]() { syncObjectsManager->cleanup(); });
 
     swapchain = std::make_unique<Swapchain>(_window.get(), *device);
-    if (!swapchain->setup()) return false;
-    deletionQueue.push_function(
-        [&]() {
-            swapchain->cleanup();
-        }
-    );
+    if (!swapchain->setup())
+        return false;
+    deletionQueue.push_function([&]() { swapchain->cleanup(); });
 
-    std::optional<std::unique_ptr<RenderPass>> renderPassOptional = RenderPassBuilder(
-        *device,
-        *swapchain
-    ).build();
-    if (!renderPassOptional.has_value()) return false;
+    std::optional<std::unique_ptr<RenderPass>> renderPassOptional = RenderPassBuilder(*device, *swapchain).build();
+    if (!renderPassOptional.has_value())
+        return false;
     renderPass = std::move(*renderPassOptional);
-    deletionQueue.push_function(
-        [&]() {
-            _logger.debug("Destroying render pass...");
-            renderPass = nullptr; // TODO: remove from destructor
-        }
-    );
+    deletionQueue.push_function([&]() {
+        _logger.debug("Destroying render pass...");
+        renderPass = nullptr; // TODO: remove from destructor
+    });
 
-    auto renderDestinationOptional = RenderDestinationBuilder(
-        *device,
-        allocator,
-        *swapchain,
-        *renderPass
-    ).build(this);
-    if (!renderDestinationOptional.has_value()) return false;
+    auto renderDestinationOptional = RenderDestinationBuilder(*device, allocator, *swapchain, *renderPass).build(this);
+    if (!renderDestinationOptional.has_value())
+        return false;
     renderDestination = std::move(*renderDestinationOptional);
-    deletionQueue.push_function(
-        [&]() {
-            _logger.debug("Destroying render destination...");
-            renderDestination = nullptr; // TODO: remove from destructor
-        }
-    );
+    deletionQueue.push_function([&]() {
+        _logger.debug("Destroying render destination...");
+        renderDestination = nullptr; // TODO: remove from destructor
+    });
 
     descriptorSetManager = std::make_unique<DescriptorSetManager>(*device, MAX_FRAMES_IN_FLIGHT);
-    if (!descriptorSetManager->setup()) return false;
-    deletionQueue.push_function(
-        [&]() {
-            _logger.debug("Destroying descriptor set manager...");
-            descriptorSetManager->cleanup();
-            descriptorSetManager = nullptr;
-        }
-    );
+    if (!descriptorSetManager->setup())
+        return false;
+    deletionQueue.push_function([&]() {
+        _logger.debug("Destroying descriptor set manager...");
+        descriptorSetManager->cleanup();
+        descriptorSetManager = nullptr;
+    });
 
     pipelineManager = std::make_unique<PipelineManager>(*device, *descriptorSetManager);
     std::cout << "Building pipelines..." << std::endl;
     pipelineManager->setup(*renderPass);
-    deletionQueue.push_function(
-        [&]() {
-            _logger.debug("Destroying pipeline manager...");
-            pipelineManager = nullptr; // TODO: remove from destructor
-        }
-    );
+    deletionQueue.push_function([&]() {
+        _logger.debug("Destroying pipeline manager...");
+        pipelineManager = nullptr; // TODO: remove from destructor
+    });
 
     _logger.info("Engine setup complete!");
     return true;
@@ -198,19 +155,16 @@ void vax::vk::Engine::resize() {
     vkDeviceWaitIdle(device->vkDevice);
 
     swapchain->recreate();
-    auto renderDestinationOptional = RenderDestinationBuilder(
-        *device,
-        allocator,
-        *swapchain,
-        *renderPass
-    ).build(this);
-    if (!renderDestinationOptional.has_value()) return;
+    auto renderDestinationOptional = RenderDestinationBuilder(*device, allocator, *swapchain, *renderPass).build(this);
+    if (!renderDestinationOptional.has_value())
+        return;
     renderDestination = std::move(*renderDestinationOptional);
 }
 
 bool vax::vk::Engine::setupDebugMessenger() {
     LOG_INFO("Setting up debug messenger...");
-    if (!enableValidationLayers) return false;
+    if (!enableValidationLayers)
+        return false;
 
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
     vax::populateDebugMessengerCreateInfo(createInfo);
@@ -220,12 +174,10 @@ bool vax::vk::Engine::setupDebugMessenger() {
         return false;
     }
 
-    deletionQueue.push_function(
-        [&]() {
-            LOG_INFO("Destroying debug messenger...");
-            DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-        }
-    );
+    deletionQueue.push_function([&]() {
+        LOG_INFO("Destroying debug messenger...");
+        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+    });
 
     return true;
 }

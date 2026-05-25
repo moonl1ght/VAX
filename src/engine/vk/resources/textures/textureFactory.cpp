@@ -1,14 +1,11 @@
 #include "textureFactory.h"
-#include "imageUtils.h"
 #include "commandManager.h"
+#include "imageUtils.h"
 
 using namespace vax::textures;
 using namespace vax;
 
-std::optional<Texture> TextureFactory::makeDepthTextureDetached(
-    VkFormat format,
-    vax::math::SizeUI size
-) {
+std::optional<Texture> TextureFactory::makeDepthTextureDetached(VkFormat format, vax::math::SizeUI size) {
     auto imageResult = utils::createImage(
         _allocator,
         size.toExtent3D(),
@@ -30,22 +27,12 @@ std::optional<Texture> TextureFactory::makeDepthTextureDetached(
     vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
     auto [depthImage, allocation] = imageResult.value();
     auto texture = vax::textures::Texture(
-        _device.get(),
-        _allocator,
-        "depth_texture",
-        depthImage,
-        allocation,
-        size,
-        format,
-        VK_IMAGE_ASPECT_DEPTH_BIT
+        _device.get(), _allocator, "depth_texture", depthImage, allocation, size, format, VK_IMAGE_ASPECT_DEPTH_BIT
     );
     return std::make_optional(std::move(texture));
 }
 
-std::optional<TextureManager::TextureResource> TextureFactory::makeDepthTexture(
-    VkFormat format,
-    math::SizeUI size
-) {
+std::optional<TextureManager::TextureResource> TextureFactory::makeDepthTexture(VkFormat format, math::SizeUI size) {
     auto texture = makeDepthTextureDetached(format, size);
     if (!texture) {
         return std::nullopt;
@@ -62,10 +49,7 @@ std::optional<TextureManager::TextureResource> TextureFactory::makeDepthTexture(
 }
 
 std::optional<Texture> TextureFactory::makeTextureDetached(
-    std::string name,
-    VkFormat format,
-    math::SizeUI size,
-    VkImageUsageFlags imageUsageFlags
+    std::string name, VkFormat format, math::SizeUI size, VkImageUsageFlags imageUsageFlags
 ) {
     auto imageResult = utils::createImage(
         _allocator,
@@ -78,14 +62,7 @@ std::optional<Texture> TextureFactory::makeTextureDetached(
     if (imageResult) {
         auto [image, allocation] = imageResult.value();
         auto texture = vax::textures::Texture(
-            _device.get(),
-            _allocator,
-            name,
-            image,
-            allocation,
-            size,
-            format,
-            VK_IMAGE_ASPECT_COLOR_BIT
+            _device.get(), _allocator, name, image, allocation, size, format, VK_IMAGE_ASPECT_COLOR_BIT
         );
         if (!name.empty()) {
             VkDebugUtilsObjectNameInfoEXT nameInfo{
@@ -103,13 +80,8 @@ std::optional<Texture> TextureFactory::makeTextureDetached(
     return std::nullopt;
 }
 
-
-std::optional<TextureManager::TextureResource> TextureFactory::makeTexture(
-    std::string name,
-    VkFormat format,
-    math::SizeUI size,
-    VkImageUsageFlags imageUsageFlags
-) {
+std::optional<TextureManager::TextureResource>
+TextureFactory::makeTexture(std::string name, VkFormat format, math::SizeUI size, VkImageUsageFlags imageUsageFlags) {
     auto texture = makeTextureDetached(name, format, size, imageUsageFlags);
     if (!texture) {
         return std::nullopt;

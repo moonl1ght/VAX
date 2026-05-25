@@ -1,12 +1,14 @@
 #include "commandManager.h"
-#include "vkUtils.h"
 #include "vkEngine.h"
+#include "vkUtils.h"
 
 using namespace vax::vk;
 
 bool vax::vk::CommandManager::setup() {
-    if (!createCommandPool()) return false;
-    if (!createCommandBuffer()) return false;
+    if (!createCommandPool())
+        return false;
+    if (!createCommandBuffer())
+        return false;
     return true;
 }
 

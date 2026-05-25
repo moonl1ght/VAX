@@ -1,12 +1,13 @@
 #include "texture.h"
-#include "textureLoader.h"
 #include "imageUtils.h"
+#include "textureLoader.h"
 
 using namespace vax::textures;
 using namespace vax;
 
 void Texture::cleanup() {
-    if (isDetached()) _destroy();
+    if (isDetached())
+        _destroy();
 }
 
 void Texture::_destroy() {
@@ -29,25 +30,23 @@ void Texture::_destroy() {
 }
 
 void Texture::loadImageView() {
-    _imageView = utils::createImageView(
-        _device.get().vkDevice, _image, _format, _aspectMask
-    ).value();
+    _imageView = utils::createImageView(_device.get().vkDevice, _image, _format, _aspectMask).value();
 }
 
-bool vax::textures::Texture::isValid() const {
-    return _image != VK_NULL_HANDLE && _allocation != VK_NULL_HANDLE;
-}
+bool vax::textures::Texture::isValid() const { return _image != VK_NULL_HANDLE && _allocation != VK_NULL_HANDLE; }
 
 std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfo() const {
     if (!_sampler.has_value() || _imageView == VK_NULL_HANDLE) {
         _logger.error("Sampler or image view is not set");
         return std::nullopt;
     }
-    return std::make_optional(VkDescriptorImageInfo{
-        .sampler = _sampler->vkSampler,
-        .imageView = _imageView,
-        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-    });
+    return std::make_optional(
+        VkDescriptorImageInfo{
+            .sampler = _sampler->vkSampler,
+            .imageView = _imageView,
+            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        }
+    );
 }
 
 std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfoNoSampler() const {
@@ -55,10 +54,12 @@ std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfoNoSampler() con
         _logger.error("Image view is not set");
         return std::nullopt;
     }
-    return std::make_optional(VkDescriptorImageInfo{
-        .imageView = _imageView,
-        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-    });
+    return std::make_optional(
+        VkDescriptorImageInfo{
+            .imageView = _imageView,
+            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        }
+    );
 }
 
 std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfo(const Sampler& sampler) const {
@@ -66,11 +67,13 @@ std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfo(const Sampler&
         _logger.error("Image view is not set");
         return std::nullopt;
     }
-    return std::make_optional(VkDescriptorImageInfo{
-        .sampler = sampler.vkSampler,
-        .imageView = _imageView,
-        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-    });
+    return std::make_optional(
+        VkDescriptorImageInfo{
+            .sampler = sampler.vkSampler,
+            .imageView = _imageView,
+            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        }
+    );
 }
 
 void Texture::createSampler() {

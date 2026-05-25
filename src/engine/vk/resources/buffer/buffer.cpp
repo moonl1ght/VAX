@@ -16,8 +16,10 @@ std::optional<Buffer> Buffer::allocateAndFillData(
     auto buffer = Buffer(device);
     buffer._name = name;
     buffer._size = size;
-    if (!buffer._allocate(usage, properties)) return std::nullopt;
-    if (!buffer.fill(data)) return std::nullopt;
+    if (!buffer._allocate(usage, properties))
+        return std::nullopt;
+    if (!buffer.fill(data))
+        return std::nullopt;
     return buffer;
 }
 
@@ -31,12 +33,14 @@ std::optional<Buffer> Buffer::allocate(
     auto buffer = Buffer(device);
     buffer._name = name;
     buffer._size = size;
-    if (!buffer._allocate(usage, properties)) return std::nullopt;
+    if (!buffer._allocate(usage, properties))
+        return std::nullopt;
     return buffer;
 }
 
 void Buffer::cleanup() {
-    if (isDetached()) _destroy();
+    if (isDetached())
+        _destroy();
 }
 
 void Buffer::_detach() {
@@ -57,39 +61,31 @@ void Buffer::_destroy() {
     _id = NullId;
 }
 
-bool Buffer::reload(
-    const void* data,
-    VkDeviceSize size,
-    VkBufferUsageFlags usage,
-    VkMemoryPropertyFlags properties
-) {
+bool Buffer::reload(const void* data, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
     cleanup();
     _size = size;
-    if (!_allocate(usage, properties)) return false;
-    if (!fill(data)) return false;
+    if (!_allocate(usage, properties))
+        return false;
+    if (!fill(data))
+        return false;
     return true;
 }
 
-bool Buffer::load(
-    const void* data,
-    VkDeviceSize size,
-    VkBufferUsageFlags usage,
-    VkMemoryPropertyFlags properties
-) {
-    if (isAllocated())
-    {
+bool Buffer::load(const void* data, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
+    if (isAllocated()) {
         return false;
     }
 
     _size = size;
-    if (!_allocate(usage, properties)) return false;
-    if (!fill(data)) return false;
+    if (!_allocate(usage, properties))
+        return false;
+    if (!fill(data))
+        return false;
     return true;
 }
 
 bool Buffer::fill(const void* fillData) {
-    if (isEmpty() || !isAllocated() || fillData == nullptr)
-    {
+    if (isEmpty() || !isAllocated() || fillData == nullptr) {
         return false;
     }
 
@@ -101,27 +97,18 @@ bool Buffer::fill(const void* fillData) {
 }
 
 void vax::vk::Buffer::copyBufferCommand(
-    vax::vk::CommandBuffer& commandBuffer,
-    Buffer& dstBuffer,
-    VkDeviceSize size
+    vax::vk::CommandBuffer& commandBuffer, Buffer& dstBuffer, VkDeviceSize size
 ) const {
     VkBufferCopy copyRegion{};
     copyRegion.size = size;
     vkCmdCopyBuffer(commandBuffer.vkCommandBuffer, _vkBuffer, dstBuffer._vkBuffer, 1, &copyRegion);
 }
 
-bool Buffer::isEmpty() const {
-    return _size == 0;
-}
+bool Buffer::isEmpty() const { return _size == 0; }
 
-bool Buffer::isAllocated() const {
-    return _vkBuffer != VK_NULL_HANDLE && _vkBufferMemory != VK_NULL_HANDLE;
-}
+bool Buffer::isAllocated() const { return _vkBuffer != VK_NULL_HANDLE && _vkBufferMemory != VK_NULL_HANDLE; }
 
-bool Buffer::_allocate(
-    VkBufferUsageFlags usage,
-    VkMemoryPropertyFlags properties
-) {
+bool Buffer::_allocate(VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
     if (isAllocated()) {
         return false;
     }
@@ -154,9 +141,8 @@ bool Buffer::_allocate(
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = utils::findMemoryType(
-        _device.get().vkPhysicalDevice, memRequirements.memoryTypeBits, properties
-    );
+    allocInfo.memoryTypeIndex =
+        utils::findMemoryType(_device.get().vkPhysicalDevice, memRequirements.memoryTypeBits, properties);
 
     if (vkAllocateMemory(_device.get().vkDevice, &allocInfo, nullptr, &_vkBufferMemory) != VK_SUCCESS) {
         _logger.error("failed to allocate buffer memory!");
@@ -168,19 +154,22 @@ bool Buffer::_allocate(
 }
 
 void Buffer::map() {
-    if (isMapped()) return;
+    if (isMapped())
+        return;
     vkMapMemory(_device.get().vkDevice, _vkBufferMemory, 0, _size, 0, &_mappedMemory);
     _isMapped = true;
 }
 
 void Buffer::unmap() {
-    if (!isMapped()) return;
+    if (!isMapped())
+        return;
     vkUnmapMemory(_device.get().vkDevice, _vkBufferMemory);
     _isMapped = false;
     _mappedMemory = nullptr;
 }
 
 std::optional<void*> Buffer::mappedMemory() const {
-    if (!isMapped()) return std::nullopt;
+    if (!isMapped())
+        return std::nullopt;
     return _mappedMemory;
 }

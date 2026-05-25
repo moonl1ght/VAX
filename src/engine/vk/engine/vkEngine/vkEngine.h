@@ -1,75 +1,74 @@
 #pragma once
 
-#include "luna.h"
-#include "vkUtils.h"
-#include "renderPass.h"
-#include "deletionQueue.h"
-#include "device.h"
-#include "queueManager.h"
-#include "window.h"
-#include "pipelineManager.h"
-#include "swapchain.h"
-#include "renderDestination.h"
-#include "descriptorSetManager.h"
 #include "commandManager.h"
-#include "syncObjectsManager.h"
+#include "deletionQueue.h"
+#include "descriptorSetManager.h"
+#include "device.h"
+#include "luna.h"
+#include "pipelineManager.h"
+#include "queueManager.h"
+#include "renderDestination.h"
+#include "renderPass.h"
 #include "resourceManager.h"
+#include "swapchain.h"
+#include "syncObjectsManager.h"
+#include "vkUtils.h"
+#include "window.h"
 
 namespace vax::vk {
-    class Device;
-    class QueueManager;
-}
+class Device;
+class QueueManager;
+} // namespace vax::vk
 
 namespace vax::vk {
-    class Engine final {
-    public:
-        const uint32_t vulkanApiVersion = VK_API_VERSION_1_4;
+class Engine final {
+  public:
+    const uint32_t vulkanApiVersion = VK_API_VERSION_1_4;
 
-        const bool enableValidationLayers = true;
+    const bool enableValidationLayers = true;
 
-        const std::vector<const char*> validationLayers = {
-            "VK_LAYER_KHRONOS_validation"
-        };
+    const std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
-        bool framebufferResized = false;
+    bool framebufferResized = false;
 
-        vax::utils::DeletionQueue deletionQueue;
+    vax::utils::DeletionQueue deletionQueue;
 
-        VkDebugUtilsMessengerEXT debugMessenger;
+    VkDebugUtilsMessengerEXT debugMessenger;
 
-        VkInstance instance = VK_NULL_HANDLE;
+    VkInstance instance = VK_NULL_HANDLE;
 
-        std::unique_ptr<vax::vk::Device> device;
-        VmaAllocator allocator = VK_NULL_HANDLE;
+    std::unique_ptr<vax::vk::Device> device;
+    VmaAllocator allocator = VK_NULL_HANDLE;
 
-        std::unique_ptr<vax::vk::QueueManager> queueManager;
-        std::unique_ptr<vax::vk::Swapchain> swapchain;
-        std::unique_ptr<vax::vk::RenderPass> renderPass;
-        std::unique_ptr<vax::vk::RenderDestination> renderDestination;
-        std::unique_ptr<vax::vk::DescriptorSetManager> descriptorSetManager;
-        std::unique_ptr<vax::vk::PipelineManager> pipelineManager;
-        std::unique_ptr<vax::vk::CommandManager> commandManager;
-        std::unique_ptr<vax::vk::SyncObjectsManager> syncObjectsManager;
+    std::unique_ptr<vax::vk::QueueManager> queueManager;
+    std::unique_ptr<vax::vk::Swapchain> swapchain;
+    std::unique_ptr<vax::vk::RenderPass> renderPass;
+    std::unique_ptr<vax::vk::RenderDestination> renderDestination;
+    std::unique_ptr<vax::vk::DescriptorSetManager> descriptorSetManager;
+    std::unique_ptr<vax::vk::PipelineManager> pipelineManager;
+    std::unique_ptr<vax::vk::CommandManager> commandManager;
+    std::unique_ptr<vax::vk::SyncObjectsManager> syncObjectsManager;
 
-        explicit Engine(vax::vk::Window& window) : _window(window) {};
+    explicit Engine(vax::vk::Window& window)
+        : _window(window) {};
 
-        ~Engine() { };
+    ~Engine() {};
 
-        Engine(const Engine& other) = delete;
-        Engine& operator=(const Engine& other) = delete;
-        Engine(Engine&& other) noexcept = delete;
-        Engine& operator=(Engine&& other) noexcept = delete;
+    Engine(const Engine& other) = delete;
+    Engine& operator=(const Engine& other) = delete;
+    Engine(Engine&& other) noexcept = delete;
+    Engine& operator=(Engine&& other) noexcept = delete;
 
-        bool setup();
-        void cleanup();
-        void resize();
+    bool setup();
+    void cleanup();
+    void resize();
 
-    private:
-        vax::utils::Logger _logger = vax::utils::Logger("Engine");
+  private:
+    vax::utils::Logger _logger = vax::utils::Logger("Engine");
 
-        std::reference_wrapper<vax::vk::Window> _window;
+    std::reference_wrapper<vax::vk::Window> _window;
 
-        bool setupDebugMessenger();
-        VkResult createAllocator();
-    };
-}
+    bool setupDebugMessenger();
+    VkResult createAllocator();
+};
+} // namespace vax::vk

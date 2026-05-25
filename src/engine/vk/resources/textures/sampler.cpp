@@ -3,10 +3,7 @@
 using namespace vax::textures;
 using namespace vax;
 
-std::optional<Sampler> Sampler::createSampler(
-    const vk::Device& device,
-    std::string name
-) {
+std::optional<Sampler> Sampler::createSampler(const vk::Device& device, std::string name) {
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(device.vkPhysicalDevice, &properties);
 

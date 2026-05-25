@@ -4,21 +4,20 @@
 #include "renderPass.h"
 
 namespace vax::vk {
-    class Swapchain;
-    class Device;
+class Swapchain;
+class Device;
 
-    class RenderPassBuilder {
-    public:
-        explicit RenderPassBuilder(
-            const vax::vk::Device& device,
-            const vax::vk::Swapchain& swapchain
-        ) : _device(device), _swapchain(swapchain) {};
+class RenderPassBuilder {
+  public:
+    explicit RenderPassBuilder(const vax::vk::Device& device, const vax::vk::Swapchain& swapchain)
+        : _device(device)
+        , _swapchain(swapchain) {};
 
-        std::optional<std::unique_ptr<vax::vk::RenderPass>> build() const noexcept;
+    std::optional<std::unique_ptr<vax::vk::RenderPass>> build() const noexcept;
 
-    private:
-        vax::utils::Logger _logger = vax::utils::Logger("RenderPassBuilder");
-        std::reference_wrapper<const vax::vk::Device> _device;
-        std::reference_wrapper<const vax::vk::Swapchain> _swapchain;
-    };
-}
+  private:
+    vax::utils::Logger _logger = vax::utils::Logger("RenderPassBuilder");
+    std::reference_wrapper<const vax::vk::Device> _device;
+    std::reference_wrapper<const vax::vk::Swapchain> _swapchain;
+};
+} // namespace vax::vk

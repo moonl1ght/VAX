@@ -1,47 +1,46 @@
 #pragma once
 
-#include "luna.h"
-#include "device.h"
 #include "buffer.h"
-#include "shaderUniforms.h"
+#include "device.h"
+#include "luna.h"
 #include "resourceUtils.h"
+#include "shaderUniforms.h"
 
 namespace vax {
-    class MaterialManager final {
-    public:
-        explicit MaterialManager(const vax::vk::Device& device) : _device(device) {};
+class MaterialManager final {
+  public:
+    explicit MaterialManager(const vax::vk::Device& device)
+        : _device(device) {};
 
-        ~MaterialManager() {
-            cleanup();
-        }
+    ~MaterialManager() { cleanup(); }
 
-        MaterialManager(const MaterialManager& other) = delete;
-        MaterialManager(MaterialManager&& other) noexcept = delete;
-        MaterialManager& operator=(const MaterialManager& other) = delete;
-        MaterialManager& operator=(MaterialManager&& other) noexcept = delete;
+    MaterialManager(const MaterialManager& other) = delete;
+    MaterialManager(MaterialManager&& other) noexcept = delete;
+    MaterialManager& operator=(const MaterialManager& other) = delete;
+    MaterialManager& operator=(MaterialManager&& other) noexcept = delete;
 
-        bool setup();
+    bool setup();
 
-        void cleanup();
+    void cleanup();
 
-        MaterialId insert(PBRMaterial material);
+    MaterialId insert(PBRMaterial material);
 
-        std::vector<MaterialId> insertMaterials(std::vector<PBRMaterial> materials);
+    std::vector<MaterialId> insertMaterials(std::vector<PBRMaterial> materials);
 
-        std::optional<PBRMaterial> find(MaterialId id);
+    std::optional<PBRMaterial> find(MaterialId id);
 
-        void deleteMaterial(MaterialId id);
+    void deleteMaterial(MaterialId id);
 
-        const vax::vk::Buffer& materialBuffer() const { return *_buffer; }
+    const vax::vk::Buffer& materialBuffer() const { return *_buffer; }
 
-    private:
-        vax::utils::Logger _logger = vax::utils::Logger("MaterialManager");
-        std::reference_wrapper<const vax::vk::Device> _device;
-        // TODO: change to vector of buffers to handle material overflow
-        std::unique_ptr<vax::vk::Buffer> _buffer = nullptr;
-        std::vector<PBRMaterial> _materials;
-        std::vector<MaterialId> _materialsToDelete;
+  private:
+    vax::utils::Logger _logger = vax::utils::Logger("MaterialManager");
+    std::reference_wrapper<const vax::vk::Device> _device;
+    // TODO: change to vector of buffers to handle material overflow
+    std::unique_ptr<vax::vk::Buffer> _buffer = nullptr;
+    std::vector<PBRMaterial> _materials;
+    std::vector<MaterialId> _materialsToDelete;
 
-        bool _updateBuffer(MaterialId id, PBRMaterial material);
-    };
-}
+    bool _updateBuffer(MaterialId id, PBRMaterial material);
+};
+} // namespace vax

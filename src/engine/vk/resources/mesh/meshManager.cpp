@@ -22,13 +22,15 @@ std::optional<MeshManager::MeshResource> MeshManager::createEmptyMesh() {
 
 std::optional<MeshManager::MeshResource> MeshManager::find(vax::MeshHandle handle) {
     auto it = _pool.find(handle.id());
-    if (it == _pool.end()) return std::nullopt;
+    if (it == _pool.end())
+        return std::nullopt;
     return std::make_pair(handle, &it->second);
 }
 
 bool MeshManager::deleteMesh(vax::MeshHandle handle) {
     auto it = _pool.find(handle.id());
-    if (it == _pool.end()) return false;
+    if (it == _pool.end())
+        return false;
     it->second._destroy();
     _pool.erase(it);
     return true;
@@ -36,7 +38,8 @@ bool MeshManager::deleteMesh(vax::MeshHandle handle) {
 
 std::optional<vax::objects::MeshPBR> MeshManager::detach(vax::MeshHandle handle) {
     auto it = _pool.find(handle.id());
-    if (it == _pool.end()) return std::nullopt;
+    if (it == _pool.end())
+        return std::nullopt;
     it->second._detach();
     return std::move(it->second);
 }

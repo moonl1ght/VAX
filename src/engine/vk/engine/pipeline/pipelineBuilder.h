@@ -1,104 +1,95 @@
 #pragma once
 
+#include "device.h"
 #include "luna.h"
 #include "pipeline.h"
-#include "device.h"
 
 namespace vax::vk {
 
-    struct DepthStencilState {
-        bool depthTestEnable = true;
-        bool depthWriteEnable = true;
-        VkCompareOp depthCompareOp = VK_COMPARE_OP_LESS;
-        bool depthBoundsTestEnable = false;
-        bool stencilTestEnable = false;
+struct DepthStencilState {
+    bool depthTestEnable = true;
+    bool depthWriteEnable = true;
+    VkCompareOp depthCompareOp = VK_COMPARE_OP_LESS;
+    bool depthBoundsTestEnable = false;
+    bool stencilTestEnable = false;
+};
+
+// MARK: - PipelineBuilder
+
+class PipelineBuilder {
+  public:
+    explicit PipelineBuilder(const vax::vk::Device& device)
+        : _device(device) {};
+
+    virtual ~PipelineBuilder() = default;
+
+    virtual std::optional<vax::vk::Pipeline> build(vax::vk::PipelineName pipelineName) = 0;
+
+  protected:
+    std::reference_wrapper<const vax::vk::Device> _device;
+};
+
+// MARK: - ComputePipelineBuilder
+
+class ComputePipelineBuilder final {
+  public:
+    explicit ComputePipelineBuilder(const vax::vk::Device& device)
+        : _device(device) {};
+
+    ~ComputePipelineBuilder() {
+        if (_pipelineLayout != VK_NULL_HANDLE && !_isPipelineLayoutTransferred) {
+            vkDestroyPipelineLayout(_device.get().vkDevice, _pipelineLayout, nullptr);
+        }
     };
 
-    // MARK: - PipelineBuilder
+    std::optional<vax::vk::Pipeline> build(vax::vk::PipelineName pipelineName);
 
-    class PipelineBuilder {
-    public:
-        explicit PipelineBuilder(const vax::vk::Device& device) : _device(device) {};
+    bool setPipelineLayout(VkPipelineLayoutCreateInfo pipelineLayoutInfo);
 
-        virtual ~PipelineBuilder() = default;
+    bool updatePipelineLayout(VkPipelineLayoutCreateInfo pipelineLayoutInfo);
 
-        virtual std::optional<vax::vk::Pipeline> build(
-            vax::vk::PipelineName pipelineName
-        ) = 0;
+    /// Replace the current shader stage with the new one.
+    void setShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name);
 
-    protected:
-        std::reference_wrapper<const vax::vk::Device> _device;
-    };
+  private:
+    vax::utils::Logger _logger = vax::utils::Logger("ComputePipelineBuilder");
+    std::reference_wrapper<const vax::vk::Device> _device;
+    VkPipelineLayout _pipelineLayout = VK_NULL_HANDLE;
+    VkPipelineShaderStageCreateInfo _shaderStageInfo = {};
+    bool _isPipelineLayoutTransferred = false;
+};
 
-    // MARK: - ComputePipelineBuilder
+// MARK: - GraphicsPipelineBuilder
 
-    class ComputePipelineBuilder final {
-    public:
+class GraphicsPipelineBuilder final {
+  public:
+    explicit GraphicsPipelineBuilder(const vax::vk::Device& device)
+        : _device(device) {};
 
-        explicit ComputePipelineBuilder(const vax::vk::Device& device) : _device(device) {};
+    std::optional<vax::vk::Pipeline> build(std::string name, VkPipelineLayout pipelineLayout);
+    VkPipelineLayout buildPipelineLayout(std::string name);
 
-        ~ComputePipelineBuilder() {
-            if (_pipelineLayout != VK_NULL_HANDLE && !_isPipelineLayoutTransferred) {
-                vkDestroyPipelineLayout(_device.get().vkDevice, _pipelineLayout, nullptr);
-            }
-        };
+    void addShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name);
+    void addVertexInputInfo(
+        VkVertexInputBindingDescription bindingDescription,
+        std::vector<VkVertexInputAttributeDescription> attributeDescriptions
+    );
+    void setInputAssembly(VkPrimitiveTopology topology) { _topology = topology; }
+    void addDescriptorSetLayout(VkDescriptorSetLayout descriptorSetLayout);
+    void setPushConstantRange(VkPushConstantRange pushConstantRange) { _pushConstantRange = pushConstantRange; }
+    void setRenderPass(VkRenderPass renderPass) { _renderPass = renderPass; }
+    void setDepthStencilState(DepthStencilState depthStencilState) { _depthStencilState = depthStencilState; }
 
-        std::optional<vax::vk::Pipeline> build(vax::vk::PipelineName pipelineName);
-
-        bool setPipelineLayout(VkPipelineLayoutCreateInfo pipelineLayoutInfo);
-
-        bool updatePipelineLayout(VkPipelineLayoutCreateInfo pipelineLayoutInfo);
-
-        /// Replace the current shader stage with the new one.
-        void setShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name);
-
-    private:
-        vax::utils::Logger _logger = vax::utils::Logger("ComputePipelineBuilder");
-        std::reference_wrapper<const vax::vk::Device> _device;
-        VkPipelineLayout _pipelineLayout = VK_NULL_HANDLE;
-        VkPipelineShaderStageCreateInfo _shaderStageInfo = {};
-        bool _isPipelineLayoutTransferred = false;
-    };
-
-    // MARK: - GraphicsPipelineBuilder
-
-    class GraphicsPipelineBuilder final {
-    public:
-
-        explicit GraphicsPipelineBuilder(const vax::vk::Device& device) : _device(device) {};
-
-        std::optional<vax::vk::Pipeline> build(std::string name, VkPipelineLayout pipelineLayout);
-        VkPipelineLayout buildPipelineLayout(std::string name);
-
-        void addShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name);
-        void addVertexInputInfo(
-            VkVertexInputBindingDescription bindingDescription,
-            std::vector<VkVertexInputAttributeDescription> attributeDescriptions
-        );
-        void setInputAssembly(VkPrimitiveTopology topology) {
-            _topology = topology;
-        }
-        void addDescriptorSetLayout(VkDescriptorSetLayout descriptorSetLayout);
-        void setPushConstantRange(VkPushConstantRange pushConstantRange) {
-            _pushConstantRange = pushConstantRange;
-        }
-        void setRenderPass(VkRenderPass renderPass) {
-            _renderPass = renderPass;
-        }
-        void setDepthStencilState(DepthStencilState depthStencilState) {
-            _depthStencilState = depthStencilState;
-        }
-
-    private:
-        vax::utils::Logger _logger = vax::utils::Logger("GraphicsPipelineBuilder");
-        std::reference_wrapper<const vax::vk::Device> _device;
-        std::vector<VkPipelineShaderStageCreateInfo> _shaderStages;
-        VkVertexInputBindingDescription _bindingDescription = {};
-        std::vector<VkVertexInputAttributeDescription> _attributeDescriptions;
-        std::vector<VkDescriptorSetLayout> _descriptorSetLayouts;
-        VkPrimitiveTopology _topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        VkPushConstantRange _pushConstantRange = {};
-        VkRenderPass _renderPass = VK_NULL_HANDLE;
-        DepthStencilState _depthStencilState = {};
-    };
-}
+  private:
+    vax::utils::Logger _logger = vax::utils::Logger("GraphicsPipelineBuilder");
+    std::reference_wrapper<const vax::vk::Device> _device;
+    std::vector<VkPipelineShaderStageCreateInfo> _shaderStages;
+    VkVertexInputBindingDescription _bindingDescription = {};
+    std::vector<VkVertexInputAttributeDescription> _attributeDescriptions;
+    std::vector<VkDescriptorSetLayout> _descriptorSetLayouts;
+    VkPrimitiveTopology _topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    VkPushConstantRange _pushConstantRange = {};
+    VkRenderPass _renderPass = VK_NULL_HANDLE;
+    DepthStencilState _depthStencilState = {};
+};
+} // namespace vax::vk

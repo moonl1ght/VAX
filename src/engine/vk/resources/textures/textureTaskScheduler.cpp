@@ -4,10 +4,7 @@ using namespace vax::textures;
 using namespace vax;
 
 void TextureTaskSchedulerInline::transitionTextureLayout(
-    Texture& texture,
-    VkImageLayout oldLayout,
-    VkImageLayout newLayout,
-    VkImageAspectFlags aspectMask
+    Texture& texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlags aspectMask
 ) {
     VkImageMemoryBarrier2 imageBarrier{
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -55,22 +52,15 @@ void TextureTaskScheduler::transitionTextureLayoutAndSubmit(
     commandBuffer.submitAndWait(submitQueue);
 }
 
-void TextureTaskSchedulerInline::copyBufferToTexture(
-    vax::vk::Buffer& buffer,
-    Texture& texture
-) {
+void TextureTaskSchedulerInline::copyBufferToTexture(vax::vk::Buffer& buffer, Texture& texture) {
     VkBufferImageCopy region{
         .bufferOffset = 0,
         .bufferRowLength = 0,
         .bufferImageHeight = 0,
-        .imageSubresource = {
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            .mipLevel = 0,
-            .baseArrayLayer = 0,
-            .layerCount = 1
-        },
-        .imageOffset = { 0, 0, 0 },
-        .imageExtent = { texture.width(), texture.height(), 1 }
+        .imageSubresource =
+            {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .mipLevel = 0, .baseArrayLayer = 0, .layerCount = 1},
+        .imageOffset = {0, 0, 0},
+        .imageExtent = {texture.width(), texture.height(), 1}
     };
 
     vkCmdCopyBufferToImage(
@@ -84,9 +74,7 @@ void TextureTaskSchedulerInline::copyBufferToTexture(
 }
 
 void TextureTaskScheduler::copyBufferToTextureAndSubmit(
-    VkQueue submitQueue,
-    vax::vk::Buffer& buffer,
-    Texture& texture
+    VkQueue submitQueue, vax::vk::Buffer& buffer, Texture& texture
 ) {
     auto commandBuffer = _commandManager.get().createSingleTimeCommandBuffer();
     auto taskSchedulerInline = TextureTaskSchedulerInline(_device.get(), commandBuffer);

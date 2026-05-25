@@ -1,44 +1,34 @@
 #pragma once
 
-#include "luna.h"
-#include "device.h"
 #include "descriptorSetLayout.h"
+#include "device.h"
+#include "luna.h"
 
 namespace vax::vk {
-    class DescriptorSetLayoutBuilder final {
-    public:
-        explicit DescriptorSetLayoutBuilder(
-            const vax::vk::Device& device,
-            const std::string& name
-        ) : _device(device)
-            , _name(name) {
-        }
+class DescriptorSetLayoutBuilder final {
+  public:
+    explicit DescriptorSetLayoutBuilder(const vax::vk::Device& device, const std::string& name)
+        : _device(device)
+        , _name(name) {}
 
-        ~DescriptorSetLayoutBuilder() {}
+    ~DescriptorSetLayoutBuilder() {}
 
-        DescriptorSetLayoutBuilder(const DescriptorSetLayoutBuilder&) = delete;
-        DescriptorSetLayoutBuilder& operator=(const DescriptorSetLayoutBuilder&) = delete;
-        DescriptorSetLayoutBuilder(DescriptorSetLayoutBuilder&& other) = delete;
-        DescriptorSetLayoutBuilder& operator=(DescriptorSetLayoutBuilder&& other) = delete;
+    DescriptorSetLayoutBuilder(const DescriptorSetLayoutBuilder&) = delete;
+    DescriptorSetLayoutBuilder& operator=(const DescriptorSetLayoutBuilder&) = delete;
+    DescriptorSetLayoutBuilder(DescriptorSetLayoutBuilder&& other) = delete;
+    DescriptorSetLayoutBuilder& operator=(DescriptorSetLayoutBuilder&& other) = delete;
 
-        void addBinding(
-            uint32_t binding,
-            VkDescriptorType type,
-            VkShaderStageFlags stageFlags,
-            uint32_t descriptorCount
-        );
+    void addBinding(uint32_t binding, VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t descriptorCount);
 
-        void clear();
+    void clear();
 
-        std::optional<DescriptorSetLayout> build(
-            DescriptorSetLayout::SetType setType,
-            VkDescriptorSetLayoutCreateFlags flags = 0
-        );
+    std::optional<DescriptorSetLayout>
+    build(DescriptorSetLayout::SetType setType, VkDescriptorSetLayoutCreateFlags flags = 0);
 
-    private:
-        vax::utils::Logger _logger = vax::utils::Logger("DescriptorSetLayoutBuilder");
-        std::reference_wrapper<const vax::vk::Device> _device;
-        std::vector<VkDescriptorSetLayoutBinding> _bindings;
-        std::string _name;
-    };
-}
+  private:
+    vax::utils::Logger _logger = vax::utils::Logger("DescriptorSetLayoutBuilder");
+    std::reference_wrapper<const vax::vk::Device> _device;
+    std::vector<VkDescriptorSetLayoutBinding> _bindings;
+    std::string _name;
+};
+} // namespace vax::vk

@@ -1,94 +1,98 @@
 #pragma once
 
-#include "luna.h"
-#include "drawableModel.h"
-#include "shaderUniforms.h"
-#include "modelLoader.h"
-#include "primitivesBuilder.h"
-#include "vkEngine.h"
-#include "textureLoader.h"
-#include "resourceManager.h"
-#include "descriptorSetWriter.h"
-#include "renderContext.h"
 #include "camera.h"
+#include "descriptorSetWriter.h"
+#include "drawableModel.h"
 #include "inputController.h"
+#include "luna.h"
+#include "modelLoader.h"
 #include "pipeline.h"
+#include "primitivesBuilder.h"
+#include "renderContext.h"
+#include "resourceManager.h"
+#include "shaderUniforms.h"
+#include "textureLoader.h"
+#include "vkEngine.h"
 
 namespace vax {
-    struct SceneUpdateContext {
-        float deltaTime;
+struct SceneUpdateContext {
+    float deltaTime;
+};
+
+class DrawableScene final : public vax::input::InputController::Observer {
+  public:
+    DrawableScene(vax::vk::Engine& vkEngine)
+        : _vkEngine(vkEngine)
+        , _resourceManager(vax::ResourceManager(*vkEngine.device, vkEngine.allocator))
+        , _textureLoader(
+              vax::textures::TextureLoader(
+                  *vkEngine.device, _resourceManager.textureManager(), *vkEngine.commandManager
+              )
+          )
+        , _modelLoader(vax::objects::ModelLoader(_resourceManager, _textureLoader))
+        , _primitivesBuilder(
+              vax::objects::PrimitivesBuilder(
+                  _resourceManager.meshManager(),
+                  _resourceManager.materialManager(),
+                  *_vkEngine.get().commandManager,
+                  *_vkEngine.get().queueManager
+              )
+          ) {};
+
+    ~DrawableScene() {
+        _drawableModels.clear();
+        _resourceManager.cleanup();
+        if (_inputController) {
+            _inputController->removeObserver(this);
+        }
     };
 
-    class DrawableScene final: public vax::input::InputController::Observer {
-    public:
-        DrawableScene(vax::vk::Engine& vkEngine)
-            : _vkEngine(vkEngine)
-            , _resourceManager(vax::ResourceManager(*vkEngine.device, vkEngine.allocator))
-            , _textureLoader(vax::textures::TextureLoader(
-                *vkEngine.device, _resourceManager.textureManager(), *vkEngine.commandManager
-            ))
-            , _modelLoader(vax::objects::ModelLoader(_resourceManager, _textureLoader))
-            , _primitivesBuilder(
-                vax::objects::PrimitivesBuilder(
-                    _resourceManager.meshManager(),
-                    _resourceManager.materialManager(),
-                    *_vkEngine.get().commandManager,
-                    *_vkEngine.get().queueManager
-                )
-            ) {
-        };
+    DrawableScene(const DrawableScene& other) = delete;
+    DrawableScene& operator=(const DrawableScene& other) = delete;
+    DrawableScene(DrawableScene&& other) noexcept = delete;
+    DrawableScene& operator=(DrawableScene&& other) noexcept = delete;
 
-        ~DrawableScene() {
-            _drawableModels.clear();
-            _resourceManager.cleanup();
-            if (_inputController) {
-                _inputController->removeObserver(this);
-            }
-        };
+    const vax::objects::Camera& gizmoCamera() const { return _gizmoCamera; }
 
-        DrawableScene(const DrawableScene& other) = delete;
-        DrawableScene& operator=(const DrawableScene& other) = delete;
-        DrawableScene(DrawableScene&& other) noexcept = delete;
-        DrawableScene& operator=(DrawableScene&& other) noexcept = delete;
+    void load(VkQueue submitQueue);
 
-        void load(VkQueue submitQueue);
+    void resize();
 
-        void resize();
+    void prepareForDraw(vax::renderer::RenderCallContext renderCallContext);
 
-        void prepareForDraw(vax::renderer::RenderCallContext renderCallContext);
+    void update(vax::SceneUpdateContext sceneUpdateContext);
 
-        void update(vax::SceneUpdateContext sceneUpdateContext);
+    bool writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter);
 
-        bool writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter);
+    bool writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter);
 
-        bool writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter);
+    void draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
 
-        void draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
+    void drawBackground(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
 
-        void drawBackground(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
+    void drawGizmo(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
 
-        void drawGizmo(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
+    void onMouseMove(const vax::input::MouseMoveValue& value);
 
-        void onMouseMove(const vax::input::MouseMoveValue& value);
+  private:
+    vax::utils::Logger _logger = vax::utils::Logger("DrawableScene");
+    std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
+    std::reference_wrapper<vax::vk::Engine> _vkEngine;
+    vax::ResourceManager _resourceManager;
+    vax::textures::TextureLoader _textureLoader;
+    vax::objects::ModelLoader _modelLoader;
+    vax::objects::PrimitivesBuilder _primitivesBuilder;
+    vax::objects::Camera _mainCamera;
+    vax::objects::Camera _gizmoCamera;
+    UniformBufferObject _ubo;
+    std::vector<vax::objects::DrawableModel> _drawableModels;
+    std::optional<vax::objects::DrawableModel> _background;
+    std::optional<vax::objects::DrawableModel> _gizmo;
 
-    private:
-        vax::utils::Logger _logger = vax::utils::Logger("DrawableScene");
-        std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
-        std::reference_wrapper<vax::vk::Engine> _vkEngine;
-        vax::ResourceManager _resourceManager;
-        vax::textures::TextureLoader _textureLoader;
-        vax::objects::ModelLoader _modelLoader;
-        vax::objects::PrimitivesBuilder _primitivesBuilder;
-        vax::objects::Camera _mainCamera;
-        UniformBufferObject _ubo;
-        std::vector<vax::objects::DrawableModel> _drawableModels;
-        std::optional<vax::objects::DrawableModel> _background;
-        std::optional<vax::objects::DrawableModel> _gizmo;
+    bool _needsUpdateMaterialsSSBO = true;
+    bool _needsUpdateTexturesSSBO = true;
 
-        bool _needsUpdateMaterialsSSBO = true;
-        bool _needsUpdateTexturesSSBO = true;
-
-        vax::renderer::RenderCallContext _renderCallContext;
-        vax::SceneUpdateContext _sceneUpdateContext;
-    };
-}
+    vax::renderer::RenderCallContext _renderCallContext;
+    vax::SceneUpdateContext _sceneUpdateContext;
+};
+} // namespace vax

@@ -2,7 +2,6 @@
 
 #include "luna.h"
 #include "mesh.h"
-#include "model.h"
 #include "pipelineManager.h"
 #include "resourceHandle.h"
 #include "shaderUniforms.h"
@@ -15,16 +14,19 @@ class ModelLoader;
 } // namespace vax::objects
 
 namespace vax::objects {
-class DrawableModel : public Model {
+class DrawableModel {
   public:
     struct Settings {
         bool useWireframe = false;
         bool hasTangents = false;
         bool skipPushConstants = false;
+        bool precomputedMVP = false;
     };
 
     friend class vax::objects::PrimitivesBuilder;
     friend class vax::objects::ModelLoader;
+
+    vax::math::TransformHandle transformHandle;
 
     struct DrawContext {};
 

@@ -1,9 +1,9 @@
 #include "pipelineManager.h"
+#include "descriptorSetManager.h"
 #include "pipelineBuilder.h"
 #include "shaderModuleBuilder.h"
-#include "descriptorSetManager.h"
-#include "vkEngine.h"
 #include "shaderUniforms.h"
+#include "vkEngine.h"
 
 using namespace vax::vk;
 using namespace vax;
@@ -56,9 +56,8 @@ bool vax::vk::PipelineManager::_createBackgroundPipeline(const vax::vk::RenderPa
     pipelineBuilder.addShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule.value(), "main");
     auto bindingDescription = vax::objects::Vertex::getBindingDescription();
     auto attributeDescriptions = vax::objects::Vertex::getAttributeDescriptions();
-    auto attributeDescriptionsVector = std::vector<VkVertexInputAttributeDescription>(
-        attributeDescriptions.begin(), attributeDescriptions.end()
-    );
+    auto attributeDescriptionsVector =
+        std::vector<VkVertexInputAttributeDescription>(attributeDescriptions.begin(), attributeDescriptions.end());
     pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
     pipelineBuilder.setRenderPass(renderPass.getVkRenderPass());
     pipelineBuilder.setDepthStencilState({
@@ -77,7 +76,8 @@ bool vax::vk::PipelineManager::_createBackgroundPipeline(const vax::vk::RenderPa
         _logger.error("Failed to create background pipeline!");
         return false;
     }
-    _pipelines.emplace(vax::vk::Pipeline::pipelineNameToString(vax::vk::PipelineName::BACKGROUND), std::move(*pipeline));
+    _pipelines
+        .emplace(vax::vk::Pipeline::pipelineNameToString(vax::vk::PipelineName::BACKGROUND), std::move(*pipeline));
     vkDestroyShaderModule(_device.get().vkDevice, fragShaderModule.value(), nullptr);
     vkDestroyShaderModule(_device.get().vkDevice, vertShaderModule.value(), nullptr);
     return true;
@@ -97,9 +97,8 @@ bool vax::vk::PipelineManager::_createPBRPipeline(const vax::vk::RenderPass& ren
     pipelineBuilder.addShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule.value(), "main");
     auto bindingDescription = vax::objects::Vertex::getBindingDescription();
     auto attributeDescriptions = vax::objects::Vertex::getAttributeDescriptions();
-    auto attributeDescriptionsVector = std::vector<VkVertexInputAttributeDescription>(
-        attributeDescriptions.begin(), attributeDescriptions.end()
-    );
+    auto attributeDescriptionsVector =
+        std::vector<VkVertexInputAttributeDescription>(attributeDescriptions.begin(), attributeDescriptions.end());
     pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
     pipelineBuilder.setRenderPass(renderPass.getVkRenderPass());
     auto name = vax::vk::Pipeline::pipelineNameToString(vax::vk::PipelineName::PBR);
@@ -134,9 +133,8 @@ bool vax::vk::PipelineManager::_createBasePipeline(const vax::vk::RenderPass& re
     pipelineBuilder.addShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule.value(), "main");
     auto bindingDescription = vax::objects::Vertex::getBindingDescription();
     auto attributeDescriptions = vax::objects::Vertex::getAttributeDescriptions();
-    auto attributeDescriptionsVector = std::vector<VkVertexInputAttributeDescription>(
-        attributeDescriptions.begin(), attributeDescriptions.end()
-    );
+    auto attributeDescriptionsVector =
+        std::vector<VkVertexInputAttributeDescription>(attributeDescriptions.begin(), attributeDescriptions.end());
     pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
     pipelineBuilder.setRenderPass(renderPass.getVkRenderPass());
     auto name = vax::vk::Pipeline::pipelineNameToString(vax::vk::PipelineName::BASE);
@@ -172,27 +170,25 @@ bool vax::vk::PipelineManager::_createBackgroundPipelineLayout(vax::vk::Pipeline
 bool vax::vk::PipelineManager::_createBasePipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) {
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     auto name = vax::vk::Pipeline::pipelineLayoutNameToString(pipelineLayoutName);
-    auto globalDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout(
-        DescriptorSetLayout::SetType::GLOBAL
-    );
+    auto globalDescriptorSetLayout = _descriptorSetManager.get()
+                                         .getDescriptorSetLayout(DescriptorSetLayout::SetType::GLOBAL);
     if (!globalDescriptorSetLayout) {
         _logger.error("Failed to get global descriptor set layout!");
         return false;
     }
     pipelineBuilder.addDescriptorSetLayout(globalDescriptorSetLayout->getVkDescriptorSetLayout());
-    auto perFrameDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout(
-        DescriptorSetLayout::SetType::PER_FRAME
-    );
+    auto perFrameDescriptorSetLayout = _descriptorSetManager.get()
+                                           .getDescriptorSetLayout(DescriptorSetLayout::SetType::PER_FRAME);
     if (!perFrameDescriptorSetLayout) {
         _logger.error("Failed to get per frame descriptor set layout!");
         return false;
     }
     pipelineBuilder.addDescriptorSetLayout(perFrameDescriptorSetLayout->getVkDescriptorSetLayout());
-    pipelineBuilder.setPushConstantRange({
-        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-        .offset = 0,
-        .size = sizeof(DrawPushConstants)
-    });
+    pipelineBuilder.setPushConstantRange(
+        {.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+         .offset = 0,
+         .size = sizeof(DrawPushConstants)}
+    );
     auto pipelineLayout = pipelineBuilder.buildPipelineLayout(name);
     if (!pipelineLayout) {
         _logger.error("Failed to create base pipeline layout!");

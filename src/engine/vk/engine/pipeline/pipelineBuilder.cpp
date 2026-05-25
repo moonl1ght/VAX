@@ -38,9 +38,8 @@ bool ComputePipelineBuilder::setPipelineLayout(VkPipelineLayoutCreateInfo pipeli
         _logger.warning("Pipeline layout already set!");
         return false;
     }
-    auto pipelineLayoutResult = vkCreatePipelineLayout(
-        _device.get().vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout
-    );
+    auto pipelineLayoutResult =
+        vkCreatePipelineLayout(_device.get().vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout);
     if (!VK_CHECK(pipelineLayoutResult)) {
         _logger.error("Failed to create pipeline layout!");
         return false;
@@ -52,9 +51,8 @@ bool ComputePipelineBuilder::updatePipelineLayout(VkPipelineLayoutCreateInfo pip
     if (_pipelineLayout != VK_NULL_HANDLE) {
         vkDestroyPipelineLayout(_device.get().vkDevice, _pipelineLayout, nullptr);
     }
-    auto pipelineLayoutResult = vkCreatePipelineLayout(
-        _device.get().vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout
-    );
+    auto pipelineLayoutResult =
+        vkCreatePipelineLayout(_device.get().vkDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout);
     if (!VK_CHECK(pipelineLayoutResult)) {
         _logger.error("Failed to create pipeline layout!");
         return false;
@@ -83,9 +81,7 @@ VkPipelineLayout GraphicsPipelineBuilder::buildPipelineLayout(std::string name) 
         .pPushConstantRanges = &_pushConstantRange
     };
     VkPipelineLayout pipelineLayout;
-    auto result = vkCreatePipelineLayout(
-        _device.get().vkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout
-    );
+    auto result = vkCreatePipelineLayout(_device.get().vkDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout);
     if (result != VK_SUCCESS) {
         _logger.error("failed to create pipeline layout!");
         return VK_NULL_HANDLE;
@@ -101,9 +97,7 @@ VkPipelineLayout GraphicsPipelineBuilder::buildPipelineLayout(std::string name) 
     return pipelineLayout;
 }
 
-std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(
-    std::string name, VkPipelineLayout pipelineLayout
-) {
+std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(std::string name, VkPipelineLayout pipelineLayout) {
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         .topology = _topology,
@@ -139,8 +133,8 @@ std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(
     };
     VkPipelineColorBlendAttachmentState colorBlendAttachment{
         .blendEnable = VK_FALSE,
-        .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-            VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+        .colorWriteMask =
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
     };
     VkPipelineColorBlendStateCreateInfo colorBlending{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
@@ -148,11 +142,9 @@ std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(
         .logicOp = VK_LOGIC_OP_COPY,
         .attachmentCount = 1,
         .pAttachments = &colorBlendAttachment,
-        .blendConstants = { 0.0f, 0.0f, 0.0f, 0.0f },
+        .blendConstants = {0.0f, 0.0f, 0.0f, 0.0f},
     };
-    std::array<VkDynamicState, 2> dynamicStates = {
-        VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR
-    };
+    std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
     VkPipelineDynamicStateCreateInfo dynamicState{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
         .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
@@ -184,9 +176,8 @@ std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(
     };
 
     VkPipeline pipeline;
-    auto pipelineResult = vkCreateGraphicsPipelines(
-        _device.get().vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline
-    );
+    auto pipelineResult =
+        vkCreateGraphicsPipelines(_device.get().vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
     if (pipelineResult != VK_SUCCESS) {
         _logger.error("failed to create graphics pipeline!");
         return std::nullopt;
@@ -199,9 +190,7 @@ std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(
         .pObjectName = (name + "_pipeline").c_str(),
     };
     vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &baseGraphicsPipelineNameInfo);
-    return vax::vk::Pipeline(
-        _device.get(), name, vax::vk::PipelineType::RENDER, pipelineLayout, pipeline
-    );
+    return vax::vk::Pipeline(_device.get(), name, vax::vk::PipelineType::RENDER, pipelineLayout, pipeline);
 }
 
 void GraphicsPipelineBuilder::addShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name) {

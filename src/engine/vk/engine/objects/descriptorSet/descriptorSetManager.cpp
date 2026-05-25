@@ -1,6 +1,6 @@
 #include "descriptorSetManager.h"
-#include "vkUtils.h"
 #include "descriptorSetLayoutBuilder.h"
+#include "vkUtils.h"
 
 using namespace vax::vk;
 using namespace vax;
@@ -31,10 +31,10 @@ bool DescriptorSetManager::createDescriptorSetPool() {
     // maxImageSamplerSets = std::min(maxImageSamplerSets, samplersImageLimit);
 
     std::vector<VkDescriptorPoolSize> poolSizes = {
-        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBuffers },
-        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, maxMaterials },
-        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, maxTextures },
-        { VK_DESCRIPTOR_TYPE_SAMPLER, maxSamplers }
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBuffers},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, maxMaterials},
+        {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, maxTextures},
+        {VK_DESCRIPTOR_TYPE_SAMPLER, maxSamplers}
     };
 
     VkDescriptorPoolCreateInfo poolInfo{
@@ -53,13 +53,10 @@ bool DescriptorSetManager::createDescriptorSetPool() {
     return true;
 }
 
-const DescriptorSetLayout* DescriptorSetManager::getDescriptorSetLayout(
-    DescriptorSetLayout::SetType setType
-) const {
+const DescriptorSetLayout* DescriptorSetManager::getDescriptorSetLayout(DescriptorSetLayout::SetType setType) const {
     if (setType == DescriptorSetLayout::SetType::GLOBAL) {
         return &_globalDescriptorSetLayout.value();
-    }
-    else if (setType == DescriptorSetLayout::SetType::PER_FRAME) {
+    } else if (setType == DescriptorSetLayout::SetType::PER_FRAME) {
         return &_perFrameDescriptorSetLayout.value();
     }
     return nullptr;
@@ -74,14 +71,10 @@ std::optional<DescriptorSetWriter> createOrGetDescriptorSet(
     const uint32_t frameIndex
 ) {
     if (descriptorSets.size() == maxFramesInFlight) {
-        return std::make_optional<DescriptorSetWriter>(
-            device,
-            descriptorSets[frameIndex]
-        );
+        return std::make_optional<DescriptorSetWriter>(device, descriptorSets[frameIndex]);
     }
     std::vector<VkDescriptorSetLayout> layouts(
-        static_cast<size_t>(maxFramesInFlight),
-        descriptorSetLayout.getVkDescriptorSetLayout()
+        static_cast<size_t>(maxFramesInFlight), descriptorSetLayout.getVkDescriptorSetLayout()
     );
     VkDescriptorSetAllocateInfo allocInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
@@ -94,15 +87,11 @@ std::optional<DescriptorSetWriter> createOrGetDescriptorSet(
     if (result != VK_SUCCESS) {
         return std::nullopt;
     }
-    return std::make_optional<DescriptorSetWriter>(
-        device,
-        descriptorSets[frameIndex]
-    );
+    return std::make_optional<DescriptorSetWriter>(device, descriptorSets[frameIndex]);
 }
 
-std::optional<DescriptorSetWriter> DescriptorSetManager::getDescriptorSetWriter(
-    uint32_t frameIndex, DescriptorSetLayout::SetType setType
-) {
+std::optional<DescriptorSetWriter>
+DescriptorSetManager::getDescriptorSetWriter(uint32_t frameIndex, DescriptorSetLayout::SetType setType) {
     switch (setType) {
     case DescriptorSetLayout::SetType::GLOBAL:
         return createOrGetDescriptorSet(

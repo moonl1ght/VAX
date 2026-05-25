@@ -1,45 +1,44 @@
 #pragma once
 
-#include "luna.h"
-#include "drawableModel.h"
-#include "meshManager.h"
-#include "materialManager.h"
 #include "colorPalette.h"
+#include "drawableModel.h"
+#include "luna.h"
+#include "materialManager.h"
+#include "meshManager.h"
 
 namespace vax::vk {
-    class CommandManager;
-    class QueueManager;
-}
+class CommandManager;
+class QueueManager;
+} // namespace vax::vk
 
 namespace vax::objects {
-    class PrimitivesBuilder {
-    public:
-        explicit PrimitivesBuilder(
-            vax::MeshManager& meshManager,
-            vax::MaterialManager& materialManager,
-            vax::vk::CommandManager& commandManager,
-            vax::vk::QueueManager& queueManager
-        )
-            : _meshManager(meshManager)
-            , _materialManager(materialManager)
-            , _commandManager(commandManager)
-            , _queueManager(queueManager) {
-        };
+class PrimitivesBuilder {
+  public:
+    explicit PrimitivesBuilder(
+        vax::MeshManager& meshManager,
+        vax::MaterialManager& materialManager,
+        vax::vk::CommandManager& commandManager,
+        vax::vk::QueueManager& queueManager
+    )
+        : _meshManager(meshManager)
+        , _materialManager(materialManager)
+        , _commandManager(commandManager)
+        , _queueManager(queueManager) {};
 
-        ~PrimitivesBuilder() {};
+    ~PrimitivesBuilder() {};
 
-        PrimitivesBuilder(const PrimitivesBuilder& other) = delete;
-        PrimitivesBuilder(PrimitivesBuilder&& other) noexcept = delete;
-        PrimitivesBuilder& operator=(const PrimitivesBuilder& other) = delete;
-        PrimitivesBuilder& operator=(PrimitivesBuilder&& other) noexcept = delete;
+    PrimitivesBuilder(const PrimitivesBuilder& other) = delete;
+    PrimitivesBuilder(PrimitivesBuilder&& other) noexcept = delete;
+    PrimitivesBuilder& operator=(const PrimitivesBuilder& other) = delete;
+    PrimitivesBuilder& operator=(PrimitivesBuilder&& other) noexcept = delete;
 
-        std::optional<vax::objects::DrawableModel> createCube(float size, vax::Color color);
-        std::optional<vax::objects::DrawableModel> createBackground();
+    std::optional<vax::objects::DrawableModel> createCube(float size, vax::Color color);
+    std::optional<vax::objects::DrawableModel> createBackground();
 
-    private:
-        std::reference_wrapper<vax::MeshManager> _meshManager;
-        std::reference_wrapper<vax::MaterialManager> _materialManager;
-        std::reference_wrapper<vax::vk::CommandManager> _commandManager;
-        std::reference_wrapper<vax::vk::QueueManager> _queueManager;
-    };
-}
+  private:
+    std::reference_wrapper<vax::MeshManager> _meshManager;
+    std::reference_wrapper<vax::MaterialManager> _materialManager;
+    std::reference_wrapper<vax::vk::CommandManager> _commandManager;
+    std::reference_wrapper<vax::vk::QueueManager> _queueManager;
+};
+} // namespace vax::objects

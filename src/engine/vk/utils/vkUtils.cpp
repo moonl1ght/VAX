@@ -1,9 +1,7 @@
 #include "vkUtils.h"
 
 uint32_t vax::vk::utils::findMemoryType(
-    const VkPhysicalDevice& physicalDevice,
-    uint32_t typeFilter,
-    VkMemoryPropertyFlags properties
+    const VkPhysicalDevice& physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties
 ) {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
@@ -17,9 +15,8 @@ uint32_t vax::vk::utils::findMemoryType(
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-vax::vk::utils::SwapChainSupportDetails vax::vk::utils::querySwapChainSupport(
-    const VkPhysicalDevice& device, const VkSurfaceKHR& surface
-) {
+vax::vk::utils::SwapChainSupportDetails
+vax::vk::utils::querySwapChainSupport(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
     vax::vk::utils::SwapChainSupportDetails details;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
@@ -43,7 +40,8 @@ vax::vk::utils::SwapChainSupportDetails vax::vk::utils::querySwapChainSupport(
     return details;
 }
 
-vax::vk::utils::QueueFamilyIndices vax::vk::utils::findQueueFamilies(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
+vax::vk::utils::QueueFamilyIndices
+vax::vk::utils::findQueueFamilies(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
     vax::vk::utils::QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;
@@ -78,7 +76,7 @@ vax::vk::utils::QueueFamilyIndices vax::vk::utils::findQueueFamilies(const VkPhy
 VkFormat vax::vk::utils::findDepthFormat(VkPhysicalDevice physicalDevice) {
     return findSupportedFormat(
         physicalDevice,
-        { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+        {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
         VK_IMAGE_TILING_OPTIMAL,
         VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
     );
@@ -96,8 +94,7 @@ VkFormat vax::vk::utils::findSupportedFormat(
 
         if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
             return format;
-        }
-        else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
             return format;
         }
     }

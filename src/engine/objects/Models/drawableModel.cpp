@@ -14,8 +14,8 @@ void DrawableModel::draw(
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(commandBuffer, _mesh->indexBuffer->vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
     DrawPushConstants drawPushConstants{};
-    drawPushConstants.model = transform.getModelMatrix();
-    drawPushConstants.normalMatrix = transform.getNormalMatrix();
+    drawPushConstants.model = transformHandle.getModelMatrix();
+    drawPushConstants.normalMatrix = transformHandle.getNormalMatrix();
 
     uint32_t flags = ObjectFlags::NoFlags;
     if (_settings.useWireframe) {
@@ -23,6 +23,9 @@ void DrawableModel::draw(
     }
     if (!_settings.hasTangents) {
         flags |= ObjectFlags::NoTangent;
+    }
+    if (_settings.precomputedMVP) {
+        flags |= ObjectFlags::PrecomputedMVP;
     }
 
     drawPushConstants.flags = flags;

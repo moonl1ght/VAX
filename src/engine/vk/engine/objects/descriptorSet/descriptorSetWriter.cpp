@@ -7,17 +7,11 @@ using namespace vax::vk;
 using namespace vax;
 
 void DescriptorSetWriter::writeBuffer(
-    const Buffer& buffer,
-    uint32_t binding,
-    uint32_t offset,
-    VkDescriptorType descriptorType,
-    uint32_t arrayElement
+    const Buffer& buffer, uint32_t binding, uint32_t offset, VkDescriptorType descriptorType, uint32_t arrayElement
 ) {
-    VkDescriptorBufferInfo& bufferInfo = _bufferInfos.emplace_back(VkDescriptorBufferInfo{
-        .buffer = buffer.vkBuffer(),
-        .offset = offset,
-        .range = buffer.size()
-    });
+    VkDescriptorBufferInfo& bufferInfo = _bufferInfos.emplace_back(
+        VkDescriptorBufferInfo{.buffer = buffer.vkBuffer(), .offset = offset, .range = buffer.size()}
+    );
 
     VkWriteDescriptorSet write{
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -33,10 +27,7 @@ void DescriptorSetWriter::writeBuffer(
 }
 
 void DescriptorSetWriter::writeTexture(
-    const vax::textures::Texture& texture,
-    uint32_t binding,
-    bool useSampler,
-    uint32_t arrayElement
+    const vax::textures::Texture& texture, uint32_t binding, bool useSampler, uint32_t arrayElement
 ) {
     auto imageInfoOpt = useSampler ? texture.descriptorImageInfo() : texture.descriptorImageInfoNoSampler();
     if (!imageInfoOpt) {
@@ -60,9 +51,7 @@ void DescriptorSetWriter::writeTexture(
 }
 
 void DescriptorSetWriter::writeTextures(
-    const std::vector<const vax::textures::Texture*>& textures,
-    uint32_t binding,
-    bool useSampler
+    const std::vector<const vax::textures::Texture*>& textures, uint32_t binding, bool useSampler
 ) {
     std::vector<VkDescriptorImageInfo> imageInfos;
     imageInfos.reserve(textures.size());
@@ -89,14 +78,12 @@ void DescriptorSetWriter::writeTextures(
     _writes.push_back(write);
 }
 
-void DescriptorSetWriter::writeSampler(
-    const vax::textures::Sampler& sampler,
-    uint32_t binding,
-    uint32_t arrayElement
-) {
-    VkDescriptorImageInfo& samplerInfo = _imageInfos.emplace_back(VkDescriptorImageInfo{
-        .sampler = sampler.vkSampler,
-    });
+void DescriptorSetWriter::writeSampler(const vax::textures::Sampler& sampler, uint32_t binding, uint32_t arrayElement) {
+    VkDescriptorImageInfo& samplerInfo = _imageInfos.emplace_back(
+        VkDescriptorImageInfo{
+            .sampler = sampler.vkSampler,
+        }
+    );
 
     VkWriteDescriptorSet write{
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -112,13 +99,7 @@ void DescriptorSetWriter::writeSampler(
 }
 
 VkDescriptorSet DescriptorSetWriter::update() {
-    vkUpdateDescriptorSets(
-        _device.get().vkDevice,
-        static_cast<uint32_t>(_writes.size()),
-        _writes.data(),
-        0,
-        nullptr
-    );
+    vkUpdateDescriptorSets(_device.get().vkDevice, static_cast<uint32_t>(_writes.size()), _writes.data(), 0, nullptr);
     return _descriptorSet;
 }
 

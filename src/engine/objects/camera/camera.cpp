@@ -71,11 +71,9 @@ glm::mat4 Camera::viewMatrix() {
 void Camera::_updateViewMatrix() {
     float distance = glm::distance(_position, _target);
     if (glm::abs(distance) < epsilon) {
-        // TODO: Check if this is correct
         glm::mat4 rotationMat = vax::math::eulerAngleXYZRotationMatrix(_rotation);
         _savedViewMatrix = glm::transpose(rotationMat) * glm::translate(glm::mat4(1.0f), -_position);
-    }
-    else {
+    } else {
         _savedViewMatrix = glm::lookAt(_position, _target, glm::vec3(0.0f, 1.0f, 0.0f));
     }
 }
@@ -87,46 +85,33 @@ void Camera::_updateProjectionMatrix() {
     switch (_projection) {
     case Projection::perspective:
         _savedProjectionMatrix = glm::perspective(
-            _fov,
-            static_cast<float>(_whAspectRatio),
-            static_cast<float>(_nearPlane),
-            static_cast<float>(_farPlane)
+            _fov, static_cast<float>(_whAspectRatio), static_cast<float>(_nearPlane), static_cast<float>(_farPlane)
         );
-        // _savedProjectionMatrix[1][1] *= -1;
         break;
     case Projection::orthographic:
         _savedProjectionMatrix = glm::ortho(
-            -_viewSize * _whAspectRatio * 0.5,
-            _viewSize * _whAspectRatio * 0.5,
-            -_viewSize * 0.5,
-            _viewSize * 0.5,
+            -_viewSize * _whAspectRatio,
+            _viewSize * _whAspectRatio,
+            -_viewSize,
+            _viewSize,
             _nearPlane,
             _farPlane
         );
-        // _savedProjectionMatrix[1][1] *= -1;
         break;
     }
 }
 
 UniformBufferObject Camera::getUniformBufferObject() {
-    return {
-        .view = viewMatrix(),
-        .proj = projectionMatrix(),
-        .cameraPosition = glm::vec4(_position, 1.0f)
-    };
+    return {.view = viewMatrix(), .proj = projectionMatrix(), .cameraPosition = glm::vec4(_position, 1.0f)};
 }
 
-void Camera::setRotationSpeed(float rotationSpeed) {
-    _rotationSpeed = rotationSpeed;
-}
+void Camera::setRotationSpeed(float rotationSpeed) { _rotationSpeed = rotationSpeed; }
 
 void Camera::rotateBy(glm::vec2 delta) {
     _rotation.y += delta.x * _rotationSpeed;
     _rotation.x += (-delta.y) * _rotationSpeed;
-    _rotation.x = std::max(
-        static_cast<float>(-M_PI_2 + epsilon),
-        std::min(_rotation.x, static_cast<float>(M_PI_2 - epsilon))
-    );
+    _rotation.x =
+        std::max(static_cast<float>(-M_PI_2 + epsilon), std::min(_rotation.x, static_cast<float>(M_PI_2 - epsilon)));
     auto distanceToOrigin = glm::length(_position);
     auto rotationX = glm::rotate(glm::mat4(1.0f), _rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
     auto rotationY = glm::rotate(glm::mat4(1.0f), _rotation.y, glm::vec3(0.0f, -1.0f, 0.0f));

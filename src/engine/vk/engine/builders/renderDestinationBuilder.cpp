@@ -1,21 +1,17 @@
 #include "renderDestinationBuilder.h"
-#include "textureFactory.h"
 #include "renderPass.h"
+#include "textureFactory.h"
 #include "textureTaskScheduler.h"
 
 using namespace vax::vk;
 using namespace vax;
 
-std::optional<std::unique_ptr<RenderDestination>> RenderDestinationBuilder::build(
-    Engine* vkEngine
-) const noexcept {
+std::optional<std::unique_ptr<RenderDestination>> RenderDestinationBuilder::build(Engine* vkEngine) const noexcept {
     _logger.info("Building render destination...");
     VkFormat depthFormat = utils::findDepthFormat(_device.get().vkPhysicalDevice);
 
-    auto depthTexture = textures::TextureFactory(
-        _device.get(), _allocator
-    )
-        .makeDepthTextureDetached(depthFormat, math::SizeUI(_swapchain.get().swapchainExtent));
+    auto depthTexture = textures::TextureFactory(_device.get(), _allocator)
+                            .makeDepthTextureDetached(depthFormat, math::SizeUI(_swapchain.get().swapchainExtent));
 
     if (!depthTexture.has_value()) {
         return std::nullopt;
@@ -43,37 +39,31 @@ std::optional<std::unique_ptr<RenderDestination>> RenderDestinationBuilder::buil
     drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
     drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     auto drawImage = textures::TextureFactory(_device.get(), _allocator)
-        .makeTextureDetached(
-            "draw_image",
-            VK_FORMAT_R16G16B16A16_SFLOAT,
-            vax::math::SizeUI(_swapchain.get().swapchainExtent),
-            drawImageUsages
-        );
+                         .makeTextureDetached(
+                             "draw_image",
+                             VK_FORMAT_R16G16B16A16_SFLOAT,
+                             vax::math::SizeUI(_swapchain.get().swapchainExtent),
+                             drawImageUsages
+                         );
     if (!drawImage.has_value()) {
         return std::nullopt;
     }
 
-    return std::make_optional<std::unique_ptr<vax::vk::RenderDestination>>(
-        std::make_unique<vax::vk::RenderDestination>(
-            _device.get(),
-            std::make_unique<vax::textures::Texture>(std::move(*depthTexture)),
-            std::make_unique<vax::textures::Texture>(std::move(*drawImage)),
-            std::move(swapchainFramebuffers)
-        )
-    );
+    return std::make_optional<std::unique_ptr<vax::vk::RenderDestination>>(std::make_unique<vax::vk::RenderDestination>(
+        _device.get(),
+        std::make_unique<vax::textures::Texture>(std::move(*depthTexture)),
+        std::make_unique<vax::textures::Texture>(std::move(*drawImage)),
+        std::move(swapchainFramebuffers)
+    ));
 }
 
 bool RenderDestinationBuilder::createFramebuffers(
-    const textures::Texture& depthTexture,
-    std::vector<VkFramebuffer>& swapchainFramebuffers
+    const textures::Texture& depthTexture, std::vector<VkFramebuffer>& swapchainFramebuffers
 ) const {
     swapchainFramebuffers.resize(_swapchain.get().swapchainImageViews.size());
 
     for (size_t i = 0; i < _swapchain.get().swapchainImageViews.size(); ++i) {
-        std::array<VkImageView, 2> attachments = {
-            _swapchain.get().swapchainImageViews[i],
-            depthTexture.imageView()
-        };
+        std::array<VkImageView, 2> attachments = {_swapchain.get().swapchainImageViews[i], depthTexture.imageView()};
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -84,9 +74,7 @@ bool RenderDestinationBuilder::createFramebuffers(
         framebufferInfo.height = _swapchain.get().swapchainExtent.height;
         framebufferInfo.layers = 1;
 
-        auto result = vkCreateFramebuffer(
-            _device.get().vkDevice, &framebufferInfo, nullptr, &swapchainFramebuffers[i]
-        );
+        auto result = vkCreateFramebuffer(_device.get().vkDevice, &framebufferInfo, nullptr, &swapchainFramebuffers[i]);
         if (!VK_CHECK(result)) {
             _logger.error("Failed to create framebuffer!");
             return false;

@@ -10,22 +10,22 @@
 #include <iostream>
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <algorithm>
+#include <array>
+#include <cstring>
+#include <fstream>
+#include <limits>
+#include <optional>
+#include <set>
+#include <utility>
+#include <vector>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_beta.h>
 #include <vulkan/vulkan_core.h>
-#include <set>
-#include <optional>
-#include <vector>
-#include <algorithm>
-#include <cstring>
-#include <limits>
-#include <fstream>
-#include <array>
-#include <utility>
 
 #include "logger.h"
-#include "vma.hpp"
 #include "tinyobjloader.hpp"
+#include "vma.hpp"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>

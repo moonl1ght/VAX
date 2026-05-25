@@ -1,6 +1,6 @@
 #include "syncObjectsManager.h"
-#include "vkUtils.h"
 #include "vkEngine.h"
+#include "vkUtils.h"
 
 using namespace vax::vk;
 
@@ -18,13 +18,13 @@ bool vax::vk::SyncObjectsManager::setup() {
 
     for (size_t i = 0; i < vax::MAX_FRAMES_IN_FLIGHT; ++i) {
         if (!VK_CHECK(
-            vkCreateSemaphore(_device.get().vkDevice, &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i])
-        )) {
+                vkCreateSemaphore(_device.get().vkDevice, &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i])
+            )) {
             return false;
         }
         if (!VK_CHECK(
-            vkCreateSemaphore(_device.get().vkDevice, &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i])
-        )) {
+                vkCreateSemaphore(_device.get().vkDevice, &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i])
+            )) {
             return false;
         }
         if (!VK_CHECK(vkCreateFence(_device.get().vkDevice, &fenceInfo, nullptr, &_inFlightFences[i]))) {

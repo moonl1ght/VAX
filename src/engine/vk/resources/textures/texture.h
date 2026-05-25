@@ -1,158 +1,154 @@
 #pragma once
 
 #include "luna.h"
-#include "vaxMath.h"
-#include "sampler.h"
 #include "resourceHandle.h"
+#include "sampler.h"
+#include "vaxMath.h"
 
 namespace vax {
-    class TextureManager;
+class TextureManager;
 }
 
 namespace vax::textures {
-    class TextureFactory;
+class TextureFactory;
 }
 
 namespace vax::textures {
-    class Texture final {
-    public:
-        friend class vax::TextureManager;
-        friend class vax::textures::TextureFactory;
+class Texture final {
+  public:
+    friend class vax::TextureManager;
+    friend class vax::textures::TextureFactory;
 
-        Texture(const vax::vk::Device& device, VmaAllocator allocator)
-            : _device(device), _allocator(allocator) {
-        };
+    Texture(const vax::vk::Device& device, VmaAllocator allocator)
+        : _device(device)
+        , _allocator(allocator) {};
 
-        Texture(
-            const vax::vk::Device& device,
-            VmaAllocator allocator,
-            std::string name,
-            VkImage image,
-            VmaAllocation allocation,
-            vax::math::SizeUI size,
-            VkFormat format,
-            VkImageAspectFlags aspectMask
-        )
-            : _device(device)
-            , _allocator(allocator)
-            , _name(name)
-            , _image(image)
-            , _allocation(allocation)
-            , _size(size)
-            , _format(format)
-            , _aspectMask(aspectMask) {
-        }
+    Texture(
+        const vax::vk::Device& device,
+        VmaAllocator allocator,
+        std::string name,
+        VkImage image,
+        VmaAllocation allocation,
+        vax::math::SizeUI size,
+        VkFormat format,
+        VkImageAspectFlags aspectMask
+    )
+        : _device(device)
+        , _allocator(allocator)
+        , _name(name)
+        , _image(image)
+        , _allocation(allocation)
+        , _size(size)
+        , _format(format)
+        , _aspectMask(aspectMask) {}
 
-        Texture(const Texture& other) = delete;
-        Texture& operator=(Texture& other) = delete;
+    Texture(const Texture& other) = delete;
+    Texture& operator=(Texture& other) = delete;
 
-        Texture(Texture&& other) noexcept
-            : _device(other._device)
-            , _allocator(other._allocator)
-            , _sampler(std::move(other._sampler))
-            , _name(other._name)
-            , _image(other._image)
-            , _allocation(other._allocation)
-            , _size(other._size)
-            , _imageView(other._imageView)
-            , _format(other._format)
-            , _aspectMask(other._aspectMask)
-            , _isDetached(other._isDetached)
-            , _id(other._id)
-        {
+    Texture(Texture&& other) noexcept
+        : _device(other._device)
+        , _allocator(other._allocator)
+        , _sampler(std::move(other._sampler))
+        , _name(other._name)
+        , _image(other._image)
+        , _allocation(other._allocation)
+        , _size(other._size)
+        , _imageView(other._imageView)
+        , _format(other._format)
+        , _aspectMask(other._aspectMask)
+        , _isDetached(other._isDetached)
+        , _id(other._id) {
+        other._name.clear();
+        other._sampler = std::nullopt;
+        other._image = VK_NULL_HANDLE;
+        other._allocation = VK_NULL_HANDLE;
+        other._imageView = VK_NULL_HANDLE;
+        other._size = vax::math::SizeUI::zero();
+        other._format = VK_FORMAT_UNDEFINED;
+        other._aspectMask = VK_IMAGE_ASPECT_NONE;
+        other._isDetached = true;
+        other._id = vax::NullTextureId;
+    }
+
+    Texture& operator=(Texture&& other) noexcept {
+        if (this != &other) {
+            cleanup();
+            _sampler = std::move(other._sampler);
+            _device = other._device;
+            _allocator = other._allocator;
+            _name = other._name;
+            _size = other._size;
+            _image = other._image;
+            _allocation = other._allocation;
+            _imageView = other._imageView;
+            _format = other._format;
+            _aspectMask = other._aspectMask;
+            _isDetached = other._isDetached;
+            _id = other._id;
+
             other._name.clear();
-            other._sampler = std::nullopt;
             other._image = VK_NULL_HANDLE;
             other._allocation = VK_NULL_HANDLE;
             other._imageView = VK_NULL_HANDLE;
+            other._sampler = std::nullopt;
             other._size = vax::math::SizeUI::zero();
             other._format = VK_FORMAT_UNDEFINED;
             other._aspectMask = VK_IMAGE_ASPECT_NONE;
             other._isDetached = true;
             other._id = vax::NullTextureId;
         }
+        return *this;
+    }
 
-        Texture& operator=(Texture&& other) noexcept {
-            if (this != &other) {
-                cleanup();
-                _sampler = std::move(other._sampler);
-                _device = other._device;
-                _allocator = other._allocator;
-                _name = other._name;
-                _size = other._size;
-                _image = other._image;
-                _allocation = other._allocation;
-                _imageView = other._imageView;
-                _format = other._format;
-                _aspectMask = other._aspectMask;
-                _isDetached = other._isDetached;
-                _id = other._id;
+    ~Texture() { cleanup(); }
 
-                other._name.clear();
-                other._image = VK_NULL_HANDLE;
-                other._allocation = VK_NULL_HANDLE;
-                other._imageView = VK_NULL_HANDLE;
-                other._sampler = std::nullopt;
-                other._size = vax::math::SizeUI::zero();
-                other._format = VK_FORMAT_UNDEFINED;
-                other._aspectMask = VK_IMAGE_ASPECT_NONE;
-                other._isDetached = true;
-                other._id = vax::NullTextureId;
-            }
-            return *this;
-        }
+    void cleanup();
 
-        ~Texture() {
-            cleanup();
-        }
+    bool isValid() const;
 
-        void cleanup();
+    void loadImageView();
 
-        bool isValid() const;
+    const std::string& name() const { return _name; }
 
-        void loadImageView();
+    bool isDetached() const { return _isDetached; }
 
-        const std::string& name() const { return _name; }
+    TextureId id() const { return _id; }
 
-        bool isDetached() const { return _isDetached; }
+    VkImage image() const { return _image; }
 
-        TextureId id() const { return _id; }
+    VkImageView imageView() const { return _imageView; }
 
-        VkImage image() const { return _image; }
+    const Sampler& sampler() const { return *_sampler; }
 
-        VkImageView imageView() const { return _imageView; }
+    std::optional<VkDescriptorImageInfo> descriptorImageInfo() const;
 
-        const Sampler& sampler() const { return *_sampler; }
+    std::optional<VkDescriptorImageInfo> descriptorImageInfoNoSampler() const;
 
-        std::optional<VkDescriptorImageInfo> descriptorImageInfo() const;
+    std::optional<VkDescriptorImageInfo> descriptorImageInfo(const Sampler& sampler) const;
 
-        std::optional<VkDescriptorImageInfo> descriptorImageInfoNoSampler() const;
+    vax::math::SizeUI size() const { return _size; }
 
-        std::optional<VkDescriptorImageInfo> descriptorImageInfo(const Sampler& sampler) const;
+    uint32_t width() const { return _size.width; }
 
-        vax::math::SizeUI size() const { return _size; }
+    uint32_t height() const { return _size.height; }
 
-        uint32_t width() const { return _size.width; }
+    void createSampler();
 
-        uint32_t height() const { return _size.height; }
+  private:
+    vax::utils::Logger _logger = vax::utils::Logger("Texture");
+    vax::math::SizeUI _size = vax::math::SizeUI::zero();
+    std::optional<vax::textures::Sampler> _sampler = std::nullopt;
+    VkFormat _format = VK_FORMAT_UNDEFINED;
+    VkImageAspectFlags _aspectMask = VK_IMAGE_ASPECT_NONE;
+    std::string _name;
+    TextureId _id = vax::NullTextureId;
+    VkImage _image = VK_NULL_HANDLE;
+    VkImageView _imageView = VK_NULL_HANDLE;
+    VmaAllocation _allocation = VK_NULL_HANDLE;
+    VmaAllocator _allocator = VK_NULL_HANDLE;
+    std::reference_wrapper<const vax::vk::Device> _device;
+    bool _isDetached = true;
 
-        void createSampler();
-
-    private:
-        vax::utils::Logger _logger = vax::utils::Logger("Texture");
-        vax::math::SizeUI _size = vax::math::SizeUI::zero();
-        std::optional<vax::textures::Sampler> _sampler = std::nullopt;
-        VkFormat _format = VK_FORMAT_UNDEFINED;
-        VkImageAspectFlags _aspectMask = VK_IMAGE_ASPECT_NONE;
-        std::string _name;
-        TextureId _id = vax::NullTextureId;
-        VkImage _image = VK_NULL_HANDLE;
-        VkImageView _imageView = VK_NULL_HANDLE;
-        VmaAllocation _allocation = VK_NULL_HANDLE;
-        VmaAllocator _allocator = VK_NULL_HANDLE;
-        std::reference_wrapper<const vax::vk::Device> _device;
-        bool _isDetached = true;
-
-        void _destroy();
-    };
-}
+    void _destroy();
+};
+} // namespace vax::textures

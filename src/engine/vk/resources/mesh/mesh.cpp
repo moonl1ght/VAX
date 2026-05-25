@@ -2,30 +2,33 @@
 
 using namespace vax;
 
-template<typename VertexType>
-bool vax::objects::Mesh<VertexType>::loadBuffers(
-    vax::vk::CommandBuffer& commandBuffer
-) {
+template <typename VertexType> bool vax::objects::Mesh<VertexType>::loadBuffers(vax::vk::CommandBuffer& commandBuffer) {
     VkDeviceSize bufferSize = sizeof(_vertices[0]) * _vertices.size();
     VkDeviceSize indexBufferSize = sizeof(_indices[0]) * _indices.size();
     if (MACOS) {
-        vertexBuffer.emplace(vk::Buffer::allocateAndFillData(
-            _device.get(),
-            _name + "_vertex_buffer",
-            _vertices.data(),
-            bufferSize,
-            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-        ).value());
+        vertexBuffer.emplace(
+            vk::Buffer::allocateAndFillData(
+                _device.get(),
+                _name + "_vertex_buffer",
+                _vertices.data(),
+                bufferSize,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+            )
+                .value()
+        );
 
-        indexBuffer.emplace(vk::Buffer::allocateAndFillData(
-            _device.get(),
-            _name + "_index_buffer",
-            _indices.data(),
-            indexBufferSize,
-            VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-        ).value());
+        indexBuffer.emplace(
+            vk::Buffer::allocateAndFillData(
+                _device.get(),
+                _name + "_index_buffer",
+                _indices.data(),
+                indexBufferSize,
+                VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+            )
+                .value()
+        );
     } else {
         _stagingVertexBuffer = vk::Buffer::allocateAndFillData(
             _device.get(),
@@ -45,9 +48,7 @@ bool vax::objects::Mesh<VertexType>::loadBuffers(
         if (!_stagingVertexBuffer.has_value() && !vertexBuffer.has_value()) {
             return false;
         }
-        _stagingVertexBuffer->copyBufferCommand(
-            commandBuffer, *vertexBuffer, bufferSize
-        );
+        _stagingVertexBuffer->copyBufferCommand(commandBuffer, *vertexBuffer, bufferSize);
 
         if (!_indices.empty()) {
             _stagingIndexBuffer = vk::Buffer::allocateAndFillData(
@@ -68,22 +69,19 @@ bool vax::objects::Mesh<VertexType>::loadBuffers(
             if (!_stagingIndexBuffer.has_value() && !indexBuffer.has_value()) {
                 return false;
             }
-            _stagingIndexBuffer->copyBufferCommand(
-                commandBuffer, *indexBuffer, indexBufferSize
-            );
+            _stagingIndexBuffer->copyBufferCommand(commandBuffer, *indexBuffer, indexBufferSize);
         }
     }
     _isLoaded = true;
     return true;
 }
 
-template<typename VertexType>
-void vax::objects::Mesh<VertexType>::cleanup() {
-    if (isDetached()) _destroy();
+template <typename VertexType> void vax::objects::Mesh<VertexType>::cleanup() {
+    if (isDetached())
+        _destroy();
 }
 
-template<typename VertexType>
-void vax::objects::Mesh<VertexType>::_destroy() {
+template <typename VertexType> void vax::objects::Mesh<VertexType>::_destroy() {
     if (vertexBuffer.has_value()) {
         vertexBuffer.value().cleanup();
     }
@@ -99,13 +97,9 @@ void vax::objects::Mesh<VertexType>::_destroy() {
     _isLoaded = false;
 }
 
-template<typename VertexType>
-void vax::objects::Mesh<VertexType>::_detach() {
-    _isDetached = true;
-}
+template <typename VertexType> void vax::objects::Mesh<VertexType>::_detach() { _isDetached = true; }
 
-template<typename VertexType>
-void vax::objects::Mesh<VertexType>::cleanupStagingBuffers() {
+template <typename VertexType> void vax::objects::Mesh<VertexType>::cleanupStagingBuffers() {
     if (_stagingVertexBuffer.has_value()) {
         _stagingVertexBuffer->cleanup();
     }

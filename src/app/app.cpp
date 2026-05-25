@@ -10,7 +10,7 @@ bool App::run() {
     try {
         mainLoop();
         cleanup();
-    } catch (const std::exception &e) {
+    } catch (const std::exception& e) {
         _logger.error("Failed to run app: {}", e.what());
     }
     return true;
