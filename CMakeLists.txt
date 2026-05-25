@@ -1,8 +1,13 @@
-cmake_minimum_required(VERSION 3.10.0)
+cmake_minimum_required(VERSION 3.18.0)
 
-project(Luna VERSION 0.1.0 LANGUAGES C CXX)
+set(CUDA_PATH /usr/local/cuda-13.2)
+set(CMAKE_CUDA_COMPILER ${CUDA_PATH}/bin/nvcc)
+
+project(Luna VERSION 0.1.0 LANGUAGES C CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_ARCHITECTURES 90)
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_LIST_DIR}/build/)
 
 find_package(Vulkan REQUIRED FATAL_ERROR)
@@ -39,14 +44,8 @@ add_compile_definitions(PROJ_DIR="${PROJECT_SOURCE_DIR}")
 
 if(WIN32)
     file(GLOB _SLANG_BIN_HINTS "C:/slang-*/bin")
-elseif(APPLE)
-    file(GLOB _SLANG_BIN_HINTS "/Applications/Slang.app/Contents/MacOS/bin")
 else()
     file(GLOB _SLANG_BIN_HINTS "/usr/slang/bin")
-endif()
-
-if(APPLE)
-    set(SLANG_DIR "/Users/alexander/slang-2026/bin/")
 endif()
 
 find_program(SLANG_COMPILER slangc HINTS
@@ -71,6 +70,7 @@ file(GLOB_RECURSE all_SRCS
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
     "${PROJECT_SOURCE_DIR}/src/*.h"
     "${PROJECT_SOURCE_DIR}/src/*.c"
+    "${PROJECT_SOURCE_DIR}/src/*.cu"
     "${PROJECT_SOURCE_DIR}/src/*.spv"
 )
 
@@ -150,6 +150,8 @@ set(IMGUI_BACKEND_SRCS
 
 add_executable(Luna main.cpp ${all_SRCS} ${IMGUI_BACKEND_SRCS})
 target_include_directories(Luna PUBLIC ${header_list})
+target_include_directories(Luna PRIVATE ${CUDA_PATH}/include)
+set_target_properties(Luna PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 add_dependencies(Luna Shaders)
 
 if(WIN32)
@@ -176,6 +178,7 @@ if(WIN32)
             SDL3::SDL3
             glm::glm
             Tracy::TracyClient
+            -L${CUDA_PATH}/lib64 -lcudart
         )
     endif(VULKAN_FOUND)
 else()
@@ -191,6 +194,7 @@ else()
             SDL3::SDL3
             glm::glm
             Tracy::TracyClient
+            -L${CUDA_PATH}/lib64 -lcudart
         )
     endif(VULKAN_FOUND)
 endif()

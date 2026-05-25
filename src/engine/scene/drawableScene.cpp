@@ -50,7 +50,8 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     }
     _gizmo = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
     _gizmo->setSettings({.precomputedMVP = true});
-    auto helmet = _modelLoader.loadModel(RES_PATH("assets/models/rover_s1.glb"), submitQueue);
+    auto helmet = _modelLoader.loadModel(RES_PATH("assets/models/wall_cube.glb"), submitQueue);
+    helmet->transformHandle.setScale(glm::vec3(0.5f, 0.5f, 0.5f));
     // auto cube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Gray);
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
     commandBuffer.begin();
@@ -63,7 +64,7 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     // _vkEngine.get().commandManager->endSingleTimeCommands(commandBuffer);
     // model->loadMesh(*_vkEngine.get().queueManager, *_vkEngine.get().commandManager);
     // texture = TextureLoader(vkEngine).loadTexture(RES_PATH("assets/models/room/viking_room.png"));
-    auto cameraPos = glm::vec3(2.0f, 2.0f, 2.0f);
+    auto cameraPos = glm::vec3(1.0f, 1.0f, 1.0f);
     _mainCamera.setPosition(cameraPos);
     _gizmoCamera.setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
     _gizmoCamera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));

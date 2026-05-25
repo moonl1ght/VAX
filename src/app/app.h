@@ -8,6 +8,7 @@
 #include "uiLayer.h"
 #include "vkEngine.h"
 #include "window.h"
+#include "gridWorld.h"
 
 namespace vax {
 class App final {

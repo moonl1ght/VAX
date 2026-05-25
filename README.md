@@ -35,14 +35,6 @@ cmake --preset luna
 cmake --build build
 ```
 
-### macOS
-
-```bash
-conan install . --output-folder=build --build=missing --profile=profile
-cmake --preset luna
-cmake --build build
-```
-
 ### linux
 ```bash
 conan install . --output-folder=build --build=missing --profile=linuxprofile
@@ -57,7 +49,7 @@ To debug Slang source (not SPIR-V) in RenderDoc or a shader debugger:
 
 ## Requirements
 
-- CMake 3.10+
+- CMake 3.18+
 - Conan 2.x
 - Vulkan SDK (set `VULKAN_SDK` environment variable)
-- GCC 14+ (Windows: MSYS2 ucrt64) or Clang (macOS)
+- GCC 14+ (Windows: MSYS2 ucrt64)

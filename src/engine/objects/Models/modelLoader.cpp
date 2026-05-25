@@ -164,7 +164,6 @@ void processNode(
             .materialIndex = materialIds[mesh->mMaterialIndex]
         };
         submeshes.push_back(submesh);
-        submesh.debugPrint(logger);
 
         for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
             Vertex vertex;

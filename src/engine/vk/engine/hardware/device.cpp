@@ -84,10 +84,6 @@ int Device::createLogicalDevice(
         .fragmentShaderBarycentric = VK_TRUE,
     };
 
-    if (enableValidationLayers && MACOS) {
-        deviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME); // needed for macOS
-    }
-
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 

@@ -37,17 +37,6 @@
 #define SRC_PATH(val) std::string(PROJ_DIR) + "/src/" + val
 #define RES_PATH(val) std::string(PROJ_DIR) + "/resources/" + val
 
-#ifdef __APPLE__
-#define MACOS true
-#else
-#define MACOS false
-#endif
-
 #define SDL_MAIN_HANDLED
-#ifdef __APPLE__
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
-#else
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_vulkan.h>
-#endif
