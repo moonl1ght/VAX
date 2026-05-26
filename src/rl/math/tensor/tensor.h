@@ -9,12 +9,22 @@
 namespace vax::rl::math {
 class Tensor {
   public:
+    using iterator = float*;
+    using const_iterator = const float*;
+
     static Tensor
     createRandom(vax::core::RandomGenerator& generator, std::vector<int> shape, float min = 0.0f, float max = 1.0f);
 
     static Tensor createZeros(std::vector<int> shape);
     static Tensor createOnes(std::vector<int> shape);
     static Tensor createArrangeContiguous(std::vector<int> shape);
+
+    Tensor()
+        : _shape(std::vector<int>())
+        , _strides(std::vector<int>())
+        , _totalSize(0)
+        , _data(nullptr)
+        , _gpuData(nullptr) {};
 
     Tensor(std::vector<int> shape)
         : _shape(shape) {
@@ -44,7 +54,7 @@ class Tensor {
         if (this == &other) {
             return *this;
         }
-        other._cleanup();
+        _cleanup();
         _shape = other._shape;
         _strides = other._strides;
         _totalSize = other._totalSize;
@@ -63,6 +73,11 @@ class Tensor {
     Tensor(const Tensor& other) = delete;
     Tensor& operator=(const Tensor& other) = delete;
 
+    iterator begin() noexcept { return _data; }
+    const_iterator begin() const noexcept { return _data; }
+    iterator end() noexcept { return _data + _totalSize; }
+    const_iterator end() const noexcept { return _data + _totalSize; }
+
     float* data() const { return _data; }
     float* gpuData() const { return _gpuData; }
     bool isGpuAllocated() const { return _gpuData != nullptr; }
@@ -71,6 +86,7 @@ class Tensor {
     std::optional<float> get(std::vector<int> indices) const;
     void squeeze();            // remove all dimensions of size 1
     void unsqueeze(int index); // add dimension of size 1 at the given index
+    std::vector<int> indices(int flatIndex) const;
 
     bool alignBroadcastToHigherDimensions(const std::vector<int>& otherShape);
 
@@ -86,7 +102,6 @@ class Tensor {
     bool synchronizeGpuToHost();
 
   private:
-    
     std::vector<int> _shape;
     std::vector<int> _strides;
     int _totalSize;
@@ -99,6 +114,7 @@ class Tensor {
     void _calculateStrides();
     bool _checkIndices(std::vector<int> indices) const;
     int _calculateFlatIndex(std::vector<int> indices) const;
+    std::vector<int> _calculateIndices(int flatIndex) const;
     bool _isContiguous() const;
 };
 } // namespace vax::rl::math

@@ -14,6 +14,10 @@
 #include "textureLoader.h"
 #include "vkEngine.h"
 
+namespace vax::rl::gw::env {
+struct GridWorldDrawableDescriptor;
+} // namespace vax::rl::gw::env
+
 namespace vax {
 struct SceneUpdateContext {
     float deltaTime;
@@ -54,7 +58,9 @@ class DrawableScene final : public vax::input::InputController::Observer {
 
     const vax::objects::Camera& gizmoCamera() const { return _gizmoCamera; }
 
-    void load(VkQueue submitQueue);
+    void loadGridWorld(
+        const vax::rl::gw::env::GridWorldDrawableDescriptor& gridWorldDrawableDescriptor, VkQueue submitQueue
+    );
 
     void resize();
 
@@ -94,5 +100,7 @@ class DrawableScene final : public vax::input::InputController::Observer {
 
     vax::renderer::RenderCallContext _renderCallContext;
     vax::SceneUpdateContext _sceneUpdateContext;
+
+    void _load(VkQueue submitQueue);
 };
 } // namespace vax

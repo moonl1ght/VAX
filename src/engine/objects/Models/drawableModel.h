@@ -14,8 +14,13 @@ class ModelLoader;
 } // namespace vax::objects
 
 namespace vax::objects {
-class DrawableModel {
+class DrawableModel final {
   public:
+    struct LoadDescriptor {
+        std::string path;
+        vax::math::Transform initialTransform;
+    };
+
     struct Settings {
         bool useWireframe = false;
         bool hasTangents = false;

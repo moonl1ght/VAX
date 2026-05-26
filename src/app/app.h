@@ -1,6 +1,7 @@
 #pragma once
 
 #include "drawableScene.h"
+#include "gridWorld.h"
 #include "inputController.h"
 #include "logger.h"
 #include "luna.h"
@@ -8,7 +9,6 @@
 #include "uiLayer.h"
 #include "vkEngine.h"
 #include "window.h"
-#include "gridWorld.h"
 
 namespace vax {
 class App final {
@@ -30,6 +30,7 @@ class App final {
     std::unique_ptr<vax::renderer::Renderer> _renderer;
     std::unique_ptr<DrawableScene> _drawableScene;
     std::unique_ptr<vax::ui::UILayer> _uiLayer;
+    std::unique_ptr<vax::rl::gw::env::GridWorld> _gridWorld;
 
     bool setup();
     void mainLoop();

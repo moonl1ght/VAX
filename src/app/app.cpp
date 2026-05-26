@@ -31,9 +31,12 @@ bool App::setup() {
     _renderer = std::make_unique<renderer::Renderer>(*_engine, *_uiLayer);
     _renderer->prepare();
 
+    _gridWorld = std::make_unique<rl::gw::env::GridWorld>();
+    _gridWorld->load();
+
     _drawableScene = std::make_unique<DrawableScene>(*_engine);
     _drawableScene->resize();
-    _drawableScene->load(_engine->queueManager->graphicsQueue);
+    _drawableScene->loadGridWorld(_gridWorld->getDrawableDescriptor(), _engine->queueManager->graphicsQueue);
     _inputController.addObserver(_drawableScene.get());
 
     return true;

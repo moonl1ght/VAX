@@ -3,6 +3,7 @@
 #include "primitivesBuilder.h"
 #include "swapchain.h"
 #include "textureLoader.h"
+#include "gridWorldDescriptor.h"
 
 using namespace vax;
 
@@ -25,11 +26,26 @@ void vax::DrawableScene::resize() {
     _mainCamera.setViewPortSize(vax::math::SizeUI(swapchainExtent));
 }
 
-void vax::DrawableScene::load(VkQueue submitQueue) {
+void vax::DrawableScene::loadGridWorld(
+    const vax::rl::gw::env::GridWorldDrawableDescriptor& gridWorldDrawableDescriptor, VkQueue submitQueue
+) {
     _resourceManager.setup();
+    _drawableModels.reserve(gridWorldDrawableDescriptor.drawableDescriptors.size());
+    for (const auto& drawableDescriptor : gridWorldDrawableDescriptor.drawableDescriptors) {
+        auto model = _modelLoader.loadModel(drawableDescriptor.path, submitQueue);
+        model->transformHandle.setTransform(drawableDescriptor.initialTransform);
+        if (!model.has_value()) {
+            _logger.error("Failed to load model: {}", drawableDescriptor.path);
+            continue;
+        }
+        _drawableModels.push_back(std::move(model.value()));
+    }
+    _load(submitQueue);
+}
+
+void vax::DrawableScene::_load(VkQueue submitQueue) {
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
     _sceneUniformBuffers.reserve(vax::MAX_FRAMES_IN_FLIGHT);
-    // _sceneUniformBuffersMapped.resize(vax::MAX_FRAMES_IN_FLIGHT);
     for (size_t i = 0; i < vax::MAX_FRAMES_IN_FLIGHT; i++) {
         auto& bufferManager = _resourceManager.bufferManager();
         auto allocation = bufferManager
@@ -50,29 +66,23 @@ void vax::DrawableScene::load(VkQueue submitQueue) {
     }
     _gizmo = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
     _gizmo->setSettings({.precomputedMVP = true});
-    auto helmet = _modelLoader.loadModel(RES_PATH("assets/models/wall_cube.glb"), submitQueue);
-    helmet->transformHandle.setScale(glm::vec3(0.5f, 0.5f, 0.5f));
-    // auto cube = _primitivesBuilder.createCube(1.0f, vax::ColorPalette::Gray);
+    
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
     commandBuffer.begin();
     _gizmo->loadMesh(commandBuffer);
-    helmet->loadMesh(commandBuffer);
     _background->loadMesh(commandBuffer);
-    // cube->loadMesh(commandBuffer);
+    for (auto& drawableModel : _drawableModels) {
+        drawableModel.loadMesh(commandBuffer);
+    }
     commandBuffer.end();
     commandBuffer.submitAndWait(submitQueue);
-    // _vkEngine.get().commandManager->endSingleTimeCommands(commandBuffer);
-    // model->loadMesh(*_vkEngine.get().queueManager, *_vkEngine.get().commandManager);
-    // texture = TextureLoader(vkEngine).loadTexture(RES_PATH("assets/models/room/viking_room.png"));
-    auto cameraPos = glm::vec3(1.0f, 1.0f, 1.0f);
+    auto cameraPos = glm::vec3(2.0f, 2.0f, 2.0f);
     _mainCamera.setPosition(cameraPos);
     _gizmoCamera.setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
     _gizmoCamera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));
     _gizmoCamera.setViewPortSize(math::SizeUI(256, 256));
     _gizmoCamera.setProjection(objects::Camera::Projection::orthographic);
     _gizmoCamera.setViewSize(1.5f);
-
-    _drawableModels.push_back(std::move(helmet.value()));
 }
 
 bool vax::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter) {

@@ -116,7 +116,7 @@ bool Tensor::_isContiguous() const {
 
 int Tensor::_calculateFlatIndex(std::vector<int> indices) const {
     int index = 0;
-    for (std::vector<int>::size_type i = 0; i < indices.size() - 1; i++) {
+    for (std::vector<int>::size_type i = 0; i < indices.size() - 1; ++i) {
         index += indices[i] * _strides[i];
     }
     index += indices[indices.size() - 1];
@@ -155,4 +155,20 @@ bool Tensor::alignBroadcastToHigherDimensions(const std::vector<int>& otherShape
         unsqueeze(0);
     }
     return true;
+}
+
+std::vector<int> Tensor::indices(int flatIndex) const { return _calculateIndices(flatIndex); }
+
+std::vector<int> Tensor::_calculateIndices(int flatIndex) const {
+    size_t rank = _strides.size() + 1; 
+    std::vector<int> indices(rank);
+
+    for (size_t i = 0; i < rank - 1; ++i) {
+        indices[i] = flatIndex / _strides[i];
+        flatIndex %= _strides[i];
+    }
+
+    indices[rank - 1] = flatIndex;
+
+    return indices;
 }
