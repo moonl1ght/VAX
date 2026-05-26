@@ -68,8 +68,8 @@ static constexpr uint32_t NO_SAMPLER_INDEX = 0xFFFFFFFF;
 
 enum ObjectFlags {
     NoFlags = 0,
-    IsWireframe = 1 << 0, // 0001
-    NoTangent = 1 << 1,   // 0010
+    IsWireframe = 1 << 0,    // 0001
+    NoTangent = 1 << 1,      // 0010
     PrecomputedMVP = 1 << 2, // 0100
 };
 
@@ -115,6 +115,16 @@ struct PBRMaterial {
     uint32_t emissiveTextureUVIndex = 0;
 
     uint32_t alphaMode = 0;
+};
+
+struct EnvironmentMapData {
+    uint32_t envMapTexture;
+    uint32_t envMapTextureSampler;
+    uint32_t envMapTextureIrradiance;
+    uint32_t envMapTextureIrradianceSampler;
+    uint32_t texBRDFLUT;
+    uint32_t texBRDFLUTSampler;
+    uint32_t padding[2];
 };
 
 #endif // shaderUniforms_h
