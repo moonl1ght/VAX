@@ -37,7 +37,7 @@ cmake --build build
 
 ### linux
 ```bash
-conan install . --output-folder=build --build=missing --profile=linuxprofile
+conan install . --output-folder=build --build=missing --profile=linuxprofile -s "ktx/*:compiler.cppstd=gnu17"
 ```
 
 ## Debugging Slang Shaders

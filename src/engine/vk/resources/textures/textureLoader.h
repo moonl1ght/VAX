@@ -35,5 +35,9 @@ class TextureLoader final {
     std::optional<TextureManager::TextureResource> _loadTexture(
         std::string name, unsigned char* pixels, VkQueue submitQueue, int texWidth, int texHeight, int texChannels
     );
+
+    std::optional<TextureManager::TextureResource> _loadKTXTexture(
+        std::string path, VkQueue submitQueue
+    );
 };
 } // namespace vax::textures

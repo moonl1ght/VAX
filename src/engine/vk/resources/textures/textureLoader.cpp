@@ -5,6 +5,7 @@
 #include "buffer.h"
 #include "textureFactory.h"
 #include "textureTaskScheduler.h"
+#include <ktx.h>
 
 using namespace vax::textures;
 using namespace vax;
@@ -22,6 +23,9 @@ TextureLoader::loadTexture(std::string name, std::span<unsigned char> data, VkQu
 }
 
 std::optional<TextureManager::TextureResource> TextureLoader::loadTexture(std::string path, VkQueue submitQueue) {
+    if (path.ends_with(".ktx")) {
+        return _loadKTXTexture(path, submitQueue);
+    }
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     if (!pixels) {
@@ -29,6 +33,17 @@ std::optional<TextureManager::TextureResource> TextureLoader::loadTexture(std::s
         return std::nullopt;
     }
     return _loadTexture(path, pixels, submitQueue, texWidth, texHeight, texChannels);
+}
+
+std::optional<TextureManager::TextureResource> TextureLoader::_loadKTXTexture(std::string path, VkQueue submitQueue) {
+    ktxTexture1* ktxTex = nullptr;
+    ktxResult result = ktxTexture1_CreateFromNamedFile(path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTex);
+    if (result != KTX_SUCCESS) {
+        _logger.error("Failed to create ktx texture");
+        return std::nullopt;
+    }
+    ktxTexture_Destroy(ktxTexture(ktxTex));
+    return std::nullopt;
 }
 
 std::optional<TextureManager::TextureResource> TextureLoader::_loadTexture(
