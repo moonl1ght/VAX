@@ -35,6 +35,7 @@ enum FrameBindingIndices {
 
 enum GlobalBindingIndices {
     GLOBAL_MATERIAL_BUFFER_INDEX = 0,
+    GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX = 1,
     GLOBAL_SAMPLER_INDEX = 2,
     GLOBAL_TEXTURE_INDEX = 3,
 };
@@ -61,9 +62,10 @@ enum VertexInputIndicesNoTangent {
     VERTEX_INPUT_UV_2_INDEX_NT = 4
 };
 
-enum { MAX_TEXTURES = 500, MAX_SAMPLERS = 1 };
+enum { MAX_TEXTURES = 500, MAX_SAMPLERS = 4 };
 static constexpr uint32_t NO_TEXTURE_FLAG = 0xFFFFFFFF;
 static constexpr uint32_t NO_MATERIAL_INDEX = 0xFFFFFFFF;
+static constexpr uint32_t NO_ENVIRONMENT_MAP_INDEX = 0xFFFFFFFF;
 static constexpr uint32_t NO_SAMPLER_INDEX = 0xFFFFFFFF;
 
 enum ObjectFlags {
@@ -73,10 +75,25 @@ enum ObjectFlags {
     PrecomputedMVP = 1 << 2, // 0100
 };
 
+struct EnvironmentMapData {
+    uint32_t envMapTexture;
+    uint32_t envMapTextureSampler;
+
+    uint32_t envMapTextureIrradiance;
+    uint32_t envMapTextureIrradianceSampler;
+
+    uint32_t texBRDFLUT;
+    uint32_t texBRDFLUTSampler;
+
+    uint32_t padding[2];
+};
+
 struct UniformBufferObject {
     mat4 view;
     mat4 proj;
     vec4 cameraPosition;
+    uint32_t environmentMapIndex = NO_ENVIRONMENT_MAP_INDEX;
+    uint32_t padding[3];
 };
 
 // TODO: now it uses normalMatrix that is for non uniform scaled objects if more data in the PushConstant is needed
@@ -115,16 +132,6 @@ struct PBRMaterial {
     uint32_t emissiveTextureUVIndex = 0;
 
     uint32_t alphaMode = 0;
-};
-
-struct EnvironmentMapData {
-    uint32_t envMapTexture;
-    uint32_t envMapTextureSampler;
-    uint32_t envMapTextureIrradiance;
-    uint32_t envMapTextureIrradianceSampler;
-    uint32_t texBRDFLUT;
-    uint32_t texBRDFLUTSampler;
-    uint32_t padding[2];
 };
 
 #endif // shaderUniforms_h

@@ -106,7 +106,7 @@ class Texture final {
 
     bool isValid() const;
 
-    void loadImageView();
+    void loadImageView(VkImageViewType viewType, uint32_t layerCount, uint32_t levelCount);
 
     const std::string& name() const { return _name; }
 

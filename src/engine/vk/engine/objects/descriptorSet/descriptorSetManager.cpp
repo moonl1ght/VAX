@@ -21,10 +21,12 @@ bool DescriptorSetManager::setup() {
 bool DescriptorSetManager::createDescriptorSetPool() {
     uint32_t uniformBufferCount = 1;
     uint32_t materialBufferCount = 1;
+    uint32_t environmentMapCount = 1;
     uint32_t samplerCount = vax::MAX_GLOBAL_SAMPLERS;
     uint32_t textureCount = vax::MAX_GLOBAL_TEXTURES;
     // auto samplersImageLimit = _device.get().getPhysicalDeviceProperties().limits.maxPerStageDescriptorSamplers;
     uint32_t maxUniformBuffers = static_cast<uint32_t>(_maxFramesInFlight) * uniformBufferCount;
+    uint32_t maxEnvironmentMaps = static_cast<uint32_t>(_maxFramesInFlight) * environmentMapCount;
     uint32_t maxMaterials = static_cast<uint32_t>(_maxFramesInFlight) * materialBufferCount;
     uint32_t maxTextures = static_cast<uint32_t>(_maxFramesInFlight) * textureCount;
     uint32_t maxSamplers = static_cast<uint32_t>(_maxFramesInFlight) * samplerCount;
@@ -32,7 +34,7 @@ bool DescriptorSetManager::createDescriptorSetPool() {
 
     std::vector<VkDescriptorPoolSize> poolSizes = {
         {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBuffers},
-        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, maxMaterials},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, maxMaterials + maxEnvironmentMaps},
         {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, maxTextures},
         {VK_DESCRIPTOR_TYPE_SAMPLER, maxSamplers}
     };
@@ -121,6 +123,12 @@ bool DescriptorSetManager::createDescriptorSetLayouts() {
     DescriptorSetLayoutBuilder globalBuilder(_device.get(), "global_descriptor_set_layout");
     globalBuilder.addBinding(
         GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX,
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+        VK_SHADER_STAGE_FRAGMENT_BIT,
+        1
+    );
+    globalBuilder.addBinding(
+        GlobalBindingIndices::GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         1

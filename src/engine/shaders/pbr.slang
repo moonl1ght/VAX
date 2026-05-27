@@ -1,5 +1,6 @@
 import uniforms;
 import math;
+import common;
 
 struct PBRProperties
 {
@@ -68,15 +69,54 @@ PBRProperties calculatePBRPropertiesMetallicRoughness(
     return pbrProperties;
 }
 
-// unused for now, need to implement IBL, DO NOT REMOVE THIS COMMENT
-// float3 getIBLRadianceContributionGGX(PBRProperties pbrProperties, float specularWeight)
-// {
-//     float3 n = pbrProperties.n;
-//     float3 v = pbrProperties.v;
-//     float3 reflection = -normalize(reflect(v, n));
+float3 getIBLRadianceLambertian(
+    EnvironmentMapData environmentMapData, PBRProperties pbrProperties, float specularWeight
+) {
+    float2 brdfSamplePoint = clamp(
+        float2(pbrProperties.NdotV, pbrProperties.roughnessFactor), float2(0.0, 0.0), float2(1.0, 1.0)
+    );
+    float2 f_ab = sampleBRDFLUT(brdfSamplePoint, environmentMapData).rg;
 
-//     return float3(0.0f, 0.0f, 0.0f);
-// }
+    float3 irradiance = sampleEnvMapIrradiance(pbrProperties.n, environmentMapData).rgb;
+
+    float3 Fr = max(float3(1.0 - pbrProperties.roughnessFactor), pbrProperties.reflectance0) - pbrProperties.reflectance0;
+    float3 k_S = pbrProperties.reflectance0 + Fr * pow(1.0 - pbrProperties.NdotV, 5.0);
+    float3 FssEss = specularWeight * k_S * f_ab.x + f_ab.y;
+
+    float Ems = (1.0 - (f_ab.x + f_ab.y));
+    float3 F_avg = specularWeight * (pbrProperties.reflectance0 + (1.0 - pbrProperties.reflectance0) / 21.0);
+    float3 FmsEms = Ems * FssEss * F_avg / (1.0 - F_avg * Ems);
+    float3 k_D = pbrProperties.diffuseColor * (1.0 - FssEss + FmsEms);
+
+    return (FmsEms + k_D) * irradiance;
+}
+
+float3 getIBLRadianceContributionGGX(
+    EnvironmentMapData environmentMapData, PBRProperties pbrProperties, float specularWeight
+) {
+    if (environmentMapData.envMapTexture == NO_TEXTURE_FLAG)
+        return float3(0.0f, 0.0f, 0.0f);
+    if (environmentMapData.texBRDFLUT == NO_TEXTURE_FLAG)
+        return float3(0.0f, 0.0f, 0.0f);
+    float3 n = pbrProperties.n;
+    float3 v = pbrProperties.v;
+    float3 reflection = -normalize(reflect(v, n));
+
+    int mipCount = sampleEnvMapQueryLevels(environmentMapData);
+    float lod = pbrProperties.roughnessFactor * (mipCount - 1);
+
+    float2 brdfSamplePoint = clamp(
+        float2(pbrProperties.NdotV, pbrProperties.roughnessFactor), float2(0.0, 0.0), float2(1.0, 1.0)
+    );
+    float3 brdf = sampleBRDFLUT(brdfSamplePoint, environmentMapData).rgb;
+    float3 specularLight = sampleEnvMapLod(reflection, lod, environmentMapData).rgb;
+
+    float3 Fr = max(float3(1.0f - pbrProperties.roughnessFactor), pbrProperties.reflectance0) - pbrProperties.reflectance0;
+    float3 k_S = pbrProperties.reflectance0 + Fr * pow(1.0f - pbrProperties.NdotV, 5.0f);
+    float3 FssEss = k_S * brdf.x + brdf.y;
+
+    return specularWeight * specularLight * FssEss;
+}
 
 float3 specularReflection(PBRProperties pbrProperties)
 {

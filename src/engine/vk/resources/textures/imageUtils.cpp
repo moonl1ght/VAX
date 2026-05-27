@@ -47,17 +47,20 @@ std::optional<std::pair<VkImage, VmaAllocation>> createImage(
     VkImageTiling tiling,
     VkImageUsageFlags usage,
     VkMemoryPropertyFlags properties,
-    uint32_t layers
+    uint32_t layers,
+    uint32_t mipLevels,
+    VkImageCreateFlags flags
 ) {
     VkImage image;
     VmaAllocation allocation;
     VkImageCreateInfo imageInfo{
         .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
         .pNext = nullptr,
+        .flags = flags,
         .imageType = VK_IMAGE_TYPE_2D,
         .format = format,
         .extent = extent,
-        .mipLevels = 1,
+        .mipLevels = mipLevels,
         .arrayLayers = layers,
         .samples = VK_SAMPLE_COUNT_1_BIT,
         .tiling = tiling,
@@ -76,19 +79,26 @@ std::optional<std::pair<VkImage, VmaAllocation>> createImage(
     return std::make_optional(std::make_pair(image, allocation));
 }
 
-std::optional<VkImageView>
-createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectMask) {
+std::optional<VkImageView> createImageView(
+    VkDevice device,
+    VkImage image,
+    VkFormat format,
+    VkImageAspectFlags aspectMask,
+    VkImageViewType viewType,
+    uint32_t layerCount,
+    uint32_t levelCount
+) {
     VkImageViewCreateInfo viewInfo{
         .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
         .image = image,
-        .viewType = VK_IMAGE_VIEW_TYPE_2D,
+        .viewType = viewType,
         .format = format,
         .subresourceRange = {
             .aspectMask = aspectMask,
             .baseMipLevel = 0,
-            .levelCount = 1,
+            .levelCount = levelCount,
             .baseArrayLayer = 0,
-            .layerCount = 1,
+            .layerCount = layerCount,
         },
     };
 

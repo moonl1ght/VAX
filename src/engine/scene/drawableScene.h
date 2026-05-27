@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "descriptorSetWriter.h"
 #include "drawableModel.h"
+#include "environmentMap.h"
 #include "inputController.h"
 #include "luna.h"
 #include "modelLoader.h"
@@ -41,7 +42,9 @@ class DrawableScene final : public vax::input::InputController::Observer {
                   *_vkEngine.get().commandManager,
                   *_vkEngine.get().queueManager
               )
-          ) {};
+          ) {
+        _environmentMap = std::make_optional<vax::scene::EnvironmentMap>(_textureLoader, *vkEngine.device);
+    };
 
     ~DrawableScene() {
         _drawableModels.clear();
@@ -94,6 +97,7 @@ class DrawableScene final : public vax::input::InputController::Observer {
     std::vector<vax::objects::DrawableModel> _drawableModels;
     std::optional<vax::objects::DrawableModel> _background;
     std::optional<vax::objects::DrawableModel> _gizmo;
+    std::optional<vax::scene::EnvironmentMap> _environmentMap;
 
     bool _needsUpdateMaterialsSSBO = true;
     bool _needsUpdateTexturesSSBO = true;
@@ -102,5 +106,6 @@ class DrawableScene final : public vax::input::InputController::Observer {
     vax::SceneUpdateContext _sceneUpdateContext;
 
     void _load(VkQueue submitQueue);
+    void _loadEnvironmentMap(VkQueue submitQueue);
 };
 } // namespace vax

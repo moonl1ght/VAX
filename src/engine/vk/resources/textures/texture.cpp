@@ -29,8 +29,10 @@ void Texture::_destroy() {
     _id = NullTextureId;
 }
 
-void Texture::loadImageView() {
-    _imageView = utils::createImageView(_device.get().vkDevice, _image, _format, _aspectMask).value();
+void Texture::loadImageView(VkImageViewType viewType, uint32_t layerCount, uint32_t levelCount) {
+    _imageView =
+        utils::createImageView(_device.get().vkDevice, _image, _format, _aspectMask, viewType, layerCount, levelCount)
+            .value();
 }
 
 bool vax::textures::Texture::isValid() const { return _image != VK_NULL_HANDLE && _allocation != VK_NULL_HANDLE; }

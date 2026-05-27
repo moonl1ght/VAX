@@ -14,8 +14,15 @@ void copyImageToImage(
     VkCommandBuffer commandBuffer, VkImage source, VkImage destination, VkExtent2D srcSize, VkExtent2D dstSize
 );
 
-std::optional<VkImageView>
-createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
+std::optional<VkImageView> createImageView(
+    VkDevice device,
+    VkImage image,
+    VkFormat format,
+    VkImageAspectFlags aspectMask,
+    VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D,
+    uint32_t layerCount = 1,
+    uint32_t levelCount = 1
+);
 
 std::optional<std::pair<VkImage, VmaAllocation>> createImage(
     VmaAllocator allocator,
@@ -24,6 +31,8 @@ std::optional<std::pair<VkImage, VmaAllocation>> createImage(
     VkImageTiling tiling,
     VkImageUsageFlags usage,
     VkMemoryPropertyFlags properties,
-    uint32_t layers = 1
+    uint32_t layers = 1,
+    uint32_t mipLevels = 1,
+    VkImageCreateFlags flags = 0
 );
 }; // namespace vax::textures::utils

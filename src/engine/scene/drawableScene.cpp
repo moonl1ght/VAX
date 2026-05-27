@@ -1,9 +1,9 @@
 #include "drawableScene.h"
+#include "gridWorldDescriptor.h"
 #include "modelLoader.h"
 #include "primitivesBuilder.h"
 #include "swapchain.h"
 #include "textureLoader.h"
-#include "gridWorldDescriptor.h"
 
 using namespace vax;
 
@@ -19,6 +19,7 @@ void DrawableScene::prepareForDraw(renderer::RenderCallContext renderCallContext
 void DrawableScene::update(SceneUpdateContext sceneUpdateContext) {
     _sceneUpdateContext = sceneUpdateContext;
     _ubo = _mainCamera.getUniformBufferObject();
+    _ubo.environmentMapIndex = 0;
 }
 
 void vax::DrawableScene::resize() {
@@ -44,6 +45,7 @@ void vax::DrawableScene::loadGridWorld(
 }
 
 void vax::DrawableScene::_load(VkQueue submitQueue) {
+    _loadEnvironmentMap(submitQueue);
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
     _sceneUniformBuffers.reserve(vax::MAX_FRAMES_IN_FLIGHT);
     for (size_t i = 0; i < vax::MAX_FRAMES_IN_FLIGHT; i++) {
@@ -66,7 +68,7 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
     }
     _gizmo = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
     _gizmo->setSettings({.precomputedMVP = true});
-    
+
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
     commandBuffer.begin();
     _gizmo->loadMesh(commandBuffer);
@@ -96,9 +98,16 @@ bool vax::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& 
         0,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );
+    descriptorSetWriter.writeBuffer(
+        _environmentMap->environmentMapBuffer(),
+        GlobalBindingIndices::GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX,
+        0,
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+    );
     descriptorSetWriter.writeSampler(*globalSampler->second, GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 0);
-    _resourceManager.textureManager()
-        .updateDescriptorWriterWithAllTextures(descriptorSetWriter, GlobalBindingIndices::GLOBAL_TEXTURE_INDEX, false);
+    _resourceManager.textureManager().updateDescriptorWriterWithAllTextures(
+        descriptorSetWriter, GlobalBindingIndices::GLOBAL_TEXTURE_INDEX, false
+    );
     return true;
 }
 
@@ -137,4 +146,14 @@ void vax::DrawableScene::drawGizmo(VkCommandBuffer commandBuffer, const vax::vk:
 void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {
     _mainCamera.rotateBy(value.delta);
     _gizmoCamera.rotateBy(value.delta);
+}
+
+void vax::DrawableScene::_loadEnvironmentMap(VkQueue submitQueue) {
+    _environmentMap->load(
+        {.textures =
+             {{scene::EnvironmentMap::TextureType::BRDFLUT, RES_PATH("brdf/brdfLUT.ktx")},
+              {scene::EnvironmentMap::TextureType::EnvMapIrradiance, RES_PATH("brdf/irradiance.ktx")},
+              {scene::EnvironmentMap::TextureType::EnvMap, RES_PATH("brdf/prefilter.ktx")}}},
+        submitQueue
+    );
 }

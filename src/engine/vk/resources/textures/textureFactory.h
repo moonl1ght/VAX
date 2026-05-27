@@ -13,6 +13,17 @@ class CommandManager;
 namespace vax::textures {
 class TextureFactory final {
   public:
+    struct TextureCreateInfo {
+        std::string name;
+        VkFormat format;
+        math::SizeUI size;
+        VkImageUsageFlags imageUsageFlags;
+        VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D;
+        VkImageCreateFlags flags = 0;
+        uint32_t numLayers = 1;
+        uint32_t numMips = 1;
+    };
+
     explicit TextureFactory(const vax::vk::Device& device, VmaAllocator allocator, TextureManager* textureManager)
         : _device(device)
         , _allocator(allocator)
@@ -32,11 +43,9 @@ class TextureFactory final {
 
     std::optional<Texture> makeDepthTextureDetached(VkFormat format, math::SizeUI size);
 
-    std::optional<vax::TextureManager::TextureResource>
-    makeTexture(std::string name, VkFormat format, math::SizeUI size, VkImageUsageFlags imageUsageFlags);
+    std::optional<vax::TextureManager::TextureResource> makeTexture(const TextureCreateInfo& createInfo);
 
-    std::optional<Texture>
-    makeTextureDetached(std::string name, VkFormat format, math::SizeUI size, VkImageUsageFlags imageUsageFlags);
+    std::optional<Texture> makeTextureDetached(const TextureCreateInfo& createInfo);
 
   private:
     vax::utils::Logger _logger = vax::utils::Logger("TextureFactory");

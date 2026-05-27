@@ -76,8 +76,9 @@ bool vax::vk::PipelineManager::_createBackgroundPipeline(const vax::vk::RenderPa
         _logger.error("Failed to create background pipeline!");
         return false;
     }
-    _pipelines
-        .emplace(vax::vk::Pipeline::pipelineNameToString(vax::vk::PipelineName::BACKGROUND), std::move(*pipeline));
+    _pipelines.emplace(
+        vax::vk::Pipeline::pipelineNameToString(vax::vk::PipelineName::BACKGROUND), std::move(*pipeline)
+    );
     vkDestroyShaderModule(_device.get().vkDevice, fragShaderModule.value(), nullptr);
     vkDestroyShaderModule(_device.get().vkDevice, vertShaderModule.value(), nullptr);
     return true;
@@ -170,15 +171,15 @@ bool vax::vk::PipelineManager::_createBackgroundPipelineLayout(vax::vk::Pipeline
 bool vax::vk::PipelineManager::_createBasePipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) {
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     auto name = vax::vk::Pipeline::pipelineLayoutNameToString(pipelineLayoutName);
-    auto globalDescriptorSetLayout = _descriptorSetManager.get()
-                                         .getDescriptorSetLayout(DescriptorSetLayout::SetType::GLOBAL);
+    auto globalDescriptorSetLayout =
+        _descriptorSetManager.get().getDescriptorSetLayout(DescriptorSetLayout::SetType::GLOBAL);
     if (!globalDescriptorSetLayout) {
         _logger.error("Failed to get global descriptor set layout!");
         return false;
     }
     pipelineBuilder.addDescriptorSetLayout(globalDescriptorSetLayout->getVkDescriptorSetLayout());
-    auto perFrameDescriptorSetLayout = _descriptorSetManager.get()
-                                           .getDescriptorSetLayout(DescriptorSetLayout::SetType::PER_FRAME);
+    auto perFrameDescriptorSetLayout =
+        _descriptorSetManager.get().getDescriptorSetLayout(DescriptorSetLayout::SetType::PER_FRAME);
     if (!perFrameDescriptorSetLayout) {
         _logger.error("Failed to get per frame descriptor set layout!");
         return false;

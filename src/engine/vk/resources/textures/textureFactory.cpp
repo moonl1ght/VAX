@@ -1,5 +1,4 @@
 #include "textureFactory.h"
-#include "commandManager.h"
 #include "imageUtils.h"
 
 using namespace vax::textures;
@@ -48,41 +47,48 @@ std::optional<TextureManager::TextureResource> TextureFactory::makeDepthTexture(
     return std::nullopt;
 }
 
-std::optional<Texture> TextureFactory::makeTextureDetached(
-    std::string name, VkFormat format, math::SizeUI size, VkImageUsageFlags imageUsageFlags
-) {
+std::optional<Texture> TextureFactory::makeTextureDetached(const TextureCreateInfo& createInfo) {
     auto imageResult = utils::createImage(
         _allocator,
-        size.toExtent3D(),
-        format,
+        createInfo.size.toExtent3D(),
+        createInfo.format,
         VK_IMAGE_TILING_OPTIMAL,
-        imageUsageFlags,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+        createInfo.imageUsageFlags,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        createInfo.numLayers,
+        createInfo.numMips,
+        createInfo.flags
     );
     if (imageResult) {
         auto [image, allocation] = imageResult.value();
         auto texture = vax::textures::Texture(
-            _device.get(), _allocator, name, image, allocation, size, format, VK_IMAGE_ASPECT_COLOR_BIT
+            _device.get(),
+            _allocator,
+            createInfo.name,
+            image,
+            allocation,
+            createInfo.size,
+            createInfo.format,
+            VK_IMAGE_ASPECT_COLOR_BIT
         );
-        if (!name.empty()) {
+        if (!createInfo.name.empty()) {
             VkDebugUtilsObjectNameInfoEXT nameInfo{
                 .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
                 .objectType = VK_OBJECT_TYPE_IMAGE,
                 .objectHandle = reinterpret_cast<size_t>(image),
-                .pObjectName = name.c_str(),
+                .pObjectName = createInfo.name.c_str(),
             };
             vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
         }
-        texture.loadImageView();
+        texture.loadImageView(createInfo.viewType, createInfo.numLayers, createInfo.numMips);
         return std::make_optional(std::move(texture));
     }
-    _logger.error("Failed to create render destination texture!");
+    _logger.error("Failed to create texture!");
     return std::nullopt;
 }
 
-std::optional<TextureManager::TextureResource>
-TextureFactory::makeTexture(std::string name, VkFormat format, math::SizeUI size, VkImageUsageFlags imageUsageFlags) {
-    auto texture = makeTextureDetached(name, format, size, imageUsageFlags);
+std::optional<TextureManager::TextureResource> TextureFactory::makeTexture(const TextureCreateInfo& createInfo) {
+    auto texture = makeTextureDetached(createInfo);
     if (!texture) {
         return std::nullopt;
     }

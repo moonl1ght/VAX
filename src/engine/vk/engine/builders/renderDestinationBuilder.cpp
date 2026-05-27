@@ -26,7 +26,7 @@ std::optional<std::unique_ptr<RenderDestination>> RenderDestinationBuilder::buil
         VK_IMAGE_ASPECT_DEPTH_BIT
     );
 
-    depthTexture->loadImageView();
+    depthTexture->loadImageView(VK_IMAGE_VIEW_TYPE_2D, 1, 1);
 
     std::vector<VkFramebuffer> swapchainFramebuffers;
     if (!createFramebuffers(*depthTexture, swapchainFramebuffers)) {
@@ -40,10 +40,12 @@ std::optional<std::unique_ptr<RenderDestination>> RenderDestinationBuilder::buil
     drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     auto drawImage = textures::TextureFactory(_device.get(), _allocator)
                          .makeTextureDetached(
-                             "draw_image",
-                             VK_FORMAT_R16G16B16A16_SFLOAT,
-                             vax::math::SizeUI(_swapchain.get().swapchainExtent),
-                             drawImageUsages
+                             textures::TextureFactory::TextureCreateInfo{
+                                 .name = "draw_image",
+                                 .format = VK_FORMAT_R16G16B16A16_SFLOAT,
+                                 .size = vax::math::SizeUI(_swapchain.get().swapchainExtent),
+                                 .imageUsageFlags = drawImageUsages
+                             }
                          );
     if (!drawImage.has_value()) {
         return std::nullopt;

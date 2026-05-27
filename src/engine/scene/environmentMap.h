@@ -1,0 +1,56 @@
+#pragma once
+
+#include "buffer.h"
+#include "luna.h"
+#include "shaderUniforms.h"
+#include "textureLoader.h"
+
+namespace vax::scene {
+class EnvironmentMap final {
+  public:
+    enum class TextureType {
+        EnvMap,
+        EnvMapIrradiance,
+        BRDFLUT,
+    };
+    struct Descriptor {
+        std::vector<std::pair<TextureType, std::string>> textures;
+    };
+
+    EnvironmentMap(vax::textures::TextureLoader& textureLoader, const vax::vk::Device& device)
+        : _textureLoader(textureLoader)
+        , _device(device) {};
+    ~EnvironmentMap() = default;
+
+    EnvironmentMap(const EnvironmentMap& other) = delete;
+    EnvironmentMap(EnvironmentMap&& other) noexcept
+        : _textureLoader(other._textureLoader)
+        , _device(other._device)
+        , _environmentMapData(other._environmentMapData)
+        , _buffer(std::move(other._buffer)) {
+        other._environmentMapData = {};
+        other._buffer = nullptr;
+    };
+    EnvironmentMap& operator=(const EnvironmentMap& other) = delete;
+    EnvironmentMap& operator=(EnvironmentMap&& other) noexcept {
+        if (this != &other) {
+            _textureLoader = other._textureLoader;
+            _device = other._device;
+            _environmentMapData = other._environmentMapData;
+            _buffer = std::move(other._buffer);
+        }
+        return *this;
+    };
+
+    void load(const Descriptor& descriptor, VkQueue submitQueue);
+
+    const vax::vk::Buffer& environmentMapBuffer() const { return *_buffer; }
+
+  private:
+    vax::utils::Logger _logger = vax::utils::Logger("EnvironmentMap");
+    std::reference_wrapper<vax::textures::TextureLoader> _textureLoader;
+    std::reference_wrapper<const vax::vk::Device> _device;
+    EnvironmentMapData _environmentMapData;
+    std::unique_ptr<vax::vk::Buffer> _buffer = nullptr;
+};
+} // namespace vax::scene

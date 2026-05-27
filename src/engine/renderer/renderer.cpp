@@ -141,10 +141,9 @@ bool Renderer::_updateCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imag
 
     RendererPass renderPass(renderPassInfo);
     renderPass.pass(commandBuffer, [&]() {
-        auto frameDescriptorSetWriter =
-            _vkEngine.get()
-                .descriptorSetManager
-                ->getDescriptorSetWriter(_currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME);
+        auto frameDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+            _currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
+        );
 
         if (!frameDescriptorSetWriter.has_value()) {
             _logger.error("Failed to get default descriptor set writer!");
@@ -212,9 +211,9 @@ void Renderer::_setViewportAndScissor(VkCommandBuffer commandBuffer) {
 bool Renderer::_updateGlobalDescriptorSet(
     VkCommandBuffer commandBuffer, vax::DrawableScene* scene, VkPipelineLayout pipelineLayout
 ) {
-    auto globalDescriptorSetWriter =
-        _vkEngine.get()
-            .descriptorSetManager->getDescriptorSetWriter(_currentFrame, vax::vk::DescriptorSetLayout::SetType::GLOBAL);
+    auto globalDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+        _currentFrame, vax::vk::DescriptorSetLayout::SetType::GLOBAL
+    );
     if (!globalDescriptorSetWriter.has_value()) {
         return false;
     }

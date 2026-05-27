@@ -46,3 +46,27 @@ float4 sampleEmissive(PBRMaterial material, float2 uv) {
         globalSamplers[emissiveTextureSamplerIndex], uv
     );
 }
+
+int sampleEnvMapQueryLevels(EnvironmentMapData environmentMapData) {
+    uint width, height, levels;
+    globalCubeTextures[environmentMapData.envMapTexture].GetDimensions(0, width, height, levels);
+    return int(levels);
+}
+
+float4 sampleBRDFLUT(float2 brdfSamplePoint, EnvironmentMapData environmentMapData) {
+    return globalTextures[environmentMapData.texBRDFLUT].Sample(
+        globalSamplers[environmentMapData.texBRDFLUTSampler], brdfSamplePoint
+    );
+}
+
+float4 sampleEnvMapLod(float3 reflection, float lod, EnvironmentMapData environmentMapData) {
+    return globalCubeTextures[environmentMapData.envMapTexture].SampleLevel(
+        globalSamplers[environmentMapData.envMapTextureSampler], reflection, lod
+    );
+}
+
+float4 sampleEnvMapIrradiance(float3 normal, EnvironmentMapData environmentMapData) {
+    return globalCubeTextures[environmentMapData.envMapTextureIrradiance].Sample(
+        globalSamplers[environmentMapData.envMapTextureIrradianceSampler], normal
+    );
+}

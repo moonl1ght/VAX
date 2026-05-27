@@ -90,21 +90,20 @@ void Camera::_updateProjectionMatrix() {
         break;
     case Projection::orthographic:
         _savedProjectionMatrix = glm::ortho(
-            -_viewSize * _whAspectRatio,
-            _viewSize * _whAspectRatio,
-            -_viewSize,
-            _viewSize,
-            _nearPlane,
-            _farPlane
+            -_viewSize * _whAspectRatio, _viewSize * _whAspectRatio, -_viewSize, _viewSize, _nearPlane, _farPlane
         );
         break;
     }
 }
 
 UniformBufferObject Camera::getUniformBufferObject() {
-    return {.view = viewMatrix(), .proj = projectionMatrix(), .cameraPosition = glm::vec4(_position, 1.0f)};
+    return {
+        .view = viewMatrix(),
+        .proj = projectionMatrix(),
+        .cameraPosition = glm::vec4(_position, 1.0f),
+        .environmentMapIndex = NO_ENVIRONMENT_MAP_INDEX,
+    };
 }
-
 void Camera::setRotationSpeed(float rotationSpeed) { _rotationSpeed = rotationSpeed; }
 
 void Camera::rotateBy(glm::vec2 delta) {

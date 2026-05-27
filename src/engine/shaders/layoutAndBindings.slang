@@ -6,11 +6,17 @@ ConstantBuffer<UniformBufferObject> ubo;
 [vk::binding(GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX, SetIndices::GLOBAL_SET_INDEX)]
 StructuredBuffer<PBRMaterial> materials;
 
+[vk::binding(GlobalBindingIndices::GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX, SetIndices::GLOBAL_SET_INDEX)]
+StructuredBuffer<EnvironmentMapData> environmentMaps;
+
 [vk::binding(GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, SetIndices::GLOBAL_SET_INDEX)]
 SamplerState globalSamplers[MAX_SAMPLERS];
 
 [vk::binding(GlobalBindingIndices::GLOBAL_TEXTURE_INDEX, SetIndices::GLOBAL_SET_INDEX)]
 Texture2D globalTextures[MAX_TEXTURES];
+
+[vk::binding(GlobalBindingIndices::GLOBAL_TEXTURE_INDEX, SetIndices::GLOBAL_SET_INDEX)]
+TextureCube globalCubeTextures[MAX_TEXTURES];
 
 [vk::push_constant]
 DrawPushConstants pushConstants;
