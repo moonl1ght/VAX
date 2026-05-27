@@ -26,10 +26,12 @@ class InputController final {
             static_cast<TObserver*>(inst)->onMouseMove(value);
         };
 
+        auto mouseWheelWrapper = [](void* inst, float delta) { static_cast<TObserver*>(inst)->onMouseWheel(delta); };
+
         if (_observerCount < _observers.size()) {
-            _observers[_observerCount] = {static_cast<void*>(obj), mouseMoveWrapper};
+            _observers[_observerCount] = {static_cast<void*>(obj), mouseMoveWrapper, mouseWheelWrapper};
         } else {
-            _observers.push_back({static_cast<void*>(obj), mouseMoveWrapper});
+            _observers.push_back({static_cast<void*>(obj), mouseMoveWrapper, mouseWheelWrapper});
         }
 
         ++_observerCount;
@@ -49,6 +51,7 @@ class InputController final {
     struct ObserverSlot {
         void* instance;
         void (*mouseMoveFunc)(void*, const vax::input::MouseMoveValue&);
+        void (*mouseWheelFunc)(void*, float);
     };
     std::vector<ObserverSlot> _observers;
     int _observerCount = 0;

@@ -83,6 +83,8 @@ class DrawableScene final : public vax::input::InputController::Observer {
 
     void onMouseMove(const vax::input::MouseMoveValue& value);
 
+    void onMouseWheel(float delta);
+
   private:
     vax::utils::Logger _logger = vax::utils::Logger("DrawableScene");
     std::vector<vax::vk::Buffer*> _sceneUniformBuffers;

@@ -128,7 +128,6 @@ bool vax::vk::Engine::setup() {
     });
 
     pipelineManager = std::make_unique<PipelineManager>(*device, *descriptorSetManager);
-    std::cout << "Building pipelines..." << std::endl;
     pipelineManager->setup(*renderPass);
     deletionQueue.push_function([&]() {
         _logger.debug("Destroying pipeline manager...");

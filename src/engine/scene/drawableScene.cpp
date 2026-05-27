@@ -32,15 +32,22 @@ void vax::DrawableScene::loadGridWorld(
 ) {
     _resourceManager.setup();
     _drawableModels.reserve(gridWorldDrawableDescriptor.drawableDescriptors.size());
-    for (const auto& drawableDescriptor : gridWorldDrawableDescriptor.drawableDescriptors) {
-        auto model = _modelLoader.loadModel(drawableDescriptor.path, submitQueue);
-        model->transformHandle.setTransform(drawableDescriptor.initialTransform);
-        if (!model.has_value()) {
-            _logger.error("Failed to load model: {}", drawableDescriptor.path);
-            continue;
-        }
-        _drawableModels.push_back(std::move(model.value()));
+    // for (const auto& drawableDescriptor : gridWorldDrawableDescriptor.drawableDescriptors) {
+    //     auto model = _modelLoader.loadModel(drawableDescriptor.path, submitQueue);
+    //     model->transformHandle.setTransform(drawableDescriptor.initialTransform);
+    //     if (!model.has_value()) {
+    //         _logger.error("Failed to load model: {}", drawableDescriptor.path);
+    //         continue;
+    //     }
+    //     _drawableModels.push_back(std::move(model.value()));
+    // }
+    auto helmetModel = _modelLoader.loadModel(RES_PATH("assets/models/rover_s1.glb"), submitQueue);
+    if (!helmetModel.has_value()) {
+        _logger.error("Failed to load helmet model");
+        return;
     }
+    // helmetModel->transformHandle.setTransform(vax::math::Transform(vax::math::Vec3(0.0f, 0.0f, 0.0f), vax::math::Vec3(0.0f, 0.0f, 0.0f), vax::math::Vec3(1.0f, 1.0f, 1.0f)));
+    _drawableModels.push_back(std::move(helmetModel.value()));
     _load(submitQueue);
 }
 
@@ -146,6 +153,11 @@ void vax::DrawableScene::drawGizmo(VkCommandBuffer commandBuffer, const vax::vk:
 void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {
     _mainCamera.rotateBy(value.delta);
     _gizmoCamera.rotateBy(value.delta);
+}
+
+void vax::DrawableScene::onMouseWheel(float delta) {
+    std::cout << "Mouse wheel delta: " << delta << std::endl;
+    _mainCamera.zoomBy(0.1f * delta);
 }
 
 void vax::DrawableScene::_loadEnvironmentMap(VkQueue submitQueue) {

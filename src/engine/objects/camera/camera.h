@@ -60,6 +60,8 @@ class Camera final {
     UniformBufferObject getUniformBufferObject();
 
     void rotateBy(glm::vec2 delta);
+
+    void zoomBy(float delta);
     // void setPosition(simd_float3 position);
     // void precalculateMatrices();
 

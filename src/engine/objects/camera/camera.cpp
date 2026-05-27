@@ -129,3 +129,8 @@ void Camera::_updateRotationForPosition() {
     float groundDist = std::sqrt(x * x + z * z);
     _rotation.x = std::atan2(-y, groundDist);
 }
+
+void Camera::zoomBy(float delta) {
+    _position += delta * (_position - _target);
+    _isViewDirty = true;
+}

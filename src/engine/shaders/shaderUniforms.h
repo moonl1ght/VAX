@@ -93,7 +93,7 @@ struct UniformBufferObject {
     mat4 proj;
     vec4 cameraPosition;
     uint32_t environmentMapIndex = NO_ENVIRONMENT_MAP_INDEX;
-    uint32_t padding[3];
+    vec3 padding;
 };
 
 // TODO: now it uses normalMatrix that is for non uniform scaled objects if more data in the PushConstant is needed

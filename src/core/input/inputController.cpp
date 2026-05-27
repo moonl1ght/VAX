@@ -14,6 +14,11 @@ void InputController::handleEvent(const SDL_Event& event) {
             _isLeftButtonDown = false;
         }
     }
+    if (event.type == SDL_EVENT_MOUSE_WHEEL) {
+        for (int i = 0; i < _observerCount; ++i) {
+            _observers[i].mouseWheelFunc(_observers[i].instance, event.wheel.y);
+        }
+    }
     if (_isLeftButtonDown) {
         if (event.type == SDL_EVENT_MOUSE_MOTION) {
             for (int i = 0; i < _observerCount; ++i) {
