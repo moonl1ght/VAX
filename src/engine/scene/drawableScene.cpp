@@ -41,7 +41,7 @@ void vax::DrawableScene::loadGridWorld(
     //     }
     //     _drawableModels.push_back(std::move(model.value()));
     // }
-    auto helmetModel = _modelLoader.loadModel(RES_PATH("assets/models/rover_s1.glb"), submitQueue);
+    auto helmetModel = _modelLoader.loadModel(RES_PATH("assets/models/wall.glb"), submitQueue);
     if (!helmetModel.has_value()) {
         _logger.error("Failed to load helmet model");
         return;
@@ -156,7 +156,6 @@ void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {
 }
 
 void vax::DrawableScene::onMouseWheel(float delta) {
-    std::cout << "Mouse wheel delta: " << delta << std::endl;
     _mainCamera.zoomBy(0.1f * delta);
 }
 

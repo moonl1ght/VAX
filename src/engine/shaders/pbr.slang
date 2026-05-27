@@ -72,9 +72,15 @@ PBRProperties calculatePBRPropertiesMetallicRoughness(
 float3 getIBLRadianceLambertian(
     EnvironmentMapData environmentMapData, PBRProperties pbrProperties, float specularWeight
 ) {
-    float2 brdfSamplePoint = clamp(
-        float2(pbrProperties.NdotV, pbrProperties.roughnessFactor), float2(0.0, 0.0), float2(1.0, 1.0)
-    );
+    if (environmentMapData.envMapTextureIrradiance == NO_TEXTURE_FLAG)
+        return float3(0.0f, 0.0f, 0.0f);
+    if (environmentMapData.texBRDFLUT == NO_TEXTURE_FLAG)
+        return float3(0.0f, 0.0f, 0.0f);
+
+    float safeNdotV = clamp(pbrProperties.NdotV, 0.001f, 0.999f);
+    float safeRoughness = clamp(pbrProperties.roughnessFactor, 0.0f, 1.0f);
+    float2 brdfSamplePoint = float2(safeNdotV, safeRoughness);
+    
     float2 f_ab = sampleBRDFLUT(brdfSamplePoint, environmentMapData).rg;
 
     float3 irradiance = sampleEnvMapIrradiance(pbrProperties.n, environmentMapData).rgb;
@@ -104,10 +110,10 @@ float3 getIBLRadianceContributionGGX(
 
     int mipCount = sampleEnvMapQueryLevels(environmentMapData);
     float lod = pbrProperties.roughnessFactor * (mipCount - 1);
+    float safeNdotV = clamp(pbrProperties.NdotV, 0.001f, 0.999f);
+    float safeRoughness = clamp(pbrProperties.roughnessFactor, 0.0f, 1.0f);
+    float2 brdfSamplePoint = float2(safeNdotV, safeRoughness);
 
-    float2 brdfSamplePoint = clamp(
-        float2(pbrProperties.NdotV, pbrProperties.roughnessFactor), float2(0.0, 0.0), float2(1.0, 1.0)
-    );
     float3 brdf = sampleBRDFLUT(brdfSamplePoint, environmentMapData).rgb;
     float3 specularLight = sampleEnvMapLod(reflection, lod, environmentMapData).rgb;
 

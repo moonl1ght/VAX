@@ -19,6 +19,8 @@ std::optional<Sampler> Sampler::createSampler(const vk::Device& device, std::str
         .maxAnisotropy = properties.limits.maxSamplerAnisotropy,
         .compareEnable = VK_FALSE,
         .compareOp = VK_COMPARE_OP_ALWAYS,
+        .minLod = 0.0f,
+        .maxLod = VK_LOD_CLAMP_NONE,
         .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
         .unnormalizedCoordinates = VK_FALSE,
     };

@@ -22,6 +22,16 @@ float edgeFactor(float3 barycoords, float thickness) {
     return smoothstep(0.0, lineSmoothing * thickness, edgeIntensity);
 }
 
+// ACES filmic tone mapping (approximation by Krzysztof Narkowicz)
+float3 ACESFilm(float3 x) {
+    const float a = 2.51f;
+    const float b = 0.03f;
+    const float c = 2.43f;
+    const float d = 0.59f;
+    const float e = 0.14f;
+    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0f, 1.0f);
+}
+
 [shader("fragment")]
 float4 fragMain(FragmentInput input)
     : SV_Target {
@@ -33,16 +43,29 @@ float4 fragMain(FragmentInput input)
     float4 ao = sampleAmbientOcclusion(material, UVs[material.aoTextureUVIndex]);
     float4 emissive = sampleEmissive(material, UVs[material.emissiveTextureUVIndex]);
 
-    float3 finalNormal = normalize(input.normal);
+    float3 finalNormal = input.normal;
     float2 normalUV = UVs[material.normalMapTextureUVIndex];
     float4 sampledNormal = sampleNormalMap(material, normalUV);
     if ((pushConstants.flags & ObjectFlags::NoTangent) != 0) {
+        finalNormal = normalize(mul(pushConstants.normalMatrix, finalNormal));
         finalNormal = perturbNormal(finalNormal, input.worldPosition, sampledNormal.xyz, normalUV);
     } else {
         float3 normal = normalize(mul(pushConstants.normalMatrix, input.normal));
         float3 tangent = normalize(mul(pushConstants.normalMatrix, input.tangent.xyz));
 
         tangent = normalize(tangent - dot(tangent, normal) * normal);
+
+        float3 edgeTangent = tangent - dot(tangent, normal) * normal;
+
+        if (dot(edgeTangent, edgeTangent) > 0.001f) {
+            tangent = normalize(edgeTangent);
+        } else {
+            tangent = float3(1.0f, 0.0f, 0.0f); 
+            if (abs(dot(tangent, normal)) > 0.99f) {
+                tangent = float3(0.0f, 0.0f, 1.0f);
+            }
+            tangent = normalize(tangent - dot(tangent, normal) * normal);
+        }
 
         float3 bitangent = cross(normal, tangent) * input.tangent.w;
         float3x3 TBN = float3x3(tangent, bitangent, normal);
@@ -60,13 +83,15 @@ float4 fragMain(FragmentInput input)
 
     float3 specularColor = getIBLRadianceContributionGGX(environmentMaps[ubo.environmentMapIndex], pbrProperties, 1.0);
     float3 diffuseColor = getIBLRadianceLambertian(environmentMaps[ubo.environmentMapIndex], pbrProperties, 1.0);
-    float3 color = specularColor + diffuseColor;
+    float3 color = diffuseColor + specularColor;
 
     float3 lightPos = float3(0, 0, -10);
     color += calculatePBRLightContribution(pbrProperties, normalize(lightPos - input.worldPosition), float3(1.0f));
 
     color = color * (ao.r < 0.01f ? 1.0f : ao.r);
     color = emissive.rgb + color;
+
+    color = ACESFilm(color);
 
     if ((pushConstants.flags & ObjectFlags::IsWireframe) != 0) {
         // float val = edgeFactor(input.baryCoords, 1.0);

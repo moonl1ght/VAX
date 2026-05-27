@@ -47,6 +47,14 @@ To debug Slang source (not SPIR-V) in RenderDoc or a shader debugger:
 1. Add `-g -O0` flags to the Slang compilation command
 2. Comment `float3 baryCoords : SV_Barycentrics;` in shaders - this built-in is incompatible with Slang-level debug info
 
+## IBL Env genetation
+
+```bash
+gltf-ibl-sampler -inputPath ./university_workshop_4k.hdr -outCubeMap ./charlie.ktx -distribution Charlie -cubeMapResolution 512
+gltf-ibl-sampler -inputPath ./university_workshop_4k.hdr -outCubeMap ./prefilter.ktx -distribution GGX -cubeMapResolution 512
+gltf-ibl-sampler -inputPath ./university_workshop_4k.hdr -outCubeMap ./irradiance.ktx -distribution Lambertian -cubeMapResolution 256
+```
+
 ## Requirements
 
 - CMake 3.18+
