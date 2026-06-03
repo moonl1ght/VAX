@@ -38,9 +38,9 @@ struct DescriptorSetWriter {
     );
 
     void
-    writeTexture(const vax::textures::Texture& texture, uint32_t binding, bool useSampler, uint32_t arrayElement = 0);
+    writeTexture(const vax::textures::Texture& texture, uint32_t binding, uint32_t arrayElement = 0);
 
-    void writeTextures(const std::vector<const vax::textures::Texture*>& textures, uint32_t binding, bool useSampler);
+    void writeTextures(const std::vector<const vax::textures::Texture*>& textures, uint32_t binding);
 
     void writeSampler(const vax::textures::Sampler& sampler, uint32_t binding, uint32_t arrayElement = 0);
 

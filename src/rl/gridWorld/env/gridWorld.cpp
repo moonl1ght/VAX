@@ -18,7 +18,7 @@ vax::rl::gw::env::GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor()
     for (const auto& block : _grid) {
         vax::math::Transform transform = vax::math::Transform();
         std::vector<int> indices = _grid.indices(flatIndex);
-        transform.position = glm::vec3(indices[0] * 3.0f, 0.0f, indices[1] * 3.0f);
+        transform.position = glm::vec3(indices[0] * 1.1f, 0.0f, indices[1] * 1.1f);
 
         descriptor.drawableDescriptors.push_back(
             vax::objects::DrawableModel::LoadDescriptor{
@@ -34,9 +34,9 @@ vax::rl::gw::env::GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor()
 std::string GridWorld::blockTypeToPath(BlockType blockType) const {
     switch (blockType) {
     case BlockType::FLOOR:
-        return RES_PATH("assets/models/wood_floor.glb");
+        return RES_PATH("assets/models/floor4.glb");
     case BlockType::WALL:
-        return RES_PATH("assets/models/wall_cube.glb");
+        return RES_PATH("assets/models/wall.glb");
     default:
         return RES_PATH("assets/models/wood_floor.glb");
     }

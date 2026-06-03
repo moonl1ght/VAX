@@ -50,7 +50,7 @@ class TextureManager final {
     std::optional<SamplerResource> getGlobalSampler(vax::GlobalSampler sampler);
 
     void updateDescriptorWriterWithAllTextures(
-        vax::vk::DescriptorSetWriter& descriptorWriter, uint32_t binding, bool useSampler
+        vax::vk::DescriptorSetWriter& descriptorWriter, uint32_t binding
     ) const;
 
   private:

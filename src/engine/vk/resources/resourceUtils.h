@@ -17,5 +17,5 @@ constexpr SamplerId NullSamplerId = std::numeric_limits<SamplerId>::max();
 using MaterialId = uint32_t;
 constexpr MaterialId NullMaterialId = std::numeric_limits<MaterialId>::max();
 
-enum class GlobalSampler : SamplerId { PBRSampler = 0 };
+enum class GlobalSampler : SamplerId { PBRSampler = 0, CubeMapSampler = 1 };
 } // namespace vax

@@ -8,7 +8,8 @@ class Sampler final {
   public:
     VkSampler vkSampler = VK_NULL_HANDLE;
 
-    static std::optional<vax::textures::Sampler> createSampler(const vax::vk::Device& device, std::string name);
+    static std::optional<vax::textures::Sampler>
+    createSampler(const vax::vk::Device& device, std::string name, VkSamplerCreateInfo samplerInfo);
 
     explicit Sampler(VkSampler vkSampler, const vax::vk::Device& device)
         : vkSampler(vkSampler)

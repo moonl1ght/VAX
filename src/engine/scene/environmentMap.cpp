@@ -6,11 +6,11 @@ using namespace vax;
 void EnvironmentMap::load(const Descriptor& descriptor, VkQueue submitQueue) {
     _environmentMapData = EnvironmentMapData{
         .envMapTexture = NO_TEXTURE_FLAG,
-        .envMapTextureSampler = 0,
+        .envMapTextureSampler = static_cast<uint32_t>(GlobalSampler::CubeMapSampler),
         .envMapTextureIrradiance = NO_TEXTURE_FLAG,
-        .envMapTextureIrradianceSampler = 0,
+        .envMapTextureIrradianceSampler = static_cast<uint32_t>(GlobalSampler::CubeMapSampler),
         .texBRDFLUT = NO_TEXTURE_FLAG,
-        .texBRDFLUTSampler = 0,
+        .texBRDFLUTSampler = static_cast<uint32_t>(GlobalSampler::CubeMapSampler),
     };
     for (const auto& texture : descriptor.textures) {
         auto textureResource = _textureLoader.get().loadTexture(texture.second, submitQueue);

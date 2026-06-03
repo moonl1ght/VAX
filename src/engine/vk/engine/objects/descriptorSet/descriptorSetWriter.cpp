@@ -27,9 +27,9 @@ void DescriptorSetWriter::writeBuffer(
 }
 
 void DescriptorSetWriter::writeTexture(
-    const vax::textures::Texture& texture, uint32_t binding, bool useSampler, uint32_t arrayElement
+    const vax::textures::Texture& texture, uint32_t binding, uint32_t arrayElement
 ) {
-    auto imageInfoOpt = useSampler ? texture.descriptorImageInfo() : texture.descriptorImageInfoNoSampler();
+    auto imageInfoOpt = texture.descriptorImageInfoNoSampler();
     if (!imageInfoOpt) {
         _logger.error("Failed to write descriptor image info");
         return;
@@ -43,20 +43,18 @@ void DescriptorSetWriter::writeTexture(
         .dstBinding = binding,
         .dstArrayElement = arrayElement,
         .descriptorCount = 1,
-        .descriptorType = useSampler ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+        .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
         .pImageInfo = &imageInfo
     };
 
     _writes.push_back(write);
 }
 
-void DescriptorSetWriter::writeTextures(
-    const std::vector<const vax::textures::Texture*>& textures, uint32_t binding, bool useSampler
-) {
+void DescriptorSetWriter::writeTextures(const std::vector<const vax::textures::Texture*>& textures, uint32_t binding) {
     std::vector<VkDescriptorImageInfo> imageInfos;
     imageInfos.reserve(textures.size());
     for (const auto& texture : textures) {
-        auto imageInfoOpt = useSampler ? texture->descriptorImageInfo() : texture->descriptorImageInfoNoSampler();
+        auto imageInfoOpt = texture->descriptorImageInfoNoSampler();
         if (!imageInfoOpt) {
             _logger.error("Failed to write descriptor image info");
             return;
@@ -71,7 +69,7 @@ void DescriptorSetWriter::writeTextures(
         .dstBinding = binding,
         .dstArrayElement = 0,
         .descriptorCount = static_cast<uint32_t>(imageInfosSaved.size()),
-        .descriptorType = useSampler ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+        .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
         .pImageInfo = imageInfosSaved.data()
     };
 

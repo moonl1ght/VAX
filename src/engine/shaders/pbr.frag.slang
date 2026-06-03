@@ -91,7 +91,7 @@ float4 fragMain(FragmentInput input)
     color = color * (ao.r < 0.01f ? 1.0f : ao.r);
     color = emissive.rgb + color;
 
-    color = ACESFilm(color);
+    // color = ACESFilm(color);
 
     if ((pushConstants.flags & ObjectFlags::IsWireframe) != 0) {
         // float val = edgeFactor(input.baryCoords, 1.0);

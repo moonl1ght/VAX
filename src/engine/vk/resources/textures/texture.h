@@ -48,7 +48,6 @@ class Texture final {
     Texture(Texture&& other) noexcept
         : _device(other._device)
         , _allocator(other._allocator)
-        , _sampler(std::move(other._sampler))
         , _name(other._name)
         , _image(other._image)
         , _allocation(other._allocation)
@@ -59,7 +58,6 @@ class Texture final {
         , _isDetached(other._isDetached)
         , _id(other._id) {
         other._name.clear();
-        other._sampler = std::nullopt;
         other._image = VK_NULL_HANDLE;
         other._allocation = VK_NULL_HANDLE;
         other._imageView = VK_NULL_HANDLE;
@@ -73,7 +71,6 @@ class Texture final {
     Texture& operator=(Texture&& other) noexcept {
         if (this != &other) {
             cleanup();
-            _sampler = std::move(other._sampler);
             _device = other._device;
             _allocator = other._allocator;
             _name = other._name;
@@ -90,7 +87,6 @@ class Texture final {
             other._image = VK_NULL_HANDLE;
             other._allocation = VK_NULL_HANDLE;
             other._imageView = VK_NULL_HANDLE;
-            other._sampler = std::nullopt;
             other._size = vax::math::SizeUI::zero();
             other._format = VK_FORMAT_UNDEFINED;
             other._aspectMask = VK_IMAGE_ASPECT_NONE;
@@ -118,10 +114,6 @@ class Texture final {
 
     VkImageView imageView() const { return _imageView; }
 
-    const Sampler& sampler() const { return *_sampler; }
-
-    std::optional<VkDescriptorImageInfo> descriptorImageInfo() const;
-
     std::optional<VkDescriptorImageInfo> descriptorImageInfoNoSampler() const;
 
     std::optional<VkDescriptorImageInfo> descriptorImageInfo(const Sampler& sampler) const;
@@ -137,7 +129,6 @@ class Texture final {
   private:
     vax::utils::Logger _logger = vax::utils::Logger("Texture");
     vax::math::SizeUI _size = vax::math::SizeUI::zero();
-    std::optional<vax::textures::Sampler> _sampler = std::nullopt;
     VkFormat _format = VK_FORMAT_UNDEFINED;
     VkImageAspectFlags _aspectMask = VK_IMAGE_ASPECT_NONE;
     std::string _name;

@@ -32,22 +32,23 @@ void vax::DrawableScene::loadGridWorld(
 ) {
     _resourceManager.setup();
     _drawableModels.reserve(gridWorldDrawableDescriptor.drawableDescriptors.size());
-    // for (const auto& drawableDescriptor : gridWorldDrawableDescriptor.drawableDescriptors) {
-    //     auto model = _modelLoader.loadModel(drawableDescriptor.path, submitQueue);
-    //     model->transformHandle.setTransform(drawableDescriptor.initialTransform);
-    //     if (!model.has_value()) {
-    //         _logger.error("Failed to load model: {}", drawableDescriptor.path);
-    //         continue;
-    //     }
-    //     _drawableModels.push_back(std::move(model.value()));
-    // }
-    auto helmetModel = _modelLoader.loadModel(RES_PATH("assets/models/wall.glb"), submitQueue);
-    if (!helmetModel.has_value()) {
-        _logger.error("Failed to load helmet model");
-        return;
+    for (const auto& drawableDescriptor : gridWorldDrawableDescriptor.drawableDescriptors) {
+        auto model = _modelLoader.loadModel(drawableDescriptor.path, submitQueue);
+        model->transformHandle.setTransform(drawableDescriptor.initialTransform);
+        if (!model.has_value()) {
+            _logger.error("Failed to load model: {}", drawableDescriptor.path);
+            continue;
+        }
+        _drawableModels.push_back(std::move(model.value()));
     }
-    // helmetModel->transformHandle.setTransform(vax::math::Transform(vax::math::Vec3(0.0f, 0.0f, 0.0f), vax::math::Vec3(0.0f, 0.0f, 0.0f), vax::math::Vec3(1.0f, 1.0f, 1.0f)));
-    _drawableModels.push_back(std::move(helmetModel.value()));
+    // auto helmetModel = _modelLoader.loadModel(RES_PATH("assets/models/floor4.glb"), submitQueue);
+    // if (!helmetModel.has_value()) {
+    //     _logger.error("Failed to load helmet model");
+    //     return;
+    // }
+    // helmetModel->transformHandle.setTransform(vax::math::Transform(vax::math::Vec3(0.0f, 0.0f, 0.0f),
+    // vax::math::Vec3(0.0f, 0.0f, 0.0f), vax::math::Vec3(1.0f, 1.0f, 1.0f)));
+    // _drawableModels.push_back(std::move(helmetModel.value()));
     _load(submitQueue);
 }
 
@@ -96,7 +97,8 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
 
 bool vax::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter) {
     auto globalSampler = _resourceManager.textureManager().getGlobalSampler(GlobalSampler::PBRSampler);
-    if (!globalSampler.has_value()) {
+    auto globalCubeMapSampler = _resourceManager.textureManager().getGlobalSampler(GlobalSampler::CubeMapSampler);
+    if (!globalSampler.has_value() || !globalCubeMapSampler.has_value()) {
         return false;
     }
     descriptorSetWriter.writeBuffer(
@@ -112,8 +114,9 @@ bool vax::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& 
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );
     descriptorSetWriter.writeSampler(*globalSampler->second, GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 0);
+    descriptorSetWriter.writeSampler(*globalCubeMapSampler->second, GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 1);
     _resourceManager.textureManager().updateDescriptorWriterWithAllTextures(
-        descriptorSetWriter, GlobalBindingIndices::GLOBAL_TEXTURE_INDEX, false
+        descriptorSetWriter, GlobalBindingIndices::GLOBAL_TEXTURE_INDEX
     );
     return true;
 }
@@ -155,9 +158,7 @@ void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {
     _gizmoCamera.rotateBy(value.delta);
 }
 
-void vax::DrawableScene::onMouseWheel(float delta) {
-    _mainCamera.zoomBy(0.1f * delta);
-}
+void vax::DrawableScene::onMouseWheel(float delta) { _mainCamera.zoomBy(0.1f * delta); }
 
 void vax::DrawableScene::_loadEnvironmentMap(VkQueue submitQueue) {
     _environmentMap->load(

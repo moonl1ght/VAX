@@ -21,7 +21,6 @@ void Texture::_destroy() {
         _image = VK_NULL_HANDLE;
     }
     _name.clear();
-    _sampler = std::nullopt;
     _size = math::SizeUI::zero();
     _format = VK_FORMAT_UNDEFINED;
     _aspectMask = VK_IMAGE_ASPECT_NONE;
@@ -36,20 +35,6 @@ void Texture::loadImageView(VkImageViewType viewType, uint32_t layerCount, uint3
 }
 
 bool vax::textures::Texture::isValid() const { return _image != VK_NULL_HANDLE && _allocation != VK_NULL_HANDLE; }
-
-std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfo() const {
-    if (!_sampler.has_value() || _imageView == VK_NULL_HANDLE) {
-        _logger.error("Sampler or image view is not set");
-        return std::nullopt;
-    }
-    return std::make_optional(
-        VkDescriptorImageInfo{
-            .sampler = _sampler->vkSampler,
-            .imageView = _imageView,
-            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        }
-    );
-}
 
 std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfoNoSampler() const {
     if (_imageView == VK_NULL_HANDLE) {
@@ -76,13 +61,4 @@ std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfo(const Sampler&
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         }
     );
-}
-
-void Texture::createSampler() {
-    if (_sampler.has_value()) {
-        return;
-    }
-    if (auto sampler = vax::textures::Sampler::createSampler(_device.get(), _name + "_texture_sampler")) {
-        _sampler = std::make_optional(std::move(*sampler));
-    }
 }

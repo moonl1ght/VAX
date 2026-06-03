@@ -6,15 +6,51 @@ using namespace vax;
 using namespace vax::textures;
 
 bool TextureManager::setup() {
-    for (size_t i = 0; i < vax::MAX_GLOBAL_SAMPLERS; ++i) {
-        if (auto sampler =
-                vax::textures::Sampler::createSampler(_device.get(), "global_sampler_" + std::to_string(i))) {
-            _globalSamplers.push_back(std::move(*sampler));
-        } else {
-            _logger.error("Failed to create global sampler");
-            return false;
-        }
+    VkPhysicalDeviceProperties properties{};
+    vkGetPhysicalDeviceProperties(_device.get().vkPhysicalDevice, &properties);
+    VkSamplerCreateInfo globalSamplerInfo{
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .anisotropyEnable = VK_TRUE,
+        .maxAnisotropy = properties.limits.maxSamplerAnisotropy,
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_ALWAYS,
+        .minLod = 0.0f,
+        .maxLod = VK_LOD_CLAMP_NONE,
+        .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+        .unnormalizedCoordinates = VK_FALSE,
+    };
+    VkSamplerCreateInfo globalCubeMapSamplerInfo{
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        .anisotropyEnable = VK_TRUE,
+        .maxAnisotropy = properties.limits.maxSamplerAnisotropy,
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_ALWAYS,
+        .minLod = 0.0f,
+        .maxLod = VK_LOD_CLAMP_NONE,
+        .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+        .unnormalizedCoordinates = VK_FALSE,
+    };
+    auto globalSampler = vax::textures::Sampler::createSampler(_device.get(), "global_sampler", globalSamplerInfo);
+    auto globalCubeMapSampler =
+        vax::textures::Sampler::createSampler(_device.get(), "global_cube_map_sampler", globalCubeMapSamplerInfo);
+    if (!globalSampler.has_value() || !globalCubeMapSampler.has_value()) {
+        _logger.error("Failed to create global sampler");
+        return false;
     }
+    _globalSamplers.push_back(std::move(*globalSampler));
+    _globalSamplers.push_back(std::move(*globalCubeMapSampler));
     return true;
 }
 
@@ -66,7 +102,7 @@ std::optional<textures::Texture> TextureManager::detach(TextureHandle handle) {
 }
 
 void TextureManager::updateDescriptorWriterWithAllTextures(
-    vax::vk::DescriptorSetWriter& descriptorWriter, uint32_t binding, bool useSampler
+    vax::vk::DescriptorSetWriter& descriptorWriter, uint32_t binding
 ) const {
     std::vector<const textures::Texture*> textures(_pool.size());
     for (auto& [id, texture] : _pool) {
@@ -76,7 +112,7 @@ void TextureManager::updateDescriptorWriterWithAllTextures(
     if (textures.empty()) {
         return;
     }
-    descriptorWriter.writeTextures(textures, binding, useSampler);
+    descriptorWriter.writeTextures(textures, binding);
 }
 
 std::optional<TextureManager::SamplerResource> TextureManager::getGlobalSampler(GlobalSampler sampler) {
