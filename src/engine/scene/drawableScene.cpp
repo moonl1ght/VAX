@@ -41,14 +41,13 @@ void vax::DrawableScene::loadGridWorld(
         }
         _drawableModels.push_back(std::move(model.value()));
     }
-    // auto helmetModel = _modelLoader.loadModel(RES_PATH("assets/models/floor4.glb"), submitQueue);
-    // if (!helmetModel.has_value()) {
-    //     _logger.error("Failed to load helmet model");
-    //     return;
-    // }
-    // helmetModel->transformHandle.setTransform(vax::math::Transform(vax::math::Vec3(0.0f, 0.0f, 0.0f),
-    // vax::math::Vec3(0.0f, 0.0f, 0.0f), vax::math::Vec3(1.0f, 1.0f, 1.0f)));
-    // _drawableModels.push_back(std::move(helmetModel.value()));
+    auto agentModel = _modelLoader.loadModel(gridWorldDrawableDescriptor.agentDrawableDescriptor.path, submitQueue);
+    agentModel->transformHandle.setTransform(gridWorldDrawableDescriptor.agentDrawableDescriptor.initialTransform);
+    if (!agentModel.has_value()) {
+        _logger.error("Failed to load agent model: {}", gridWorldDrawableDescriptor.agentDrawableDescriptor.path);
+        return;
+    }
+    _drawableModels.push_back(std::move(agentModel.value()));    
     _load(submitQueue);
 }
 

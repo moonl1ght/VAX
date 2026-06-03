@@ -160,7 +160,7 @@ bool Tensor::alignBroadcastToHigherDimensions(const std::vector<int>& otherShape
 std::vector<int> Tensor::indices(int flatIndex) const { return _calculateIndices(flatIndex); }
 
 std::vector<int> Tensor::_calculateIndices(int flatIndex) const {
-    size_t rank = _strides.size() + 1; 
+    size_t rank = _strides.size(); 
     std::vector<int> indices(rank);
 
     for (size_t i = 0; i < rank - 1; ++i) {

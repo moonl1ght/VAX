@@ -2,6 +2,7 @@
 
 #include "tensor.h"
 #include "gridWorldDescriptor.h"
+#include "gwAgent.h"
 
 namespace vax::rl::gw::env {
 class GridWorld final {
@@ -24,6 +25,7 @@ class GridWorld final {
 
   private:
     vax::rl::math::Tensor _grid;
+    vax::rl::env::gw::Agent _agent;
 
     std::string blockTypeToPath(BlockType blockType) const;
 };
