@@ -26,6 +26,7 @@ find_package(imgui REQUIRED CONFIG)
 find_package(Tracy REQUIRED)
 set(Ktx_DIR "${CMAKE_CURRENT_LIST_DIR}/build" CACHE PATH "" FORCE)
 find_package(Ktx REQUIRED CONFIG)
+find_package(urdfdom REQUIRED)
 foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
     if(DEFINED imgui_PACKAGE_FOLDER_${_cfg})
         set(IMGUI_PACKAGE_DIR "${imgui_PACKAGE_FOLDER_${_cfg}}")
@@ -181,6 +182,7 @@ if(WIN32)
             glm::glm
             Tracy::TracyClient
             KTX::ktx
+            urdfdom::urdfdom
             -L${CUDA_PATH}/lib64 -lcudart
         )
     endif(VULKAN_FOUND)
@@ -198,6 +200,7 @@ else()
             glm::glm
             Tracy::TracyClient
             KTX::ktx
+            urdfdom::urdfdom
             -L${CUDA_PATH}/lib64 -lcudart
         )
     endif(VULKAN_FOUND)

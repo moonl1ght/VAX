@@ -4,6 +4,8 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <string>
+#include <urdf_parser/urdf_parser.h>
 
 using namespace vax::objects;
 using namespace vax;
@@ -228,12 +230,10 @@ void processNode(
 std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQueue submitQueue) {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         _logger.error("Failed to load model: " + std::string(importer.GetErrorString()));
         return std::nullopt;
     }
-
     size_t totalVertexCount = 0;
     size_t totalIndexCount = 0;
 
@@ -299,4 +299,24 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     drawableModel._submeshes = submeshes;
     drawableModel._settings.hasTangents = hasTangents;
     return std::make_optional(drawableModel);
+}
+
+std::optional<DrawableModel> ModelLoader::loadURDFModel(const std::string& path, VkQueue submitQueue) {
+    auto model = urdf::parseURDFFile(path);
+    if (!model) {
+        _logger.error("Failed to load URDF model: " + path);
+        return std::nullopt;
+    }
+    std::cout << "Model: " << model->getName() << std::endl;
+    std::vector<urdf::LinkSharedPtr> links;
+    model->getLinks(links);
+    for (const auto& link : links) {
+        std::cout << "Link: " << link->name << std::endl;
+    }
+    // std::vector<urdf::JointSharedPtr> joints;
+    // model->getJoints(joints);
+    // for (const auto& joint : joints) {
+    //     std::cout << "Joint: " << joint->name << std::endl;
+    // }
+    return std::nullopt;
 }

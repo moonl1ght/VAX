@@ -8,6 +8,7 @@ taskflow/4.0.0
 tracy/0.13.1
 sdl/3.4.0
 ktx/4.4.2
+urdfdom/4.0.0
 
 [options]
 tracy/*:enable=False

@@ -31,12 +31,12 @@ rl::gw::env::GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() cons
             transform.position.y = 0.5f;
         }
 
-        descriptor.drawableDescriptors.push_back(
-            objects::DrawableModel::LoadDescriptor{
-                std::string(blockTypeToPath(blockType)),
-                transform,
-            }
-        );
+        // descriptor.drawableDescriptors.push_back(
+        //     objects::DrawableModel::LoadDescriptor{
+        //         std::string(blockTypeToPath(blockType)),
+        //         transform,
+        //     }
+        // );
         ++flatIndex;
     }
     descriptor.agentDrawableDescriptor = _agent.getDrawableDescriptor();

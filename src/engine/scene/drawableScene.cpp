@@ -47,7 +47,9 @@ void vax::DrawableScene::loadGridWorld(
         _logger.error("Failed to load agent model: {}", gridWorldDrawableDescriptor.agentDrawableDescriptor.path);
         return;
     }
-    _drawableModels.push_back(std::move(agentModel.value()));    
+    _drawableModels.push_back(std::move(agentModel.value()));
+
+    auto urdfModel = _modelLoader.loadURDFModel(RES_PATH("assets/models/rover/rover.urdf"), submitQueue);
     _load(submitQueue);
 }
 
