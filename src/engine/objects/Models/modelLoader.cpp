@@ -320,12 +320,20 @@ SceneNode processURDFLink(
     ModelLoaderFunc loadModel,
     const glm::mat4& parentTransform = glm::mat4(1.0f)
 ) {
-    glm::mat4 linkTransform = parentTransform;
+    SceneNode node(link->name, !link->parent_joint);
     if (link->parent_joint) {
-        linkTransform = parentTransform * urdfPoseToMat4(link->parent_joint->parent_to_joint_origin_transform);
+        auto pose = link->parent_joint->parent_to_joint_origin_transform;
+        node.transformHandle.setPosition(glm::vec3(pose.position.x, pose.position.y, pose.position.z));
+        double quatX, quatY, quatZ, quatW;
+        pose.rotation.getQuaternion(quatX, quatY, quatZ, quatW);
+        glm::quat quat(quatW, quatX, quatY, quatZ);
+        node.transformHandle.setRotation(glm::eulerAngles(quat));
     }
 
-    SceneNode node(link->name, !link->parent_joint);
+    auto transform = node.transformHandle.getModelMatrix();
+
+    node.transformHandle.setModelMatrix(parentTransform * transform);
+
     for (const auto& visual : link->visual_array) {
         if (!visual || !visual->geometry)
             continue;
@@ -351,23 +359,27 @@ SceneNode processURDFLink(
                 for (size_t i = 0; i < modelOpt->submeshCount(); ++i) {
                     modelOpt->submesh(i).materialIndex = materialId;
                 }
-                glm::mat4 visualTransform = linkTransform * urdfPoseToMat4(visual->origin);
                 glm::vec3 meshScale(mesh->scale.x, mesh->scale.y, mesh->scale.z);
-                visualTransform = glm::scale(visualTransform, meshScale);
-                modelOpt->transformHandle.setModelMatrix(visualTransform);
+                glm::vec3 meshPosition(visual->origin.position.x, visual->origin.position.y, visual->origin.position.z);
+                glm::vec3 meshRotation(visual->origin.rotation.x, visual->origin.rotation.y, visual->origin.rotation.z);
+                modelOpt->transformHandle.setScale(meshScale);
+                modelOpt->transformHandle.setPosition(meshPosition);
+                modelOpt->transformHandle.setRotation(meshRotation);
                 node.drawableModels.push_back(std::move(*modelOpt));
             }
         }
     }
 
     for (const auto& child : link->child_links) {
-        node.children.push_back(processURDFLink(resourceManager, child, loadModel, linkTransform));
+        auto childNode = processURDFLink(resourceManager, child, loadModel, node.transformHandle.getModelMatrix());
+        node.children.push_back(childNode);
     }
 
     return node;
 }
 
-std::optional<SceneNode> ModelLoader::loadSceneModel(const std::string& path, VkQueue submitQueue) {
+std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(LoaderDescriptor descriptor, VkQueue submitQueue) {
+    auto path = descriptor.path;
     auto model = urdf::parseURDFFile(path);
     if (!model) {
         _logger.error("Failed to load URDF model: " + path);
@@ -379,4 +391,13 @@ std::optional<SceneNode> ModelLoader::loadSceneModel(const std::string& path, Vk
         }
     );
     return std::optional<SceneNode>(std::in_place, std::move(rootNode));
+}
+
+
+// TODO: implement this and replace separate loadSceneModel and loadModel functions
+std::optional<SceneNode> ModelLoader::loadSceneModel(vax::objects::LoaderDescriptor descriptor, VkQueue submitQueue) {
+    if (descriptor.getModelExtension() == vax::objects::LoaderDescriptor::ModelExtension::URDF) {
+        return _loadURDFSceneModel(descriptor, submitQueue);
+    }
+    return std::nullopt;
 }

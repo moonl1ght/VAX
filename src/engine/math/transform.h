@@ -1,17 +1,26 @@
 #pragma once
 
 #include "luna.h"
+#include <glm/ext/matrix_float4x4.hpp>
 
 namespace vax::math {
 struct Transform final {
-    glm::vec3 position;
-    glm::vec3 rotation;
-    glm::vec3 scale;
+    glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f); // in radians
+    glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
 
-    Transform()
-        : position(glm::vec3(0.0f, 0.0f, 0.0f))
-        , rotation(glm::vec3(0.0f, 0.0f, 0.0f))
-        , scale(glm::vec3(1.0f, 1.0f, 1.0f)) {};
+    Transform() {};
+
+    Transform(glm::mat4 modelMatrix);
+
+    void updateRotationWithQuaternion(const glm::quat& rotation);
+
+    // accepts rotation in degrees
+    void updateRotationInDegrees(const glm::vec3& rotation);
+
+    glm::vec3 getRotationInDegrees() const;
+
+    glm::mat4 getModelMatrix() const;
 };
 
 struct TransformHandle final {

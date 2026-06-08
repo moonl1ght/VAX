@@ -5,7 +5,7 @@ using namespace vax::objects;
 bool DrawableModel::loadMesh(vax::vk::CommandBuffer& commandBuffer) { return _mesh->loadBuffers(commandBuffer); }
 
 void DrawableModel::draw(
-    vax::vk::Engine* vkEngine, VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, float time
+    VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout
 ) {
     if (!_mesh->isLoaded())
         return;

@@ -44,7 +44,7 @@ class DrawableModel final {
 
     bool loadMesh(vax::vk::CommandBuffer& commandBuffer);
 
-    void draw(vax::vk::Engine* vkEngine, VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, float time);
+    void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
 
     Settings& settings() { return _settings; }
     const Settings& settings() const { return _settings; }

@@ -42,10 +42,7 @@ void vax::DrawableScene::loadGridWorld(
         _drawableModels.push_back(std::move(model.value()));
     }
 
-    auto agentModel =
-        _modelLoader.loadSceneModel(gridWorldDrawableDescriptor.agentDrawableDescriptor.path, submitQueue);
-    // auto agentModel = _modelLoader.loadModel(gridWorldDrawableDescriptor.agentDrawableDescriptor.path, submitQueue);
-    // agentModel->transformHandle.setTransform(gridWorldDrawableDescriptor.agentDrawableDescriptor.initialTransform);
+    auto agentModel = _modelLoader.loadSceneModel(gridWorldDrawableDescriptor.agentDrawableDescriptor, submitQueue);
     if (!agentModel.has_value()) {
         _logger.error("Failed to load agent model: {}", gridWorldDrawableDescriptor.agentDrawableDescriptor.path);
         return;
@@ -148,17 +145,12 @@ bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& d
 void vax::DrawableScene::_drawSceneNode(
     vax::objects::SceneNode node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline
 ) {
-    for (auto& drawableModel : node.drawableModels) {
-        drawableModel.draw(&_vkEngine.get(), commandBuffer, pipeline.vkPipelineLayout, _sceneUpdateContext.deltaTime);
-    }
-    for (auto& child : node.children) {
-        _drawSceneNode(child, commandBuffer, pipeline);
-    }
+    node.draw(commandBuffer, pipeline.vkPipelineLayout);
 }
 
 void vax::DrawableScene::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
     for (auto& drawableModel : _drawableModels) {
-        drawableModel.draw(&_vkEngine.get(), commandBuffer, pipeline.vkPipelineLayout, _sceneUpdateContext.deltaTime);
+        drawableModel.draw(commandBuffer, pipeline.vkPipelineLayout);
     }
     for (auto& node : _nodes) {
         _drawSceneNode(node, commandBuffer, pipeline);
@@ -168,7 +160,7 @@ void vax::DrawableScene::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipe
 void vax::DrawableScene::drawBackground(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
     if (!_background)
         return;
-    _background->draw(&_vkEngine.get(), commandBuffer, pipeline.vkPipelineLayout, _sceneUpdateContext.deltaTime);
+    _background->draw(commandBuffer, pipeline.vkPipelineLayout);
 }
 
 void vax::DrawableScene::drawGizmo(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
@@ -178,7 +170,7 @@ void vax::DrawableScene::drawGizmo(VkCommandBuffer commandBuffer, const vax::vk:
     auto projectionMatrix = _gizmoCamera.projectionMatrix();
     auto viewProjectionMatrix = projectionMatrix * viewMatrix;
     _gizmo->transformHandle.setModelMatrix(viewProjectionMatrix);
-    _gizmo->draw(&_vkEngine.get(), commandBuffer, pipeline.vkPipelineLayout, _sceneUpdateContext.deltaTime);
+    _gizmo->draw(commandBuffer, pipeline.vkPipelineLayout);
 }
 
 void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {
