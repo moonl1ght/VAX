@@ -14,6 +14,7 @@
 #include "shaderUniforms.h"
 #include "textureLoader.h"
 #include "vkEngine.h"
+#include "sceneNode.h"
 
 namespace vax::rl::gw::env {
 struct GridWorldDrawableDescriptor;
@@ -97,6 +98,7 @@ class DrawableScene final : public vax::input::InputController::Observer {
     vax::objects::Camera _gizmoCamera;
     UniformBufferObject _ubo;
     std::vector<vax::objects::DrawableModel> _drawableModels;
+    std::vector<vax::objects::SceneNode> _nodes;
     std::optional<vax::objects::DrawableModel> _background;
     std::optional<vax::objects::DrawableModel> _gizmo;
     std::optional<vax::scene::EnvironmentMap> _environmentMap;
@@ -109,5 +111,6 @@ class DrawableScene final : public vax::input::InputController::Observer {
 
     void _load(VkQueue submitQueue);
     void _loadEnvironmentMap(VkQueue submitQueue);
+    void _drawSceneNode(vax::objects::SceneNode node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
 };
 } // namespace vax

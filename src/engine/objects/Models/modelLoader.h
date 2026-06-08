@@ -4,6 +4,7 @@
 #include "luna.h"
 #include "resourceManager.h"
 #include "textureLoader.h"
+#include "sceneNode.h"
 
 namespace vax::objects {
 class ModelLoader final {
@@ -20,7 +21,7 @@ class ModelLoader final {
     ModelLoader& operator=(ModelLoader&& other) noexcept = delete;
 
     std::optional<DrawableModel> loadModel(const std::string& path, VkQueue submitQueue);
-    std::optional<DrawableModel> loadURDFModel(const std::string& path, VkQueue submitQueue);
+    std::optional<SceneNode> loadSceneModel(const std::string& path, VkQueue submitQueue);
 
   private:
     vax::utils::Logger _logger = vax::utils::Logger("ModelLoader");

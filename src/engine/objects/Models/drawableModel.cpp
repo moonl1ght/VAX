@@ -42,7 +42,6 @@ void DrawableModel::draw(
                 &drawPushConstants
             );
         }
-
         vkCmdDrawIndexed(commandBuffer, submesh.indexCount, 1, submesh.firstIndex, submesh.vertexOffset, 0);
     }
 }

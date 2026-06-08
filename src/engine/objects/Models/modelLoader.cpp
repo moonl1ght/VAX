@@ -1,5 +1,7 @@
 #include "modelLoader.h"
+#include "sceneNode.h"
 #include "shaderSharedUtils.h"
+#include "sceneNode.h"
 #include <assimp/GltfMaterial.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -301,22 +303,58 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     return std::make_optional(drawableModel);
 }
 
-std::optional<DrawableModel> ModelLoader::loadURDFModel(const std::string& path, VkQueue submitQueue) {
+static glm::mat4 urdfPoseToMat4(const urdf::Pose& pose) {
+    glm::vec3 pos(pose.position.x, pose.position.y, pose.position.z);
+    glm::quat rot(
+        static_cast<float>(pose.rotation.w),
+        static_cast<float>(pose.rotation.x),
+        static_cast<float>(pose.rotation.y),
+        static_cast<float>(pose.rotation.z)
+    );
+    return glm::translate(glm::mat4(1.0f), pos) * glm::mat4_cast(rot);
+}
+
+template<typename ModelLoaderFunc>
+SceneNode processURDFLink(
+    urdf::LinkConstSharedPtr link, ModelLoaderFunc loadModel, const glm::mat4& parentTransform = glm::mat4(1.0f)
+) {
+    glm::mat4 linkTransform = parentTransform;
+    if (link->parent_joint) {
+        linkTransform = parentTransform * urdfPoseToMat4(link->parent_joint->parent_to_joint_origin_transform);
+    }
+
+    SceneNode node(link->name, !link->parent_joint);
+    for (const auto& visual : link->visual_array) {
+        if (!visual || !visual->geometry)
+            continue;
+        if (visual->geometry->type == urdf::Geometry::MESH) {
+            const auto* mesh = static_cast<const urdf::Mesh*>(visual->geometry.get());
+            auto modelOpt = loadModel(RES_PATH("assets/models/rover/" + mesh->filename));
+            if (modelOpt.has_value()) {
+                glm::mat4 visualTransform = linkTransform * urdfPoseToMat4(visual->origin);
+                glm::vec3 meshScale(mesh->scale.x, mesh->scale.y, mesh->scale.z);
+                visualTransform = glm::scale(visualTransform, meshScale);
+                modelOpt->transformHandle.setModelMatrix(visualTransform);
+                node.drawableModels.push_back(std::move(*modelOpt));
+            }
+        }
+    }
+
+    for (const auto& child : link->child_links) {
+        node.children.push_back(processURDFLink(child, loadModel, linkTransform));
+    }
+
+    return node;
+}
+
+std::optional<SceneNode> ModelLoader::loadSceneModel(const std::string& path, VkQueue submitQueue) {
     auto model = urdf::parseURDFFile(path);
     if (!model) {
         _logger.error("Failed to load URDF model: " + path);
         return std::nullopt;
     }
-    std::cout << "Model: " << model->getName() << std::endl;
-    std::vector<urdf::LinkSharedPtr> links;
-    model->getLinks(links);
-    for (const auto& link : links) {
-        std::cout << "Link: " << link->name << std::endl;
-    }
-    // std::vector<urdf::JointSharedPtr> joints;
-    // model->getJoints(joints);
-    // for (const auto& joint : joints) {
-    //     std::cout << "Joint: " << joint->name << std::endl;
-    // }
-    return std::nullopt;
+    auto rootNode = processURDFLink(model->getRoot(), [&](std::string name) -> std::optional<DrawableModel> {
+        return loadModel(name, submitQueue);
+    });
+    return std::optional<SceneNode>(std::in_place, std::move(rootNode));
 }

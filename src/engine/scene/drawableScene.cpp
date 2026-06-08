@@ -41,15 +41,16 @@ void vax::DrawableScene::loadGridWorld(
         }
         _drawableModels.push_back(std::move(model.value()));
     }
-    auto agentModel = _modelLoader.loadModel(gridWorldDrawableDescriptor.agentDrawableDescriptor.path, submitQueue);
-    agentModel->transformHandle.setTransform(gridWorldDrawableDescriptor.agentDrawableDescriptor.initialTransform);
+
+    auto agentModel =
+        _modelLoader.loadSceneModel(gridWorldDrawableDescriptor.agentDrawableDescriptor.path, submitQueue);
+    // auto agentModel = _modelLoader.loadModel(gridWorldDrawableDescriptor.agentDrawableDescriptor.path, submitQueue);
+    // agentModel->transformHandle.setTransform(gridWorldDrawableDescriptor.agentDrawableDescriptor.initialTransform);
     if (!agentModel.has_value()) {
         _logger.error("Failed to load agent model: {}", gridWorldDrawableDescriptor.agentDrawableDescriptor.path);
         return;
     }
-    _drawableModels.push_back(std::move(agentModel.value()));
-
-    auto urdfModel = _modelLoader.loadURDFModel(RES_PATH("assets/models/rover/rover.urdf"), submitQueue);
+    _nodes.push_back(std::move(agentModel.value()));
     _load(submitQueue);
 }
 
@@ -57,7 +58,7 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
     _loadEnvironmentMap(submitQueue);
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
     _sceneUniformBuffers.reserve(vax::MAX_FRAMES_IN_FLIGHT);
-    for (size_t i = 0; i < vax::MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < vax::MAX_FRAMES_IN_FLIGHT; ++i) {
         auto& bufferManager = _resourceManager.bufferManager();
         auto allocation = bufferManager
                               .allocateBuffer(
@@ -79,11 +80,23 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
     _gizmo->setSettings({.precomputedMVP = true});
 
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
+    std::function<void(vax::objects::SceneNode&)> loadNodeMeshes = [&](vax::objects::SceneNode& node) {
+        for (auto& dm : node.drawableModels) {
+            dm.loadMesh(commandBuffer);
+        }
+        for (auto& child : node.children) {
+            loadNodeMeshes(child);
+        }
+    };
+
     commandBuffer.begin();
     _gizmo->loadMesh(commandBuffer);
     _background->loadMesh(commandBuffer);
     for (auto& drawableModel : _drawableModels) {
         drawableModel.loadMesh(commandBuffer);
+    }
+    for (auto& node : _nodes) {
+        loadNodeMeshes(node);
     }
     commandBuffer.end();
     commandBuffer.submitAndWait(submitQueue);
@@ -132,9 +145,23 @@ bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& d
     return true;
 }
 
+void vax::DrawableScene::_drawSceneNode(
+    vax::objects::SceneNode node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline
+) {
+    for (auto& drawableModel : node.drawableModels) {
+        drawableModel.draw(&_vkEngine.get(), commandBuffer, pipeline.vkPipelineLayout, _sceneUpdateContext.deltaTime);
+    }
+    for (auto& child : node.children) {
+        _drawSceneNode(child, commandBuffer, pipeline);
+    }
+}
+
 void vax::DrawableScene::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
     for (auto& drawableModel : _drawableModels) {
         drawableModel.draw(&_vkEngine.get(), commandBuffer, pipeline.vkPipelineLayout, _sceneUpdateContext.deltaTime);
+    }
+    for (auto& node : _nodes) {
+        _drawSceneNode(node, commandBuffer, pipeline);
     }
 }
 
