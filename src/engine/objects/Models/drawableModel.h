@@ -50,6 +50,10 @@ class DrawableModel final {
     const Settings& settings() const { return _settings; }
     void setSettings(const Settings& settings) { _settings = settings; }
 
+    vax::objects::Submesh& submesh(size_t index) { return _submeshes[index]; }
+    const vax::objects::Submesh& submesh(size_t index) const { return _submeshes[index]; }
+    size_t submeshCount() const { return _submeshes.size(); }
+
   private:
     vax::utils::Logger _logger = vax::utils::Logger("DrawableModel");
 
