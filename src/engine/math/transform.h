@@ -23,50 +23,53 @@ struct Transform final {
     glm::mat4 getModelMatrix() const;
 };
 
+struct TransformMatrixHandle final {
+    void updateFromTransform(const Transform& transform);
+    void updateModelMatrix(const glm::mat4& modelMatrix);
+
+    glm::mat4 getModelMatrix() const { return _modelMatrix; }
+    glm::mat3x4 getNormalMatrix() const { return _normalMatrix; }
+
+  private:
+    glm::mat4 _modelMatrix = glm::mat4(1.0f);
+    glm::mat3x4 _normalMatrix = glm::mat3x4(1.0f);
+
+    void _updateNormalMatrix();
+};
+
 struct TransformHandle final {
-    glm::mat4 modelMatrix;
-    glm::mat3x4 normalMatrix;
-    Transform transform;
-
-    TransformHandle()
-        : modelMatrix(glm::mat4(1.0f))
-        , normalMatrix(glm::mat3x4(1.0f))
-        , transform(Transform()) {
-        recalculateMatrices();
-    };
-
-    void recalculateMatrices();
+    TransformHandle() { _recalculateMatrices(); };
 
     void setPosition(const glm::vec3& position) {
-        transform.position = position;
-        recalculateMatrices();
+        _transform.position = position;
+        _recalculateMatrices();
     }
     void setRotation(const glm::vec3& rotation) {
-        transform.rotation = rotation;
-        recalculateMatrices();
+        _transform.rotation = rotation;
+        _recalculateMatrices();
     }
     void setScale(const glm::vec3& scale) {
-        transform.scale = scale;
-        recalculateMatrices();
+        _transform.scale = scale;
+        _recalculateMatrices();
     }
 
     void setTransform(const Transform& transform) {
-        this->transform = transform;
-        recalculateMatrices();
-    }
-
-    void setModelMatrix(const glm::mat4& modelMatrix) {
-        this->modelMatrix = modelMatrix;
-        glm::mat3 upperLeft = glm::mat3(modelMatrix);
-        normalMatrix = glm::mat3x4(glm::transpose(glm::inverse(upperLeft)));
+        _transform = transform;
+        _recalculateMatrices();
     }
 
     template <typename T> void updateTransform(const T& update) {
-        update(transform);
-        recalculateMatrices();
+        update(_transform);
+        _recalculateMatrices();
     }
 
-    glm::mat4 getModelMatrix() const { return modelMatrix; }
-    glm::mat3x4 getNormalMatrix() const { return normalMatrix; }
+    glm::mat4 getModelMatrix() const { return _cachedTransformMatrix.getModelMatrix(); }
+    glm::mat3x4 getNormalMatrix() const { return _cachedTransformMatrix.getNormalMatrix(); }
+
+  private:
+    Transform _transform = Transform();
+    TransformMatrixHandle _cachedTransformMatrix = TransformMatrixHandle();
+
+    void _recalculateMatrices();
 };
 } // namespace vax::math

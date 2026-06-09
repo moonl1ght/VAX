@@ -26,7 +26,10 @@ class DrawableModel final {
     friend class vax::objects::PrimitivesBuilder;
     friend class vax::objects::ModelLoader;
 
-    vax::math::TransformHandle transformHandle;
+    // TODO: probably remove this one, as it used for standalone drawing but prefer scene node drawing.
+    std::optional<vax::math::TransformHandle> transformHandle;
+
+    vax::math::TransformMatrixHandle transformMatrixHandle;
 
     struct DrawContext {};
 

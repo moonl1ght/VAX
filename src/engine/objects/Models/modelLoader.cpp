@@ -331,8 +331,9 @@ SceneNode processURDFLink(
     }
 
     auto transform = node.transformHandle.getModelMatrix();
+    auto nodeTransform = parentTransform * transform;
 
-    node.transformHandle.setModelMatrix(parentTransform * transform);
+    node.parentTransformMatrices.updateModelMatrix(nodeTransform);
 
     for (const auto& visual : link->visual_array) {
         if (!visual || !visual->geometry)
@@ -359,19 +360,13 @@ SceneNode processURDFLink(
                 for (size_t i = 0; i < modelOpt->submeshCount(); ++i) {
                     modelOpt->submesh(i).materialIndex = materialId;
                 }
-                glm::vec3 meshScale(mesh->scale.x, mesh->scale.y, mesh->scale.z);
-                glm::vec3 meshPosition(visual->origin.position.x, visual->origin.position.y, visual->origin.position.z);
-                glm::vec3 meshRotation(visual->origin.rotation.x, visual->origin.rotation.y, visual->origin.rotation.z);
-                modelOpt->transformHandle.setScale(meshScale);
-                modelOpt->transformHandle.setPosition(meshPosition);
-                modelOpt->transformHandle.setRotation(meshRotation);
                 node.drawableModels.push_back(std::move(*modelOpt));
             }
         }
     }
 
     for (const auto& child : link->child_links) {
-        auto childNode = processURDFLink(resourceManager, child, loadModel, node.transformHandle.getModelMatrix());
+        auto childNode = processURDFLink(resourceManager, child, loadModel, nodeTransform);
         node.children.push_back(childNode);
     }
 

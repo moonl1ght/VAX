@@ -4,9 +4,7 @@ using namespace vax::objects;
 
 bool DrawableModel::loadMesh(vax::vk::CommandBuffer& commandBuffer) { return _mesh->loadBuffers(commandBuffer); }
 
-void DrawableModel::draw(
-    VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout
-) {
+void DrawableModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) {
     if (!_mesh->isLoaded())
         return;
     VkBuffer vertexBuffers[] = {_mesh->vertexBuffer->vkBuffer()};
@@ -14,8 +12,13 @@ void DrawableModel::draw(
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(commandBuffer, _mesh->indexBuffer->vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
     DrawPushConstants drawPushConstants{};
-    drawPushConstants.model = transformHandle.getModelMatrix();
-    drawPushConstants.normalMatrix = transformHandle.getNormalMatrix();
+    if (transformHandle.has_value()) {
+        drawPushConstants.model = transformHandle->getModelMatrix();
+        drawPushConstants.normalMatrix = transformHandle->getNormalMatrix();
+    } else {
+        drawPushConstants.model = transformMatrixHandle.getModelMatrix();
+        drawPushConstants.normalMatrix = transformMatrixHandle.getNormalMatrix();
+    }
 
     uint32_t flags = ObjectFlags::NoFlags;
     if (_settings.useWireframe) {

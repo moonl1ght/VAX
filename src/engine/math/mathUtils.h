@@ -23,4 +23,15 @@ inline glm::mat4 eulerAngleXYZRotationMatrix(const glm::vec3& rotation) {
     rotationM = glm::rotate(rotationM, rotation.x, glm::vec3(1, 0, 0));
     return rotationM;
 }
+
+inline void printMatrix(const glm::mat4& matrix) {
+    std::cout << "Matrix: " << matrix[0].x << ", " << matrix[0].y << ", " << matrix[0].z << ", " << matrix[0].w
+              << std::endl;
+    std::cout << "Matrix: " << matrix[1].x << ", " << matrix[1].y << ", " << matrix[1].z << ", " << matrix[1].w
+              << std::endl;
+    std::cout << "Matrix: " << matrix[2].x << ", " << matrix[2].y << ", " << matrix[2].z << ", " << matrix[2].w
+              << std::endl;
+    std::cout << "Matrix: " << matrix[3].x << ", " << matrix[3].y << ", " << matrix[3].z << ", " << matrix[3].w
+              << std::endl;
+}
 } // namespace vax::math

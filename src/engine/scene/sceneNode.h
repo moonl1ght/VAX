@@ -11,6 +11,7 @@ class SceneNode final {
     std::vector<DrawableModel> drawableModels;
 
     vax::math::TransformHandle transformHandle;
+    vax::math::TransformMatrixHandle parentTransformMatrices;
 
     explicit SceneNode(std::string name, bool isRoot = false)
         : _name(std::move(name))

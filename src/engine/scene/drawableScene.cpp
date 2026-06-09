@@ -34,7 +34,7 @@ void vax::DrawableScene::loadGridWorld(
     _drawableModels.reserve(gridWorldDrawableDescriptor.drawableDescriptors.size());
     for (const auto& drawableDescriptor : gridWorldDrawableDescriptor.drawableDescriptors) {
         auto model = _modelLoader.loadModel(drawableDescriptor.path, submitQueue);
-        model->transformHandle.setTransform(drawableDescriptor.initialTransform);
+        model->transformHandle->setTransform(drawableDescriptor.initialTransform);
         if (!model.has_value()) {
             _logger.error("Failed to load model: {}", drawableDescriptor.path);
             continue;
@@ -43,6 +43,9 @@ void vax::DrawableScene::loadGridWorld(
     }
 
     auto agentModel = _modelLoader.loadSceneModel(gridWorldDrawableDescriptor.agentDrawableDescriptor, submitQueue);
+    // agentModel->transformHandle.setPosition({0.0f, 0.0f, 0.0f});
+    // agentModel->transformHandle.transform.updateRotationInDegrees({-90.0f, 0.0f, 0.0f});
+    // agentModel->transformHandle.recalculateMatrices();
     if (!agentModel.has_value()) {
         _logger.error("Failed to load agent model: {}", gridWorldDrawableDescriptor.agentDrawableDescriptor.path);
         return;
@@ -169,7 +172,7 @@ void vax::DrawableScene::drawGizmo(VkCommandBuffer commandBuffer, const vax::vk:
     auto viewMatrix = _gizmoCamera.viewMatrix();
     auto projectionMatrix = _gizmoCamera.projectionMatrix();
     auto viewProjectionMatrix = projectionMatrix * viewMatrix;
-    _gizmo->transformHandle.setModelMatrix(viewProjectionMatrix);
+    _gizmo->transformMatrixHandle.updateModelMatrix(viewProjectionMatrix);
     _gizmo->draw(commandBuffer, pipeline.vkPipelineLayout);
 }
 

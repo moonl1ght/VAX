@@ -1,3 +1,4 @@
+#include "mathUtils.h"
 #include "transform.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -12,18 +13,14 @@ Transform::Transform(glm::mat4 modelMatrix) {
     scale.z = glm::length(glm::vec3(modelMatrix[2]));
 
     glm::mat3 rotationMatrix(
-        glm::vec3(modelMatrix[0]) / scale.x,
-        glm::vec3(modelMatrix[1]) / scale.y,
-        glm::vec3(modelMatrix[2]) / scale.z
+        glm::vec3(modelMatrix[0]) / scale.x, glm::vec3(modelMatrix[1]) / scale.y, glm::vec3(modelMatrix[2]) / scale.z
     );
 
     glm::quat rotationQuat = glm::quat_cast(rotationMatrix);
     rotation = glm::eulerAngles(rotationQuat);
 }
 
-void Transform::updateRotationWithQuaternion(const glm::quat& rotation) {
-    this->rotation = glm::eulerAngles(rotation);
-}
+void Transform::updateRotationWithQuaternion(const glm::quat& rotation) { this->rotation = glm::eulerAngles(rotation); }
 
 void Transform::updateRotationInDegrees(const glm::vec3& rotation) {
     this->rotation = glm::vec3(glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z));
@@ -41,14 +38,21 @@ glm::mat4 Transform::getModelMatrix() const {
     return translationMatrix * rotationMatrix * scaleMatrix;
 }
 
-void TransformHandle::recalculateMatrices() {
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, transform.position);
-    model = glm::rotate(model, transform.rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, transform.rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, transform.rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::scale(model, transform.scale);
-    modelMatrix = model;
-    glm::mat3 upperLeft = glm::mat3(model);
-    normalMatrix = glm::mat3x4(glm::transpose(glm::inverse(upperLeft)));
+void TransformHandle::_recalculateMatrices() {
+    _cachedTransformMatrix.updateFromTransform(_transform);
+}
+
+void TransformMatrixHandle::updateFromTransform(const Transform& transform) {
+    _modelMatrix = transform.getModelMatrix();
+    _updateNormalMatrix();
+}
+
+void TransformMatrixHandle::updateModelMatrix(const glm::mat4& modelMatrix) {
+    _modelMatrix = modelMatrix;
+    _updateNormalMatrix();
+}
+
+void TransformMatrixHandle::_updateNormalMatrix() {
+    glm::mat3 upperLeft = glm::mat3(_modelMatrix);
+    _normalMatrix = glm::mat3x4(glm::transpose(glm::inverse(upperLeft)));
 }
