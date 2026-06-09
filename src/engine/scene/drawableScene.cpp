@@ -43,9 +43,12 @@ void vax::DrawableScene::loadGridWorld(
     }
 
     auto agentModel = _modelLoader.loadSceneModel(gridWorldDrawableDescriptor.agentDrawableDescriptor, submitQueue);
-    // agentModel->transformHandle.setPosition({0.0f, 0.0f, 0.0f});
-    // agentModel->transformHandle.transform.updateRotationInDegrees({-90.0f, 0.0f, 0.0f});
-    // agentModel->transformHandle.recalculateMatrices();
+    agentModel->updateTransform([](vax::math::TransformHandle& transformHandle) {
+        // transformHandle.setPosition({1.0f, 0.0f, 0.0f});
+        transformHandle.updateTransform([](vax::math::Transform& transform) {
+            transform.updateRotationInDegrees({-90.0f, 0.0f, 0.0f});
+        });
+    });
     if (!agentModel.has_value()) {
         _logger.error("Failed to load agent model: {}", gridWorldDrawableDescriptor.agentDrawableDescriptor.path);
         return;
@@ -146,7 +149,7 @@ bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& d
 }
 
 void vax::DrawableScene::_drawSceneNode(
-    vax::objects::SceneNode node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline
+    vax::objects::SceneNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline
 ) {
     node.draw(commandBuffer, pipeline.vkPipelineLayout);
 }

@@ -111,6 +111,6 @@ class DrawableScene final : public vax::input::InputController::Observer {
 
     void _load(VkQueue submitQueue);
     void _loadEnvironmentMap(VkQueue submitQueue);
-    void _drawSceneNode(vax::objects::SceneNode node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
+    void _drawSceneNode(vax::objects::SceneNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
 };
 } // namespace vax

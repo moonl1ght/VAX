@@ -320,20 +320,22 @@ SceneNode processURDFLink(
     ModelLoaderFunc loadModel,
     const glm::mat4& parentTransform = glm::mat4(1.0f)
 ) {
-    SceneNode node(link->name, !link->parent_joint);
+    auto transformHandle = vax::math::TransformHandle();
     if (link->parent_joint) {
         auto pose = link->parent_joint->parent_to_joint_origin_transform;
-        node.transformHandle.setPosition(glm::vec3(pose.position.x, pose.position.y, pose.position.z));
+        transformHandle.setPosition(glm::vec3(pose.position.x, pose.position.y, pose.position.z));
         double quatX, quatY, quatZ, quatW;
         pose.rotation.getQuaternion(quatX, quatY, quatZ, quatW);
         glm::quat quat(quatW, quatX, quatY, quatZ);
-        node.transformHandle.setRotation(glm::eulerAngles(quat));
+        transformHandle.setRotation(glm::eulerAngles(quat));
     }
 
-    auto transform = node.transformHandle.getModelMatrix();
+    SceneNode node(link->name, transformHandle.getTransform(), !link->parent_joint);
+
+    auto transform = transformHandle.getModelMatrix();
     auto nodeTransform = parentTransform * transform;
 
-    node.parentTransformMatrices.updateModelMatrix(nodeTransform);
+    node.updateParentTransformMatrices(nodeTransform);
 
     for (const auto& visual : link->visual_array) {
         if (!visual || !visual->geometry)
@@ -387,7 +389,6 @@ std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(LoaderDescriptor descr
     );
     return std::optional<SceneNode>(std::in_place, std::move(rootNode));
 }
-
 
 // TODO: implement this and replace separate loadSceneModel and loadModel functions
 std::optional<SceneNode> ModelLoader::loadSceneModel(vax::objects::LoaderDescriptor descriptor, VkQueue submitQueue) {

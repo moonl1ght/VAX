@@ -65,6 +65,7 @@ struct TransformHandle final {
 
     glm::mat4 getModelMatrix() const { return _cachedTransformMatrix.getModelMatrix(); }
     glm::mat3x4 getNormalMatrix() const { return _cachedTransformMatrix.getNormalMatrix(); }
+    const Transform& getTransform() const { return _transform; }
 
   private:
     Transform _transform = Transform();

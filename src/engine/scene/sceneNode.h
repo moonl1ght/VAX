@@ -10,12 +10,14 @@ class SceneNode final {
     std::vector<SceneNode> children;
     std::vector<DrawableModel> drawableModels;
 
-    vax::math::TransformHandle transformHandle;
-    vax::math::TransformMatrixHandle parentTransformMatrices;
-
-    explicit SceneNode(std::string name, bool isRoot = false)
+    explicit SceneNode(
+        std::string name,
+        const vax::math::Transform& originalParentRelativeTransform,
+        bool isRoot = false
+    )
         : _name(std::move(name))
-        , _isRoot(isRoot) {};
+        , _isRoot(isRoot)
+        , _originalParentRelativeTransform(originalParentRelativeTransform) {};
     ~SceneNode() = default;
 
     SceneNode(const SceneNode& other) = default;
@@ -30,8 +32,23 @@ class SceneNode final {
 
     void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
 
+    template <typename T> void updateTransform(const T& updater) {
+        updater(_transformHandle);
+        _isSelfTransformDirty = true;
+        _isParentTransformDirty = true;
+    }
+
+    void updateParentTransformMatrices(const glm::mat4& modelMatrix) {
+        _parentTransformMatrices.updateModelMatrix(modelMatrix);
+    }
+
   private:
     std::string _name;
     bool _isRoot = false;
+    const vax::math::Transform _originalParentRelativeTransform;
+    vax::math::TransformMatrixHandle _parentTransformMatrices;
+    vax::math::TransformHandle _transformHandle;
+    bool _isSelfTransformDirty = false;
+    bool _isParentTransformDirty = false;
 };
 } // namespace vax::objects
