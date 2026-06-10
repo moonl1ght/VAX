@@ -381,7 +381,6 @@ std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(LoaderDescriptor descr
         return std::nullopt;
     }
     auto mainPath = descriptor.getMainPath();
-    std::cout << "Main path: " << mainPath << std::endl;
     auto rootNode = processURDFLink(
         mainPath, _resourceManager.get(), model->getRoot(), [&](std::string name) -> std::optional<DrawableModel> {
             return loadModel(name, submitQueue);
