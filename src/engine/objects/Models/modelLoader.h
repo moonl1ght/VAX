@@ -21,7 +21,7 @@ class ModelLoader final {
     ModelLoader(ModelLoader&& other) noexcept = delete;
     ModelLoader& operator=(ModelLoader&& other) noexcept = delete;
 
-    std::optional<SceneNode> loadSceneModel(vax::objects::LoaderDescriptor descriptor, VkQueue submitQueue);
+    std::optional<SceneNode> loadSceneModel(const vax::objects::LoaderDescriptor& descriptor, VkQueue submitQueue);
 
     std::optional<DrawableModel> loadModel(const std::string& path, VkQueue submitQueue);
 
@@ -32,5 +32,6 @@ class ModelLoader final {
     std::reference_wrapper<vax::textures::TextureLoader> _textureLoader;
 
     std::optional<SceneNode> _loadURDFSceneModel(vax::objects::LoaderDescriptor descriptor, VkQueue submitQueue);
+    std::optional<SceneNode> _loadGLBSceneModel(vax::objects::LoaderDescriptor descriptor, VkQueue submitQueue);
 };
 } // namespace vax::objects

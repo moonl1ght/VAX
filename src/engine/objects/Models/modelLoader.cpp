@@ -388,10 +388,24 @@ std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(LoaderDescriptor descr
     return std::optional<SceneNode>(std::in_place, std::move(rootNode));
 }
 
-// TODO: implement this and replace separate loadSceneModel and loadModel functions
-std::optional<SceneNode> ModelLoader::loadSceneModel(vax::objects::LoaderDescriptor descriptor, VkQueue submitQueue) {
+std::optional<SceneNode> ModelLoader::_loadGLBSceneModel(LoaderDescriptor descriptor, VkQueue submitQueue) {
+    auto path = descriptor.path;
+    auto model = loadModel(path, submitQueue);
+    if (!model.has_value()) {
+        _logger.error("Failed to load GLB model: " + path);
+        return std::nullopt;
+    }
+    auto transformHandle = vax::math::TransformHandle();
+    auto node = SceneNode(path, transformHandle.getTransform(), {transformHandle.getModelMatrix()}, true);
+    node.insertDrawableModel(std::move(model.value()));
+    return std::optional<SceneNode>(std::in_place, std::move(node));
+}
+
+std::optional<SceneNode> ModelLoader::loadSceneModel(const vax::objects::LoaderDescriptor& descriptor, VkQueue submitQueue) {
     if (descriptor.getModelExtension() == vax::objects::LoaderDescriptor::ModelExtension::URDF) {
         return _loadURDFSceneModel(descriptor, submitQueue);
+    } else if (descriptor.getModelExtension() == vax::objects::LoaderDescriptor::ModelExtension::GLB) {
+        return _loadGLBSceneModel(descriptor, submitQueue);
     }
     return std::nullopt;
 }

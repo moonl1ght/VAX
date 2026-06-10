@@ -1,11 +1,23 @@
 #pragma once
 
 #include "luna.h"
+#include "keyCode.h"
 
 namespace vax::input {
 struct MouseMoveValue {
     glm::vec2 position;
     glm::vec2 delta;
+};
+
+struct KeyEvent {
+    enum class State {
+        DOWN = 0,
+        UP = 1,
+        HOLD = 2,
+    };
+
+    State state;
+    KeyCode key;
 };
 
 class InputController final {
@@ -28,10 +40,14 @@ class InputController final {
 
         auto mouseWheelWrapper = [](void* inst, float delta) { static_cast<TObserver*>(inst)->onMouseWheel(delta); };
 
+        auto keyEventWrapper = [](void* inst, const vax::input::KeyEvent& keyEvent) {
+            static_cast<TObserver*>(inst)->onKeyEvent(keyEvent);
+        };
+
         if (_observerCount < _observers.size()) {
             _observers[_observerCount] = {static_cast<void*>(obj), mouseMoveWrapper, mouseWheelWrapper};
         } else {
-            _observers.push_back({static_cast<void*>(obj), mouseMoveWrapper, mouseWheelWrapper});
+            _observers.push_back({static_cast<void*>(obj), mouseMoveWrapper, mouseWheelWrapper, keyEventWrapper});
         }
 
         ++_observerCount;
@@ -52,9 +68,11 @@ class InputController final {
         void* instance;
         void (*mouseMoveFunc)(void*, const vax::input::MouseMoveValue&);
         void (*mouseWheelFunc)(void*, float);
+        void (*keyEventFunc)(void*, const vax::input::KeyEvent&);
     };
     std::vector<ObserverSlot> _observers;
     int _observerCount = 0;
     bool _isLeftButtonDown = false;
+    std::set<uint32_t> _heldKeys;
 };
 } // namespace vax::input

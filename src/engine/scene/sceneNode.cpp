@@ -7,6 +7,7 @@ void SceneNode::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLay
     auto worldHandle = _parentTransformMatrices;
     if (_isSelfTransformDirty) {
         worldHandle.updateModelMatrix(_parentTransformMatrices.getModelMatrix() * _transformHandle.getModelMatrix());
+        _parentTransformMatrices = worldHandle;
     }
 
     for (auto& drawableModel : _drawableModels) {

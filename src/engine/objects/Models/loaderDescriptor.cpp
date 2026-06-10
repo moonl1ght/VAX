@@ -2,7 +2,7 @@
 
 using namespace vax::objects;
 
-LoaderDescriptor::ModelExtension LoaderDescriptor::getModelExtension() {
+LoaderDescriptor::ModelExtension LoaderDescriptor::getModelExtension() const {
     auto dot = path.rfind('.');
     if (dot == std::string::npos)
         return ModelExtension::UNKNOWN;

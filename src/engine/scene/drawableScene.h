@@ -4,6 +4,7 @@
 #include "descriptorSetWriter.h"
 #include "drawableModel.h"
 #include "environmentMap.h"
+#include "gwSceneGraph.h"
 #include "inputController.h"
 #include "luna.h"
 #include "modelLoader.h"
@@ -11,11 +12,10 @@
 #include "primitivesBuilder.h"
 #include "renderContext.h"
 #include "resourceManager.h"
+#include "sceneNode.h"
 #include "shaderUniforms.h"
 #include "textureLoader.h"
 #include "vkEngine.h"
-#include "sceneNode.h"
-#include "gwSceneGraph.h"
 
 namespace vax::rl::gw::env {
 struct GridWorldDrawableDescriptor;
@@ -62,9 +62,7 @@ class DrawableScene final : public vax::input::InputController::Observer {
 
     const vax::objects::Camera& gizmoCamera() const { return _gizmoCamera; }
 
-    void loadSceneGraph(
-        const vax::rl::gw::env::GridWorld& gridWorld, VkQueue submitQueue
-    );
+    void loadSceneGraph(const vax::rl::gw::env::GridWorld& gridWorld, VkQueue submitQueue);
 
     void resize();
 
@@ -85,6 +83,8 @@ class DrawableScene final : public vax::input::InputController::Observer {
     void onMouseMove(const vax::input::MouseMoveValue& value);
 
     void onMouseWheel(float delta);
+
+    void onKeyEvent(const vax::input::KeyEvent& keyEvent);
 
   private:
     vax::utils::Logger _logger = vax::utils::Logger("DrawableScene");
@@ -110,6 +110,7 @@ class DrawableScene final : public vax::input::InputController::Observer {
 
     void _load(VkQueue submitQueue);
     void _loadEnvironmentMap(VkQueue submitQueue);
-    void _drawSceneNode(vax::objects::SceneNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
+    void
+    _drawSceneNode(vax::objects::SceneNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
 };
 } // namespace vax

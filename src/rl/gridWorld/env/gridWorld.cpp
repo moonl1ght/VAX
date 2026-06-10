@@ -31,12 +31,12 @@ rl::gw::env::GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() cons
             transform.position.y = 0.5f;
         }
 
-        // descriptor.drawableDescriptors.push_back(
-        //     objects::DrawableModel::LoadDescriptor{
-        //         std::string(blockTypeToPath(blockType)),
-        //         transform,
-        //     }
-        // );
+        descriptor.drawableDescriptors.push_back(
+            objects::LoaderDescriptor{
+                std::string(blockTypeToPath(blockType)),
+                transform,
+            }
+        );
         ++flatIndex;
     }
     descriptor.agentDrawableDescriptor = _agent.getDrawableDescriptor();
@@ -46,10 +46,10 @@ rl::gw::env::GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() cons
 std::string GridWorld::blockTypeToPath(BlockType blockType) const {
     switch (blockType) {
     case BlockType::FLOOR:
-        return RES_PATH("assets/models/floor4.glb");
+        return RES_PATH("assets/models/floor.glb");
     case BlockType::WALL:
         return RES_PATH("assets/models/wall.glb");
     default:
-        return RES_PATH("assets/models/floor4.glb");
+        return RES_PATH("assets/models/floor.glb");
     }
 }

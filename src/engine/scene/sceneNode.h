@@ -43,6 +43,7 @@ class SceneNode final {
     ///                 if 0 will compare only with node itself.
     SceneNode* getChild(const std::string& name, int depth = -1);
 
+    /// Accumulates transform updates.
     template <typename T> void updateTransform(const T& updater) {
         updater(_transformHandle);
         _isSelfTransformDirty = true;

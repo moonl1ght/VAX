@@ -11,6 +11,6 @@ struct LoaderDescriptor {
     std::string path;
     vax::math::Transform initialTransform;
 
-    ModelExtension getModelExtension();
+    ModelExtension getModelExtension() const;
 };
 } // namespace vax::objects

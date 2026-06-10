@@ -22,6 +22,23 @@ bool GwSceneGraph::load(objects::ModelLoader& modelLoader, const env::GridWorld&
     _roverModelProxy = std::make_unique<vax::rl::models::RoverModelProxy>();
     _roverModelProxy->linkModelNode(_agentNode);
 
+    _envNodes.reserve(gridWorldDrawableDescriptor.drawableDescriptors.size());
+    for (const auto& drawableDescriptor : gridWorldDrawableDescriptor.drawableDescriptors) {
+        auto model = modelLoader.loadSceneModel(drawableDescriptor, submitQueue);
+        if (!model.has_value()) {
+            _logger.error("Failed to load model: {}", drawableDescriptor.path);
+            continue;
+        }
+        model->updateTransform([&](vax::math::TransformHandle& transformHandle) {
+            transformHandle.updateTransform([&](vax::math::Transform& transform) {
+                transform.position = drawableDescriptor.initialTransform.position;
+                transform.rotation = drawableDescriptor.initialTransform.rotation;
+                transform.scale = drawableDescriptor.initialTransform.scale;
+            });
+        });
+        _envNodes.push_back(std::move(model.value()));
+    }
+
     return true;
 }
 
@@ -31,6 +48,9 @@ void GwSceneGraph::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& 
     } else {
         _logger.warning("Agent node not loaded!");
     }
+    for (auto& node : _envNodes) {
+        node.draw(commandBuffer, pipeline.vkPipelineLayout);
+    }
 }
 
 void GwSceneGraph::loadDrawableModels(vax::vk::CommandBuffer& commandBuffer) {
@@ -38,6 +58,9 @@ void GwSceneGraph::loadDrawableModels(vax::vk::CommandBuffer& commandBuffer) {
         _agentNode->loadDrawableModelsMeshes(commandBuffer);
     } else {
         _logger.warning("Agent node not loaded!");
+    }
+    for (auto& node : _envNodes) {
+        node.loadDrawableModelsMeshes(commandBuffer);
     }
 }
 

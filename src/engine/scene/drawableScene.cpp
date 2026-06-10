@@ -31,16 +31,6 @@ void vax::DrawableScene::loadSceneGraph(
     _resourceManager.setup();
     _sceneGraph = std::make_unique<vax::rl::gw::GwSceneGraph>();
     _sceneGraph->load(_modelLoader, gridWorld, submitQueue);
-    // _drawableModels.reserve(gridWorldDrawableDescriptor.drawableDescriptors.size());
-    // for (const auto& drawableDescriptor : gridWorldDrawableDescriptor.drawableDescriptors) {
-    //     auto model = _modelLoader.loadModel(drawableDescriptor.path, submitQueue);
-    //     model->transformHandle->setTransform(drawableDescriptor.initialTransform);
-    //     if (!model.has_value()) {
-    //         _logger.error("Failed to load model: {}", drawableDescriptor.path);
-    //         continue;
-    //     }
-    //     _drawableModels.push_back(std::move(model.value()));
-    // }
 
     _load(submitQueue);
 }
@@ -150,6 +140,8 @@ void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {
 }
 
 void vax::DrawableScene::onMouseWheel(float delta) { _mainCamera.zoomBy(0.1f * delta); }
+
+void vax::DrawableScene::onKeyEvent(const vax::input::KeyEvent& keyEvent) { }
 
 void vax::DrawableScene::_loadEnvironmentMap(VkQueue submitQueue) {
     _environmentMap->load(

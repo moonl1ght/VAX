@@ -17,13 +17,11 @@ void RoverModelProxy::linkModelNode(std::shared_ptr<vax::objects::SceneNode>& mo
 }
 
 void RoverModelProxy::update(float deltaTime) {
-    _wheelSpinAngle = deltaTime * -100.0f;
-
     auto spinWheel = [&](vax::objects::SceneNode* wheel) {
         if (!wheel) return;
         wheel->updateTransform([&](math::TransformHandle& transformHandle) {
             transformHandle.updateTransform([&](math::Transform& transform) {
-                transform.updateRotationInDegrees({0.0f, _wheelSpinAngle, 0.0f});
+                transform.updateRotationInDegrees({0.0f, -2.0f, 0.0f});
             });
         });
     };
