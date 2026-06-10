@@ -2,11 +2,9 @@
 
 #include "luna.h"
 #include "mesh.h"
-#include "pipelineManager.h"
 #include "resourceHandle.h"
-#include "shaderUniforms.h"
 #include "submesh.h"
-#include "vkEngine.h"
+#include "transform.h"
 
 namespace vax::objects {
 class PrimitivesBuilder;
@@ -40,8 +38,8 @@ class DrawableModel final {
     DrawableModel(DrawableModel&& other) noexcept = default;
     DrawableModel& operator=(DrawableModel&& other) noexcept = default;
 
-    DrawableModel(const DrawableModel& other) = default;
-    DrawableModel& operator=(const DrawableModel& other) = default;
+    DrawableModel(const DrawableModel& other) = delete;
+    DrawableModel& operator=(const DrawableModel& other) = delete;
 
     ~DrawableModel() {};
 

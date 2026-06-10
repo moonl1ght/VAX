@@ -4,8 +4,8 @@
 #include "loaderDescriptor.h"
 #include "luna.h"
 #include "resourceManager.h"
-#include "textureLoader.h"
 #include "sceneNode.h"
+#include "textureLoader.h"
 
 namespace vax::objects {
 class ModelLoader final {
@@ -31,6 +31,6 @@ class ModelLoader final {
     std::reference_wrapper<vax::ResourceManager> _resourceManager;
     std::reference_wrapper<vax::textures::TextureLoader> _textureLoader;
 
-     std::optional<SceneNode> _loadURDFSceneModel(vax::objects::LoaderDescriptor descriptor, VkQueue submitQueue);
+    std::optional<SceneNode> _loadURDFSceneModel(vax::objects::LoaderDescriptor descriptor, VkQueue submitQueue);
 };
 } // namespace vax::objects

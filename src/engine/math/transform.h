@@ -24,6 +24,13 @@ struct Transform final {
 };
 
 struct TransformMatrixHandle final {
+    TransformMatrixHandle() {};
+
+    TransformMatrixHandle(const glm::mat4& modelMatrix)
+        : _modelMatrix(modelMatrix) {
+        _updateNormalMatrix();
+    };
+
     void updateFromTransform(const Transform& transform);
     void updateModelMatrix(const glm::mat4& modelMatrix);
 

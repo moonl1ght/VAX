@@ -1,5 +1,4 @@
 #include "modelLoader.h"
-#include "sceneNode.h"
 #include "shaderSharedUtils.h"
 #include <assimp/GltfMaterial.h>
 #include <assimp/Importer.hpp>
@@ -299,7 +298,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
     drawableModel._mesh = (*mesh).second;
     drawableModel._submeshes = submeshes;
     drawableModel._settings.hasTangents = hasTangents;
-    return std::make_optional(drawableModel);
+    return std::optional<DrawableModel>(std::in_place, std::move(drawableModel));
 }
 
 static glm::mat4 urdfPoseToMat4(const urdf::Pose& pose) {
@@ -330,12 +329,10 @@ SceneNode processURDFLink(
         transformHandle.setRotation(glm::eulerAngles(quat));
     }
 
-    SceneNode node(link->name, transformHandle.getTransform(), !link->parent_joint);
-
     auto transform = transformHandle.getModelMatrix();
     auto nodeTransform = parentTransform * transform;
 
-    node.updateParentTransformMatrices(nodeTransform);
+    SceneNode node(link->name, transformHandle.getTransform(), {nodeTransform}, !link->parent_joint);
 
     for (const auto& visual : link->visual_array) {
         if (!visual || !visual->geometry)
@@ -357,19 +354,20 @@ SceneNode processURDFLink(
         }
         if (visual->geometry->type == urdf::Geometry::MESH) {
             const auto* mesh = static_cast<const urdf::Mesh*>(visual->geometry.get());
+            // TODO: fix this
             auto modelOpt = loadModel(RES_PATH("assets/models/rover/" + mesh->filename));
             if (modelOpt.has_value()) {
                 for (size_t i = 0; i < modelOpt->submeshCount(); ++i) {
                     modelOpt->submesh(i).materialIndex = materialId;
                 }
-                node.drawableModels.push_back(std::move(*modelOpt));
+                node.insertDrawableModel(std::move(*modelOpt));
             }
         }
     }
 
     for (const auto& child : link->child_links) {
         auto childNode = processURDFLink(resourceManager, child, loadModel, nodeTransform);
-        node.children.push_back(childNode);
+        node.insertChild(std::move(childNode));
     }
 
     return node;

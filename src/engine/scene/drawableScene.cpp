@@ -44,7 +44,6 @@ void vax::DrawableScene::loadGridWorld(
 
     auto agentModel = _modelLoader.loadSceneModel(gridWorldDrawableDescriptor.agentDrawableDescriptor, submitQueue);
     agentModel->updateTransform([](vax::math::TransformHandle& transformHandle) {
-        // transformHandle.setPosition({1.0f, 0.0f, 0.0f});
         transformHandle.updateTransform([](vax::math::Transform& transform) {
             transform.updateRotationInDegrees({-90.0f, 0.0f, 0.0f});
         });
@@ -83,14 +82,6 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
     _gizmo->setSettings({.precomputedMVP = true});
 
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
-    std::function<void(vax::objects::SceneNode&)> loadNodeMeshes = [&](vax::objects::SceneNode& node) {
-        for (auto& dm : node.drawableModels) {
-            dm.loadMesh(commandBuffer);
-        }
-        for (auto& child : node.children) {
-            loadNodeMeshes(child);
-        }
-    };
 
     commandBuffer.begin();
     _gizmo->loadMesh(commandBuffer);
@@ -99,7 +90,7 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
         drawableModel.loadMesh(commandBuffer);
     }
     for (auto& node : _nodes) {
-        loadNodeMeshes(node);
+        node.loadDrawableModelsMeshes(commandBuffer);
     }
     commandBuffer.end();
     commandBuffer.submitAndWait(submitQueue);

@@ -67,7 +67,7 @@ std::optional<DrawableModel> PrimitivesBuilder::createCube(float size, vax::Colo
     auto drawableModel = vax::objects::DrawableModel(_meshManager.get(), mesh.value().first);
     drawableModel._mesh = mesh.value().second;
     drawableModel._submeshes.push_back(submesh);
-    return std::make_optional(drawableModel);
+    return std::optional<DrawableModel>(std::in_place, std::move(drawableModel));
 }
 
 std::optional<DrawableModel> PrimitivesBuilder::createBackground() {
@@ -100,5 +100,5 @@ std::optional<DrawableModel> PrimitivesBuilder::createBackground() {
             .skipPushConstants = true,
         }
     );
-    return std::make_optional(drawableModel);
+    return std::optional<DrawableModel>(std::in_place, std::move(drawableModel));
 }
