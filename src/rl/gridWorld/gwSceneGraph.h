@@ -6,6 +6,8 @@
 #include "sceneNode.h"
 #include "commandBuffer.h"
 #include "pipeline.h"
+#include <memory>
+#include "roverModelProxy.h"
 
 namespace vax::rl::gw {
 // TODO: move to generic scene graph
@@ -26,9 +28,12 @@ class GwSceneGraph final {
 
     void draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
 
+    void update(float deltaTime);
+
   private:
     vax::utils::Logger _logger = vax::utils::Logger("GwSceneGraph");
     std::vector<vax::objects::SceneNode> _envNodes;
-    std::unique_ptr<vax::objects::SceneNode> _agentNode;
+    std::shared_ptr<vax::objects::SceneNode> _agentNode;
+    std::unique_ptr<vax::rl::models::RoverModelProxy> _roverModelProxy;
 };
 } // namespace vax::rl::gw

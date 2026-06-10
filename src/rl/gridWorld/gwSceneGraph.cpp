@@ -19,8 +19,10 @@ bool GwSceneGraph::load(objects::ModelLoader& modelLoader, const env::GridWorld&
         return false;
     }
     _agentNode = std::make_unique<vax::objects::SceneNode>(std::move(agentModel.value()));
+    _roverModelProxy = std::make_unique<vax::rl::models::RoverModelProxy>();
+    _roverModelProxy->linkModelNode(_agentNode);
 
-   return true;
+    return true;
 }
 
 void GwSceneGraph::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
@@ -36,5 +38,13 @@ void GwSceneGraph::loadDrawableModels(vax::vk::CommandBuffer& commandBuffer) {
         _agentNode->loadDrawableModelsMeshes(commandBuffer);
     } else {
         _logger.warning("Agent node not loaded!");
+    }
+}
+
+void GwSceneGraph::update(float deltaTime) {
+    if (_roverModelProxy) {
+        _roverModelProxy->update(deltaTime);
+    } else {
+        _logger.warning("Rover model proxy not loaded!");
     }
 }

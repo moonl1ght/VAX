@@ -58,6 +58,8 @@ class SceneNode final {
 
     void loadDrawableModelsMeshes(vax::vk::CommandBuffer& commandBuffer);
 
+    const vax::math::TransformHandle& transformHandle() const { return _transformHandle; }
+
   private:
     std::string _name;
     std::vector<SceneNode> _children;
