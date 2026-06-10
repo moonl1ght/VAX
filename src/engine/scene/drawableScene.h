@@ -15,6 +15,7 @@
 #include "textureLoader.h"
 #include "vkEngine.h"
 #include "sceneNode.h"
+#include "gwSceneGraph.h"
 
 namespace vax::rl::gw::env {
 struct GridWorldDrawableDescriptor;
@@ -48,7 +49,6 @@ class DrawableScene final : public vax::input::InputController::Observer {
     };
 
     ~DrawableScene() {
-        _drawableModels.clear();
         _resourceManager.cleanup();
         if (_inputController) {
             _inputController->removeObserver(this);
@@ -62,8 +62,8 @@ class DrawableScene final : public vax::input::InputController::Observer {
 
     const vax::objects::Camera& gizmoCamera() const { return _gizmoCamera; }
 
-    void loadGridWorld(
-        const vax::rl::gw::env::GridWorldDrawableDescriptor& gridWorldDrawableDescriptor, VkQueue submitQueue
+    void loadSceneGraph(
+        const vax::rl::gw::env::GridWorld& gridWorld, VkQueue submitQueue
     );
 
     void resize();
@@ -97,8 +97,7 @@ class DrawableScene final : public vax::input::InputController::Observer {
     vax::objects::Camera _mainCamera;
     vax::objects::Camera _gizmoCamera;
     UniformBufferObject _ubo;
-    std::vector<vax::objects::DrawableModel> _drawableModels;
-    std::vector<vax::objects::SceneNode> _nodes;
+    std::unique_ptr<vax::rl::gw::GwSceneGraph> _sceneGraph;
     std::optional<vax::objects::DrawableModel> _background;
     std::optional<vax::objects::DrawableModel> _gizmo;
     std::optional<vax::scene::EnvironmentMap> _environmentMap;

@@ -36,7 +36,7 @@ bool App::setup() {
 
     _drawableScene = std::make_unique<DrawableScene>(*_engine);
     _drawableScene->resize();
-    _drawableScene->loadGridWorld(_gridWorld->getDrawableDescriptor(), _engine->queueManager->graphicsQueue);
+    _drawableScene->loadSceneGraph(*_gridWorld, _engine->queueManager->graphicsQueue);
     _inputController.addObserver(_drawableScene.get());
 
     return true;

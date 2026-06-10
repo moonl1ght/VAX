@@ -1,9 +1,6 @@
 #include "drawableScene.h"
 #include "gridWorldDescriptor.h"
-#include "modelLoader.h"
-#include "primitivesBuilder.h"
 #include "swapchain.h"
-#include "textureLoader.h"
 
 using namespace vax;
 
@@ -27,35 +24,27 @@ void vax::DrawableScene::resize() {
     _mainCamera.setViewPortSize(vax::math::SizeUI(swapchainExtent));
 }
 
-void vax::DrawableScene::loadGridWorld(
-    const vax::rl::gw::env::GridWorldDrawableDescriptor& gridWorldDrawableDescriptor, VkQueue submitQueue
+void vax::DrawableScene::loadSceneGraph(
+    const vax::rl::gw::env::GridWorld& gridWorld, VkQueue submitQueue
 ) {
     _resourceManager.setup();
-    _drawableModels.reserve(gridWorldDrawableDescriptor.drawableDescriptors.size());
-    for (const auto& drawableDescriptor : gridWorldDrawableDescriptor.drawableDescriptors) {
-        auto model = _modelLoader.loadModel(drawableDescriptor.path, submitQueue);
-        model->transformHandle->setTransform(drawableDescriptor.initialTransform);
-        if (!model.has_value()) {
-            _logger.error("Failed to load model: {}", drawableDescriptor.path);
-            continue;
-        }
-        _drawableModels.push_back(std::move(model.value()));
-    }
+    _sceneGraph = std::make_unique<vax::rl::gw::GwSceneGraph>();
+    _sceneGraph->load(_modelLoader, gridWorld, submitQueue);
+    // _drawableModels.reserve(gridWorldDrawableDescriptor.drawableDescriptors.size());
+    // for (const auto& drawableDescriptor : gridWorldDrawableDescriptor.drawableDescriptors) {
+    //     auto model = _modelLoader.loadModel(drawableDescriptor.path, submitQueue);
+    //     model->transformHandle->setTransform(drawableDescriptor.initialTransform);
+    //     if (!model.has_value()) {
+    //         _logger.error("Failed to load model: {}", drawableDescriptor.path);
+    //         continue;
+    //     }
+    //     _drawableModels.push_back(std::move(model.value()));
+    // }
 
-    auto agentModel = _modelLoader.loadSceneModel(gridWorldDrawableDescriptor.agentDrawableDescriptor, submitQueue);
-    agentModel->updateTransform([](vax::math::TransformHandle& transformHandle) {
-        transformHandle.updateTransform([](vax::math::Transform& transform) {
-            transform.updateRotationInDegrees({-90.0f, 0.0f, 0.0f});
-        });
-    });
-    if (!agentModel.has_value()) {
-        _logger.error("Failed to load agent model: {}", gridWorldDrawableDescriptor.agentDrawableDescriptor.path);
-        return;
-    }
-    _nodes.push_back(std::move(agentModel.value()));
     _load(submitQueue);
 }
 
+// TODO: refactor models loading
 void vax::DrawableScene::_load(VkQueue submitQueue) {
     _loadEnvironmentMap(submitQueue);
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
@@ -86,12 +75,7 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
     commandBuffer.begin();
     _gizmo->loadMesh(commandBuffer);
     _background->loadMesh(commandBuffer);
-    for (auto& drawableModel : _drawableModels) {
-        drawableModel.loadMesh(commandBuffer);
-    }
-    for (auto& node : _nodes) {
-        node.loadDrawableModelsMeshes(commandBuffer);
-    }
+    _sceneGraph->loadDrawableModels(commandBuffer);
     commandBuffer.end();
     commandBuffer.submitAndWait(submitQueue);
     auto cameraPos = glm::vec3(2.0f, 2.0f, 2.0f);
@@ -139,19 +123,8 @@ bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& d
     return true;
 }
 
-void vax::DrawableScene::_drawSceneNode(
-    vax::objects::SceneNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline
-) {
-    node.draw(commandBuffer, pipeline.vkPipelineLayout);
-}
-
 void vax::DrawableScene::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
-    for (auto& drawableModel : _drawableModels) {
-        drawableModel.draw(commandBuffer, pipeline.vkPipelineLayout);
-    }
-    for (auto& node : _nodes) {
-        _drawSceneNode(node, commandBuffer, pipeline);
-    }
+    _sceneGraph->draw(commandBuffer, pipeline);
 }
 
 void vax::DrawableScene::drawBackground(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
