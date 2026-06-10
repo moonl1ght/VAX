@@ -38,6 +38,7 @@ bool App::setup() {
     _drawableScene->resize();
     _drawableScene->loadSceneGraph(*_gridWorld, _engine->queueManager->graphicsQueue);
     _inputController.addObserver(_drawableScene.get());
+    _inputController.addObserver(_gridWorld.get());
 
     return true;
 }

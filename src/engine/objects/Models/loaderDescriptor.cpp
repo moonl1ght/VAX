@@ -17,3 +17,10 @@ LoaderDescriptor::ModelExtension LoaderDescriptor::getModelExtension() const {
         return ModelExtension::URDF;
     return ModelExtension::UNKNOWN;
 }
+
+const std::string_view LoaderDescriptor::getMainPath() const {
+    auto dot = path.rfind('/');
+    if (dot == std::string::npos)
+        return std::string_view("");
+    return std::string_view(path).substr(0, dot);
+}

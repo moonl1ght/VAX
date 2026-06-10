@@ -314,6 +314,7 @@ static glm::mat4 urdfPoseToMat4(const urdf::Pose& pose) {
 
 template <typename ModelLoaderFunc>
 SceneNode processURDFLink(
+    const std::string_view mainPath,
     vax::ResourceManager& resourceManager,
     urdf::LinkConstSharedPtr link,
     ModelLoaderFunc loadModel,
@@ -354,8 +355,7 @@ SceneNode processURDFLink(
         }
         if (visual->geometry->type == urdf::Geometry::MESH) {
             const auto* mesh = static_cast<const urdf::Mesh*>(visual->geometry.get());
-            // TODO: fix this
-            auto modelOpt = loadModel(RES_PATH("assets/models/rover/" + mesh->filename));
+            auto modelOpt = loadModel(std::string(mainPath) + "/" + mesh->filename);
             if (modelOpt.has_value()) {
                 for (size_t i = 0; i < modelOpt->submeshCount(); ++i) {
                     modelOpt->submesh(i).materialIndex = materialId;
@@ -366,7 +366,7 @@ SceneNode processURDFLink(
     }
 
     for (const auto& child : link->child_links) {
-        auto childNode = processURDFLink(resourceManager, child, loadModel, nodeTransform);
+        auto childNode = processURDFLink(mainPath, resourceManager, child, loadModel, nodeTransform);
         node.insertChild(std::move(childNode));
     }
 
@@ -380,8 +380,10 @@ std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(LoaderDescriptor descr
         _logger.error("Failed to load URDF model: " + path);
         return std::nullopt;
     }
+    auto mainPath = descriptor.getMainPath();
+    std::cout << "Main path: " << mainPath << std::endl;
     auto rootNode = processURDFLink(
-        _resourceManager.get(), model->getRoot(), [&](std::string name) -> std::optional<DrawableModel> {
+        mainPath, _resourceManager.get(), model->getRoot(), [&](std::string name) -> std::optional<DrawableModel> {
             return loadModel(name, submitQueue);
         }
     );

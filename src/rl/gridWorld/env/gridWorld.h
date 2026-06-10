@@ -1,11 +1,12 @@
 #pragma once
 
-#include "tensor.h"
 #include "gridWorldDescriptor.h"
 #include "gwAgent.h"
+#include "inputController.h"
+#include "tensor.h"
 
 namespace vax::rl::gw::env {
-class GridWorld final {
+class GridWorld final : public vax::input::InputController::Observer {
   public:
     enum class BlockType : uint8_t {
         FLOOR = 0,
@@ -17,11 +18,21 @@ class GridWorld final {
     };
 
     GridWorld() {};
-    ~GridWorld() {};
+    ~GridWorld() {
+        if (_inputController) {
+            _inputController->removeObserver(this);
+        }
+    };
 
     void load();
 
     vax::rl::gw::env::GridWorldDrawableDescriptor getDrawableDescriptor() const;
+
+    void onMouseMove(const vax::input::MouseMoveValue& value);
+
+    void onMouseWheel(float delta);
+
+    void onKeyEvent(const vax::input::KeyEvent& keyEvent);
 
   private:
     vax::rl::math::Tensor _grid;

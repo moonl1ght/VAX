@@ -1,7 +1,7 @@
 #pragma once
 
-#include "luna.h"
 #include "keyCode.h"
+#include "luna.h"
 
 namespace vax::input {
 struct MouseMoveValue {

@@ -53,3 +53,11 @@ std::string GridWorld::blockTypeToPath(BlockType blockType) const {
         return RES_PATH("assets/models/floor.glb");
     }
 }
+
+void GridWorld::onMouseMove(const vax::input::MouseMoveValue& value) { }
+
+void GridWorld::onMouseWheel(float delta) { }
+
+void GridWorld::onKeyEvent(const vax::input::KeyEvent& keyEvent) {
+    std::cout << "Key event: " << static_cast<int>(keyEvent.key) << std::endl;
+}
