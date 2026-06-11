@@ -1,13 +1,14 @@
 #pragma once
 
-#include "gridWorld.h"
+#include "commandBuffer.h"
+#include "gridWorldDescriptor.h"
 #include "logger.h"
 #include "modelLoader.h"
-#include "sceneNode.h"
-#include "commandBuffer.h"
 #include "pipeline.h"
-#include <memory>
 #include "roverModelProxy.h"
+#include "sceneNode.h"
+#include <memory>
+#include "rlMath.h"
 
 namespace vax::rl::gw {
 // TODO: move to generic scene graph
@@ -22,13 +23,19 @@ class GwSceneGraph final {
     GwSceneGraph(GwSceneGraph&& other) noexcept = delete;
     GwSceneGraph& operator=(GwSceneGraph&& other) noexcept = delete;
 
-    bool load(vax::objects::ModelLoader& modelLoader, const env::GridWorld& gridWorld, VkQueue submitQueue);
+    bool load(
+        vax::objects::ModelLoader& modelLoader,
+        const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor,
+        VkQueue submitQueue
+    );
     // TODO: refactor models loading
     void loadDrawableModels(vax::vk::CommandBuffer& commandBuffer);
 
     void draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
 
     void update(float deltaTime);
+
+    void moveAgent(rl::math::Position2DFloat position);
 
   private:
     vax::utils::Logger _logger = vax::utils::Logger("GwSceneGraph");

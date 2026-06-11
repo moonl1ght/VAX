@@ -43,10 +43,9 @@ class SceneNode final {
     ///                 if 0 will compare only with node itself.
     SceneNode* getChild(const std::string& name, int depth = -1);
 
-    /// Accumulates transform updates.
+    /// Accumulates transform
     template <typename T> void updateTransform(const T& updater) {
         updater(_transformHandle);
-        _isSelfTransformDirty = true;
         _isChildrenTransformDirty = true;
     }
 
@@ -69,7 +68,6 @@ class SceneNode final {
     const vax::math::Transform _originalParentRelativeTransform;
     vax::math::TransformMatrixHandle _parentTransformMatrices;
     vax::math::TransformHandle _transformHandle;
-    bool _isSelfTransformDirty = false;
     bool _isChildrenTransformDirty = false;
 };
 } // namespace vax::objects

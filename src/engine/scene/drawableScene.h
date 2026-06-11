@@ -62,7 +62,7 @@ class DrawableScene final : public vax::input::InputController::Observer {
 
     const vax::objects::Camera& gizmoCamera() const { return _gizmoCamera; }
 
-    void loadSceneGraph(const vax::rl::gw::env::GridWorld& gridWorld, VkQueue submitQueue);
+    void loadSceneGraph(const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue);
 
     void resize();
 
@@ -85,6 +85,8 @@ class DrawableScene final : public vax::input::InputController::Observer {
     void onMouseWheel(float delta);
 
     void onKeyEvent(const vax::input::KeyEvent& keyEvent);
+
+    vax::rl::gw::GwSceneGraph* sceneGraph() const { return _sceneGraph.get(); }
 
   private:
     vax::utils::Logger _logger = vax::utils::Logger("DrawableScene");

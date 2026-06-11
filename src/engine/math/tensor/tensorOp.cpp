@@ -2,7 +2,7 @@
 #include <iostream>
 #include <iomanip>
 
-using namespace vax::rl::math;
+using namespace vax::math;
 
 void TensorOp::print(const Tensor &tensor, bool inline_mode) {
     if (inline_mode) {

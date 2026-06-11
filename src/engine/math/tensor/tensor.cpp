@@ -1,7 +1,7 @@
 #include "tensor.h"
 
 using namespace vax;
-using namespace vax::rl::math;
+using namespace vax::math;
 
 Tensor Tensor::createRandom(core::RandomGenerator& generator, std::vector<int> shape, float min, float max) {
     auto tensor = Tensor(shape);
@@ -171,4 +171,8 @@ std::vector<int> Tensor::_calculateIndices(int flatIndex) const {
     indices[rank - 1] = flatIndex;
 
     return indices;
+}
+
+int Tensor::flatIndex(std::vector<int> indices) const {
+    return _calculateFlatIndex(indices);
 }

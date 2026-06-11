@@ -23,7 +23,8 @@ class RandomGenerator final {
         _generator = std::mt19937(_seed);
 #endif
     }
-    ~RandomGenerator();
+
+    ~RandomGenerator() = default;
 
     int getSeed() const { return _seed; }
     bool trueRandom() const { return _true_random; }
@@ -35,6 +36,8 @@ class RandomGenerator final {
     float uniformFloat(std::uniform_real_distribution<float> distribution) { return distribution(_generator); }
 
     int uniformInt(int min = 0, int max = 1) { return std::uniform_int_distribution<int>(min, max)(_generator); }
+
+    bool uniformBool() { return std::uniform_int_distribution<int>(0, 1)(_generator) == 1; }
 
     int uniformInt(std::uniform_int_distribution<int> distribution) { return distribution(_generator); }
 

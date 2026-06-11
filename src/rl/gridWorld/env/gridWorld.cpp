@@ -1,32 +1,54 @@
 #include "gridWorld.h"
-#include "tensorOp.h"
+#include "inputController.h"
+#include "randomGenerator.h"
+#include "rlMath.h"
 #include "transform.h"
-#include "rlMathUtils.h"
+#include "tensorOp.h"
 
 using namespace vax::rl::gw::env;
+using namespace vax::rl::gw;
 using namespace vax;
+using namespace vax::math;
+using namespace vax::rl::math;
 
 void GridWorld::load() {
-    _grid = rl::math::Tensor::createZeros({5, 5});
+    _grid = Tensor::createZeros({5, 5});
+    _sceneGraphPositions.reserve(_grid.totalSize());
+    bool agentWasPlaced = false;
+    for (int i = 0; i < _grid.totalSize(); ++i) {
+        std::vector<int> indices = _grid.indices(i);
+        auto padding = 1.0f;
+        auto offset = 5.0f / 2.0f - 0.5f;
+        Position2DFloat position = {indices[0] * padding - offset * padding, indices[1] * padding - offset * padding};
+        _sceneGraphPositions.push_back(position);
+        // TODO: rework this
+        if (isBorderIndex(indices, _grid.shape())) {
+            _grid.set(indices, static_cast<float>(BlockType::WALL));
+        } else if (!agentWasPlaced && core::RandomGenerator::getInstance().uniformBool()) {
+            agentWasPlaced = true;
+            _grid.set(indices, static_cast<float>(BlockType::AGENT));
+            _agent.setPosition(indices[0], indices[1]);
+        }
+    }
+    _agent.linkGridWorld(this);
 }
 
-rl::gw::env::GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
-    rl::math::TensorOp::print(_grid);
-    rl::gw::env::GridWorldDrawableDescriptor descriptor;
+void GridWorld::linkSceneGraph(GwSceneGraph* sceneGraph) {
+    _sceneGraph = sceneGraph;
+    auto position = _agent.getPosition();
+    auto flatIndex = _grid.flatIndex({position.x, position.y});
+    auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex({position.x, position.y})];
+    _sceneGraph->moveAgent(sceneGraphPosition);
+}
+
+GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
+    GridWorldDrawableDescriptor descriptor;
     descriptor.drawableDescriptors.reserve(_grid.totalSize());
     int flatIndex = 0;
     for (const auto& block : _grid) {
         BlockType blockType = static_cast<BlockType>(block);
-        vax::math::Transform transform = vax::math::Transform();
-        std::vector<int> indices = _grid.indices(flatIndex);
-
-        if (vax::rl::math::utils::isBorderIndex(indices, _grid.shape())) {
-            blockType = BlockType::WALL;
-        }
-        auto mul = 1.0f;
-        auto offset = 5.0f / 2.0f - 0.5f;
-        transform.position = glm::vec3(indices[0] * mul - offset * mul, 0.0f, indices[1] * mul - offset * mul);
-
+        Transform transform = Transform();
+        transform.position = {_sceneGraphPositions[flatIndex].x, 0.0f, _sceneGraphPositions[flatIndex].y};
         if (blockType == BlockType::WALL) {
             transform.position.y = 0.5f;
         }
@@ -54,10 +76,43 @@ std::string GridWorld::blockTypeToPath(BlockType blockType) const {
     }
 }
 
-void GridWorld::onMouseMove(const vax::input::MouseMoveValue& value) { }
-
-void GridWorld::onMouseWheel(float delta) { }
+bool GridWorld::canMoveAgent(const Position2DInt& newPosition) const {
+    if (newPosition.x < 0 || newPosition.x >= _grid.shape()[0] || newPosition.y < 0 ||
+        newPosition.y >= _grid.shape()[1]) {
+        return false;
+    }
+    return _grid.get({newPosition.x, newPosition.y}) == static_cast<float>(BlockType::FLOOR);
+}
 
 void GridWorld::onKeyEvent(const vax::input::KeyEvent& keyEvent) {
-    std::cout << "Key event: " << static_cast<int>(keyEvent.key) << std::endl;
+    if (keyEvent.state != vax::input::KeyEvent::State::DOWN) {
+        return;
+    }
+    Agent::MoveAction action;
+    switch (keyEvent.key) {
+    case vax::input::KeyCode::A:
+        action = Agent::MoveAction::WEST;
+        break;
+    case vax::input::KeyCode::S:
+        action = Agent::MoveAction::SOUTH;
+        break;
+    case vax::input::KeyCode::D:
+        action = Agent::MoveAction::EAST;
+        break;
+    case vax::input::KeyCode::W:
+        action = Agent::MoveAction::NORTH;
+        break;
+    default:
+        return;
+    }
+    _agent.moveByOutsideAction(action);
+}
+
+void GridWorld::agentMoved() {
+    auto oldPosition = std::vector<int>({_agent.getOldPosition().x, _agent.getOldPosition().y});
+    auto newPosition = std::vector<int>({_agent.getPosition().x, _agent.getPosition().y});
+    _grid.set(oldPosition, static_cast<float>(BlockType::FLOOR));
+    _grid.set(newPosition, static_cast<float>(BlockType::AGENT));
+    auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex(newPosition)];
+    _sceneGraph->moveAgent(sceneGraphPosition);
 }

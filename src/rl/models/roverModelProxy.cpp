@@ -21,7 +21,7 @@ void RoverModelProxy::update(float deltaTime) {
         if (!wheel) return;
         wheel->updateTransform([&](math::TransformHandle& transformHandle) {
             transformHandle.updateTransform([&](math::Transform& transform) {
-                transform.updateRotationInDegrees({0.0f, -2.0f, 0.0f});
+                transform.updateRotationInDegrees({0.0f, deltaTime * -10.0f, 0.0f});
             });
         });
     };
@@ -30,15 +30,4 @@ void RoverModelProxy::update(float deltaTime) {
     spinWheel(_leftFrontWheel);
     spinWheel(_rightRearWheel);
     spinWheel(_leftRearWheel);
-
-    // auto moveRover = [&](vax::objects::SceneNode* rover) {
-    //     if (!rover) return;
-    //     rover->updateTransform([&](math::TransformHandle& transformHandle) {
-    //         transformHandle.updateTransform([&](math::Transform& transform) {
-    //             transform.position.z = deltaTime * 1.0f;
-    //         });
-    //     });
-    // };
-
-    // moveRover(_modelNode.get());
 }

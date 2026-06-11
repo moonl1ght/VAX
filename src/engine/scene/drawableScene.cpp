@@ -26,11 +26,11 @@ void vax::DrawableScene::resize() {
 }
 
 void vax::DrawableScene::loadSceneGraph(
-    const vax::rl::gw::env::GridWorld& gridWorld, VkQueue submitQueue
+    const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue
 ) {
     _resourceManager.setup();
     _sceneGraph = std::make_unique<vax::rl::gw::GwSceneGraph>();
-    _sceneGraph->load(_modelLoader, gridWorld, submitQueue);
+    _sceneGraph->load(_modelLoader, descriptor, submitQueue);
 
     _load(submitQueue);
 }

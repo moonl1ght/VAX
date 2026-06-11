@@ -6,7 +6,7 @@
 
 #include "randomGenerator.h"
 
-namespace vax::rl::math {
+namespace vax::math {
 class Tensor {
   public:
     using iterator = float*;
@@ -87,6 +87,7 @@ class Tensor {
     void squeeze();            // remove all dimensions of size 1
     void unsqueeze(int index); // add dimension of size 1 at the given index
     std::vector<int> indices(int flatIndex) const;
+    int flatIndex(std::vector<int> indices) const;
 
     bool alignBroadcastToHigherDimensions(const std::vector<int>& otherShape);
 
@@ -117,4 +118,4 @@ class Tensor {
     std::vector<int> _calculateIndices(int flatIndex) const;
     bool _isContiguous() const;
 };
-} // namespace vax::rl::math
+} // namespace vax::math

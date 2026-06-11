@@ -1,14 +1,16 @@
 #include "sceneNode.h"
+#include <glm/ext/matrix_float4x4.hpp>
 
 using namespace vax::objects;
 using namespace vax;
+using namespace vax::math;
 
 void SceneNode::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) {
-    auto worldHandle = _parentTransformMatrices;
-    if (_isSelfTransformDirty) {
-        worldHandle.updateModelMatrix(_parentTransformMatrices.getModelMatrix() * _transformHandle.getModelMatrix());
-        _parentTransformMatrices = worldHandle;
-    }
+    TransformMatrixHandle worldHandle;
+    // TODO: cache this matrix
+    worldHandle.updateModelMatrix(
+        _parentTransformMatrices.getModelMatrix() * _transformHandle.getModelMatrix()
+    );
 
     for (auto& drawableModel : _drawableModels) {
         drawableModel.transformMatrixHandle = worldHandle;
@@ -26,7 +28,6 @@ void SceneNode::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLay
     }
 
     _isChildrenTransformDirty = false;
-    _isSelfTransformDirty = false;
 }
 
 void SceneNode::insertChild(SceneNode&& child) {
