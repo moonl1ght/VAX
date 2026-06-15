@@ -17,10 +17,9 @@ class GridWorld final : public vax::input::InputController::Observer,
     enum class BlockType : uint8_t {
         FLOOR = 0,
         WALL = 1,
-        GOAL = 2,
+        FINISH = 2,
         START = 3,
-        AGENT = 4,
-        OBSTACLE = 5,
+        TRAP = 4,
     };
 
     GridWorld() {};

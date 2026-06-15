@@ -19,6 +19,12 @@ vax::objects::LoaderDescriptor Agent::getDrawableDescriptor() const {
     };
 }
 
+void Agent::allowAction(MoveAction action) {
+    _oldPosition = _position;
+    _position = getNewPosition(action);
+    _gridWorld->agentMoved();
+}
+
 void Agent::moveByOutsideAction(MoveAction action) { _tryToMove(action); }
 
 void Agent::_tryToMove(MoveAction action) {

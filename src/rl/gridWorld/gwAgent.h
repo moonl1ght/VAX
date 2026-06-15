@@ -29,6 +29,8 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
 
     void moveByOutsideAction(MoveAction action);
 
+    void allowAction(MoveAction action);
+
     void linkGridWorld(vax::rl::gw::env::GridWorld* gridWorld) { _gridWorld = gridWorld; }
 
     const vax::rl::math::Position2DInt& getPosition() const;

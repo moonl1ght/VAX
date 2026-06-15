@@ -26,7 +26,6 @@ void GridWorld::load() {
             _grid.set(indices, static_cast<float>(BlockType::WALL));
         } else if (!agentWasPlaced && core::RandomGenerator::getInstance().uniformBool()) {
             agentWasPlaced = true;
-            _grid.set(indices, static_cast<float>(BlockType::AGENT));
             _agent.setStartPosition(indices[0], indices[1]);
         }
     }
@@ -111,8 +110,6 @@ void GridWorld::onKeyEvent(const vax::input::KeyEvent& keyEvent) {
 void GridWorld::agentMoved() {
     auto oldPosition = std::vector<int>({_agent.getOldPosition().x, _agent.getOldPosition().y});
     auto newPosition = std::vector<int>({_agent.getPosition().x, _agent.getPosition().y});
-    _grid.set(oldPosition, static_cast<float>(BlockType::FLOOR));
-    _grid.set(newPosition, static_cast<float>(BlockType::AGENT));
     auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex(newPosition)];
     _sceneGraph->moveAgent(sceneGraphPosition);
 }
@@ -126,13 +123,20 @@ State GridWorld::resetImpl() {
 
 GridWorld::StepResult GridWorld::stepImpl(MoveAction action) {
     auto nextPossiblePosition = _agent.getNewPosition(action);
-    double reward = 0.0;
-    bool done = false;
     if (canMoveAgent(nextPossiblePosition)) {
-        _agent.moveByOutsideAction(action);
-    } else {
-        reward = -1.0;
+        _agent.allowAction(action);
+        auto blockValue = _grid.get({nextPossiblePosition.x, nextPossiblePosition.y});
+        if (!blockValue.has_value()) {
+            return {.state = 0, .reward = -100.0, .done = true, .finishedWithError = true};
+        }
+        auto blockType = static_cast<BlockType>(blockValue.value());
+        if (blockType == BlockType::TRAP) {
+            return {.state = 0, .reward = -100.0, .done = true, .finishedWithError = false};
+        }
+        if (blockType == BlockType::FINISH) {
+            return {.state = 0, .reward = 100.0, .done = true, .finishedWithError = false};
+        }
+        return {.state = 0, .reward = -1.0, .done = false, .finishedWithError = false};
     }
-    // TODO: implement
-    return {0, 0.0, false};
+    return {.state = 0, .reward = -100.0, .done = false, .finishedWithError = false};
 }

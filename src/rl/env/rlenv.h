@@ -4,9 +4,10 @@ namespace vax::rl {
 template <typename Derived, typename State, typename Action> class Environment {
   public:
     struct StepResult final {
-        State state;
-        double reward;
-        bool done;
+        State state = 0;
+        double reward = 0.0;
+        bool done = false;
+        bool finishedWithError = false;
     };
 
     Environment() {};
