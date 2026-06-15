@@ -36,3 +36,5 @@
 *.xcbkptlist
 *.spv
 captures/
+test/
+output/

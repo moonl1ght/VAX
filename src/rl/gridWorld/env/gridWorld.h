@@ -3,12 +3,16 @@
 #include "gridWorldDescriptor.h"
 #include "gwAgent.h"
 #include "gwSceneGraph.h"
+#include "gwenv.h"
 #include "inputController.h"
+#include "qlConfig.h"
 #include "rlMath.h"
+#include "rlenv.h"
 #include "tensor.h"
 
 namespace vax::rl::gw::env {
-class GridWorld final : public vax::input::InputController::Observer {
+class GridWorld final : public vax::input::InputController::Observer,
+                        public vax::rl::Environment<GridWorld, State, MoveAction> {
   public:
     enum class BlockType : uint8_t {
         FLOOR = 0,
@@ -48,9 +52,16 @@ class GridWorld final : public vax::input::InputController::Observer {
 
     void agentMoved();
 
+    const vax::math::Tensor& getGrid() const;
+
+    int resetImpl();
+
+    StepResult stepImpl(MoveAction action);
+
   private:
+    vax::rl::ql::QLearningConfig _qlConfig;
     vax::math::Tensor _grid;
-    vax::rl::gw::Agent _agent;
+    vax::rl::gw::Agent _agent = vax::rl::gw::Agent(_qlConfig);
     std::vector<vax::rl::math::Position2DFloat> _sceneGraphPositions;
 
     std::string blockTypeToPath(BlockType blockType) const;

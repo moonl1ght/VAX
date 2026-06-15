@@ -2,8 +2,8 @@
 #include "inputController.h"
 #include "randomGenerator.h"
 #include "rlMath.h"
-#include "transform.h"
 #include "tensorOp.h"
+#include "transform.h"
 
 using namespace vax::rl::gw::env;
 using namespace vax::rl::gw;
@@ -12,7 +12,7 @@ using namespace vax::math;
 using namespace vax::rl::math;
 
 void GridWorld::load() {
-    _grid = Tensor::createZeros({5, 5});
+    _grid = Tensor::createZeros({6, 6});
     _sceneGraphPositions.reserve(_grid.totalSize());
     bool agentWasPlaced = false;
     for (int i = 0; i < _grid.totalSize(); ++i) {
@@ -27,7 +27,7 @@ void GridWorld::load() {
         } else if (!agentWasPlaced && core::RandomGenerator::getInstance().uniformBool()) {
             agentWasPlaced = true;
             _grid.set(indices, static_cast<float>(BlockType::AGENT));
-            _agent.setPosition(indices[0], indices[1]);
+            _agent.setStartPosition(indices[0], indices[1]);
         }
     }
     _agent.linkGridWorld(this);
@@ -88,19 +88,19 @@ void GridWorld::onKeyEvent(const vax::input::KeyEvent& keyEvent) {
     if (keyEvent.state != vax::input::KeyEvent::State::DOWN) {
         return;
     }
-    Agent::MoveAction action;
+    MoveAction action;
     switch (keyEvent.key) {
     case vax::input::KeyCode::A:
-        action = Agent::MoveAction::WEST;
+        action = MoveAction::WEST;
         break;
     case vax::input::KeyCode::S:
-        action = Agent::MoveAction::SOUTH;
+        action = MoveAction::SOUTH;
         break;
     case vax::input::KeyCode::D:
-        action = Agent::MoveAction::EAST;
+        action = MoveAction::EAST;
         break;
     case vax::input::KeyCode::W:
-        action = Agent::MoveAction::NORTH;
+        action = MoveAction::NORTH;
         break;
     default:
         return;
@@ -115,4 +115,24 @@ void GridWorld::agentMoved() {
     _grid.set(newPosition, static_cast<float>(BlockType::AGENT));
     auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex(newPosition)];
     _sceneGraph->moveAgent(sceneGraphPosition);
+}
+
+const Tensor& GridWorld::getGrid() const { return _grid; }
+
+State GridWorld::resetImpl() {
+    // TODO: implement
+    return 0;
+}
+
+GridWorld::StepResult GridWorld::stepImpl(MoveAction action) {
+    auto nextPossiblePosition = _agent.getNewPosition(action);
+    double reward = 0.0;
+    bool done = false;
+    if (canMoveAgent(nextPossiblePosition)) {
+        _agent.moveByOutsideAction(action);
+    } else {
+        reward = -1.0;
+    }
+    // TODO: implement
+    return {0, 0.0, false};
 }
