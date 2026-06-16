@@ -1,10 +1,11 @@
 #include "tensorOp.h"
-#include <iostream>
+#include <cassert>
 #include <iomanip>
+#include <iostream>
 
 using namespace vax::math;
 
-void TensorOp::print(const Tensor &tensor, bool inline_mode) {
+void TensorOp::print(const Tensor& tensor, bool inline_mode) {
     if (inline_mode) {
         for (int i = 0; i < tensor.totalSize(); i++) {
             std::cout << " " << std::fixed << std::setprecision(4) << tensor.data()[i] << " ";
@@ -36,4 +37,55 @@ void TensorOp::print(const Tensor &tensor, bool inline_mode) {
         }
         std::cout << "]" << std::endl;
     }
+}
+
+Tensor TensorOp::argmax(const Tensor& tensor, int axis) {
+    auto shape = tensor.shape();
+    int rank = static_cast<int>(shape.size());
+
+    if (axis == -1 || axis >= rank) {
+        float maxValue = -std::numeric_limits<float>::infinity();
+        int maxIndex = -1;
+        for (int i = 0; i < tensor.totalSize(); ++i) {
+            if (tensor._data[i] > maxValue) {
+                maxValue = tensor._data[i];
+                maxIndex = i;
+            }
+        }
+        Tensor result({1});
+        result._data[0] = static_cast<float>(maxIndex);
+        return result;
+    }
+
+    std::vector<int> outputShape;
+    outputShape.reserve(rank - 1);
+    for (int i = 0; i < rank; ++i) {
+        if (i != axis)
+            outputShape.push_back(shape[i]);
+    }
+
+    Tensor result(outputShape);
+    auto outputStrides = result.strides();
+
+    std::vector<float> maxValues(result.totalSize(), -std::numeric_limits<float>::infinity());
+
+    for (int i = 0; i < tensor.totalSize(); ++i) {
+        auto idx = tensor.indices(i);
+
+        int outputFlat = 0;
+        int outputStride = 0;
+        for (int j = 0; j < rank; ++j) {
+            if (j == axis)
+                continue;
+            outputFlat += idx[j] * outputStrides[outputStride];
+            ++outputStride;
+        }
+
+        if (tensor._data[i] > maxValues[outputFlat]) {
+            maxValues[outputFlat] = tensor._data[i];
+            result._data[outputFlat] = static_cast<float>(idx[axis]);
+        }
+    }
+
+    return result;
 }

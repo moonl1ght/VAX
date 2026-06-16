@@ -2,9 +2,10 @@
 
 #include <cstdint>
 #include <string_view>
+#include "rlMath.h"
 
 namespace vax::rl::gw {
-using State = int;
+using State = vax::rl::math::Position2DInt;
 
 enum class MoveAction : uint8_t {
     NORTH = 0,

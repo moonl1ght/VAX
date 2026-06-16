@@ -53,12 +53,17 @@ class GridWorld final : public vax::input::InputController::Observer,
 
     const vax::math::Tensor& getGrid() const;
 
-    int resetImpl();
+    State resetImpl();
 
-    StepResult stepImpl(MoveAction action);
+    State getStateImpl() const;
+
+    vax::rl::StepResult stepImpl(MoveAction action);
+
+    const std::string& nameImpl() const { return _name; }
 
   private:
     vax::rl::ql::QLearningConfig _qlConfig;
+    std::string _name = "GridWorld";
     vax::math::Tensor _grid;
     vax::rl::gw::Agent _agent = vax::rl::gw::Agent(_qlConfig);
     std::vector<vax::rl::math::Position2DFloat> _sceneGraphPositions;

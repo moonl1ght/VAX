@@ -6,7 +6,7 @@ using namespace vax::math;
 Tensor Tensor::createRandom(core::RandomGenerator& generator, std::vector<int> shape, float min, float max) {
     auto tensor = Tensor(shape);
     auto distribution = std::uniform_real_distribution<float>(min, max);
-    for (int i = 0; i < tensor._totalSize; i++) {
+    for (int i = 0; i < tensor._totalSize; ++i) {
         tensor._data[i] = generator.uniformFloat(distribution);
     }
     return tensor;
@@ -14,7 +14,7 @@ Tensor Tensor::createRandom(core::RandomGenerator& generator, std::vector<int> s
 
 Tensor Tensor::createZeros(std::vector<int> shape) {
     auto tensor = Tensor(shape);
-    for (int i = 0; i < tensor._totalSize; i++) {
+    for (int i = 0; i < tensor._totalSize; ++i) {
         tensor._data[i] = 0.0f;
     }
     return tensor;
@@ -22,7 +22,7 @@ Tensor Tensor::createZeros(std::vector<int> shape) {
 
 Tensor Tensor::createOnes(std::vector<int> shape) {
     auto tensor = Tensor(shape);
-    for (int i = 0; i < tensor._totalSize; i++) {
+    for (int i = 0; i < tensor._totalSize; ++i) {
         tensor._data[i] = 1.0f;
     }
     return tensor;
@@ -30,7 +30,7 @@ Tensor Tensor::createOnes(std::vector<int> shape) {
 
 Tensor Tensor::createArrangeContiguous(std::vector<int> shape) {
     auto tensor = Tensor(shape);
-    for (int i = 0; i < tensor._totalSize; i++) {
+    for (int i = 0; i < tensor._totalSize; ++i) {
         tensor._data[i] = static_cast<float>(i);
     }
     return tensor;
@@ -125,7 +125,7 @@ int Tensor::_calculateFlatIndex(std::vector<int> indices) const {
 
 void Tensor::_calculateStrides() {
     _strides = std::vector<int>(_shape.size(), 1);
-    for (int i = _strides.size() - 2; i >= 0; i--) {
+    for (int i = _strides.size() - 2; i >= 0; --i) {
         _strides[i] = _strides[i + 1] * _shape[i + 1];
     }
 }

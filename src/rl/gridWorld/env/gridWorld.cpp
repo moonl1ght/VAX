@@ -10,6 +10,7 @@ using namespace vax::rl::gw;
 using namespace vax;
 using namespace vax::math;
 using namespace vax::rl::math;
+using namespace vax::rl;
 
 void GridWorld::load() {
     _grid = Tensor::createZeros({6, 6});
@@ -117,26 +118,30 @@ void GridWorld::agentMoved() {
 const Tensor& GridWorld::getGrid() const { return _grid; }
 
 State GridWorld::resetImpl() {
-    // TODO: implement
-    return 0;
+    _agent.reset();
+    return _agent.getPosition();
 }
 
-GridWorld::StepResult GridWorld::stepImpl(MoveAction action) {
+StepResult GridWorld::stepImpl(MoveAction action) {
     auto nextPossiblePosition = _agent.getNewPosition(action);
     if (canMoveAgent(nextPossiblePosition)) {
         _agent.allowAction(action);
         auto blockValue = _grid.get({nextPossiblePosition.x, nextPossiblePosition.y});
         if (!blockValue.has_value()) {
-            return {.state = 0, .reward = -100.0, .done = true, .finishedWithError = true};
+            return {.reward = -100.0, .done = true, .finishedWithError = true};
         }
         auto blockType = static_cast<BlockType>(blockValue.value());
         if (blockType == BlockType::TRAP) {
-            return {.state = 0, .reward = -100.0, .done = true, .finishedWithError = false};
+            return {.reward = -100.0, .done = true, .finishedWithError = false};
         }
         if (blockType == BlockType::FINISH) {
-            return {.state = 0, .reward = 100.0, .done = true, .finishedWithError = false};
+            return {.reward = 100.0, .done = true, .finishedWithError = false};
         }
-        return {.state = 0, .reward = -1.0, .done = false, .finishedWithError = false};
+        return {.reward = -1.0, .done = false, .finishedWithError = false};
     }
-    return {.state = 0, .reward = -100.0, .done = false, .finishedWithError = false};
+    return {.reward = -100.0, .done = false, .finishedWithError = false};
+}
+
+State GridWorld::getStateImpl() const {
+    return _agent.getPosition();
 }

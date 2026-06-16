@@ -31,7 +31,7 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
 
     void allowAction(MoveAction action);
 
-    void linkGridWorld(vax::rl::gw::env::GridWorld* gridWorld) { _gridWorld = gridWorld; }
+    void linkGridWorld(vax::rl::gw::env::GridWorld* gridWorld);
 
     const vax::rl::math::Position2DInt& getPosition() const;
     const vax::rl::math::Position2DInt& getOldPosition() const;
@@ -46,6 +46,8 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
     MoveAction chooseActionImpl(const State& state);
 
     void updateImpl(const State& state, MoveAction action, double reward, const State& nextState, bool done);
+
+    void reset();
 
   private:
     vax::utils::Logger _logger = vax::utils::Logger("GWAgent");

@@ -102,6 +102,9 @@ class Tensor {
     bool synchronizeHostToGpu();
     bool synchronizeGpuToHost();
 
+    friend class TensorOp;
+    friend class TensorOpGpu;
+
   private:
     std::vector<int> _shape;
     std::vector<int> _strides;

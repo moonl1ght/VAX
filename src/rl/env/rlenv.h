@@ -1,14 +1,16 @@
 #pragma once
 
+#include <string>
+
 namespace vax::rl {
+struct StepResult final {
+    double reward = 0.0;
+    bool done = false;
+    bool finishedWithError = false;
+};
+
 template <typename Derived, typename State, typename Action> class Environment {
   public:
-    struct StepResult final {
-        State state = 0;
-        double reward = 0.0;
-        bool done = false;
-        bool finishedWithError = false;
-    };
 
     Environment() {};
     ~Environment() = default;
@@ -20,6 +22,10 @@ template <typename Derived, typename State, typename Action> class Environment {
 
     State reset() { return static_cast<Derived*>(this)->resetImpl(); }
 
+    State getState() const { return static_cast<Derived*>(this)->getStateImpl(); }
+
     StepResult step(Action action) { return static_cast<Derived*>(this)->stepImpl(action); }
+
+    const std::string& name() const { return static_cast<Derived*>(this)->nameImpl(); }
 };
 } // namespace vax::rl
