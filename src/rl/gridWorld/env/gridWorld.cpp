@@ -4,6 +4,7 @@
 #include "rlMath.h"
 #include "tensorOp.h"
 #include "transform.h"
+#include "trainingEngine.h"
 
 using namespace vax::rl::gw::env;
 using namespace vax::rl::gw;
@@ -31,6 +32,9 @@ void GridWorld::load() {
         }
     }
     _agent.linkGridWorld(this);
+
+    vax::rl::training::TrainingEngine trainingEngine;
+    trainingEngine.train<GridWorld, Agent, State, MoveAction>(*this, _agent, 100);
 }
 
 void GridWorld::linkSceneGraph(GwSceneGraph* sceneGraph) {

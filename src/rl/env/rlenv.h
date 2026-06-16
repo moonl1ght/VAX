@@ -11,7 +11,6 @@ struct StepResult final {
 
 template <typename Derived, typename State, typename Action> class Environment {
   public:
-
     Environment() {};
     ~Environment() = default;
 
@@ -22,10 +21,10 @@ template <typename Derived, typename State, typename Action> class Environment {
 
     State reset() { return static_cast<Derived*>(this)->resetImpl(); }
 
-    State getState() const { return static_cast<Derived*>(this)->getStateImpl(); }
+    State getState() const { return static_cast<const Derived*>(this)->getStateImpl(); }
 
     StepResult step(Action action) { return static_cast<Derived*>(this)->stepImpl(action); }
 
-    const std::string& name() const { return static_cast<Derived*>(this)->nameImpl(); }
+    const std::string& name() const { return static_cast<const Derived*>(this)->nameImpl(); }
 };
 } // namespace vax::rl
