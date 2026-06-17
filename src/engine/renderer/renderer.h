@@ -3,15 +3,15 @@
 #include "buffer.h"
 #include "drawableScene.h"
 #include "luna.h"
-#include "uiLayer.h"
+#include "uiEngine.h"
 #include "vkEngine.h"
 
 namespace vax::renderer {
 class Renderer final {
   public:
-    Renderer(vax::vk::Engine& vkEngine, vax::ui::UILayer& uiLayer)
+    Renderer(vax::vk::Engine& vkEngine, vax::ui::UIEngine& uiEngine)
         : _vkEngine(vkEngine)
-        , _uiLayer(uiLayer) {};
+        , _uiEngine(uiEngine) {};
 
     ~Renderer() {};
 
@@ -27,11 +27,13 @@ class Renderer final {
     vax::utils::Logger _logger = vax::utils::Logger("Renderer");
 
     std::reference_wrapper<vax::vk::Engine> _vkEngine;
-    std::reference_wrapper<vax::ui::UILayer> _uiLayer;
+    std::reference_wrapper<vax::ui::UIEngine> _uiEngine;
 
     uint32_t _currentFrame = 0;
 
     bool _updateCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::DrawableScene* scene);
+    bool _drawScene(VkCommandBuffer commandBuffer, vax::DrawableScene* scene, uint32_t imageIndex);
+    void _drawUi(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
     void _setViewportAndScissor(VkCommandBuffer commandBuffer);
     bool _updateGlobalDescriptorSet(

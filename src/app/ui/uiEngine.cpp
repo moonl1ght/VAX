@@ -1,14 +1,14 @@
-#include "uiLayer.h"
+#include "uiEngine.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_vulkan.h"
 
 using namespace vax::ui;
 using namespace vax;
 
-void UILayer::setup() {
+void UIEngine::setup() {
     ImGui::CreateContext();
 
-    VkDescriptorPoolSize pool_size = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 };
+    VkDescriptorPoolSize pool_size = {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1};
     VkDescriptorPoolCreateInfo pool_info = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
@@ -34,33 +34,26 @@ void UILayer::setup() {
     ImGui_ImplVulkan_Init(&init_info);
 }
 
-void UILayer::cleanup() {
+void UIEngine::cleanup() {
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
     vkDestroyDescriptorPool(_vkEngine.get().device->vkDevice, _imguiDescriptorPool, nullptr);
 }
 
-void UILayer::processEvents(SDL_Event& event) {
-    ImGui_ImplSDL3_ProcessEvent(&event);
-}
+void UIEngine::processEvents(SDL_Event& event) { ImGui_ImplSDL3_ProcessEvent(&event); }
 
-void UILayer::update() {
+void UIEngine::updateUiStart() {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
+}
 
-    {
-        ImGui::Begin("Performance");
-        ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-        ImGui::End();
-    }
-
+void UIEngine::updateUiEnd() {
     ImGui::Render();
     _imguiDrawData = ImGui::GetDrawData();
 }
-
-void UILayer::render(VkCommandBuffer commandBuffer) {
+void UIEngine::render(VkCommandBuffer commandBuffer) {
     if (_imguiDrawData == nullptr) {
         return;
     }

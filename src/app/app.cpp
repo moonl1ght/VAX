@@ -25,10 +25,12 @@ bool App::setup() {
     _engine = std::make_unique<vk::Engine>(*_window);
     _engine->setup();
 
-    _uiLayer = std::make_unique<ui::UILayer>(*_engine, *_window);
-    _uiLayer->setup();
+    _uiEngine = std::make_unique<ui::UIEngine>(*_engine, *_window);
+    _uiEngine->setup();
+    _menuView = std::make_unique<ui::MenuView>(*_uiEngine);
+    _roverView = std::make_unique<ui::RoverView>();
 
-    _renderer = std::make_unique<renderer::Renderer>(*_engine, *_uiLayer);
+    _renderer = std::make_unique<renderer::Renderer>(*_engine, *_uiEngine);
     _renderer->prepare();
 
     _gridWorld = std::make_unique<rl::gw::env::GridWorld>();
@@ -47,7 +49,7 @@ bool App::setup() {
 void App::cleanup() {
     _logger.info("Cleaning up...");
     vkDeviceWaitIdle(_engine->device->vkDevice);
-    _uiLayer->cleanup();
+    _uiEngine->cleanup();
 
     _renderer = nullptr;
     _drawableScene = nullptr;
@@ -68,12 +70,13 @@ void App::mainLoop() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             _inputController.handleEvent(event);
-            _uiLayer->processEvents(event);
+            _uiEngine->processEvents(event);
             if (event.type == SDL_EVENT_QUIT) {
                 running = false;
                 break;
             }
         }
+        // TODO: fix this
         SDL_Delay(16);
         loopUpdate();
         FrameMark;
@@ -82,7 +85,9 @@ void App::mainLoop() {
 
 void App::loopUpdate() {
     ZoneScoped;
-    _uiLayer->update();
+
+    _menuView->updateImGui();
+
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
     float timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();

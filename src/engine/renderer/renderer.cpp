@@ -7,7 +7,6 @@
 #include "rendererPass.h"
 #include "vkEngine.h"
 
-
 using namespace vax::renderer;
 using namespace vax;
 
@@ -15,7 +14,9 @@ void Renderer::prepare() {}
 
 bool Renderer::render(DrawableScene* scene, float deltaTime) {
     ZoneScopedN("Renderer::render");
-    scene->prepareForDraw(renderer::RenderCallContext{.currentFrame = _currentFrame});
+    if (scene != nullptr) {
+        scene->prepareForDraw(renderer::RenderCallContext{.currentFrame = _currentFrame});
+    }
 
     vkWaitForFences(
         _vkEngine.get().device->vkDevice,
@@ -37,7 +38,9 @@ bool Renderer::render(DrawableScene* scene, float deltaTime) {
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         _vkEngine.get().resize();
-        scene->resize();
+        if (scene != nullptr) {
+            scene->resize();
+        }
         return false;
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         _logger.error("Failed to acquire swap chain image!");
@@ -48,9 +51,10 @@ bool Renderer::render(DrawableScene* scene, float deltaTime) {
         _vkEngine.get().device->vkDevice, 1, &_vkEngine.get().syncObjectsManager->getInFlightFences()[_currentFrame]
     );
 
-    vkResetCommandBuffer(_vkEngine.get().commandManager->commandBuffers[_currentFrame], 0);
-    auto updateResult =
-        _updateCommandBuffer(_vkEngine.get().commandManager->commandBuffers[_currentFrame], imageIndex, scene);
+    auto commandBuffer = _vkEngine.get().commandManager->commandBuffers[_currentFrame];
+    vkResetCommandBuffer(commandBuffer, 0);
+
+    auto updateResult = _updateCommandBuffer(commandBuffer, imageIndex, scene);
     if (!updateResult) {
         _logger.error("Failed to update command buffer!");
         return false;
@@ -118,6 +122,37 @@ bool Renderer::_updateCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imag
 
     _setViewportAndScissor(commandBuffer);
 
+    if (scene != nullptr) {
+        _drawScene(commandBuffer, scene, imageIndex);
+    } else {
+        _drawUi(commandBuffer, imageIndex);
+    }
+
+    if (!VK_CHECK(vkEndCommandBuffer(commandBuffer))) {
+        _logger.error("Failed to end command buffer!");
+        return false;
+    }
+    return true;
+}
+
+void Renderer::_drawUi(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValues[1].depthStencil = {1.0f, 0};
+    VkRenderPassBeginInfo renderPassInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .renderPass = _vkEngine.get().renderPass->getVkRenderPass(),
+        .framebuffer = _vkEngine.get().renderDestination->swapchainFramebuffers[imageIndex],
+        .renderArea = {.offset = {0, 0}, .extent = _vkEngine.get().swapchain->swapchainExtent},
+        .clearValueCount = 2,
+        .pClearValues = clearValues.data()
+    };
+
+    RendererPass renderPass(renderPassInfo);
+    renderPass.pass(commandBuffer, [&]() { _uiEngine.get().render(commandBuffer); });
+}
+
+bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::DrawableScene* scene, uint32_t imageIndex) {
     auto pipelineLayout = _vkEngine.get().pipelineManager->getPipelineLayout(vax::vk::PipelineLayoutName::BASE);
     if (!pipelineLayout) {
         _logger.error("Failed to get base pipeline layout!");
@@ -184,13 +219,8 @@ bool Renderer::_updateCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imag
             return;
         }
 
-        _uiLayer.get().render(commandBuffer);
+        _uiEngine.get().render(commandBuffer);
     });
-
-    if (!VK_CHECK(vkEndCommandBuffer(commandBuffer))) {
-        _logger.error("Failed to end command buffer!");
-        return false;
-    }
     return true;
 }
 
