@@ -1,7 +1,6 @@
 {
     "C_Cpp.default.cppStandard": "c++20",
     "files.encoding": "utf8",
-    "editor.fontFamily": "Fira Code",
     "editor.fontLigatures": true,
     "cmake.useCMakePresets": "always",
     "cmake.generator": "Ninja",

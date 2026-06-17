@@ -61,6 +61,8 @@ class GridWorld final : public vax::input::InputController::Observer,
 
     const std::string& nameImpl() const { return _name; }
 
+    void setEvalModeImpl(vax::rl::EvalMode evalMode);
+
   private:
     vax::rl::ql::QLearningConfig _qlConfig;
     std::string _name = "GridWorld";
@@ -70,5 +72,6 @@ class GridWorld final : public vax::input::InputController::Observer,
 
     std::string blockTypeToPath(BlockType blockType) const;
     GwSceneGraph* _sceneGraph;
+    vax::rl::EvalMode _evalMode = vax::rl::EvalMode::EVALUATION;
 };
 } // namespace vax::rl::gw::env

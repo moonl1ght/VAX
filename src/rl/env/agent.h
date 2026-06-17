@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rlUtils.h"
+
 namespace vax::rl {
 template <typename Derived, typename State, typename Action> class Agent {
   public:
@@ -16,5 +18,7 @@ template <typename Derived, typename State, typename Action> class Agent {
     void update(const State& state, Action action, double reward, const State& nextState, bool done) {
         static_cast<Derived*>(this)->updateImpl(state, action, reward, nextState, done);
     }
+
+    void setEvalMode(vax::rl::EvalMode evalMode) { static_cast<Derived*>(this)->setEvalModeImpl(evalMode); }
 };
 } // namespace vax::rl

@@ -49,6 +49,8 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
 
     void reset();
 
+    void setEvalModeImpl(vax::rl::EvalMode evalMode);
+
   private:
     vax::utils::Logger _logger = vax::utils::Logger("GWAgent");
     vax::rl::ql::QLearningConfig _qlConfig;
@@ -56,6 +58,7 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
     vax::rl::math::Position2DInt _position = {0, 0};
     vax::rl::math::Position2DInt _oldPosition = {0, 0};
     vax::rl::gw::env::GridWorld* _gridWorld = nullptr;
+    vax::rl::EvalMode _evalMode = vax::rl::EvalMode::EVALUATION;
 
     vax::math::Tensor _qTable;
 

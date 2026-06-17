@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "rlUtils.h"
 
 namespace vax::rl {
 struct StepResult final {
@@ -26,5 +27,7 @@ template <typename Derived, typename State, typename Action> class Environment {
     StepResult step(Action action) { return static_cast<Derived*>(this)->stepImpl(action); }
 
     const std::string& name() const { return static_cast<const Derived*>(this)->nameImpl(); }
+
+    void setEvalMode(vax::rl::EvalMode evalMode) { static_cast<Derived*>(this)->setEvalModeImpl(evalMode); }
 };
 } // namespace vax::rl

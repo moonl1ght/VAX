@@ -1,8 +1,8 @@
 #pragma once
 
+#include "rlMath.h"
 #include <cstdint>
 #include <string_view>
-#include "rlMath.h"
 
 namespace vax::rl::gw {
 using State = vax::rl::math::Position2DInt;

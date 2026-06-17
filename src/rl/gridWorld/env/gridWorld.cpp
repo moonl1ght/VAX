@@ -3,8 +3,8 @@
 #include "randomGenerator.h"
 #include "rlMath.h"
 #include "tensorOp.h"
-#include "transform.h"
 #include "trainingEngine.h"
+#include "transform.h"
 
 using namespace vax::rl::gw::env;
 using namespace vax::rl::gw;
@@ -59,8 +59,8 @@ GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
 
         descriptor.drawableDescriptors.push_back(
             objects::LoaderDescriptor{
-                std::string(blockTypeToPath(blockType)),
-                transform,
+            std::string(blockTypeToPath(blockType)),
+            transform,
             }
         );
         ++flatIndex;
@@ -113,7 +113,6 @@ void GridWorld::onKeyEvent(const vax::input::KeyEvent& keyEvent) {
 }
 
 void GridWorld::agentMoved() {
-    auto oldPosition = std::vector<int>({_agent.getOldPosition().x, _agent.getOldPosition().y});
     auto newPosition = std::vector<int>({_agent.getPosition().x, _agent.getPosition().y});
     auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex(newPosition)];
     _sceneGraph->moveAgent(sceneGraphPosition);
@@ -130,22 +129,25 @@ StepResult GridWorld::stepImpl(MoveAction action) {
     auto nextPossiblePosition = _agent.getNewPosition(action);
     if (canMoveAgent(nextPossiblePosition)) {
         _agent.allowAction(action);
-        auto blockValue = _grid.get({nextPossiblePosition.x, nextPossiblePosition.y});
-        if (!blockValue.has_value()) {
-            return {.reward = -100.0, .done = true, .finishedWithError = true};
-        }
-        auto blockType = static_cast<BlockType>(blockValue.value());
-        if (blockType == BlockType::TRAP) {
-            return {.reward = -100.0, .done = true, .finishedWithError = false};
-        }
-        if (blockType == BlockType::FINISH) {
-            return {.reward = 100.0, .done = true, .finishedWithError = false};
-        }
-        return {.reward = -1.0, .done = false, .finishedWithError = false};
+        // auto blockValue = _grid.get({nextPossiblePosition.x, nextPossiblePosition.y});
+        // if (!blockValue.has_value()) {
+        //     return {.reward = -100.0, .done = true, .finishedWithError = true};
+        // }
+        // auto blockType = static_cast<BlockType>(blockValue.value());
+        // if (blockType == BlockType::TRAP) {
+        //     return {.reward = -100.0, .done = true, .finishedWithError = false};
+        // }
+        // if (blockType == BlockType::FINISH) {
+        //     return {.reward = 100.0, .done = true, .finishedWithError = false};
+        // }
+        // return {.reward = -1.0, .done = false, .finishedWithError = false};
     }
     return {.reward = -100.0, .done = false, .finishedWithError = false};
 }
 
-State GridWorld::getStateImpl() const {
-    return _agent.getPosition();
+State GridWorld::getStateImpl() const { return _agent.getPosition(); }
+
+void GridWorld::setEvalModeImpl(vax::rl::EvalMode evalMode) {
+    _evalMode = evalMode;
+    _agent.setEvalModeImpl(evalMode);
 }

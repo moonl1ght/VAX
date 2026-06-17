@@ -4,9 +4,9 @@
 #include "rlenv.h"
 
 namespace vax::rl::training {
- class TrainingEngine final {
+class TrainingEngine final {
   public:
-    TrainingEngine() {};
+    TrainingEngine() = default;
     ~TrainingEngine() = default;
 
     template <typename Environment, typename Agent, typename State, typename Action>
@@ -16,15 +16,19 @@ namespace vax::rl::training {
 
         for (int episode = 0; episode < episodes; ++episode) {
             _logger.info("Episode ", episode + 1, "/", episodes);
+            environment.setEvalMode(vax::rl::EvalMode::TRAINING);
             environment.reset();
             bool done = false;
-            // while (!done) {
-            //     State beginState = environment.getState();
-            //     Action action = agent.chooseAction(environment.getState());
-            //     vax::rl::StepResult stepResult = environment.step(action);
-            //     State endState = environment.getState();
-            //     agent.update(beginState, action, stepResult.reward, endState, stepResult.done);
-            // }
+            while (!done) {
+                State beginState = environment.getState();
+                Action action = agent.chooseAction(beginState);
+                vax::rl::StepResult stepResult = environment.step(action);
+                State endState = environment.getState();
+                agent.update(beginState, action, stepResult.reward, endState, stepResult.done);
+                done = true;
+            }
+            environment.reset();
+            environment.setEvalMode(vax::rl::EvalMode::EVALUATION);
         }
     }
 

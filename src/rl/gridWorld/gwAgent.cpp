@@ -23,7 +23,9 @@ vax::objects::LoaderDescriptor Agent::getDrawableDescriptor() const {
 void Agent::allowAction(MoveAction action) {
     _oldPosition = _position;
     _position = getNewPosition(action);
-    _gridWorld->agentMoved();
+    if (_evalMode == vax::rl::EvalMode::EVALUATION) {
+        _gridWorld->agentMoved();
+    }
 }
 
 void Agent::linkGridWorld(vax::rl::gw::env::GridWorld* gridWorld) {
@@ -37,7 +39,9 @@ void Agent::_tryToMove(MoveAction action) {
     if (_canTakeAction(action)) {
         _oldPosition = _position;
         _position = getNewPosition(action);
-        _gridWorld->agentMoved();
+        if (_evalMode == vax::rl::EvalMode::EVALUATION) {
+            _gridWorld->agentMoved();
+        }
     }
 }
 
@@ -99,4 +103,8 @@ void Agent::updateImpl(const State& state, MoveAction action, double reward, con
 void Agent::reset() {
     _position = _startPosition;
     _oldPosition = _startPosition;
+}
+
+void Agent::setEvalModeImpl(vax::rl::EvalMode evalMode) {
+    _evalMode = evalMode;
 }
