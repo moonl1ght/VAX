@@ -89,3 +89,29 @@ Tensor TensorOp::argmax(const Tensor& tensor, int axis) {
 
     return result;
 }
+
+std::vector<int> TensorOp::maxOverLastDim(const Tensor& tensor, std::vector<int> indices) {
+    auto shape = tensor.shape();
+    auto lastDim = shape.back();
+    int rank = static_cast<int>(shape.size());
+
+    if (indices.size() == rank) {
+        return {};
+    }
+    std::vector<int> indicesToIterate(rank);
+    using size_type = std::vector<int>::size_type;
+    for (size_type i = 0; i < indices.size(); ++i) {
+        indicesToIterate[i] = indices[i];
+    }
+    float minValue = -std::numeric_limits<float>::infinity();
+    auto result = indicesToIterate;
+    for (int i = 0; i < lastDim; ++i) {
+        indicesToIterate[rank - 1] = i;
+        auto value = tensor.get(indicesToIterate);
+        if (value.has_value() && value.value() > minValue) {
+            minValue = value.value();
+            result = indicesToIterate;
+        }
+    }
+    return result;
+}

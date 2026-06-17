@@ -14,24 +14,40 @@ using namespace vax::rl::math;
 using namespace vax::rl;
 
 void GridWorld::load() {
-    _grid = Tensor::createZeros({6, 6});
+    int gridDimX = 6;
+    int gridDimY = 6;
+    _grid = Tensor::createZeros({gridDimX, gridDimY});
     _sceneGraphPositions.reserve(_grid.totalSize());
-    bool agentWasPlaced = false;
+    std::vector<int> emptyIndices;
+    emptyIndices.reserve(_grid.totalSize());
     for (int i = 0; i < _grid.totalSize(); ++i) {
         std::vector<int> indices = _grid.indices(i);
         auto padding = 1.0f;
         auto offset = 5.0f / 2.0f - 0.5f;
         Position2DFloat position = {indices[0] * padding - offset * padding, indices[1] * padding - offset * padding};
         _sceneGraphPositions.push_back(position);
-        // TODO: rework this
         if (isBorderIndex(indices, _grid.shape())) {
             _grid.set(indices, static_cast<float>(BlockType::WALL));
-        } else if (!agentWasPlaced && core::RandomGenerator::getInstance().uniformBool()) {
-            agentWasPlaced = true;
-            _agent.setStartPosition(indices[0], indices[1]);
+        } else {
+            emptyIndices.push_back(i);
         }
     }
+    auto indexToChoose = core::RandomGenerator::getInstance().uniformInt(0, emptyIndices.size() - 1);
+    auto agentPositionIndex = emptyIndices[indexToChoose];
+    auto agentPosition = _grid.indices(agentPositionIndex);
+    auto lastEmptyIndex = emptyIndices.back();
+    emptyIndices[indexToChoose] = lastEmptyIndex;
+    emptyIndices.pop_back();
+    _agent.setStartPosition(agentPosition[0], agentPosition[1]);
     _agent.linkGridWorld(this);
+
+    indexToChoose = core::RandomGenerator::getInstance().uniformInt(0, emptyIndices.size() - 1);
+    auto finishPositionIndex = emptyIndices[indexToChoose];
+    auto finishPosition = _grid.indices(finishPositionIndex);
+    lastEmptyIndex = emptyIndices.back();
+    emptyIndices[indexToChoose] = lastEmptyIndex;
+    emptyIndices.pop_back();
+    _grid.set(finishPosition, static_cast<float>(BlockType::FINISH));
 
     vax::rl::training::TrainingEngine trainingEngine;
     trainingEngine.train<GridWorld, Agent, State, MoveAction>(*this, _agent, 100);
@@ -75,6 +91,10 @@ std::string GridWorld::blockTypeToPath(BlockType blockType) const {
         return RES_PATH("assets/models/floor.glb");
     case BlockType::WALL:
         return RES_PATH("assets/models/wall.glb");
+    case BlockType::TRAP:
+        return RES_PATH("assets/models/floor.glb");
+    case BlockType::FINISH:
+        return RES_PATH("assets/models/floor.glb");
     default:
         return RES_PATH("assets/models/floor.glb");
     }
@@ -85,7 +105,7 @@ bool GridWorld::canMoveAgent(const Position2DInt& newPosition) const {
         newPosition.y >= _grid.shape()[1]) {
         return false;
     }
-    return _grid.get({newPosition.x, newPosition.y}) == static_cast<float>(BlockType::FLOOR);
+    return _grid.get({newPosition.x, newPosition.y}) != static_cast<float>(BlockType::WALL);
 }
 
 void GridWorld::onKeyEvent(const vax::input::KeyEvent& keyEvent) {
@@ -129,18 +149,18 @@ StepResult GridWorld::stepImpl(MoveAction action) {
     auto nextPossiblePosition = _agent.getNewPosition(action);
     if (canMoveAgent(nextPossiblePosition)) {
         _agent.allowAction(action);
-        // auto blockValue = _grid.get({nextPossiblePosition.x, nextPossiblePosition.y});
-        // if (!blockValue.has_value()) {
-        //     return {.reward = -100.0, .done = true, .finishedWithError = true};
-        // }
-        // auto blockType = static_cast<BlockType>(blockValue.value());
-        // if (blockType == BlockType::TRAP) {
-        //     return {.reward = -100.0, .done = true, .finishedWithError = false};
-        // }
-        // if (blockType == BlockType::FINISH) {
-        //     return {.reward = 100.0, .done = true, .finishedWithError = false};
-        // }
-        // return {.reward = -1.0, .done = false, .finishedWithError = false};
+        auto blockValue = _grid.get({nextPossiblePosition.x, nextPossiblePosition.y});
+        if (!blockValue.has_value()) {
+            return {.reward = -100.0, .done = true, .finishedWithError = true};
+        }
+        auto blockType = static_cast<BlockType>(blockValue.value());
+        if (blockType == BlockType::TRAP) {
+            return {.reward = -100.0, .done = true, .finishedWithError = false};
+        }
+        if (blockType == BlockType::FINISH) {
+            return {.reward = 100.0, .done = true, .finishedWithError = false};
+        }
+        return {.reward = -1.0, .done = false, .finishedWithError = false};
     }
     return {.reward = -100.0, .done = false, .finishedWithError = false};
 }

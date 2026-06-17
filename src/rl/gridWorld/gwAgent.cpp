@@ -2,8 +2,8 @@
 #include "gridWorld.h"
 #include "gwenv.h"
 #include "randomGenerator.h"
-#include "transform.h"
 #include "tensorOp.h"
+#include "transform.h"
 
 using namespace vax::rl::gw;
 using namespace vax;
@@ -80,24 +80,48 @@ const Position2DInt& Agent::getOldPosition() const { return _oldPosition; }
 MoveAction Agent::chooseActionImpl(const State& state) {
     core::RandomGenerator& generator = core::RandomGenerator::getInstance();
     if (generator.uniformFloat() < _qlConfig.epsilon) {
-        return static_cast<MoveAction>(generator.uniformInt(0, numMoveActions - 1));
+        auto action = static_cast<MoveAction>(generator.uniformInt(0, numMoveActions - 1));
+        return action;
     }
-    // return std::distance(qTable[state].begin(), std::max_element(qTable[state].begin(), qTable[state].end()));
-    return MoveAction::NORTH;
+    auto flatIndex = _gridWorld->getGrid().flatIndex({state.x, state.y});
+    auto indices = TensorOp::maxOverLastDim(_qTable, {flatIndex});
+    if (indices.size() != 2) {
+        _logger.error("No action found for state: ", state.x, ", ", state.y);
+        return MoveAction::NORTH;
+    }
+    auto action = static_cast<MoveAction>(indices[1]);
+    return action;
 }
 
 void Agent::updateImpl(const State& state, MoveAction action, double reward, const State& nextState, bool done) {
-    double maxFuture = 0.0;
+    float maxFuture = 0.0f;
+    auto flatIndexNextState = _gridWorld->getGrid().flatIndex({nextState.x, nextState.y});
+    auto flatIndexState = _gridWorld->getGrid().flatIndex({state.x, state.y});
     if (!done) {
-        // int maxIndex = TensorOp::argmax(_qTable);
-        // if (maxIndex != -1) {
-        //     maxFuture = _qTable.data()[maxIndex];
-        // }
+        auto indices = TensorOp::maxOverLastDim(_qTable, {flatIndexNextState});
+        if (indices.empty()) {
+            _logger.error("No action found for next state: ", nextState.x, ", ", nextState.y);
+            return;
+        }
+        auto maxFutureValue = _qTable.get(indices);
+        if (!maxFutureValue.has_value()) {
+            _logger.error("No max future value found for next state: ", nextState.x, ", ", nextState.y);
+            return;
+        }
+        maxFuture = maxFutureValue.value();
     }
 
-    double target = reward + _qlConfig.gamma * maxFuture;
+    float target = reward + _qlConfig.gamma * maxFuture;
 
-    // q_table[state][action] += config.alpha * (target - q_table[state][action]);
+    auto prevValue = _qTable.get({flatIndexState, static_cast<int>(action)});
+    if (!prevValue.has_value()) {
+        _logger.error(
+            "No previous value found for state: ", state.x, ", ", state.y, " and action: ", static_cast<int>(action)
+        );
+        return;
+    }
+    auto updatedValue = _qlConfig.learningRate * (target - prevValue.value());
+    _qTable.set({flatIndexState, static_cast<int>(action)}, updatedValue);
 }
 
 void Agent::reset() {
@@ -105,6 +129,4 @@ void Agent::reset() {
     _oldPosition = _startPosition;
 }
 
-void Agent::setEvalModeImpl(vax::rl::EvalMode evalMode) {
-    _evalMode = evalMode;
-}
+void Agent::setEvalModeImpl(vax::rl::EvalMode evalMode) { _evalMode = evalMode; }

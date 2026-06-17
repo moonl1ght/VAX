@@ -8,6 +8,8 @@ class TensorOp final {
     static void print(const Tensor& tensor, bool inline_mode = false);
 
     static Tensor argmax(const Tensor& tensor, int axis = -1);
+
+    static std::vector<int> maxOverLastDim(const Tensor& tensor, std::vector<int> indices);
 };
 
 class TensorOpGpu final {

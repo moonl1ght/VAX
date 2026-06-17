@@ -23,13 +23,17 @@ class TrainingEngine final {
                 State beginState = environment.getState();
                 Action action = agent.chooseAction(beginState);
                 vax::rl::StepResult stepResult = environment.step(action);
+                if (stepResult.finishedWithError) {
+                    _logger.error("Episode ", episode + 1, "/", episodes, " finished with error");
+                    break;
+                }
                 State endState = environment.getState();
                 agent.update(beginState, action, stepResult.reward, endState, stepResult.done);
-                done = true;
+                done = stepResult.done;
             }
-            environment.reset();
-            environment.setEvalMode(vax::rl::EvalMode::EVALUATION);
         }
+        environment.reset();
+        environment.setEvalMode(vax::rl::EvalMode::EVALUATION);
     }
 
   private:
