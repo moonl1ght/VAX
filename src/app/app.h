@@ -5,15 +5,16 @@
 #include "inputController.h"
 #include "logger.h"
 #include "luna.h"
+#include "menuView.h"
 #include "renderer.h"
+#include "roverView.h"
+#include "trainingView.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
 #include "window.h"
-#include "menuView.h"
-#include "roverView.h"
 
 namespace vax {
-enum class AppMode { Menu, RoverDemo };
+enum class AppMode { Menu, RoverDemo, Training };
 
 class App final {
   public:
@@ -29,6 +30,7 @@ class App final {
 
     vax::input::InputController _inputController;
     vax::AppMode _appMode = vax::AppMode::Menu;
+    float _timestamp = 0.0f;
 
     std::unique_ptr<vax::vk::Window> _window;
     std::unique_ptr<vax::vk::Engine> _engine;
@@ -38,10 +40,14 @@ class App final {
     std::unique_ptr<vax::rl::gw::env::GridWorld> _gridWorld;
     std::unique_ptr<vax::ui::MenuView> _menuView;
     std::unique_ptr<vax::ui::RoverView> _roverView;
+    std::unique_ptr<vax::ui::TrainingView> _trainingView;
 
-    bool setup();
-    void mainLoop();
-    void cleanup();
-    void loopUpdate();
+    bool _setup();
+    void _mainLoop();
+    void _cleanup();
+    void _loopByEventUpdate();
+    void _loopContinuousUpdate();
+    void _updateTimestamp();
+    void _updateAppMode();
 };
 } // namespace vax

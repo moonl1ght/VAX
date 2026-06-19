@@ -18,11 +18,13 @@ void MenuView::updateImGui() {
     ImGui::SetWindowFontScale(2.0f);
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
     if (ImGui::Button("Show Rover Demo", ImVec2(-1, 55))) {
-        // _pendingAction = AppMode::RoverDemo;
+        _pendingAction = Action::SHOW_ROVER_DEMO;
     }
     ImGui::Spacing();
     ImGui::BeginDisabled();
-    ImGui::Button("Train Q Learning", ImVec2(-1, 55));
+    if (ImGui::Button("Train Q Learning", ImVec2(-1, 55))) {
+        _pendingAction = Action::TRAIN_Q_LEARNING;
+    }
     ImGui::EndDisabled();
     ImGui::End();
     _uiEngine.get().updateUiEnd();

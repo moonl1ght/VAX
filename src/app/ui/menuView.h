@@ -5,6 +5,11 @@
 namespace vax::ui {
 class MenuView final {
   public:
+    enum class Action {
+        SHOW_ROVER_DEMO,
+        TRAIN_Q_LEARNING,
+    };
+
     MenuView(UIEngine& uiEngine)
         : _uiEngine(uiEngine) {}
     ~MenuView() = default;
@@ -15,8 +20,10 @@ class MenuView final {
     MenuView& operator=(MenuView&& other) noexcept = delete;
 
     void updateImGui();
+    std::optional<Action> popPendingAction() { return std::exchange(_pendingAction, std::nullopt); }
 
   private:
     std::reference_wrapper<UIEngine> _uiEngine;
+    std::optional<Action> _pendingAction;
 };
 } // namespace vax::ui

@@ -4,19 +4,19 @@
 using namespace vax;
 
 bool App::run() {
-    if (!setup()) {
+    if (!_setup()) {
         return false;
     }
     try {
-        mainLoop();
-        cleanup();
+        _mainLoop();
+        _cleanup();
     } catch (const std::exception& e) {
         _logger.error("Failed to run app: {}", e.what());
     }
     return true;
 }
 
-bool App::setup() {
+bool App::_setup() {
     RenderDoc::init();
     _window = std::make_unique<vk::Window>();
     if (!_window->load()) {
@@ -28,7 +28,8 @@ bool App::setup() {
     _uiEngine = std::make_unique<ui::UIEngine>(*_engine, *_window);
     _uiEngine->setup();
     _menuView = std::make_unique<ui::MenuView>(*_uiEngine);
-    _roverView = std::make_unique<ui::RoverView>();
+    _roverView = std::make_unique<ui::RoverView>(*_uiEngine);
+    _trainingView = std::make_unique<ui::TrainingView>(*_uiEngine);
 
     _renderer = std::make_unique<renderer::Renderer>(*_engine, *_uiEngine);
     _renderer->prepare();
@@ -46,7 +47,7 @@ bool App::setup() {
     return true;
 }
 
-void App::cleanup() {
+void App::_cleanup() {
     _logger.info("Cleaning up...");
     vkDeviceWaitIdle(_engine->device->vkDevice);
     _uiEngine->cleanup();
@@ -61,39 +62,90 @@ void App::cleanup() {
     _logger.info("Cleanup complete!");
 }
 
-void App::mainLoop() {
+void App::_mainLoop() {
     if (_window->window == nullptr) {
         throw std::runtime_error("Window not initialized");
     }
     static bool running = true;
     while (running) {
         SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            _inputController.handleEvent(event);
-            _uiEngine->processEvents(event);
-            if (event.type == SDL_EVENT_QUIT) {
-                running = false;
-                break;
+        if (_appMode == AppMode::RoverDemo) {
+            while (SDL_PollEvent(&event)) {
+                _inputController.handleEvent(event);
+                _uiEngine->processEvents(event);
+                if (event.type == SDL_EVENT_QUIT) {
+                    running = false;
+                    break;
+                }
             }
+            // TODO: fix this
+            SDL_Delay(16);
+            _loopContinuousUpdate();
+        } else if (SDL_WaitEvent(&event)) {
+            do {
+                _inputController.handleEvent(event);
+                _uiEngine->processEvents(event);
+                if (event.type == SDL_EVENT_QUIT) {
+                    running = false;
+                    break;
+                }
+            } while (SDL_PollEvent(&event));
+            _loopByEventUpdate();
         }
-        // TODO: fix this
-        SDL_Delay(16);
-        loopUpdate();
         FrameMark;
     }
 }
 
-void App::loopUpdate() {
-    ZoneScoped;
-
-    _menuView->updateImGui();
-
+void App::_updateTimestamp() {
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
-    float timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-    vax::SceneUpdateContext sceneUpdateContext{.deltaTime = timestamp};
-    _drawableScene->update(sceneUpdateContext);
-    if (!_renderer->render(_drawableScene.get(), timestamp)) {
+    _timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+}
+
+void App::_loopByEventUpdate() {
+    ZoneScoped;
+
+    _updateAppMode();
+
+    _updateTimestamp();
+
+    bool renderResult = false;
+    _menuView->updateImGui();
+    renderResult = _renderer->render(nullptr, _timestamp);
+
+    if (!renderResult) {
         _logger.error("Failed to render scene!");
+    }
+}
+
+void App::_loopContinuousUpdate() {
+    ZoneScoped;
+
+    _updateAppMode();
+
+    _updateTimestamp();
+
+    bool renderResult = false;
+    _roverView->updateImGui();
+    vax::SceneUpdateContext sceneUpdateContext{.deltaTime = _timestamp};
+    _drawableScene->update(sceneUpdateContext);
+    renderResult = _renderer->render(_drawableScene.get(), _timestamp);
+
+    if (!renderResult) {
+        _logger.error("Failed to render scene!");
+    }
+}
+
+void App::_updateAppMode() {
+    auto action = _menuView->popPendingAction();
+
+    if (action) {
+        switch (action.value()) {
+        case ui::MenuView::Action::SHOW_ROVER_DEMO:
+            _appMode = AppMode::RoverDemo;
+            break;
+        case ui::MenuView::Action::TRAIN_Q_LEARNING:
+            break;
+        }
     }
 }
