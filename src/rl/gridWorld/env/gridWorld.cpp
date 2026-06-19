@@ -2,8 +2,6 @@
 #include "inputController.h"
 #include "randomGenerator.h"
 #include "rlMath.h"
-#include "tensorOp.h"
-#include "trainingEngine.h"
 #include "transform.h"
 
 using namespace vax::rl::gw::env;
@@ -32,6 +30,7 @@ void GridWorld::load() {
             emptyIndices.push_back(i);
         }
     }
+
     auto indexToChoose = core::RandomGenerator::getInstance().uniformInt(0, emptyIndices.size() - 1);
     auto agentPositionIndex = emptyIndices[indexToChoose];
     auto agentPosition = _grid.indices(agentPositionIndex);
@@ -48,9 +47,6 @@ void GridWorld::load() {
     emptyIndices[indexToChoose] = lastEmptyIndex;
     emptyIndices.pop_back();
     _grid.set(finishPosition, static_cast<float>(BlockType::FINISH));
-
-    vax::rl::training::TrainingEngine trainingEngine;
-    trainingEngine.train<GridWorld, Agent, State, MoveAction>(*this, _agent, 100);
 }
 
 void GridWorld::linkSceneGraph(GwSceneGraph* sceneGraph) {
@@ -109,6 +105,9 @@ bool GridWorld::canMoveAgent(const Position2DInt& newPosition) const {
 }
 
 void GridWorld::onKeyEvent(const vax::input::KeyEvent& keyEvent) {
+    if (_evalMode == vax::rl::EvalMode::TRAINING) {
+        return;
+    }
     if (keyEvent.state != vax::input::KeyEvent::State::DOWN) {
         return;
     }
@@ -133,6 +132,9 @@ void GridWorld::onKeyEvent(const vax::input::KeyEvent& keyEvent) {
 }
 
 void GridWorld::agentMoved() {
+    if (_evalMode == vax::rl::EvalMode::TRAINING) {
+        return;
+    }
     auto newPosition = std::vector<int>({_agent.getPosition().x, _agent.getPosition().y});
     auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex(newPosition)];
     _sceneGraph->moveAgent(sceneGraphPosition);

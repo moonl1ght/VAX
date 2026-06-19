@@ -1,5 +1,6 @@
 #include "app.h"
 #include "renderdoc.h"
+#include "notificationCenter.h"
 
 using namespace vax;
 
@@ -18,6 +19,7 @@ bool App::run() {
 
 bool App::_setup() {
     RenderDoc::init();
+    vax::core::NotificationCenter::getInstance().setup();
     _window = std::make_unique<vk::Window>();
     if (!_window->load()) {
         return false;
@@ -67,9 +69,10 @@ void App::_mainLoop() {
         throw std::runtime_error("Window not initialized");
     }
     static bool running = true;
+    int i = 0;
     while (running) {
         SDL_Event event;
-        if (_appMode == AppMode::RoverDemo) {
+        if (_appMode == AppMode::Demo) {
             while (SDL_PollEvent(&event)) {
                 _inputController.handleEvent(event);
                 _uiEngine->processEvents(event);
@@ -105,12 +108,16 @@ void App::_updateTimestamp() {
 void App::_loopByEventUpdate() {
     ZoneScoped;
 
-    _updateAppMode();
+    _uiEngine->updateUiStart();
+    _menuView->updateImGui();
+    _trainingView->updateImGui();
+    _uiEngine->updateUiEnd();
+
+    _checkActions();
 
     _updateTimestamp();
 
     bool renderResult = false;
-    _menuView->updateImGui();
     renderResult = _renderer->render(nullptr, _timestamp);
 
     if (!renderResult) {
@@ -121,12 +128,13 @@ void App::_loopByEventUpdate() {
 void App::_loopContinuousUpdate() {
     ZoneScoped;
 
-    _updateAppMode();
+    _roverView->updateImGui();
+
+    _checkActions();
 
     _updateTimestamp();
 
     bool renderResult = false;
-    _roverView->updateImGui();
     vax::SceneUpdateContext sceneUpdateContext{.deltaTime = _timestamp};
     _drawableScene->update(sceneUpdateContext);
     renderResult = _renderer->render(_drawableScene.get(), _timestamp);
@@ -136,15 +144,17 @@ void App::_loopContinuousUpdate() {
     }
 }
 
-void App::_updateAppMode() {
-    auto action = _menuView->popPendingAction();
+void App::_checkActions() {
+    auto menuViewAction = _menuView->popPendingAction();
 
-    if (action) {
-        switch (action.value()) {
+    if (menuViewAction) {
+        switch (menuViewAction.value()) {
         case ui::MenuView::Action::SHOW_ROVER_DEMO:
-            _appMode = AppMode::RoverDemo;
+            _appMode = AppMode::Demo;
             break;
         case ui::MenuView::Action::TRAIN_Q_LEARNING:
+            _trainingView->startTraining();
+            _appMode = AppMode::Training;
             break;
         }
     }

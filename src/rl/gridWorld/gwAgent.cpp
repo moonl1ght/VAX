@@ -3,7 +3,6 @@
 #include "gwenv.h"
 #include "randomGenerator.h"
 #include "tensorOp.h"
-#include "transform.h"
 
 using namespace vax::rl::gw;
 using namespace vax;

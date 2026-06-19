@@ -14,7 +14,7 @@
 #include "window.h"
 
 namespace vax {
-enum class AppMode { Menu, RoverDemo, Training };
+enum class AppMode { Menu, Demo, Training };
 
 class App final {
   public:
@@ -48,6 +48,6 @@ class App final {
     void _loopByEventUpdate();
     void _loopContinuousUpdate();
     void _updateTimestamp();
-    void _updateAppMode();
+    void _checkActions();
 };
 } // namespace vax

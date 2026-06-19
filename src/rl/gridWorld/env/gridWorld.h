@@ -22,7 +22,7 @@ class GridWorld final : public vax::input::InputController::Observer,
         TRAP = 4,
     };
 
-    GridWorld() {};
+    explicit GridWorld() {};
 
     ~GridWorld() {
         if (_inputController) {
@@ -62,6 +62,8 @@ class GridWorld final : public vax::input::InputController::Observer,
     const std::string& nameImpl() const { return _name; }
 
     void setEvalModeImpl(vax::rl::EvalMode evalMode);
+
+    vax::rl::gw::Agent& getAgent() { return _agent; }
 
   private:
     vax::rl::ql::QLearningConfig _qlConfig;
