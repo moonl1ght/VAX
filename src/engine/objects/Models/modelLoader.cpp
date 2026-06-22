@@ -410,3 +410,11 @@ std::optional<SceneNode> ModelLoader::loadSceneModel(const vax::objects::LoaderD
     }
     return std::nullopt;
 }
+
+void ModelLoader::loadStaged(vax::vk::CommandBuffer& commandBuffer) {
+    _textureLoader.get().loadStaged(commandBuffer);
+}
+
+void ModelLoader::cleanupStaged() {
+    _textureLoader.get().cleanupStaged();
+}

@@ -28,7 +28,7 @@ class GwSceneGraph final {
         const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor,
         VkQueue submitQueue
     );
-    // TODO: refactor models loading
+
     void loadDrawableModels(vax::vk::CommandBuffer& commandBuffer);
 
     void draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);

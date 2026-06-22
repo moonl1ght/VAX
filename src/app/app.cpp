@@ -37,21 +37,6 @@ bool App::_setup() {
     _renderer = std::make_unique<renderer::Renderer>(*_engine, *_uiEngine);
     _renderer->prepare();
 
-    _gridWorld = std::make_unique<rl::gw::env::GridWorld>(rl::ql::QLearningConfig{
-        .learningRate = 0.1,
-        .gamma = 0.9,
-        .epsilon = 0.3,
-        .episodes = 100,
-    });
-    _gridWorld->createRandomGrid();
-
-    _drawableScene = std::make_unique<DrawableScene>(*_engine);
-    _drawableScene->resize();
-    _drawableScene->loadSceneGraph(_gridWorld->getDrawableDescriptor(), _engine->queueManager->graphicsQueue);
-    _gridWorld->linkSceneGraph(_drawableScene->sceneGraph());
-    _inputController.addObserver(_drawableScene.get());
-    _inputController.addObserver(_gridWorld.get());
-
     return true;
 }
 
@@ -61,7 +46,10 @@ void App::_cleanup() {
     _uiEngine->cleanup();
 
     _renderer = nullptr;
-    _drawableScene = nullptr;
+    _roverView = nullptr;
+    _trainingView = nullptr;
+    _menuView = nullptr;
+    _uiEngine = nullptr;
 
     _engine->cleanup();
 
@@ -142,8 +130,8 @@ void App::_loopContinuousUpdate() {
 
     bool renderResult = false;
     vax::SceneUpdateContext sceneUpdateContext{.deltaTime = _timestamp};
-    _drawableScene->update(sceneUpdateContext);
-    renderResult = _renderer->render(_drawableScene.get(), _timestamp);
+    _roverView->drawableScene()->update(sceneUpdateContext);
+    renderResult = _renderer->render(_roverView->drawableScene(), _timestamp);
 
     if (!renderResult) {
         _logger.error("Failed to render scene!");
@@ -157,6 +145,7 @@ void App::_checkActions() {
         switch (menuViewAction.value()) {
         case ui::MenuView::Action::SHOW_ROVER_DEMO:
             _appMode = AppMode::Demo;
+            _roverView->load(*_engine.get(), _inputController);
             break;
         case ui::MenuView::Action::TRAIN_Q_LEARNING:
             _trainingView->startTraining();

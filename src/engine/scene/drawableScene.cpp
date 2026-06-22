@@ -28,14 +28,16 @@ void vax::DrawableScene::resize() {
 void vax::DrawableScene::loadSceneGraph(
     const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue
 ) {
+    std::cout << "Loading scene graph" << std::endl;
     _resourceManager.setup();
+    std::cout << "Resource manager setup" << std::endl;
     _sceneGraph = std::make_unique<vax::rl::gw::GwSceneGraph>();
-    _sceneGraph->load(_modelLoader, descriptor, submitQueue);
-
+    std::cout << "Scene graph created" << std::endl;
+    _sceneGraph->load(_modelLoader, descriptor, nullptr);
+    std::cout << "Scene graph loaded" << std::endl;
     _load(submitQueue);
 }
 
-// TODO: refactor models loading
 void vax::DrawableScene::_load(VkQueue submitQueue) {
     _loadEnvironmentMap(submitQueue);
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
@@ -63,12 +65,16 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
 
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
 
+    std::cout << "Command buffer created" << std::endl;
     commandBuffer.begin();
+    _modelLoader.loadStaged(commandBuffer);
     _gizmo->loadMesh(commandBuffer);
     _background->loadMesh(commandBuffer);
     _sceneGraph->loadDrawableModels(commandBuffer);
     commandBuffer.end();
     commandBuffer.submitAndWait(submitQueue);
+    std::cout << "Command buffer submitted" << std::endl;
+    _modelLoader.cleanupStaged();
     auto cameraPos = glm::vec3(2.0f, 2.0f, 2.0f);
     _mainCamera.setPosition(cameraPos);
     _gizmoCamera.setPosition(glm::vec3(1.0f, 1.0f, 1.0f));

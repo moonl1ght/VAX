@@ -1,6 +1,10 @@
 #pragma once
 
 #include "uiEngine.h"
+#include "drawableScene.h"
+#include "gridWorld.h"
+#include "inputController.h"
+#include "vkEngine.h"
 
 namespace vax::ui {
 class RoverView final {
@@ -15,8 +19,14 @@ class RoverView final {
     RoverView& operator=(RoverView&& other) noexcept = delete;
 
     void updateImGui();
+    void load(vax::vk::Engine& engine, vax::input::InputController& inputController);
+
+    DrawableScene* drawableScene() const { return _drawableScene.get(); }
 
   private:
     std::reference_wrapper<UIEngine> _uiEngine;
+
+    std::unique_ptr<DrawableScene> _drawableScene;
+    std::unique_ptr<vax::rl::gw::env::GridWorld> _gridWorld;
 };
 } // namespace vax::ui

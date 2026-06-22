@@ -8,8 +8,6 @@
 #include "textureTaskScheduler.h"
 #include <ktx.h>
 
-// TODO: add batch loading of textures
-
 using namespace vax::textures;
 using namespace vax;
 
@@ -175,18 +173,18 @@ std::optional<TextureManager::TextureResource> TextureLoader::_loadKTXTexture(st
             ktxTexture_GetImageOffset(ktxTex, mip, 0, face, &offset);
             copyRegions.push_back(
                 VkBufferImageCopy{
-                    .bufferOffset = offset,
-                    .bufferRowLength = 0,
-                    .bufferImageHeight = 0,
-                    .imageSubresource =
-                        {
-                            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                            .mipLevel = mip,
-                            .baseArrayLayer = face,
-                            .layerCount = 1,
-                        },
-                    .imageOffset = {0, 0, 0},
-                    .imageExtent = {std::max(1u, width >> mip), std::max(1u, height >> mip), 1},
+                .bufferOffset = offset,
+                .bufferRowLength = 0,
+                .bufferImageHeight = 0,
+                .imageSubresource =
+                    {
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .mipLevel = mip,
+                    .baseArrayLayer = face,
+                    .layerCount = 1,
+                    },
+                .imageOffset = {0, 0, 0},
+                .imageExtent = {std::max(1u, width >> mip), std::max(1u, height >> mip), 1},
                 }
             );
         }
@@ -197,13 +195,13 @@ std::optional<TextureManager::TextureResource> TextureLoader::_loadKTXTexture(st
     auto textureFactory = _textureManager.get().createTextureFactory();
     auto texture = textureFactory.makeTexture(
         TextureFactory::TextureCreateInfo{
-            .name = path,
-            .format = format,
-            .size = math::SizeUI(width, height),
-            .imageUsageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            .viewType = isCubemap ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D,
-            .numLayers = numFaces,
-            .numMips = numMips
+        .name = path,
+        .format = format,
+        .size = math::SizeUI(width, height),
+        .imageUsageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        .viewType = isCubemap ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D,
+        .numLayers = numFaces,
+        .numMips = numMips
         }
     );
     if (!texture.has_value()) {
@@ -261,10 +259,10 @@ std::optional<TextureManager::TextureResource> TextureLoader::_loadTexture(
 
     auto texture = textureFactory.makeTexture(
         TextureFactory::TextureCreateInfo{
-            .name = name,
-            .format = VK_FORMAT_R8G8B8A8_SRGB,
-            .size = math::SizeUI(texWidth, texHeight),
-            .imageUsageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT
+        .name = name,
+        .format = VK_FORMAT_R8G8B8A8_SRGB,
+        .size = math::SizeUI(texWidth, texHeight),
+        .imageUsageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT
         }
     );
 
@@ -272,23 +270,55 @@ std::optional<TextureManager::TextureResource> TextureLoader::_loadTexture(
         return std::nullopt;
     }
 
-    // TODO: fix loading for batch loading of textures
-    auto commandBuffer = _commandManager.get().createSingleTimeCommandBuffer();
-    auto taskSchedulerInline = TextureTaskSchedulerInline(_device.get(), commandBuffer);
-    commandBuffer.begin();
-    taskSchedulerInline.transitionTextureLayout(
-        *(texture->second), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT
-    );
-    taskSchedulerInline.copyBufferToTexture(*stagingBuffer, *(texture->second));
-    taskSchedulerInline.transitionTextureLayout(
-        *(texture->second),
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        VK_IMAGE_ASPECT_COLOR_BIT
-    );
-    commandBuffer.end();
-    commandBuffer.submitAndWait(submitQueue);
+    if (submitQueue != nullptr) {
+        auto commandBuffer = _commandManager.get().createSingleTimeCommandBuffer();
+        auto taskSchedulerInline = TextureTaskSchedulerInline(_device.get(), commandBuffer);
+        commandBuffer.begin();
+        taskSchedulerInline.transitionTextureLayout(
+            *(texture->second),
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_IMAGE_ASPECT_COLOR_BIT
+        );
+        taskSchedulerInline.copyBufferToTexture(*stagingBuffer, *(texture->second));
+        taskSchedulerInline.transitionTextureLayout(
+            *(texture->second),
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_IMAGE_ASPECT_COLOR_BIT
+        );
+        commandBuffer.end();
+        commandBuffer.submitAndWait(submitQueue);
 
-    stagingBuffer->cleanup();
+        stagingBuffer->cleanup();
+    } else {
+        _stagingTextures.push_back(std::make_pair(std::move(*stagingBuffer), std::move(*texture)));
+    }
     return texture;
+}
+
+void TextureLoader::loadStaged(vax::vk::CommandBuffer& commandBuffer) {
+    for (auto& [stagingBuffer, texture] : _stagingTextures) {
+        auto taskSchedulerInline = TextureTaskSchedulerInline(_device.get(), commandBuffer);
+        taskSchedulerInline.transitionTextureLayout(
+            *(texture.second),
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_IMAGE_ASPECT_COLOR_BIT
+        );
+        taskSchedulerInline.copyBufferToTexture(stagingBuffer, *(texture.second));
+        taskSchedulerInline.transitionTextureLayout(
+            *(texture.second),
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_IMAGE_ASPECT_COLOR_BIT
+        );
+    }
+}
+
+void TextureLoader::cleanupStaged() {
+    for (auto& [stagingBuffer, texture] : _stagingTextures) {
+        stagingBuffer.cleanup();
+    }
+    _stagingTextures.clear();
 }

@@ -21,9 +21,13 @@ class ModelLoader final {
     ModelLoader(ModelLoader&& other) noexcept = delete;
     ModelLoader& operator=(ModelLoader&& other) noexcept = delete;
 
-    std::optional<SceneNode> loadSceneModel(const vax::objects::LoaderDescriptor& descriptor, VkQueue submitQueue);
+    std::optional<SceneNode>
+    loadSceneModel(const vax::objects::LoaderDescriptor& descriptor, VkQueue submitQueue = nullptr);
 
-    std::optional<DrawableModel> loadModel(const std::string& path, VkQueue submitQueue);
+    std::optional<DrawableModel> loadModel(const std::string& path, VkQueue submitQueue = nullptr);
+
+    void loadStaged(vax::vk::CommandBuffer& commandBuffer);
+    void cleanupStaged();
 
   private:
     vax::utils::Logger _logger = vax::utils::Logger("ModelLoader");
