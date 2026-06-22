@@ -152,22 +152,28 @@ State GridWorld::resetImpl() {
 }
 
 StepResult GridWorld::stepImpl(MoveAction action) {
+    _logger.info("Step: ", moveActionToString(action));
     auto nextPossiblePosition = _agent.getNewPosition(action);
     if (canMoveAgent(nextPossiblePosition)) {
+        _logger.info("Moving to: ", nextPossiblePosition.x, ", ", nextPossiblePosition.y);
         _agent.allowAction(action);
         auto blockValue = _grid.get({nextPossiblePosition.x, nextPossiblePosition.y});
         if (!blockValue.has_value()) {
+            _logger.error("Block value is not set");
             return {.reward = -100.0, .done = true, .finishedWithError = true};
         }
         auto blockType = static_cast<BlockType>(blockValue.value());
         if (blockType == BlockType::TRAP) {
+            _logger.info("Reached trap");
             return {.reward = -100.0, .done = true, .finishedWithError = false};
         }
         if (blockType == BlockType::FINISH) {
+            _logger.info("Reached finish");
             return {.reward = 100.0, .done = true, .finishedWithError = false};
         }
         return {.reward = -1.0, .done = false, .finishedWithError = false};
     }
+    _logger.info("Cannot move to: ", nextPossiblePosition.x, ", ", nextPossiblePosition.y);
     return {.reward = -100.0, .done = false, .finishedWithError = false};
 }
 
@@ -176,6 +182,14 @@ State GridWorld::getStateImpl() const { return _agent.getPosition(); }
 void GridWorld::setEvalModeImpl(vax::rl::EvalMode evalMode) {
     _evalMode = evalMode;
     _agent.setEvalModeImpl(evalMode);
+    switch (evalMode) {
+    case vax::rl::EvalMode::TRAINING:
+        _logger.setMode(vax::utils::Logger::Mode::FILE);
+        break;
+    case vax::rl::EvalMode::EVALUATION:
+        _logger.setMode(vax::utils::Logger::Mode::CONSOLE);
+        break;
+    }
 }
 
 void GridWorld::save(const std::string& folderPath) {
@@ -219,4 +233,9 @@ bool GridWorld::load(const std::string& folderPath) {
     std::array<int, 2> agentStartPosition = info["agentStartPosition"].get<std::array<int, 2>>();
     _agent.setStartPosition(agentStartPosition[0], agentStartPosition[1]);
     return true;
+}
+
+void GridWorld::setFsLogger(std::shared_ptr<vax::utils::FsLogger> fsLogger) {
+    _logger.setFsLogger(fsLogger);
+    _agent.setFsLogger(fsLogger);
 }

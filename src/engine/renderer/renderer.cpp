@@ -6,6 +6,7 @@
 #include "renderDestination.h"
 #include "rendererPass.h"
 #include "vkEngine.h"
+#include "profiler.h"
 
 using namespace vax::renderer;
 using namespace vax;

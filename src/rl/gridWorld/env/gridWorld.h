@@ -71,6 +71,8 @@ class GridWorld final : public vax::input::InputController::Observer,
 
     vax::rl::gw::Agent& getAgent() { return _agent; }
 
+    void setFsLogger(std::shared_ptr<vax::utils::FsLogger> fsLogger);
+
   private:
     vax::utils::Logger _logger = vax::utils::Logger("GridWorld");
     vax::rl::ql::QLearningConfig _qlConfig;

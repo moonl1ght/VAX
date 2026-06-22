@@ -27,6 +27,7 @@ class GWTrainingManager final {
     void startTraining(vax::core::concurrency::ThreadRunner& threadRunner, std::function<TrainingCallback> callback);
 
   private:
+    std::shared_ptr<vax::utils::FsLogger> _fsLogger;
     vax::utils::Logger _logger = vax::utils::Logger("GWTrainingManager");
     std::unique_ptr<vax::rl::training::TrainingEngine> _trainingEngine;
     std::unique_ptr<vax::rl::gw::env::GridWorld> _gridWorld;

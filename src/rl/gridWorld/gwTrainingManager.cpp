@@ -11,6 +11,9 @@ using namespace vax::core::utils;
 GWTrainingManager::GWTrainingManager() {
     _trainDirectory = RELATIVE_PATH("output/qlearning/train_" + getCurrentDatetimeString());
     std::filesystem::create_directories(_trainDirectory);
+    _fsLogger = std::make_shared<vax::utils::FsLogger>(_trainDirectory + "/training.log");
+    _logger.setFsLogger(_fsLogger);
+    _logger.setMode(vax::utils::Logger::Mode::FILE);
 }
 
 void GWTrainingManager::startTraining(ThreadRunner& threadRunner, std::function<TrainingCallback> callback) {
@@ -20,9 +23,7 @@ void GWTrainingManager::startTraining(ThreadRunner& threadRunner, std::function<
 
     _isTraining = true;
 
-    std::cout << "Training started on thread: " << std::this_thread::get_id() << std::endl;
     _trainingThread = std::jthread([this, &threadRunner, callback = std::move(callback)](std::stop_token st) mutable {
-        std::cout << "Training setup started on thread: " << std::this_thread::get_id() << std::endl;
         _setupTraining(threadRunner, callback);
         _train(threadRunner, callback);
     });
@@ -31,8 +32,10 @@ void GWTrainingManager::startTraining(ThreadRunner& threadRunner, std::function<
 void GWTrainingManager::_setupTraining(ThreadRunner& threadRunner, std::function<TrainingCallback>& callback) {
     _trainingEngine = std::make_unique<vax::rl::training::TrainingEngine>();
     _gridWorld = std::make_unique<vax::rl::gw::env::GridWorld>(_qlConfig);
+    _gridWorld->setFsLogger(_fsLogger);
     _gridWorld->setEvalModeImpl(vax::rl::EvalMode::TRAINING);
     _gridWorld->createRandomGrid();
+    _trainingEngine->setFsLogger(_fsLogger);
 }
 
 void GWTrainingManager::_train(ThreadRunner& threadRunner, std::function<TrainingCallback>& callback) {

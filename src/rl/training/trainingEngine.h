@@ -19,7 +19,9 @@ class TrainingEngine final {
             environment.setEvalMode(vax::rl::EvalMode::TRAINING);
             environment.reset();
             bool done = false;
+            int step = 0;
             while (!done) {
+                _logger.info("Training step ...");
                 State beginState = environment.getState();
                 Action action = agent.chooseAction(beginState);
                 vax::rl::StepResult stepResult = environment.step(action);
@@ -30,10 +32,17 @@ class TrainingEngine final {
                 State endState = environment.getState();
                 agent.update(beginState, action, stepResult.reward, endState, stepResult.done);
                 done = stepResult.done;
+                ++step;
             }
+            _logger.info("Episode ", episode + 1, "/", episodes, " finished with ", step, " steps");
         }
         environment.reset();
         environment.setEvalMode(vax::rl::EvalMode::EVALUATION);
+    }
+
+    void setFsLogger(std::shared_ptr<vax::utils::FsLogger> fsLogger) {
+        _logger.setFsLogger(fsLogger);
+        _logger.setMode(vax::utils::Logger::Mode::FILE);
     }
 
   private:

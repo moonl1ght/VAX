@@ -69,6 +69,8 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
 
     void setQLearningConfig(const vax::rl::ql::QLearningConfig& qlConfig);
 
+    void setFsLogger(std::shared_ptr<vax::utils::FsLogger> fsLogger);
+
   private:
     vax::utils::Logger _logger = vax::utils::Logger("GWAgent");
     vax::rl::ql::QLearningConfig _qlConfig;

@@ -80,6 +80,7 @@ MoveAction Agent::chooseActionImpl(const State& state) {
     core::RandomGenerator& generator = core::RandomGenerator::getInstance();
     if (generator.uniformFloat() < _qlConfig.epsilon) {
         auto action = static_cast<MoveAction>(generator.uniformInt(0, numMoveActions - 1));
+        _logger.info("Chosen random action: ", moveActionToString(action));
         return action;
     }
     auto flatIndex = _gridWorld->getGrid().flatIndex({state.x, state.y});
@@ -89,6 +90,7 @@ MoveAction Agent::chooseActionImpl(const State& state) {
         return MoveAction::NORTH;
     }
     auto action = static_cast<MoveAction>(indices[1]);
+    _logger.info("Chosen best action: ", moveActionToString(action));
     return action;
 }
 
@@ -120,6 +122,26 @@ void Agent::updateImpl(const State& state, MoveAction action, double reward, con
         return;
     }
     auto updatedValue = _qlConfig.learningRate * (target - prevValue.value());
+    _logger.info(
+        "Updated Q value: ",
+        updatedValue,
+        " current state: ",
+        state.x,
+        ", ",
+        state.y,
+        " next state: ",
+        nextState.x,
+        ", ",
+        nextState.y,
+        " action: ",
+        moveActionToString(action),
+        " target: ",
+        target,
+        " previous value: ",
+        prevValue.value(),
+        " reward: ",
+        reward
+    );
     _qTable.set({flatIndexState, static_cast<int>(action)}, updatedValue);
 }
 
@@ -133,3 +155,8 @@ void Agent::setEvalModeImpl(vax::rl::EvalMode evalMode) { _evalMode = evalMode; 
 void Agent::setQTable(vax::math::Tensor&& qTable) { _qTable = std::move(qTable); }
 
 void Agent::setQLearningConfig(const vax::rl::ql::QLearningConfig& qlConfig) { _qlConfig = qlConfig; }
+
+void Agent::setFsLogger(std::shared_ptr<vax::utils::FsLogger> fsLogger) {
+    _logger.setFsLogger(fsLogger);
+    _logger.setMode(vax::utils::Logger::Mode::FILE);
+}

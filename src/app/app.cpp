@@ -1,6 +1,7 @@
 #include "app.h"
 #include "renderdoc.h"
 #include "notificationCenter.h"
+#include "profiler.h"
 
 using namespace vax;
 
