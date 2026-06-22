@@ -4,6 +4,7 @@
 #include "threadRunner.h"
 #include "trainingEngine.h"
 #include <thread>
+#include "qlConfig.h"
 
 namespace vax::rl::gw {
 struct TrainingStatus {
@@ -15,7 +16,7 @@ using TrainingCallback = void(TrainingStatus trainingStatus);
 
 class GWTrainingManager final {
   public:
-    GWTrainingManager() = default;
+    GWTrainingManager();
     ~GWTrainingManager() = default;
 
     GWTrainingManager(const GWTrainingManager& other) = delete;
@@ -29,6 +30,8 @@ class GWTrainingManager final {
     vax::utils::Logger _logger = vax::utils::Logger("GWTrainingManager");
     std::unique_ptr<vax::rl::training::TrainingEngine> _trainingEngine;
     std::unique_ptr<vax::rl::gw::env::GridWorld> _gridWorld;
+    vax::rl::ql::QLearningConfig _qlConfig;
+    std::string _trainDirectory;
 
     std::jthread _trainingThread;
     std::mutex _trainingMutex;
@@ -36,5 +39,6 @@ class GWTrainingManager final {
 
     void _setupTraining(vax::core::concurrency::ThreadRunner& threadRunner, std::function<TrainingCallback>& callback);
     void _train(vax::core::concurrency::ThreadRunner& threadRunner, std::function<TrainingCallback>& callback);
+    void _saveTrainingData();
 };
 } // namespace vax::rl::gw

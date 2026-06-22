@@ -129,3 +129,7 @@ void Agent::reset() {
 }
 
 void Agent::setEvalModeImpl(vax::rl::EvalMode evalMode) { _evalMode = evalMode; }
+
+void Agent::setQTable(vax::math::Tensor&& qTable) { _qTable = std::move(qTable); }
+
+void Agent::setQLearningConfig(const vax::rl::ql::QLearningConfig& qlConfig) { _qlConfig = qlConfig; }

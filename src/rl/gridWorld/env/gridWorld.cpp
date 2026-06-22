@@ -1,8 +1,11 @@
 #include "gridWorld.h"
 #include "inputController.h"
+#include "nlohmann/json.hpp"
 #include "randomGenerator.h"
 #include "rlMath.h"
+#include "tensorOp.h"
 #include "transform.h"
+#include "fileUtils.h"
 
 using namespace vax::rl::gw::env;
 using namespace vax::rl::gw;
@@ -10,8 +13,9 @@ using namespace vax;
 using namespace vax::math;
 using namespace vax::rl::math;
 using namespace vax::rl;
+using namespace vax::core::utils;
 
-void GridWorld::load() {
+void GridWorld::createRandomGrid() {
     int gridDimX = 6;
     int gridDimY = 6;
     _grid = Tensor::createZeros({gridDimX, gridDimY});
@@ -172,4 +176,47 @@ State GridWorld::getStateImpl() const { return _agent.getPosition(); }
 void GridWorld::setEvalModeImpl(vax::rl::EvalMode evalMode) {
     _evalMode = evalMode;
     _agent.setEvalModeImpl(evalMode);
+}
+
+void GridWorld::save(const std::string& folderPath) {
+    auto gridPath = folderPath + "/grid.vaxtensor";
+    auto qTablePath = folderPath + "/qtable.vaxtensor";
+    _grid.saveToBinary(gridPath);
+    _agent.getQTable().saveToBinary(qTablePath);
+    nlohmann::json info;
+    info["agentStartPosition"] = {_agent.getStartPosition().x, _agent.getStartPosition().y};
+    std::ofstream outFile(folderPath + "/gridworld_info.json");
+    outFile << info.dump(4);
+    outFile.close();
+}
+
+bool GridWorld::load(const std::string& folderPath) {
+    auto gridPath = folderPath + "/grid.vaxtensor";
+    auto qTablePath = folderPath + "/qtable.vaxtensor";
+    auto grid = Tensor::loadFromBinary(gridPath);
+    auto qTable = Tensor::loadFromBinary(qTablePath);
+    if (!grid.has_value() && !qTable.has_value()) {
+        _logger.error("Failed to load grid and qtable from folder: ", folderPath);
+        return false;
+    }
+    _agent.setQTable(std::move(qTable.value()));
+
+    nlohmann::json config;
+    std::ifstream configFile(folderPath + "/config.json");
+    configFile >> config;
+    configFile.close();
+    auto learningRate = config["learningRate"].get<float>();
+    auto gamma = config["gamma"].get<float>();
+    auto epsilon = config["epsilon"].get<float>();
+    auto episodes = config["episodes"].get<int>();
+    _qlConfig = vax::rl::ql::QLearningConfig{learningRate, gamma, epsilon, episodes};
+    _agent.setQLearningConfig(_qlConfig);
+
+    nlohmann::json info;
+    std::ifstream infoFile(folderPath + "/gridworld_info.json");
+    infoFile >> info;
+    infoFile.close();
+    std::array<int, 2> agentStartPosition = info["agentStartPosition"].get<std::array<int, 2>>();
+    _agent.setStartPosition(agentStartPosition[0], agentStartPosition[1]);
+    return true;
 }

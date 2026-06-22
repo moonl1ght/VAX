@@ -19,6 +19,8 @@ class Tensor {
     static Tensor createOnes(std::vector<int> shape);
     static Tensor createArrangeContiguous(std::vector<int> shape);
 
+    static std::optional<Tensor> loadFromBinary(const std::string& path);
+
     Tensor()
         : _shape(std::vector<int>())
         , _strides(std::vector<int>())
@@ -101,6 +103,8 @@ class Tensor {
 
     bool synchronizeHostToGpu();
     bool synchronizeGpuToHost();
+
+    bool saveToBinary(const std::string& path) const;
 
     friend class TensorOp;
     friend class TensorOpGpu;

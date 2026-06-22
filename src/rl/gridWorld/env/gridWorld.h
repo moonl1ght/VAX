@@ -9,6 +9,7 @@
 #include "rlMath.h"
 #include "rlenv.h"
 #include "tensor.h"
+#include "logger.h"
 
 namespace vax::rl::gw::env {
 class GridWorld final : public vax::input::InputController::Observer,
@@ -22,7 +23,8 @@ class GridWorld final : public vax::input::InputController::Observer,
         TRAP = 4,
     };
 
-    explicit GridWorld() {};
+    explicit GridWorld(vax::rl::ql::QLearningConfig qlConfig)
+        : _qlConfig(qlConfig) {};
 
     ~GridWorld() {
         if (_inputController) {
@@ -35,7 +37,11 @@ class GridWorld final : public vax::input::InputController::Observer,
     GridWorld(GridWorld&& other) noexcept = delete;
     GridWorld& operator=(GridWorld&& other) noexcept = delete;
 
-    void load();
+    void createRandomGrid();
+
+    void save(const std::string& folderPath);
+
+    bool load(const std::string& folderPath);
 
     vax::rl::gw::env::GridWorldDrawableDescriptor getDrawableDescriptor() const;
 
@@ -66,6 +72,7 @@ class GridWorld final : public vax::input::InputController::Observer,
     vax::rl::gw::Agent& getAgent() { return _agent; }
 
   private:
+    vax::utils::Logger _logger = vax::utils::Logger("GridWorld");
     vax::rl::ql::QLearningConfig _qlConfig;
     std::string _name = "GridWorld";
     vax::math::Tensor _grid;

@@ -1,13 +1,13 @@
 #pragma once
 
 #include "agent.h"
+#include "gwenv.h"
 #include "loaderDescriptor.h"
 #include "logger.h"
 #include "luna.h"
 #include "qlConfig.h"
 #include "rlMath.h"
 #include "tensor.h"
-#include "gwenv.h"
 
 namespace vax::rl::gw::env {
 class GridWorld;
@@ -16,8 +16,18 @@ class GridWorld;
 namespace vax::rl::gw {
 class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
   public:
-    Agent(vax::rl::ql::QLearningConfig qlConfig)
+    explicit Agent(vax::rl::ql::QLearningConfig qlConfig)
         : _qlConfig(qlConfig) {};
+
+    Agent(
+        vax::rl::ql::QLearningConfig qlConfig,
+        const vax::rl::math::Position2DInt& startPosition,
+        vax::math::Tensor&& qTable
+    )
+        : _qlConfig(qlConfig)
+        , _startPosition(startPosition)
+        , _qTable(std::move(qTable)) {};
+
     ~Agent() = default;
 
     Agent(const Agent& other) = delete;
@@ -50,6 +60,14 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
     void reset();
 
     void setEvalModeImpl(vax::rl::EvalMode evalMode);
+
+    const vax::math::Tensor& getQTable() const { return _qTable; }
+
+    const vax::rl::math::Position2DInt& getStartPosition() const { return _startPosition; }
+
+    void setQTable(vax::math::Tensor&& qTable);
+
+    void setQLearningConfig(const vax::rl::ql::QLearningConfig& qlConfig);
 
   private:
     vax::utils::Logger _logger = vax::utils::Logger("GWAgent");

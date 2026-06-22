@@ -2,7 +2,6 @@
 assimp/5.4.3
 nlohmann_json/3.11.3
 glm/1.0.1
-tinyobjloader/2.0.0-rc10
 imgui/1.92.0
 taskflow/4.0.0
 tracy/0.13.1

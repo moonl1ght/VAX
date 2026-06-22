@@ -24,7 +24,6 @@
 #include <vulkan/vulkan_core.h>
 
 #include "logger.h"
-#include "tinyobjloader.hpp"
 #include "vma.hpp"
 
 #define GLM_FORCE_RADIANS

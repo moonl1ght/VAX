@@ -1,4 +1,6 @@
 #include "tensor.h"
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 using namespace vax;
 using namespace vax::math;
@@ -160,7 +162,7 @@ bool Tensor::alignBroadcastToHigherDimensions(const std::vector<int>& otherShape
 std::vector<int> Tensor::indices(int flatIndex) const { return _calculateIndices(flatIndex); }
 
 std::vector<int> Tensor::_calculateIndices(int flatIndex) const {
-    size_t rank = _strides.size(); 
+    size_t rank = _strides.size();
     std::vector<int> indices(rank);
 
     for (size_t i = 0; i < rank - 1; ++i) {
@@ -173,6 +175,46 @@ std::vector<int> Tensor::_calculateIndices(int flatIndex) const {
     return indices;
 }
 
-int Tensor::flatIndex(std::vector<int> indices) const {
-    return _calculateFlatIndex(indices);
+int Tensor::flatIndex(std::vector<int> indices) const { return _calculateFlatIndex(indices); }
+
+bool Tensor::saveToBinary(const std::string& path) const {
+    std::ofstream file(path, std::ios::out | std::ios::binary);
+    auto metadata =
+        nlohmann::json({{"shape", _shape}, {"strides", _strides}, {"totalSize", _totalSize}});
+
+    std::vector<uint8_t> binaryData = nlohmann::json::to_msgpack(metadata);
+    auto metadataSize = binaryData.size();
+    if (file.is_open()) {
+        file.write(reinterpret_cast<const char*>(&metadataSize), sizeof(metadataSize));
+        file.write(reinterpret_cast<const char*>(binaryData.data()), metadataSize);
+        file.write(reinterpret_cast<const char*>(_data), _totalSize * sizeof(float));
+        file.close();
+        return true;
+    }
+    return false;
+}
+
+std::optional<Tensor> Tensor::loadFromBinary(const std::string& path) {
+    std::ifstream file(path, std::ios::in | std::ios::binary);
+    float* data = nullptr;
+    size_t size = 0;
+    if (file.is_open()) {
+        size_t metadataSize;
+        file.read(reinterpret_cast<char*>(&metadataSize), sizeof(metadataSize));
+        std::vector<uint8_t> binaryData(metadataSize);
+        file.read(reinterpret_cast<char*>(binaryData.data()), metadataSize);
+        auto metadata = nlohmann::json::from_msgpack(binaryData);
+        std::vector<int> shape = metadata["shape"];
+        std::vector<int> strides = metadata["strides"];
+        int totalSize = metadata["totalSize"];
+        auto tensor = Tensor();
+        tensor._shape = shape;
+        tensor._strides = strides;
+        tensor._totalSize = totalSize;
+        cudaMallocHost((void**)&tensor._data, tensor._totalSize * sizeof(float));
+        file.read(reinterpret_cast<char*>(tensor._data), tensor._totalSize * sizeof(float));
+        file.close();
+        return tensor;
+    }
+    return std::nullopt;
 }

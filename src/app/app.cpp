@@ -36,8 +36,13 @@ bool App::_setup() {
     _renderer = std::make_unique<renderer::Renderer>(*_engine, *_uiEngine);
     _renderer->prepare();
 
-    _gridWorld = std::make_unique<rl::gw::env::GridWorld>();
-    _gridWorld->load();
+    _gridWorld = std::make_unique<rl::gw::env::GridWorld>(rl::ql::QLearningConfig{
+        .learningRate = 0.1,
+        .gamma = 0.9,
+        .epsilon = 0.3,
+        .episodes = 100,
+    });
+    _gridWorld->createRandomGrid();
 
     _drawableScene = std::make_unique<DrawableScene>(*_engine);
     _drawableScene->resize();
