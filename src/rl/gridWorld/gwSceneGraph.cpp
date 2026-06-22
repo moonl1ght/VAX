@@ -12,9 +12,7 @@ bool GwSceneGraph::load(
     const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor,
     VkQueue submitQueue
 ) {
-    std::cout << "Loading agent model: " << submitQueue << std::endl;
     auto agentModel = modelLoader.loadSceneModel(descriptor.agentDrawableDescriptor, submitQueue);
-    std::cout << "Agent model loaded" << std::endl;
     agentModel->updateTransform([](vax::math::TransformHandle& transformHandle) {
         transformHandle.updateTransform([](vax::math::Transform& transform) {
             transform.updateRotationInDegrees({-90.0f, 0.0f, 0.0f});
@@ -30,7 +28,6 @@ bool GwSceneGraph::load(
 
     _envNodes.reserve(descriptor.drawableDescriptors.size());
     for (const auto& drawableDescriptor : descriptor.drawableDescriptors) {
-        std::cout << "Loading model: " << drawableDescriptor.path << std::endl;
         auto model = modelLoader.loadSceneModel(drawableDescriptor, submitQueue);
         if (!model.has_value()) {
             _logger.error("Failed to load model: {}", drawableDescriptor.path);
