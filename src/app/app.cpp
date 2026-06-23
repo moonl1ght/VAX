@@ -35,7 +35,6 @@ bool App::_setup() {
     _trainingView = std::make_unique<ui::TrainingView>(*_uiEngine);
 
     _renderer = std::make_unique<renderer::Renderer>(*_engine, *_uiEngine);
-    _renderer->prepare();
 
     return true;
 }
@@ -120,6 +119,7 @@ void App::_loopByEventUpdate() {
 }
 
 void App::_loopContinuousUpdate() {
+    static bool firstTime = true;
     ZoneScoped;
 
     _roverView->updateImGui();
@@ -130,7 +130,12 @@ void App::_loopContinuousUpdate() {
 
     bool renderResult = false;
     vax::SceneUpdateContext sceneUpdateContext{.deltaTime = _timestamp};
+    if (firstTime) {
+        _renderer->prepare(_roverView->drawableScene());
+        firstTime = false;
+    }
     _roverView->drawableScene()->update(sceneUpdateContext);
+
     renderResult = _renderer->render(_roverView->drawableScene(), _timestamp);
 
     if (!renderResult) {

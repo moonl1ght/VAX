@@ -10,6 +10,7 @@ struct LoaderDescriptor {
 
     std::string path;
     vax::math::Transform initialTransform;
+    uint32_t instancesCount = 1;
 
     ModelExtension getModelExtension() const;
     const std::string_view getMainPath() const;

@@ -96,6 +96,11 @@ struct UniformBufferObject {
     vec3 padding;
 };
 
+struct InstanceData {
+    mat4 model;
+    mat3 normalMatrix;
+};
+
 // TODO: now it uses normalMatrix that is for non uniform scaled objects if more data in the PushConstant is needed
 // another Push constat layout is needed as well
 struct DrawPushConstants {

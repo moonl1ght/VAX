@@ -21,7 +21,7 @@ class Renderer final {
     Renderer& operator=(Renderer&& other) noexcept = delete;
 
     bool render(vax::DrawableScene* scene, float deltaTime);
-    void prepare();
+    void prepare(DrawableScene* scene);
 
   private:
     vax::utils::Logger _logger = vax::utils::Logger("Renderer");

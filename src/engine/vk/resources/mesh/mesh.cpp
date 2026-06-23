@@ -46,6 +46,18 @@ template <typename VertexType> bool vax::objects::Mesh<VertexType>::loadBuffers(
         }
         _stagingIndexBuffer->copyBufferCommand(commandBuffer, *indexBuffer, indexBufferSize);
     }
+    if (_instancesCount > 1) {
+        instancesBuffer = vk::Buffer::allocate(
+            _device.get(),
+            _name + "_instance_buffer",
+            sizeof(InstanceData) * _instancesCount,
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        );
+        if (instancesBuffer.has_value()) {
+            instancesBuffer->map();
+        }
+    }
     _isLoaded = true;
     return true;
 }
@@ -62,9 +74,10 @@ template <typename VertexType> void vax::objects::Mesh<VertexType>::_destroy() {
     if (indexBuffer.has_value()) {
         indexBuffer.value().cleanup();
     }
+    if (instancesBuffer.has_value()) {
+        instancesBuffer.value().cleanup();
+    }
     _isDetached = true;
-    _indices.clear();
-    _isLoaded = false;
     _id = vax::NullId;
     _vertices.clear();
     _indices.clear();

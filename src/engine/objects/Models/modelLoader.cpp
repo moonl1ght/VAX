@@ -227,7 +227,7 @@ void processNode(
     }
 }
 
-std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQueue submitQueue) {
+std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, uint32_t instancesCount, VkQueue submitQueue) {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -286,7 +286,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, VkQ
         _logger
     );
 
-    auto mesh = _resourceManager.get().meshManager().createEmptyMesh();
+    auto mesh = _resourceManager.get().meshManager().createEmptyMesh(instancesCount);
     if (!mesh)
         return std::nullopt;
 
@@ -383,7 +383,7 @@ std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(LoaderDescriptor descr
     auto mainPath = descriptor.getMainPath();
     auto rootNode = processURDFLink(
         mainPath, _resourceManager.get(), model->getRoot(), [&](std::string name) -> std::optional<DrawableModel> {
-            return loadModel(name, submitQueue);
+            return loadModel(name, descriptor.instancesCount, submitQueue);
         }
     );
     return std::optional<SceneNode>(std::in_place, std::move(rootNode));
@@ -391,7 +391,7 @@ std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(LoaderDescriptor descr
 
 std::optional<SceneNode> ModelLoader::_loadGLBSceneModel(LoaderDescriptor descriptor, VkQueue submitQueue) {
     auto path = descriptor.path;
-    auto model = loadModel(path, submitQueue);
+    auto model = loadModel(path, descriptor.instancesCount, submitQueue);
     if (!model.has_value()) {
         _logger.error("Failed to load GLB model: " + path);
         return std::nullopt;

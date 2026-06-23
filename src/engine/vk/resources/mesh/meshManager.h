@@ -22,7 +22,7 @@ class MeshManager final {
 
     void fullCleanup();
 
-    std::optional<MeshResource> createEmptyMesh();
+    std::optional<MeshResource> createEmptyMesh(uint32_t instancesCount = 1);
 
     std::optional<MeshResource> find(vax::MeshHandle handle);
 

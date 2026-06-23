@@ -9,8 +9,8 @@ void vax::MeshManager::fullCleanup() {
     _pool.clear();
 }
 
-std::optional<MeshManager::MeshResource> MeshManager::createEmptyMesh() {
-    auto mesh = vax::objects::MeshPBR(_device.get());
+std::optional<MeshManager::MeshResource> MeshManager::createEmptyMesh(uint32_t instancesCount) {
+    auto mesh = vax::objects::MeshPBR(_device.get(), instancesCount);
     mesh._id = _lastId++;
     auto [it, inserted] = _pool.try_emplace(mesh.id(), std::move(mesh));
     if (!inserted) {

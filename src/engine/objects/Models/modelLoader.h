@@ -24,7 +24,7 @@ class ModelLoader final {
     std::optional<SceneNode>
     loadSceneModel(const vax::objects::LoaderDescriptor& descriptor, VkQueue submitQueue = nullptr);
 
-    std::optional<DrawableModel> loadModel(const std::string& path, VkQueue submitQueue = nullptr);
+    std::optional<DrawableModel> loadModel(const std::string& path, uint32_t instancesCount = 1, VkQueue submitQueue = nullptr);
 
     void loadStaged(vax::vk::CommandBuffer& commandBuffer);
     void cleanupStaged();

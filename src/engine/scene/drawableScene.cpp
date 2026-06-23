@@ -56,7 +56,7 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
         _logger.error("Failed to create background!");
         return;
     }
-    _gizmo = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), submitQueue);
+    _gizmo = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), 1, submitQueue);
     _gizmo->setSettings({.precomputedMVP = true});
 
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();

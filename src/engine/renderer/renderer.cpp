@@ -3,15 +3,39 @@
 #include "imageUtils.h"
 #include "imgui_impl_vulkan.h"
 #include "pipeline.h"
+#include "profiler.h"
 #include "renderDestination.h"
 #include "rendererPass.h"
 #include "vkEngine.h"
-#include "profiler.h"
 
 using namespace vax::renderer;
 using namespace vax;
 
-void Renderer::prepare() {}
+void Renderer::prepare(DrawableScene* scene) {
+    for (uint32_t i = 0; i < vax::MAX_FRAMES_IN_FLIGHT; ++i) {
+        if (scene != nullptr) {
+            scene->prepareForDraw(renderer::RenderCallContext{.currentFrame = i});
+        }
+        auto globalDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+            i, vax::vk::DescriptorSetLayout::SetType::GLOBAL
+        );
+        if (!globalDescriptorSetWriter.has_value()) {
+            _logger.error("Failed to get global descriptor set writer!");
+            return;
+        }
+        scene->writeGlobalDescriptorSet(*globalDescriptorSetWriter);
+        globalDescriptorSetWriter->update();
+        auto frameDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+            i, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
+        );
+        if (!frameDescriptorSetWriter.has_value()) {
+            _logger.error("Failed to get frame descriptor set writer!");
+            return;
+        }
+        scene->writeFrameDescriptorSet(*frameDescriptorSetWriter);
+        frameDescriptorSetWriter->update();
+    }
+}
 
 bool Renderer::render(DrawableScene* scene, float deltaTime) {
     ZoneScopedN("Renderer::render");
@@ -186,8 +210,6 @@ bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::DrawableScene* sce
             _logger.error("Failed to get default descriptor set writer!");
             return;
         }
-        scene->writeFrameDescriptorSet(*frameDescriptorSetWriter);
-        frameDescriptorSetWriter->update();
         VkDescriptorSet frameDescriptorSet = frameDescriptorSetWriter->getDescriptorSet();
         std::vector<VkDescriptorSet> descriptorSets = {frameDescriptorSet};
         vkCmdBindDescriptorSets(
@@ -249,8 +271,6 @@ bool Renderer::_updateGlobalDescriptorSet(
     if (!globalDescriptorSetWriter.has_value()) {
         return false;
     }
-    scene->writeGlobalDescriptorSet(*globalDescriptorSetWriter);
-    globalDescriptorSetWriter->update();
     VkDescriptorSet globalDescriptorSet = globalDescriptorSetWriter->getDescriptorSet();
     std::vector<VkDescriptorSet> descriptorSets = {globalDescriptorSet};
     vkCmdBindDescriptorSets(
