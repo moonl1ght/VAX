@@ -2,7 +2,8 @@
 
 using namespace vax;
 
-template <typename VertexType> bool vax::objects::Mesh<VertexType>::loadBuffers(vax::vk::CommandBuffer& commandBuffer) {
+template <typename VertexType>
+bool vax::objects::Mesh<VertexType>::loadBuffers(const LoadMeshBuffersContext& context) {
     VkDeviceSize bufferSize = sizeof(_vertices[0]) * _vertices.size();
     VkDeviceSize indexBufferSize = sizeof(_indices[0]) * _indices.size();
     _stagingVertexBuffer = vk::Buffer::allocateAndFillData(
@@ -23,7 +24,7 @@ template <typename VertexType> bool vax::objects::Mesh<VertexType>::loadBuffers(
     if (!_stagingVertexBuffer.has_value() && !vertexBuffer.has_value()) {
         return false;
     }
-    _stagingVertexBuffer->copyBufferCommand(commandBuffer, *vertexBuffer, bufferSize);
+    _stagingVertexBuffer->copyBufferCommand(*context.commandBuffer, *vertexBuffer, bufferSize);
 
     if (!_indices.empty()) {
         _stagingIndexBuffer = vk::Buffer::allocateAndFillData(
@@ -44,18 +45,21 @@ template <typename VertexType> bool vax::objects::Mesh<VertexType>::loadBuffers(
         if (!_stagingIndexBuffer.has_value() && !indexBuffer.has_value()) {
             return false;
         }
-        _stagingIndexBuffer->copyBufferCommand(commandBuffer, *indexBuffer, indexBufferSize);
+        _stagingIndexBuffer->copyBufferCommand(*context.commandBuffer, *indexBuffer, indexBufferSize);
     }
     if (_instancesCount > 1) {
-        instancesBuffer = vk::Buffer::allocate(
-            _device.get(),
-            _name + "_instance_buffer",
-            sizeof(InstanceData) * _instancesCount,
-            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-        );
-        if (instancesBuffer.has_value()) {
-            instancesBuffer->map();
+        for (uint32_t i = 0; i < context.maxFramesInFlight; i++) {
+            auto instancesBuffer = vk::Buffer::allocate(
+                _device.get(),
+                _name + "_instance_buffer",
+                sizeof(InstanceData) * _instancesCount,
+                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+            );
+            if (instancesBuffer.has_value()) {
+                instancesBuffer->map();
+                instanceBuffers.push_back(std::move(*instancesBuffer));
+            }
         }
     }
     _isLoaded = true;
@@ -74,9 +78,10 @@ template <typename VertexType> void vax::objects::Mesh<VertexType>::_destroy() {
     if (indexBuffer.has_value()) {
         indexBuffer.value().cleanup();
     }
-    if (instancesBuffer.has_value()) {
-        instancesBuffer.value().cleanup();
+    for (auto& instanceBuffer : instanceBuffers) {
+        instanceBuffer.cleanup();
     }
+    instanceBuffers.clear();
     _isDetached = true;
     _id = vax::NullId;
     _vertices.clear();

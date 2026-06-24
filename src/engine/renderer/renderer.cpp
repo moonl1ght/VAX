@@ -16,24 +16,24 @@ void Renderer::prepare(DrawableScene* scene) {
         if (scene != nullptr) {
             scene->prepareForDraw(renderer::RenderCallContext{.currentFrame = i});
         }
-        auto globalDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+        auto globalDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
             i, vax::vk::DescriptorSetLayout::SetType::GLOBAL
         );
-        if (!globalDescriptorSetWriter.has_value()) {
+        if (!globalDescriptorSetHandler.has_value()) {
             _logger.error("Failed to get global descriptor set writer!");
             return;
         }
-        scene->writeGlobalDescriptorSet(*globalDescriptorSetWriter);
-        globalDescriptorSetWriter->update();
-        auto frameDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+        scene->writeGlobalDescriptorSet(*globalDescriptorSetHandler);
+        globalDescriptorSetHandler->update();
+        auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
             i, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
         );
-        if (!frameDescriptorSetWriter.has_value()) {
+        if (!frameDescriptorSetHandler.has_value()) {
             _logger.error("Failed to get frame descriptor set writer!");
             return;
         }
-        scene->writeFrameDescriptorSet(*frameDescriptorSetWriter);
-        frameDescriptorSetWriter->update();
+        scene->writeFrameDescriptorSet(*frameDescriptorSetHandler);
+        frameDescriptorSetHandler->update();
     }
 }
 
@@ -202,15 +202,15 @@ bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::DrawableScene* sce
 
     RendererPass renderPass(renderPassInfo);
     renderPass.pass(commandBuffer, [&]() {
-        auto frameDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+        auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
             _currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
         );
 
-        if (!frameDescriptorSetWriter.has_value()) {
+        if (!frameDescriptorSetHandler.has_value()) {
             _logger.error("Failed to get default descriptor set writer!");
             return;
         }
-        VkDescriptorSet frameDescriptorSet = frameDescriptorSetWriter->getDescriptorSet();
+        VkDescriptorSet frameDescriptorSet = frameDescriptorSetHandler->getDescriptorSet();
         std::vector<VkDescriptorSet> descriptorSets = {frameDescriptorSet};
         vkCmdBindDescriptorSets(
             commandBuffer,
@@ -265,13 +265,13 @@ void Renderer::_setViewportAndScissor(VkCommandBuffer commandBuffer) {
 bool Renderer::_updateGlobalDescriptorSet(
     VkCommandBuffer commandBuffer, vax::DrawableScene* scene, VkPipelineLayout pipelineLayout
 ) {
-    auto globalDescriptorSetWriter = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+    auto globalDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
         _currentFrame, vax::vk::DescriptorSetLayout::SetType::GLOBAL
     );
-    if (!globalDescriptorSetWriter.has_value()) {
+    if (!globalDescriptorSetHandler.has_value()) {
         return false;
     }
-    VkDescriptorSet globalDescriptorSet = globalDescriptorSetWriter->getDescriptorSet();
+    VkDescriptorSet globalDescriptorSet = globalDescriptorSetHandler->getDescriptorSet();
     std::vector<VkDescriptorSet> descriptorSets = {globalDescriptorSet};
     vkCmdBindDescriptorSets(
         commandBuffer,

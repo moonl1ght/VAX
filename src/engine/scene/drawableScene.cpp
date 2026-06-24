@@ -63,9 +63,13 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
 
     commandBuffer.begin();
     _modelLoader.loadStaged(commandBuffer);
-    _gizmo->loadMesh(commandBuffer);
-    _background->loadMesh(commandBuffer);
-    _sceneGraph->loadDrawableModels(commandBuffer);
+    vax::objects::MeshPBR::LoadMeshBuffersContext context = {
+        .commandBuffer = &commandBuffer,
+        .maxFramesInFlight = vax::MAX_FRAMES_IN_FLIGHT
+    };
+    _gizmo->loadMesh(context);
+    _background->loadMesh(context);
+    _sceneGraph->loadDrawableModels(context);
     commandBuffer.end();
     commandBuffer.submitAndWait(submitQueue);
     _modelLoader.cleanupStaged();
@@ -78,34 +82,34 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
     _gizmoCamera.setViewSize(1.5f);
 }
 
-bool vax::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter) {
+bool vax::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler) {
     auto globalSampler = _resourceManager.textureManager().getGlobalSampler(GlobalSampler::PBRSampler);
     auto globalCubeMapSampler = _resourceManager.textureManager().getGlobalSampler(GlobalSampler::CubeMapSampler);
     if (!globalSampler.has_value() || !globalCubeMapSampler.has_value()) {
         return false;
     }
-    descriptorSetWriter.writeBuffer(
+    descriptorHandler.writeBuffer(
         _resourceManager.materialManager().materialBuffer(),
         GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );
-    descriptorSetWriter.writeBuffer(
+    descriptorHandler.writeBuffer(
         _environmentMap->environmentMapBuffer(),
         GlobalBindingIndices::GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );
-    descriptorSetWriter.writeSampler(*globalSampler->second, GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 0);
-    descriptorSetWriter.writeSampler(*globalCubeMapSampler->second, GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 1);
-    _resourceManager.textureManager().updateDescriptorWriterWithAllTextures(
-        descriptorSetWriter, GlobalBindingIndices::GLOBAL_TEXTURE_INDEX
+    descriptorHandler.writeSampler(*globalSampler->second, GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 0);
+    descriptorHandler.writeSampler(*globalCubeMapSampler->second, GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 1);
+    _resourceManager.textureManager().updateDescriptorHandlerWithAllTextures(
+        descriptorHandler, GlobalBindingIndices::GLOBAL_TEXTURE_INDEX
     );
     return true;
 }
 
-bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetWriter& descriptorSetWriter) {
-    descriptorSetWriter.writeBuffer(
+bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler) {
+    descriptorHandler.writeBuffer(
         *_sceneUniformBuffers[_renderCallContext.currentFrame],
         FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
         0,
@@ -130,7 +134,7 @@ void vax::DrawableScene::drawGizmo(VkCommandBuffer commandBuffer, const vax::vk:
     auto viewMatrix = _gizmoCamera.viewMatrix();
     auto projectionMatrix = _gizmoCamera.projectionMatrix();
     auto viewProjectionMatrix = projectionMatrix * viewMatrix;
-    _gizmo->transformMatrixHandle.updateModelMatrix(viewProjectionMatrix);
+    _gizmo->instanceTransformMatrixHandles[0].updateModelMatrix(viewProjectionMatrix);
     _gizmo->draw(commandBuffer, pipeline.vkPipelineLayout);
 }
 

@@ -11,7 +11,7 @@ class TextureFactory;
 }
 
 namespace vax::vk {
-class DescriptorSetWriter;
+class DescriptorSetHandler;
 }
 
 namespace vax {
@@ -49,8 +49,8 @@ class TextureManager final {
 
     std::optional<SamplerResource> getGlobalSampler(vax::GlobalSampler sampler);
 
-    void updateDescriptorWriterWithAllTextures(
-        vax::vk::DescriptorSetWriter& descriptorWriter, uint32_t binding
+    void updateDescriptorHandlerWithAllTextures(
+        vax::vk::DescriptorSetHandler& descriptorHandler, uint32_t binding
     ) const;
 
   private:

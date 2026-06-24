@@ -33,6 +33,10 @@ enum FrameBindingIndices {
     FRAME_UNIFORM_BUFFER_INDEX = 0,
 };
 
+enum InstanceBindingIndices {
+    INSTANCE_BUFFER_INDEX = 0,
+};
+
 enum GlobalBindingIndices {
     GLOBAL_MATERIAL_BUFFER_INDEX = 0,
     GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX = 1,
@@ -101,14 +105,17 @@ struct InstanceData {
     mat3 normalMatrix;
 };
 
-// TODO: now it uses normalMatrix that is for non uniform scaled objects if more data in the PushConstant is needed
-// another Push constat layout is needed as well
 struct DrawPushConstants {
     mat4 model;                                 // 64 bytes
     mat3 normalMatrix;                          // 48 (with padding) bytes
     uint32_t flags;                             // 4 bytes
     uint32_t materialIndex = NO_MATERIAL_INDEX; // 4 bytes
     uint32_t padding[2];                        // 8 bytes
+};
+
+struct DrawInstancePushConstants {
+    uint32_t flags;                             // 4 bytes
+    uint32_t materialIndex = NO_MATERIAL_INDEX; // 4 bytes
 };
 
 struct PBRMaterial {

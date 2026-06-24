@@ -8,7 +8,7 @@ constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 constexpr int MAX_GLOBAL_TEXTURES = MAX_TEXTURES;
 constexpr int MAX_MATERIALS = 500;
 constexpr int MAX_GLOBAL_SAMPLERS = MAX_SAMPLERS;
-constexpr int MAX_DESCRIPTOR_SETS = 4;
+constexpr int MAX_INSTANCE_BUFFERS = 1000;
 } // namespace vax
 
 #define VK_CHECK(x)                                                                                                    \

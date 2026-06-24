@@ -56,7 +56,7 @@ class SceneNode final {
     const std::vector<SceneNode>& children() const { return _children; }
     const std::vector<DrawableModel>& drawableModels() const { return _drawableModels; }
 
-    void loadDrawableModelsMeshes(vax::vk::CommandBuffer& commandBuffer);
+    void loadDrawableModelsMeshes(const vax::objects::MeshPBR::LoadMeshBuffersContext& context);
 
     const vax::math::TransformHandle& transformHandle() const { return _transformHandle; }
 

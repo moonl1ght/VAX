@@ -1,4 +1,4 @@
-#include "descriptorSetWriter.h"
+#include "descriptorSetHandler.h"
 #include "buffer.h"
 #include "texture.h"
 #include "vkUtils.h"
@@ -6,7 +6,7 @@
 using namespace vax::vk;
 using namespace vax;
 
-void DescriptorSetWriter::writeBuffer(
+void DescriptorSetHandler::writeBuffer(
     const Buffer& buffer, uint32_t binding, uint32_t offset, VkDescriptorType descriptorType, uint32_t arrayElement
 ) {
     VkDescriptorBufferInfo& bufferInfo = _bufferInfos.emplace_back(
@@ -26,7 +26,7 @@ void DescriptorSetWriter::writeBuffer(
     _writes.push_back(write);
 }
 
-void DescriptorSetWriter::writeTexture(
+void DescriptorSetHandler::writeTexture(
     const vax::textures::Texture& texture, uint32_t binding, uint32_t arrayElement
 ) {
     auto imageInfoOpt = texture.descriptorImageInfoNoSampler();
@@ -50,7 +50,7 @@ void DescriptorSetWriter::writeTexture(
     _writes.push_back(write);
 }
 
-void DescriptorSetWriter::writeTextures(const std::vector<const vax::textures::Texture*>& textures, uint32_t binding) {
+void DescriptorSetHandler::writeTextures(const std::vector<const vax::textures::Texture*>& textures, uint32_t binding) {
     std::vector<VkDescriptorImageInfo> imageInfos;
     imageInfos.reserve(textures.size());
     for (const auto& texture : textures) {
@@ -76,7 +76,7 @@ void DescriptorSetWriter::writeTextures(const std::vector<const vax::textures::T
     _writes.push_back(write);
 }
 
-void DescriptorSetWriter::writeSampler(const vax::textures::Sampler& sampler, uint32_t binding, uint32_t arrayElement) {
+void DescriptorSetHandler::writeSampler(const vax::textures::Sampler& sampler, uint32_t binding, uint32_t arrayElement) {
     VkDescriptorImageInfo& samplerInfo = _imageInfos.emplace_back(
         VkDescriptorImageInfo{
             .sampler = sampler.vkSampler,
@@ -96,12 +96,12 @@ void DescriptorSetWriter::writeSampler(const vax::textures::Sampler& sampler, ui
     _writes.push_back(write);
 }
 
-VkDescriptorSet DescriptorSetWriter::update() {
+VkDescriptorSet DescriptorSetHandler::update() {
     vkUpdateDescriptorSets(_device.get().vkDevice, static_cast<uint32_t>(_writes.size()), _writes.data(), 0, nullptr);
     return _descriptorSet;
 }
 
-void DescriptorSetWriter::clear() {
+void DescriptorSetHandler::clear() {
     _writes.clear();
     _bufferInfos.clear();
     _imageInfos.clear();

@@ -5,6 +5,7 @@
 #include "resourceHandle.h"
 #include "submesh.h"
 #include "transform.h"
+#include "descriptorSetHandler.h"
 
 namespace vax::objects {
 class PrimitivesBuilder;
@@ -19,6 +20,8 @@ class DrawableModel final {
         bool hasTangents = false;
         bool skipPushConstants = false;
         bool precomputedMVP = false;
+        uint32_t instancesCount = 1;
+        bool instanceDrawing = false;
     };
 
     friend class vax::objects::PrimitivesBuilder;
@@ -27,9 +30,13 @@ class DrawableModel final {
     // TODO: probably remove this one, as it used for standalone drawing but prefer scene node drawing.
     std::optional<vax::math::TransformHandle> transformHandle;
 
-    vax::math::TransformMatrixHandle transformMatrixHandle;
+    std::vector<vax::math::TransformMatrixHandle> instanceTransformMatrixHandles = {{}};
 
-    struct DrawContext {};
+    struct DrawContext {
+        VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+        VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+        vax::vk::DescriptorSetHandler* descriptorHandler = nullptr;
+    };
 
     explicit DrawableModel(vax::MeshManager& meshManager, vax::MeshHandle meshHandle)
         : _meshManager(meshManager)
@@ -43,16 +50,20 @@ class DrawableModel final {
 
     ~DrawableModel() {};
 
-    bool loadMesh(vax::vk::CommandBuffer& commandBuffer);
+    bool loadMesh(const vax::objects::MeshPBR::LoadMeshBuffersContext& context);
 
     void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
 
     Settings& settings() { return _settings; }
+
     const Settings& settings() const { return _settings; }
+
     void setSettings(const Settings& settings) { _settings = settings; }
 
     vax::objects::Submesh& submesh(size_t index) { return _submeshes[index]; }
+
     const vax::objects::Submesh& submesh(size_t index) const { return _submeshes[index]; }
+
     size_t submeshCount() const { return _submeshes.size(); }
 
   private:
@@ -66,5 +77,8 @@ class DrawableModel final {
     vax::objects::MeshPBR* _mesh;
     std::vector<vax::objects::Submesh> _submeshes;
     Settings _settings;
+
+    void _drawInstance(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t flags);
+    void _drawSingleMesh(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t flags);
 };
 } // namespace vax::objects

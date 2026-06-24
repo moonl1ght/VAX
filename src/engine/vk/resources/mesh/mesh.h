@@ -12,11 +12,16 @@ class MeshManager;
 namespace vax::objects {
 template <typename VertexType> class Mesh final {
   public:
+    struct LoadMeshBuffersContext final {
+        vax::vk::CommandBuffer* commandBuffer;
+        uint32_t maxFramesInFlight;
+    };
+
     friend class vax::MeshManager;
 
     std::optional<vax::vk::Buffer> vertexBuffer = std::nullopt;
     std::optional<vax::vk::Buffer> indexBuffer = std::nullopt;
-    std::optional<vax::vk::Buffer> instancesBuffer = std::nullopt;
+    std::vector<vax::vk::Buffer> instanceBuffers;
 
     explicit Mesh(const vax::vk::Device& device, uint32_t instancesCount = 1)
         : _device(device)
@@ -60,7 +65,7 @@ template <typename VertexType> class Mesh final {
         return *this;
     }
 
-    bool loadBuffers(vax::vk::CommandBuffer& commandBuffer);
+    bool loadBuffers(const LoadMeshBuffersContext& context);
 
     bool isLoaded() const { return _isLoaded; }
 

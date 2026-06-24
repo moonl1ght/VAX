@@ -29,7 +29,7 @@ class GwSceneGraph final {
         VkQueue submitQueue
     );
 
-    void loadDrawableModels(vax::vk::CommandBuffer& commandBuffer);
+    void loadDrawableModels(const vax::objects::MeshPBR::LoadMeshBuffersContext& context);
 
     void draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
 

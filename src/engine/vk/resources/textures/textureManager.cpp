@@ -1,5 +1,5 @@
 #include "textureManager.h"
-#include "descriptorSetWriter.h"
+#include "descriptorSetHandler.h"
 #include "textureFactory.h"
 
 using namespace vax;
@@ -101,8 +101,8 @@ std::optional<textures::Texture> TextureManager::detach(TextureHandle handle) {
     return std::move(it->second);
 }
 
-void TextureManager::updateDescriptorWriterWithAllTextures(
-    vax::vk::DescriptorSetWriter& descriptorWriter, uint32_t binding
+void TextureManager::updateDescriptorHandlerWithAllTextures(
+    vax::vk::DescriptorSetHandler& descriptorHandler, uint32_t binding
 ) const {
     std::vector<const textures::Texture*> textures(_pool.size());
     for (auto& [id, texture] : _pool) {
@@ -112,7 +112,7 @@ void TextureManager::updateDescriptorWriterWithAllTextures(
     if (textures.empty()) {
         return;
     }
-    descriptorWriter.writeTextures(textures, binding);
+    descriptorHandler.writeTextures(textures, binding);
 }
 
 std::optional<TextureManager::SamplerResource> TextureManager::getGlobalSampler(GlobalSampler sampler) {

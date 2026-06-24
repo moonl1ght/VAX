@@ -22,6 +22,7 @@ bool DescriptorSetManager::createDescriptorSetPool() {
     uint32_t uniformBufferCount = 1;
     uint32_t materialBufferCount = 1;
     uint32_t environmentMapCount = 1;
+    uint32_t instanceBufferCount = vax::MAX_INSTANCE_BUFFERS;
     uint32_t samplerCount = vax::MAX_GLOBAL_SAMPLERS;
     uint32_t textureCount = vax::MAX_GLOBAL_TEXTURES;
     // auto samplersImageLimit = _device.get().getPhysicalDeviceProperties().limits.maxPerStageDescriptorSamplers;
@@ -30,19 +31,25 @@ bool DescriptorSetManager::createDescriptorSetPool() {
     uint32_t maxMaterials = static_cast<uint32_t>(_maxFramesInFlight) * materialBufferCount;
     uint32_t maxTextures = static_cast<uint32_t>(_maxFramesInFlight) * textureCount;
     uint32_t maxSamplers = static_cast<uint32_t>(_maxFramesInFlight) * samplerCount;
+    uint32_t maxInstanceBuffers = static_cast<uint32_t>(_maxFramesInFlight) * instanceBufferCount;
+
+    auto totalStorageBuffers = maxMaterials + maxEnvironmentMaps + maxInstanceBuffers;
     // maxImageSamplerSets = std::min(maxImageSamplerSets, samplersImageLimit);
 
     std::vector<VkDescriptorPoolSize> poolSizes = {
         {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBuffers},
-        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, maxMaterials + maxEnvironmentMaps},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, totalStorageBuffers},
         {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, maxTextures},
-        {VK_DESCRIPTOR_TYPE_SAMPLER, maxSamplers}
+        {VK_DESCRIPTOR_TYPE_SAMPLER, maxSamplers},
     };
 
+    uint32_t totalSetsPerFrame = uniformBufferCount + materialBufferCount + environmentMapCount + instanceBufferCount +
+                                 textureCount + samplerCount;
+    uint32_t maxAllocatedSets = static_cast<uint32_t>(_maxFramesInFlight) * totalSetsPerFrame;
     VkDescriptorPoolCreateInfo poolInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
-        .maxSets = static_cast<uint32_t>(_maxFramesInFlight) * vax::MAX_DESCRIPTOR_SETS,
+        .maxSets = maxAllocatedSets,
         .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
         .pPoolSizes = poolSizes.data(),
     };
@@ -60,11 +67,13 @@ const DescriptorSetLayout* DescriptorSetManager::getDescriptorSetLayout(Descript
         return &_globalDescriptorSetLayout.value();
     } else if (setType == DescriptorSetLayout::SetType::PER_FRAME) {
         return &_perFrameDescriptorSetLayout.value();
+    } else if (setType == DescriptorSetLayout::SetType::INSTANCE) {
+        return &_instanceDescriptorSetLayout.value();
     }
     return nullptr;
 }
 
-std::optional<DescriptorSetWriter> createOrGetDescriptorSet(
+std::optional<DescriptorSetHandler> createOrGetDescriptorSet(
     const Device& device,
     std::vector<VkDescriptorSet>& descriptorSets,
     const DescriptorSetLayout& descriptorSetLayout,
@@ -73,7 +82,7 @@ std::optional<DescriptorSetWriter> createOrGetDescriptorSet(
     const uint32_t frameIndex
 ) {
     if (descriptorSets.size() == maxFramesInFlight) {
-        return std::make_optional<DescriptorSetWriter>(device, descriptorSets[frameIndex]);
+        return std::make_optional<DescriptorSetHandler>(device, descriptorSets[frameIndex]);
     }
     std::vector<VkDescriptorSetLayout> layouts(
         static_cast<size_t>(maxFramesInFlight), descriptorSetLayout.getVkDescriptorSetLayout()
@@ -89,11 +98,11 @@ std::optional<DescriptorSetWriter> createOrGetDescriptorSet(
     if (result != VK_SUCCESS) {
         return std::nullopt;
     }
-    return std::make_optional<DescriptorSetWriter>(device, descriptorSets[frameIndex]);
+    return std::make_optional<DescriptorSetHandler>(device, descriptorSets[frameIndex]);
 }
 
-std::optional<DescriptorSetWriter>
-DescriptorSetManager::getDescriptorSetWriter(uint32_t frameIndex, DescriptorSetLayout::SetType setType) {
+std::optional<DescriptorSetHandler>
+DescriptorSetManager::getDescriptorSetHandler(uint32_t frameIndex, DescriptorSetLayout::SetType setType) {
     switch (setType) {
     case DescriptorSetLayout::SetType::GLOBAL:
         return createOrGetDescriptorSet(
@@ -109,6 +118,15 @@ DescriptorSetManager::getDescriptorSetWriter(uint32_t frameIndex, DescriptorSetL
             _device.get(),
             _perFrameDescriptorSets,
             _perFrameDescriptorSetLayout.value(),
+            _descriptorPool,
+            _maxFramesInFlight,
+            frameIndex
+        );
+    case DescriptorSetLayout::SetType::INSTANCE:
+        return createOrGetDescriptorSet(
+            _device.get(),
+            _instanceDescriptorSets,
+            _instanceDescriptorSetLayout.value(),
             _descriptorPool,
             _maxFramesInFlight,
             frameIndex
@@ -160,7 +178,21 @@ bool DescriptorSetManager::createDescriptorSetLayouts() {
         _logger.error("Failed to create base descriptor set layout!");
         return false;
     }
+    DescriptorSetLayoutBuilder instanceBuilder(_device.get(), "instance_descriptor_set_layout");
+    instanceBuilder.addBinding(
+        InstanceBindingIndices::INSTANCE_BUFFER_INDEX,
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+        VK_SHADER_STAGE_VERTEX_BIT,
+        vax::MAX_INSTANCE_BUFFERS
+    );
+    auto instanceDescriptorSetLayout = instanceBuilder.build(DescriptorSetLayout::SetType::INSTANCE);
+    instanceBuilder.clear();
+    if (!instanceDescriptorSetLayout) {
+        _logger.error("Failed to create instance descriptor set layout!");
+        return false;
+    }
     _globalDescriptorSetLayout = std::move(globalDescriptorSetLayout.value());
     _perFrameDescriptorSetLayout = std::move(perFrameDescriptorSetLayout.value());
+    _instanceDescriptorSetLayout = std::move(instanceDescriptorSetLayout.value());
     return true;
 }

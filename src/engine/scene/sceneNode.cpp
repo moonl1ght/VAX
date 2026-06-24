@@ -13,7 +13,7 @@ void SceneNode::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLay
     );
 
     for (auto& drawableModel : _drawableModels) {
-        drawableModel.transformMatrixHandle = worldHandle;
+        drawableModel.instanceTransformMatrixHandles[0] = worldHandle;
         drawableModel.draw(commandBuffer, pipelineLayout);
     }
 
@@ -39,12 +39,12 @@ void SceneNode::insertDrawableModel(DrawableModel&& drawableModel) {
     _drawableModels.push_back(std::move(drawableModel));
 }
 
-void SceneNode::loadDrawableModelsMeshes(vax::vk::CommandBuffer& commandBuffer) {
+void SceneNode::loadDrawableModelsMeshes(const vax::objects::MeshPBR::LoadMeshBuffersContext& context) {
     for (auto& drawableModel : _drawableModels) {
-        drawableModel.loadMesh(commandBuffer);
+        drawableModel.loadMesh(context);
     }
     for (auto& child : _children) {
-        child.loadDrawableModelsMeshes(commandBuffer);
+        child.loadDrawableModelsMeshes(context);
     }
 }
 

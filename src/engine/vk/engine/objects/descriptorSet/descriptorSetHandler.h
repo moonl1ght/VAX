@@ -14,20 +14,20 @@ class Sampler;
 } // namespace vax::textures
 
 namespace vax::vk {
-struct DescriptorSetWriter {
+struct DescriptorSetHandler {
   public:
-    explicit DescriptorSetWriter(const vax::vk::Device& device, VkDescriptorSet descriptorSet)
+    explicit DescriptorSetHandler(const vax::vk::Device& device, VkDescriptorSet descriptorSet)
         : _device(device)
         , _descriptorSet(descriptorSet) {
         _writes.reserve(100);
     }
 
-    ~DescriptorSetWriter() {}
+    ~DescriptorSetHandler() {}
 
-    DescriptorSetWriter(const DescriptorSetWriter&) = delete;
-    DescriptorSetWriter& operator=(const DescriptorSetWriter&) = delete;
-    DescriptorSetWriter(DescriptorSetWriter&& other) noexcept = delete;
-    DescriptorSetWriter& operator=(DescriptorSetWriter&& other) noexcept = delete;
+    DescriptorSetHandler(const DescriptorSetHandler&) = delete;
+    DescriptorSetHandler& operator=(const DescriptorSetHandler&) = delete;
+    DescriptorSetHandler(DescriptorSetHandler&& other) noexcept = delete;
+    DescriptorSetHandler& operator=(DescriptorSetHandler&& other) noexcept = delete;
 
     void writeBuffer(
         const Buffer& buffer,

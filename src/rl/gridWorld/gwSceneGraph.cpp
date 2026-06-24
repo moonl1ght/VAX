@@ -56,14 +56,14 @@ void GwSceneGraph::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& 
     }
 }
 
-void GwSceneGraph::loadDrawableModels(vax::vk::CommandBuffer& commandBuffer) {
+void GwSceneGraph::loadDrawableModels(const vax::objects::MeshPBR::LoadMeshBuffersContext& context) {
     if (_agentNode) {
-        _agentNode->loadDrawableModelsMeshes(commandBuffer);
+        _agentNode->loadDrawableModelsMeshes(context);
     } else {
         _logger.warning("Agent node not loaded!");
     }
     for (auto& node : _envNodes) {
-        node.loadDrawableModelsMeshes(commandBuffer);
+        node.loadDrawableModelsMeshes(context);
     }
 }
 
