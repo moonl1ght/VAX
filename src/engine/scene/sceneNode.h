@@ -4,6 +4,7 @@
 #include "transform.h"
 #include <optional>
 #include <vector>
+#include "drawContext.h"
 
 namespace vax::objects {
 class ModelLoader;
@@ -37,7 +38,7 @@ class SceneNode final {
     const std::string& name() const { return _name; };
     bool hasDrawableModels() const { return !_drawableModels.empty(); };
 
-    void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
+    void draw(const vax::renderer::DrawContext& drawContext);
 
     /// @param depth - depth of the child, if -1 search from all children with max depth,
     ///                 if 0 will compare only with node itself.

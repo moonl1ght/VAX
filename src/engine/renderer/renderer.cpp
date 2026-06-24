@@ -229,8 +229,15 @@ bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::DrawableScene* sce
             return;
         }
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline);
-
-        scene->draw(commandBuffer, *pipeline);
+        auto descriptorHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+            _currentFrame, vax::vk::DescriptorSetLayout::SetType::INSTANCE
+        );
+        DrawContext drawContext{
+            .commandBuffer = commandBuffer,
+            .pipelineLayout = pipeline->vkPipelineLayout,
+            .descriptorHandler = descriptorHandler.has_value() ? &descriptorHandler.value() : nullptr
+        };
+        scene->draw(drawContext);
 
         if (!_drawBackground(commandBuffer, scene)) {
             _logger.error("Failed to draw background!");
@@ -293,8 +300,10 @@ bool Renderer::_drawBackground(VkCommandBuffer commandBuffer, vax::DrawableScene
         return false;
     }
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline);
-
-    scene->drawBackground(commandBuffer, *pipeline);
+    DrawContext drawContext{
+        .commandBuffer = commandBuffer, .pipelineLayout = pipeline->vkPipelineLayout, .descriptorHandler = nullptr
+    };
+    scene->drawBackground(drawContext);
     return true;
 }
 
@@ -335,6 +344,9 @@ bool Renderer::_drawGizmo(VkCommandBuffer commandBuffer, vax::DrawableScene* sce
         return false;
     }
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, gizmoPipeline->vkPipeline);
-    scene->drawGizmo(commandBuffer, *gizmoPipeline);
+    DrawContext drawContext{
+        .commandBuffer = commandBuffer, .pipelineLayout = gizmoPipeline->vkPipelineLayout, .descriptorHandler = nullptr
+    };
+    scene->drawGizmo(drawContext);
     return true;
 }

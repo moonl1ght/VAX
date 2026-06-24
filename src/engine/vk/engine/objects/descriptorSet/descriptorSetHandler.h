@@ -16,9 +16,10 @@ class Sampler;
 namespace vax::vk {
 struct DescriptorSetHandler {
   public:
-    explicit DescriptorSetHandler(const vax::vk::Device& device, VkDescriptorSet descriptorSet)
+    explicit DescriptorSetHandler(const vax::vk::Device& device, VkDescriptorSet descriptorSet, uint32_t id)
         : _device(device)
-        , _descriptorSet(descriptorSet) {
+        , _descriptorSet(descriptorSet)
+        , _id(id) {
         _writes.reserve(100);
     }
 
@@ -37,8 +38,7 @@ struct DescriptorSetHandler {
         uint32_t arrayElement = 0
     );
 
-    void
-    writeTexture(const vax::textures::Texture& texture, uint32_t binding, uint32_t arrayElement = 0);
+    void writeTexture(const vax::textures::Texture& texture, uint32_t binding, uint32_t arrayElement = 0);
 
     void writeTextures(const std::vector<const vax::textures::Texture*>& textures, uint32_t binding);
 
@@ -50,9 +50,12 @@ struct DescriptorSetHandler {
 
     void clear();
 
+    uint32_t id() const { return _id; }
+
   private:
     vax::utils::Logger _logger = vax::utils::Logger("DescriptorSetWriter");
     std::reference_wrapper<const vax::vk::Device> _device;
+    uint32_t _id;
     VkDescriptorSet _descriptorSet;
     std::vector<VkWriteDescriptorSet> _writes;
     std::deque<VkDescriptorBufferInfo> _bufferInfos;

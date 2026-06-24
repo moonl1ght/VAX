@@ -6,6 +6,7 @@ using namespace vax::rl::gw;
 using namespace vax;
 using namespace vax::math;
 using namespace vax::rl::math;
+using namespace vax::renderer;
 
 bool GwSceneGraph::load(
     objects::ModelLoader& modelLoader,
@@ -45,14 +46,14 @@ bool GwSceneGraph::load(
     return true;
 }
 
-void GwSceneGraph::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
+void GwSceneGraph::draw(const DrawContext& drawContext) {
     if (_agentNode) {
-        _agentNode->draw(commandBuffer, pipeline.vkPipelineLayout);
+        _agentNode->draw(drawContext);
     } else {
         _logger.warning("Agent node not loaded!");
     }
     for (auto& node : _envNodes) {
-        node.draw(commandBuffer, pipeline.vkPipelineLayout);
+        node.draw(drawContext);
     }
 }
 

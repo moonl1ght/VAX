@@ -1,16 +1,17 @@
 #include "drawableModel.h"
 
 using namespace vax::objects;
+using namespace vax::renderer;
 
 bool DrawableModel::loadMesh(const MeshPBR::LoadMeshBuffersContext& context) { return _mesh->loadBuffers(context); }
 
-void DrawableModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) {
+void DrawableModel::draw(const DrawContext& drawContext) {
     if (!_mesh->isLoaded())
         return;
     VkBuffer vertexBuffers[] = {_mesh->vertexBuffer->vkBuffer()};
     VkDeviceSize offsets[] = {0};
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, _mesh->indexBuffer->vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindVertexBuffers(drawContext.commandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(drawContext.commandBuffer, _mesh->indexBuffer->vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
     uint32_t flags = ObjectFlags::NoFlags;
     if (_settings.useWireframe) {
@@ -24,13 +25,19 @@ void DrawableModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelin
     }
 
     if (_settings.instanceDrawing) {
-        _drawInstance(commandBuffer, pipelineLayout, flags);
+        _drawInstance(drawContext, flags);
     } else {
-        _drawSingleMesh(commandBuffer, pipelineLayout, flags);
+        _drawSingleMesh(drawContext, flags);
+    }
+    if (drawContext.descriptorHandler) {
+        if (_descriptorSetId == vax::NullId) {
+            _descriptorSetId = drawContext.descriptorHandler->id();
+            std::cout << "descriptorSetId: " << _descriptorSetId << std::endl;
+        }
     }
 }
 
-void DrawableModel::_drawInstance(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t flags) {
+void DrawableModel::_drawInstance(const DrawContext& drawContext, uint32_t flags) {
     DrawInstancePushConstants drawPushConstants{};
     drawPushConstants.flags = flags;
 
@@ -38,19 +45,19 @@ void DrawableModel::_drawInstance(VkCommandBuffer commandBuffer, VkPipelineLayou
         if (!_settings.skipPushConstants) {
             drawPushConstants.materialIndex = submesh.materialIndex;
             vkCmdPushConstants(
-                commandBuffer,
-                pipelineLayout,
+                drawContext.commandBuffer,
+                drawContext.pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
                 sizeof(DrawInstancePushConstants),
                 &drawPushConstants
             );
         }
-        vkCmdDrawIndexed(commandBuffer, submesh.indexCount, _settings.instancesCount, submesh.firstIndex, submesh.vertexOffset, 0);
+        vkCmdDrawIndexed(drawContext.commandBuffer, submesh.indexCount, _settings.instancesCount, submesh.firstIndex, submesh.vertexOffset, 0);
     }
 }
 
-void DrawableModel::_drawSingleMesh(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t flags) {
+void DrawableModel::_drawSingleMesh(const DrawContext& drawContext, uint32_t flags) {
     DrawPushConstants drawPushConstants{};
     if (transformHandle.has_value()) {
         drawPushConstants.model = transformHandle->getModelMatrix();
@@ -65,14 +72,14 @@ void DrawableModel::_drawSingleMesh(VkCommandBuffer commandBuffer, VkPipelineLay
         if (!_settings.skipPushConstants) {
             drawPushConstants.materialIndex = submesh.materialIndex;
             vkCmdPushConstants(
-                commandBuffer,
-                pipelineLayout,
+                drawContext.commandBuffer,
+                drawContext.pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
                 sizeof(DrawPushConstants),
                 &drawPushConstants
             );
         }
-        vkCmdDrawIndexed(commandBuffer, submesh.indexCount, 1, submesh.firstIndex, submesh.vertexOffset, 0);
+        vkCmdDrawIndexed(drawContext.commandBuffer, submesh.indexCount, 1, submesh.firstIndex, submesh.vertexOffset, 0);
     }
 }

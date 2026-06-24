@@ -6,6 +6,7 @@
 #include "submesh.h"
 #include "transform.h"
 #include "descriptorSetHandler.h"
+#include "drawContext.h"
 
 namespace vax::objects {
 class PrimitivesBuilder;
@@ -32,12 +33,6 @@ class DrawableModel final {
 
     std::vector<vax::math::TransformMatrixHandle> instanceTransformMatrixHandles = {{}};
 
-    struct DrawContext {
-        VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-        VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-        vax::vk::DescriptorSetHandler* descriptorHandler = nullptr;
-    };
-
     explicit DrawableModel(vax::MeshManager& meshManager, vax::MeshHandle meshHandle)
         : _meshManager(meshManager)
         , _meshHandle(meshHandle) {};
@@ -52,7 +47,7 @@ class DrawableModel final {
 
     bool loadMesh(const vax::objects::MeshPBR::LoadMeshBuffersContext& context);
 
-    void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
+    void draw(const vax::renderer::DrawContext& drawContext);
 
     Settings& settings() { return _settings; }
 
@@ -77,8 +72,9 @@ class DrawableModel final {
     vax::objects::MeshPBR* _mesh;
     std::vector<vax::objects::Submesh> _submeshes;
     Settings _settings;
+    uint32_t _descriptorSetId = vax::NullId;
 
-    void _drawInstance(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t flags);
-    void _drawSingleMesh(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t flags);
+    void _drawInstance(const vax::renderer::DrawContext& drawContext, uint32_t flags);
+    void _drawSingleMesh(const vax::renderer::DrawContext& drawContext, uint32_t flags);
 };
 } // namespace vax::objects

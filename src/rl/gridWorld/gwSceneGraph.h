@@ -9,6 +9,7 @@
 #include "sceneNode.h"
 #include <memory>
 #include "rlMath.h"
+#include "drawContext.h"
 
 namespace vax::rl::gw {
 // TODO: move to generic scene graph
@@ -31,7 +32,7 @@ class GwSceneGraph final {
 
     void loadDrawableModels(const vax::objects::MeshPBR::LoadMeshBuffersContext& context);
 
-    void draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
+    void draw(const vax::renderer::DrawContext& drawContext);
 
     void update(float deltaTime);
 

@@ -2,6 +2,7 @@
 
 #include "camera.h"
 #include "descriptorSetHandler.h"
+#include "drawContext.h"
 #include "drawableModel.h"
 #include "environmentMap.h"
 #include "gwSceneGraph.h"
@@ -74,11 +75,11 @@ class DrawableScene final : public vax::input::InputController::Observer {
 
     bool writeFrameDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler);
 
-    void draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
+    void draw(const vax::renderer::DrawContext& drawContext);
 
-    void drawBackground(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
+    void drawBackground(const vax::renderer::DrawContext& drawContext);
 
-    void drawGizmo(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
+    void drawGizmo(const vax::renderer::DrawContext& drawContext);
 
     void onMouseMove(const vax::input::MouseMoveValue& value);
 

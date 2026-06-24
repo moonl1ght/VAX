@@ -3,6 +3,7 @@
 #include "swapchain.h"
 
 using namespace vax;
+using namespace vax::renderer;
 
 void DrawableScene::prepareForDraw(renderer::RenderCallContext renderCallContext) {
     _renderCallContext = renderCallContext;
@@ -64,8 +65,7 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
     commandBuffer.begin();
     _modelLoader.loadStaged(commandBuffer);
     vax::objects::MeshPBR::LoadMeshBuffersContext context = {
-        .commandBuffer = &commandBuffer,
-        .maxFramesInFlight = vax::MAX_FRAMES_IN_FLIGHT
+        .commandBuffer = &commandBuffer, .maxFramesInFlight = vax::MAX_FRAMES_IN_FLIGHT
     };
     _gizmo->loadMesh(context);
     _background->loadMesh(context);
@@ -118,24 +118,22 @@ bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetHandler& 
     return true;
 }
 
-void vax::DrawableScene::draw(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
-    _sceneGraph->draw(commandBuffer, pipeline);
-}
+void vax::DrawableScene::draw(const DrawContext& drawContext) { _sceneGraph->draw(drawContext); }
 
-void vax::DrawableScene::drawBackground(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
+void vax::DrawableScene::drawBackground(const DrawContext& drawContext) {
     if (!_background)
         return;
-    _background->draw(commandBuffer, pipeline.vkPipelineLayout);
+    _background->draw(drawContext);
 }
 
-void vax::DrawableScene::drawGizmo(VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline) {
+void vax::DrawableScene::drawGizmo(const DrawContext& drawContext) {
     if (!_gizmo)
         return;
     auto viewMatrix = _gizmoCamera.viewMatrix();
     auto projectionMatrix = _gizmoCamera.projectionMatrix();
     auto viewProjectionMatrix = projectionMatrix * viewMatrix;
     _gizmo->instanceTransformMatrixHandles[0].updateModelMatrix(viewProjectionMatrix);
-    _gizmo->draw(commandBuffer, pipeline.vkPipelineLayout);
+    _gizmo->draw(drawContext);
 }
 
 void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {
@@ -145,14 +143,18 @@ void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {
 
 void vax::DrawableScene::onMouseWheel(float delta) { _mainCamera.zoomBy(0.1f * delta); }
 
-void vax::DrawableScene::onKeyEvent(const vax::input::KeyEvent& keyEvent) { }
+void vax::DrawableScene::onKeyEvent(const vax::input::KeyEvent& keyEvent) {}
 
 void vax::DrawableScene::_loadEnvironmentMap(VkQueue submitQueue) {
     _environmentMap->load(
-        {.textures =
-             {{scene::EnvironmentMap::TextureType::BRDFLUT, RES_PATH("brdf/brdfLUT.ktx")},
-              {scene::EnvironmentMap::TextureType::EnvMapIrradiance, RES_PATH("brdf/irradiance.ktx")},
-              {scene::EnvironmentMap::TextureType::EnvMap, RES_PATH("brdf/prefilter.ktx")}}},
+        {
+        .textures =
+            {
+            {scene::EnvironmentMap::TextureType::BRDFLUT, RES_PATH("brdf/brdfLUT.ktx")},
+            {scene::EnvironmentMap::TextureType::EnvMapIrradiance, RES_PATH("brdf/irradiance.ktx")},
+            {scene::EnvironmentMap::TextureType::EnvMap, RES_PATH("brdf/prefilter.ktx")},
+            },
+        },
         submitQueue
     );
 }

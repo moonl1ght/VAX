@@ -5,16 +5,15 @@ using namespace vax::objects;
 using namespace vax;
 using namespace vax::math;
 
-void SceneNode::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) {
+void SceneNode::draw(const vax::renderer::DrawContext& drawContext) {
     TransformMatrixHandle worldHandle;
     // TODO: cache this matrix
-    worldHandle.updateModelMatrix(
-        _parentTransformMatrices.getModelMatrix() * _transformHandle.getModelMatrix()
-    );
+
+    worldHandle.updateModelMatrix(_parentTransformMatrices.getModelMatrix() * _transformHandle.getModelMatrix());
 
     for (auto& drawableModel : _drawableModels) {
         drawableModel.instanceTransformMatrixHandles[0] = worldHandle;
-        drawableModel.draw(commandBuffer, pipelineLayout);
+        drawableModel.draw(drawContext);
     }
 
     for (auto& child : _children) {
@@ -24,7 +23,7 @@ void SceneNode::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLay
             );
             child._isChildrenTransformDirty = true;
         }
-        child.draw(commandBuffer, pipelineLayout);
+        child.draw(drawContext);
     }
 
     _isChildrenTransformDirty = false;

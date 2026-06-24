@@ -75,14 +75,16 @@ const DescriptorSetLayout* DescriptorSetManager::getDescriptorSetLayout(Descript
 
 std::optional<DescriptorSetHandler> createOrGetDescriptorSet(
     const Device& device,
+    uint32_t idOffset,
     std::vector<VkDescriptorSet>& descriptorSets,
     const DescriptorSetLayout& descriptorSetLayout,
     const VkDescriptorPool descriptorPool,
     const uint32_t maxFramesInFlight,
     const uint32_t frameIndex
 ) {
+    uint32_t descriptorSetId = idOffset * maxFramesInFlight + frameIndex ;
     if (descriptorSets.size() == maxFramesInFlight) {
-        return std::make_optional<DescriptorSetHandler>(device, descriptorSets[frameIndex]);
+        return std::make_optional<DescriptorSetHandler>(device, descriptorSets[frameIndex], descriptorSetId);
     }
     std::vector<VkDescriptorSetLayout> layouts(
         static_cast<size_t>(maxFramesInFlight), descriptorSetLayout.getVkDescriptorSetLayout()
@@ -98,7 +100,7 @@ std::optional<DescriptorSetHandler> createOrGetDescriptorSet(
     if (result != VK_SUCCESS) {
         return std::nullopt;
     }
-    return std::make_optional<DescriptorSetHandler>(device, descriptorSets[frameIndex]);
+    return std::make_optional<DescriptorSetHandler>(device, descriptorSets[frameIndex], descriptorSetId);
 }
 
 std::optional<DescriptorSetHandler>
@@ -107,6 +109,7 @@ DescriptorSetManager::getDescriptorSetHandler(uint32_t frameIndex, DescriptorSet
     case DescriptorSetLayout::SetType::GLOBAL:
         return createOrGetDescriptorSet(
             _device.get(),
+            0,
             _globalDescriptorSets,
             _globalDescriptorSetLayout.value(),
             _descriptorPool,
@@ -116,6 +119,7 @@ DescriptorSetManager::getDescriptorSetHandler(uint32_t frameIndex, DescriptorSet
     case DescriptorSetLayout::SetType::PER_FRAME:
         return createOrGetDescriptorSet(
             _device.get(),
+            1,
             _perFrameDescriptorSets,
             _perFrameDescriptorSetLayout.value(),
             _descriptorPool,
@@ -125,6 +129,7 @@ DescriptorSetManager::getDescriptorSetHandler(uint32_t frameIndex, DescriptorSet
     case DescriptorSetLayout::SetType::INSTANCE:
         return createOrGetDescriptorSet(
             _device.get(),
+            2,
             _instanceDescriptorSets,
             _instanceDescriptorSetLayout.value(),
             _descriptorPool,
