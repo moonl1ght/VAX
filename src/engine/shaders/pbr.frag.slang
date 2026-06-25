@@ -33,7 +33,7 @@ float3 ACESFilm(float3 x) {
 }
 
 [shader("fragment")]
-float4 fragMain(FragmentInput input)
+float4 fragMain(uniform DrawPushConstants pushConstants, FragmentInput input)
     : SV_Target {
     PBRMaterial material = materials[pushConstants.materialIndex];
     float2[2] UVs = float2[2](input.uv, input.uv2);

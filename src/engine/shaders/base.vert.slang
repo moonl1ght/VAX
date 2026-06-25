@@ -3,7 +3,7 @@ import sharedUtils;
 import uniforms;
 
 [shader("vertex")]
-VertexOutput vertMain(VertexInput input) {
+VertexOutput vertMain(uniform DrawPushConstants pushConstants, VertexInput input) {
     VertexOutput output;
     if ((pushConstants.flags & ObjectFlags::PrecomputedMVP) != 0) {
         output.position = mul(pushConstants.model, float4(input.position, 1.0));

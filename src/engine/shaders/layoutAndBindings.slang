@@ -3,6 +3,9 @@ import uniforms;
 [vk::binding(FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX, SetIndices::PER_FRAME_SET_INDEX)]
 ConstantBuffer<UniformBufferObject> ubo;
 
+[vk::binding(FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX, SetIndices::PER_FRAME_SET_INDEX)]
+StructuredBuffer<InstanceData> instances;
+
 [vk::binding(GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX, SetIndices::GLOBAL_SET_INDEX)]
 StructuredBuffer<PBRMaterial> materials;
 
@@ -17,9 +20,6 @@ Texture2D globalTextures[MAX_TEXTURES];
 
 [vk::binding(GlobalBindingIndices::GLOBAL_TEXTURE_INDEX, SetIndices::GLOBAL_SET_INDEX)]
 TextureCube globalCubeTextures[MAX_TEXTURES];
-
-[vk::push_constant]
-DrawPushConstants pushConstants;
 
 struct VertexInput {
     [vk::location(VertexInputIndices::VERTEX_INPUT_POSITION_INDEX)]

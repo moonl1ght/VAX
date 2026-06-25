@@ -21,11 +21,9 @@ template <typename VertexType> class Mesh final {
 
     std::optional<vax::vk::Buffer> vertexBuffer = std::nullopt;
     std::optional<vax::vk::Buffer> indexBuffer = std::nullopt;
-    std::vector<vax::vk::Buffer> instanceBuffers;
 
     explicit Mesh(const vax::vk::Device& device, uint32_t instancesCount = 1)
-        : _device(device)
-        , _instancesCount(instancesCount) {};
+        : _device(device) {};
     ~Mesh() { cleanup(); };
 
     Mesh(const Mesh& other) = delete;
@@ -40,8 +38,7 @@ template <typename VertexType> class Mesh final {
         , _id(other._id)
         , _isDetached(other._isDetached)
         , vertexBuffer(std::move(other.vertexBuffer))
-        , indexBuffer(std::move(other.indexBuffer))
-        , _instancesCount(other._instancesCount) {
+        , indexBuffer(std::move(other.indexBuffer)) {
         other._isLoaded = false;
         other._id = vax::NullId;
         other._isDetached = true;
@@ -60,7 +57,6 @@ template <typename VertexType> class Mesh final {
             _isLoaded = other._isLoaded;
             _id = other._id;
             _isDetached = other._isDetached;
-            _instancesCount = other._instancesCount;
         }
         return *this;
     }
@@ -91,8 +87,6 @@ template <typename VertexType> class Mesh final {
 
     void setName(const std::string& name) { _name = name; }
 
-    uint32_t instancesCount() const { return _instancesCount; }
-
   private:
     utils::Logger _logger = utils::Logger("Mesh");
 
@@ -108,7 +102,6 @@ template <typename VertexType> class Mesh final {
     bool _isLoaded = false;
     MeshId _id = vax::NullId;
     bool _isDetached = true;
-    uint32_t _instancesCount = 1;
 
     void _destroy();
 

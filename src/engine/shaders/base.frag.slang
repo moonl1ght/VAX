@@ -16,7 +16,7 @@ struct FragmentInput {
 };
 
 [shader("fragment")]
-float4 fragMain(FragmentInput input)
+float4 fragMain(uniform DrawPushConstants pushConstants, FragmentInput input)
     : SV_Target {
     PBRMaterial material = materials[pushConstants.materialIndex];
 

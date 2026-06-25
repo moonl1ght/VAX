@@ -13,7 +13,6 @@ class DescriptorSetManager {
         , _maxFramesInFlight(maxFramesInFlight) {
         _globalDescriptorSets.reserve(_maxFramesInFlight);
         _perFrameDescriptorSets.reserve(_maxFramesInFlight);
-        _instanceDescriptorSets.reserve(_maxFramesInFlight);
     };
 
     ~DescriptorSetManager() {};
@@ -39,16 +38,13 @@ class DescriptorSetManager {
 
     std::optional<DescriptorSetLayout> _globalDescriptorSetLayout = std::nullopt;
     std::optional<DescriptorSetLayout> _perFrameDescriptorSetLayout = std::nullopt;
-    std::optional<DescriptorSetLayout> _instanceDescriptorSetLayout = std::nullopt;
 
     VkDescriptorPool _descriptorPool = VK_NULL_HANDLE;
 
     std::vector<VkDescriptorSet> _globalDescriptorSets;
     std::vector<VkDescriptorSet> _perFrameDescriptorSets;
-    std::vector<VkDescriptorSet> _instanceDescriptorSets;
 
     bool createDescriptorSetLayouts();
     bool createDescriptorSetPool();
-    bool createInstanceDescriptorSetLayout();
 };
 } // namespace vax::vk

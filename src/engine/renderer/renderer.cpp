@@ -229,13 +229,9 @@ bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::DrawableScene* sce
             return;
         }
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline);
-        auto descriptorHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            _currentFrame, vax::vk::DescriptorSetLayout::SetType::INSTANCE
-        );
         DrawContext drawContext{
             .commandBuffer = commandBuffer,
             .pipelineLayout = pipeline->vkPipelineLayout,
-            .descriptorHandler = descriptorHandler.has_value() ? &descriptorHandler.value() : nullptr
         };
         scene->draw(drawContext);
 
@@ -301,7 +297,8 @@ bool Renderer::_drawBackground(VkCommandBuffer commandBuffer, vax::DrawableScene
     }
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline);
     DrawContext drawContext{
-        .commandBuffer = commandBuffer, .pipelineLayout = pipeline->vkPipelineLayout, .descriptorHandler = nullptr
+        .commandBuffer = commandBuffer,
+        .pipelineLayout = pipeline->vkPipelineLayout,
     };
     scene->drawBackground(drawContext);
     return true;
@@ -345,7 +342,8 @@ bool Renderer::_drawGizmo(VkCommandBuffer commandBuffer, vax::DrawableScene* sce
     }
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, gizmoPipeline->vkPipeline);
     DrawContext drawContext{
-        .commandBuffer = commandBuffer, .pipelineLayout = gizmoPipeline->vkPipelineLayout, .descriptorHandler = nullptr
+        .commandBuffer = commandBuffer,
+        .pipelineLayout = gizmoPipeline->vkPipelineLayout,
     };
     scene->drawGizmo(drawContext);
     return true;

@@ -29,32 +29,26 @@ void DrawableModel::draw(const DrawContext& drawContext) {
     } else {
         _drawSingleMesh(drawContext, flags);
     }
-    if (drawContext.descriptorHandler) {
-        if (_descriptorSetId == vax::NullId) {
-            _descriptorSetId = drawContext.descriptorHandler->id();
-            std::cout << "descriptorSetId: " << _descriptorSetId << std::endl;
-        }
-    }
 }
 
 void DrawableModel::_drawInstance(const DrawContext& drawContext, uint32_t flags) {
-    DrawInstancePushConstants drawPushConstants{};
-    drawPushConstants.flags = flags;
+    // DrawInstancePushConstants drawPushConstants{};
+    // drawPushConstants.flags = flags;
 
-    for (auto& submesh : _submeshes) {
-        if (!_settings.skipPushConstants) {
-            drawPushConstants.materialIndex = submesh.materialIndex;
-            vkCmdPushConstants(
-                drawContext.commandBuffer,
-                drawContext.pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(DrawInstancePushConstants),
-                &drawPushConstants
-            );
-        }
-        vkCmdDrawIndexed(drawContext.commandBuffer, submesh.indexCount, _settings.instancesCount, submesh.firstIndex, submesh.vertexOffset, 0);
-    }
+    // for (auto& submesh : _submeshes) {
+    //     if (!_settings.skipPushConstants) {
+    //         drawPushConstants.materialIndex = submesh.materialIndex;
+    //         vkCmdPushConstants(
+    //             drawContext.commandBuffer,
+    //             drawContext.pipelineLayout,
+    //             VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+    //             0,
+    //             sizeof(DrawInstancePushConstants),
+    //             &drawPushConstants
+    //         );
+    //     }
+    //     vkCmdDrawIndexed(drawContext.commandBuffer, submesh.indexCount, _settings.instancesCount, submesh.firstIndex, submesh.vertexOffset, 0);
+    // }
 }
 
 void DrawableModel::_drawSingleMesh(const DrawContext& drawContext, uint32_t flags) {

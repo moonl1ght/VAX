@@ -72,7 +72,6 @@ class DrawableModel final {
     vax::objects::MeshPBR* _mesh;
     std::vector<vax::objects::Submesh> _submeshes;
     Settings _settings;
-    uint32_t _descriptorSetId = vax::NullId;
 
     void _drawInstance(const vax::renderer::DrawContext& drawContext, uint32_t flags);
     void _drawSingleMesh(const vax::renderer::DrawContext& drawContext, uint32_t flags);

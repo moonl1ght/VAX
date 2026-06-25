@@ -25,16 +25,11 @@ typedef float4 vec4;
 enum SetIndices {
     GLOBAL_SET_INDEX = 0,
     PER_FRAME_SET_INDEX = 1,
-    // PER_RENDER_PASS_SET_INDEX = 2,
-    // PER_DRAW_SET_INDEX = 3,
 };
 
 enum FrameBindingIndices {
     FRAME_UNIFORM_BUFFER_INDEX = 0,
-};
-
-enum InstanceBindingIndices {
-    INSTANCE_BUFFER_INDEX = 0,
+    FRAME_INSTANCE_BUFFER_INDEX = 1,
 };
 
 enum GlobalBindingIndices {
@@ -111,11 +106,6 @@ struct DrawPushConstants {
     uint32_t flags;                             // 4 bytes
     uint32_t materialIndex = NO_MATERIAL_INDEX; // 4 bytes
     uint32_t padding[2];                        // 8 bytes
-};
-
-struct DrawInstancePushConstants {
-    uint32_t flags;                             // 4 bytes
-    uint32_t materialIndex = NO_MATERIAL_INDEX; // 4 bytes
 };
 
 struct PBRMaterial {
