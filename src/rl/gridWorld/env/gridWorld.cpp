@@ -1,11 +1,11 @@
 #include "gridWorld.h"
+#include "fileUtils.h"
 #include "inputController.h"
 #include "nlohmann/json.hpp"
 #include "randomGenerator.h"
 #include "rlMath.h"
 #include "tensorOp.h"
 #include "transform.h"
-#include "fileUtils.h"
 
 using namespace vax::rl::gw::env;
 using namespace vax::rl::gw;
@@ -74,7 +74,7 @@ GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
         }
 
         descriptor.drawableDescriptors.push_back(
-            objects::LoaderDescriptor{
+            objects::ModelDescriptor{
             std::string(blockTypeToPath(blockType)),
             transform,
             }

@@ -5,6 +5,7 @@
 #include "luna.h"
 #include "materialManager.h"
 #include "meshManager.h"
+#include "ssboManager.h"
 
 namespace vax::vk {
 class CommandManager;
@@ -16,11 +17,13 @@ class PrimitivesBuilder {
   public:
     explicit PrimitivesBuilder(
         vax::MeshManager& meshManager,
+        vax::SSBOManager& ssboManager,
         vax::MaterialManager& materialManager,
         vax::vk::CommandManager& commandManager,
         vax::vk::QueueManager& queueManager
     )
         : _meshManager(meshManager)
+        , _ssboManager(ssboManager)
         , _materialManager(materialManager)
         , _commandManager(commandManager)
         , _queueManager(queueManager) {};
@@ -36,6 +39,7 @@ class PrimitivesBuilder {
     std::optional<vax::objects::DrawableModel> createBackground();
 
   private:
+    std::reference_wrapper<vax::SSBOManager> _ssboManager;
     std::reference_wrapper<vax::MeshManager> _meshManager;
     std::reference_wrapper<vax::MaterialManager> _materialManager;
     std::reference_wrapper<vax::vk::CommandManager> _commandManager;

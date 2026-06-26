@@ -1,6 +1,6 @@
 #include "gwSceneGraph.h"
 #include "gridWorldDescriptor.h"
-#include "loaderDescriptor.h"
+#include "modelDescriptor.h"
 
 using namespace vax::rl::gw;
 using namespace vax;

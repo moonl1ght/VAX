@@ -1,11 +1,11 @@
 #pragma once
 
 #include "drawableModel.h"
-#include "loaderDescriptor.h"
+#include "modelDescriptor.h"
 
 namespace vax::rl::gw::env {
 struct GridWorldDrawableDescriptor final {
-    std::vector<vax::objects::LoaderDescriptor> drawableDescriptors;
-    vax::objects::LoaderDescriptor agentDrawableDescriptor;
+    std::vector<vax::objects::ModelDescriptor> drawableDescriptors;
+    vax::objects::ModelDescriptor agentDrawableDescriptor;
 };
 } // namespace vax::rl::gw::env

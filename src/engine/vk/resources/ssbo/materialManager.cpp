@@ -3,7 +3,10 @@
 
 using namespace vax;
 
-void MaterialManager::cleanup() { _materials.clear(); }
+void MaterialManager::cleanup() {
+    _materials.clear();
+    _buffer->cleanup();
+}
 
 bool MaterialManager::setup() {
     VkDeviceSize bufferSize = sizeof(PBRMaterial) * vax::MAX_MATERIALS;

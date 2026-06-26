@@ -29,7 +29,7 @@ void vax::DrawableScene::resize() {
 void vax::DrawableScene::loadSceneGraph(
     const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue
 ) {
-    _resourceManager.setup();
+    _resourceManager.setup(_modelsController.maxDrawableInstances());
     _sceneGraph = std::make_unique<vax::rl::gw::GwSceneGraph>();
     _sceneGraph->load(_modelLoader, descriptor, nullptr);
     _load(submitQueue);
@@ -114,6 +114,12 @@ bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetHandler& 
         FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+    );
+    descriptorHandler.writeBuffer(
+        _resourceManager.ssboManager().instanceBuffer(),
+        FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX,
+        0,
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );
     return true;
 }

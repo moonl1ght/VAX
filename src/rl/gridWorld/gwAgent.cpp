@@ -11,7 +11,7 @@ using namespace vax::rl::math;
 using namespace vax::math;
 using namespace vax::utils;
 
-vax::objects::LoaderDescriptor Agent::getDrawableDescriptor() const {
+vax::objects::ModelDescriptor Agent::getDrawableDescriptor() const {
     // TODO: check if initial transform affects the model
     return {
         RES_PATH("assets/models/rover/rover.urdf"),

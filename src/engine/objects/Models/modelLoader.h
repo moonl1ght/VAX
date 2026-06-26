@@ -1,7 +1,7 @@
 #pragma once
 
 #include "drawableModel.h"
-#include "loaderDescriptor.h"
+#include "modelDescriptor.h"
 #include "luna.h"
 #include "resourceManager.h"
 #include "sceneNode.h"
@@ -22,7 +22,7 @@ class ModelLoader final {
     ModelLoader& operator=(ModelLoader&& other) noexcept = delete;
 
     std::optional<SceneNode>
-    loadSceneModel(const vax::objects::LoaderDescriptor& descriptor, VkQueue submitQueue = nullptr);
+    loadSceneModel(const vax::objects::ModelDescriptor& descriptor, VkQueue submitQueue = nullptr);
 
     std::optional<DrawableModel> loadModel(const std::string& path, uint32_t instancesCount = 1, VkQueue submitQueue = nullptr);
 
@@ -35,7 +35,7 @@ class ModelLoader final {
     std::reference_wrapper<vax::ResourceManager> _resourceManager;
     std::reference_wrapper<vax::textures::TextureLoader> _textureLoader;
 
-    std::optional<SceneNode> _loadURDFSceneModel(vax::objects::LoaderDescriptor descriptor, VkQueue submitQueue);
-    std::optional<SceneNode> _loadGLBSceneModel(vax::objects::LoaderDescriptor descriptor, VkQueue submitQueue);
+    std::optional<SceneNode> _loadURDFSceneModel(vax::objects::ModelDescriptor descriptor, VkQueue submitQueue);
+    std::optional<SceneNode> _loadGLBSceneModel(vax::objects::ModelDescriptor descriptor, VkQueue submitQueue);
 };
 } // namespace vax::objects

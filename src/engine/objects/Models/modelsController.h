@@ -1,12 +1,17 @@
 #pragma once
 
+#include "drawableModel.h"
 #include "logger.h"
+#include "modelLoader.h"
+#include "resourceManager.h"
 #include "vkUtils.h"
 
 namespace vax::objects {
 class ModelsController {
   public:
-    explicit ModelsController() {};
+    explicit ModelsController(vax::ResourceManager& resourceManager, vax::objects::ModelLoader& modelLoader)
+        : _resourceManager(resourceManager)
+        , _modelLoader(modelLoader) {};
 
     ~ModelsController() {};
 
@@ -15,23 +20,14 @@ class ModelsController {
     ModelsController(ModelsController&& other) noexcept = delete;
     ModelsController& operator=(ModelsController&& other) noexcept = delete;
 
-    bool canAddDrawableInstance() const;
-
-    bool addDrawableInstance(uint32_t instanceCount);
-
-    bool removeDrawableInstance(uint32_t instanceCount);
-
-    uint32_t drawableInstancesCount() const;
-
-    uint32_t maxDrawableInstances() const;
-
-    void resetDrawableInstancesCounter();
+    uint32_t maxDrawableInstances() const { return _maxDrawableInstances; }
 
   private:
     vax::utils::Logger _logger = vax::utils::Logger("ModelsController");
     const uint32_t _maxDrawableInstances = vax::MAX_DRAWABLE_INSTANCES;
 
-    uint32_t _drawableInstancesCount = 0;
-
+    std::reference_wrapper<vax::ResourceManager> _resourceManager;
+    std::reference_wrapper<vax::objects::ModelLoader> _modelLoader;
+    std::vector<vax::objects::DrawableModel> _drawableModels;
 };
 } // namespace vax::objects

@@ -3,7 +3,7 @@
 #include "transform.h"
 
 namespace vax::objects {
-struct LoaderDescriptor {
+struct ModelDescriptor {
     enum class ModelExtension {
         GLB, URDF, UNKNOWN
     };

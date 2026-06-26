@@ -9,6 +9,7 @@
 #include "inputController.h"
 #include "luna.h"
 #include "modelLoader.h"
+#include "modelsController.h"
 #include "pipeline.h"
 #include "primitivesBuilder.h"
 #include "renderContext.h"
@@ -41,11 +42,13 @@ class DrawableScene final : public vax::input::InputController::Observer {
         , _primitivesBuilder(
               vax::objects::PrimitivesBuilder(
                   _resourceManager.meshManager(),
+                  _resourceManager.ssboManager(),
                   _resourceManager.materialManager(),
                   *_vkEngine.get().commandManager,
                   *_vkEngine.get().queueManager
               )
-          ) {
+          )
+        , _modelsController(_resourceManager, _modelLoader) {
         _environmentMap = std::make_optional<vax::scene::EnvironmentMap>(_textureLoader, *vkEngine.device);
     };
 
@@ -93,6 +96,7 @@ class DrawableScene final : public vax::input::InputController::Observer {
     vax::utils::Logger _logger = vax::utils::Logger("DrawableScene");
     std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
     std::reference_wrapper<vax::vk::Engine> _vkEngine;
+    vax::objects::ModelsController _modelsController;
     vax::ResourceManager _resourceManager;
     vax::textures::TextureLoader _textureLoader;
     vax::objects::ModelLoader _modelLoader;
@@ -104,9 +108,6 @@ class DrawableScene final : public vax::input::InputController::Observer {
     std::optional<vax::objects::DrawableModel> _background;
     std::optional<vax::objects::DrawableModel> _gizmo;
     std::optional<vax::scene::EnvironmentMap> _environmentMap;
-
-    bool _needsUpdateMaterialsSSBO = true;
-    bool _needsUpdateTexturesSSBO = true;
 
     vax::renderer::RenderCallContext _renderCallContext;
     vax::SceneUpdateContext _sceneUpdateContext;

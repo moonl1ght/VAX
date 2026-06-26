@@ -1,6 +1,7 @@
 #pragma once
 
 #include "device.h"
+#include "buffer.h"
 
 namespace vax {
 class SSBOManager final {
@@ -15,12 +16,18 @@ class SSBOManager final {
     SSBOManager& operator=(const SSBOManager& other) = delete;
     SSBOManager& operator=(SSBOManager&& other) noexcept = delete;
 
-    bool setup();
+    bool setup(uint32_t maxInstances);
 
     void cleanup();
+
+    bool updateInstance(uint32_t index, const InstanceData& instance);
+
+    const vax::vk::Buffer& instanceBuffer() const { return *_buffer; }
 
   private:
     vax::utils::Logger _logger = vax::utils::Logger("SSBOManager");
     std::reference_wrapper<const vax::vk::Device> _device;
+    std::unique_ptr<vax::vk::Buffer> _buffer = nullptr;
+    uint32_t _maxInstances = 0;
 };
 } // namespace vax

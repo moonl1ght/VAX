@@ -7,13 +7,16 @@ void ResourceManager::cleanup() {
     _meshManager.fullCleanup();
     _textureManager.fullCleanup();
     _materialManager.cleanup();
+    _ssboManager.cleanup();
     _logger.debug("ResourceManager cleanup complete");
 }
 
-bool ResourceManager::setup() {
+bool ResourceManager::setup(uint32_t maxInstances) {
     if (!_materialManager.setup())
         return false;
     if (!_textureManager.setup())
+        return false;
+    if (!_ssboManager.setup(maxInstances))
         return false;
     return true;
 }

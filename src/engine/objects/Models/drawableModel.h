@@ -1,12 +1,12 @@
 #pragma once
 
+#include "drawContext.h"
 #include "luna.h"
 #include "mesh.h"
 #include "resourceHandle.h"
+#include "ssboManager.h"
 #include "submesh.h"
 #include "transform.h"
-#include "descriptorSetHandler.h"
-#include "drawContext.h"
 
 namespace vax::objects {
 class PrimitivesBuilder;
@@ -33,8 +33,9 @@ class DrawableModel final {
 
     std::vector<vax::math::TransformMatrixHandle> instanceTransformMatrixHandles = {{}};
 
-    explicit DrawableModel(vax::MeshManager& meshManager, vax::MeshHandle meshHandle)
+    explicit DrawableModel(vax::MeshManager& meshManager, vax::SSBOManager& ssboManager, vax::MeshHandle meshHandle)
         : _meshManager(meshManager)
+        , _ssboManager(ssboManager)
         , _meshHandle(meshHandle) {};
 
     DrawableModel(DrawableModel&& other) noexcept = default;
@@ -65,6 +66,7 @@ class DrawableModel final {
     vax::utils::Logger _logger = vax::utils::Logger("DrawableModel");
 
     std::reference_wrapper<vax::MeshManager> _meshManager;
+    std::reference_wrapper<vax::SSBOManager> _ssboManager;
 
     vax::MeshHandle _meshHandle;
 

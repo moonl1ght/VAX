@@ -5,6 +5,7 @@
 #include "materialManager.h"
 #include "meshManager.h"
 #include "textureManager.h"
+#include "ssboManager.h"
 
 namespace vax {
 class ResourceManager final {
@@ -13,14 +14,15 @@ class ResourceManager final {
         : _bufferManager(device)
         , _meshManager(device)
         , _textureManager(device, allocator)
-        , _materialManager(device) {};
+        , _materialManager(device)
+        , _ssboManager(device) {};
 
     ResourceManager(const ResourceManager& other) = delete;
     ResourceManager(ResourceManager&& other) noexcept = delete;
     ResourceManager& operator=(const ResourceManager& other) = delete;
     ResourceManager& operator=(ResourceManager&& other) noexcept = delete;
 
-    bool setup();
+    bool setup(uint32_t maxInstances);
 
     void cleanup();
 
@@ -32,6 +34,8 @@ class ResourceManager final {
 
     vax::MaterialManager& materialManager() { return _materialManager; }
 
+    vax::SSBOManager& ssboManager() { return _ssboManager; }
+
   private:
     vax::utils::Logger _logger = vax::utils::Logger("ResourceManager");
 
@@ -39,5 +43,6 @@ class ResourceManager final {
     vax::MeshManager _meshManager;
     vax::TextureManager _textureManager;
     vax::MaterialManager _materialManager;
+    vax::SSBOManager _ssboManager;
 };
 } // namespace vax

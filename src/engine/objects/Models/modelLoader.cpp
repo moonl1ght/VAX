@@ -227,7 +227,8 @@ void processNode(
     }
 }
 
-std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, uint32_t instancesCount, VkQueue submitQueue) {
+std::optional<DrawableModel>
+ModelLoader::loadModel(const std::string& path, uint32_t instancesCount, VkQueue submitQueue) {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -294,7 +295,9 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, uin
     (*mesh).second->setVertices(modelVertices);
     (*mesh).second->setIndices(modelIndices);
 
-    auto drawableModel = vax::objects::DrawableModel(_resourceManager.get().meshManager(), mesh->first);
+    auto drawableModel = vax::objects::DrawableModel(
+        _resourceManager.get().meshManager(), _resourceManager.get().ssboManager(), mesh->first
+    );
     drawableModel._mesh = (*mesh).second;
     drawableModel._submeshes = submeshes;
     drawableModel._settings.hasTangents = hasTangents;
@@ -373,7 +376,7 @@ SceneNode processURDFLink(
     return node;
 }
 
-std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(LoaderDescriptor descriptor, VkQueue submitQueue) {
+std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(ModelDescriptor descriptor, VkQueue submitQueue) {
     auto path = descriptor.path;
     auto model = urdf::parseURDFFile(path);
     if (!model) {
@@ -389,7 +392,7 @@ std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(LoaderDescriptor descr
     return std::optional<SceneNode>(std::in_place, std::move(rootNode));
 }
 
-std::optional<SceneNode> ModelLoader::_loadGLBSceneModel(LoaderDescriptor descriptor, VkQueue submitQueue) {
+std::optional<SceneNode> ModelLoader::_loadGLBSceneModel(ModelDescriptor descriptor, VkQueue submitQueue) {
     auto path = descriptor.path;
     auto model = loadModel(path, descriptor.instancesCount, submitQueue);
     if (!model.has_value()) {
@@ -402,19 +405,16 @@ std::optional<SceneNode> ModelLoader::_loadGLBSceneModel(LoaderDescriptor descri
     return std::optional<SceneNode>(std::in_place, std::move(node));
 }
 
-std::optional<SceneNode> ModelLoader::loadSceneModel(const vax::objects::LoaderDescriptor& descriptor, VkQueue submitQueue) {
-    if (descriptor.getModelExtension() == vax::objects::LoaderDescriptor::ModelExtension::URDF) {
+std::optional<SceneNode>
+ModelLoader::loadSceneModel(const vax::objects::ModelDescriptor& descriptor, VkQueue submitQueue) {
+    if (descriptor.getModelExtension() == vax::objects::ModelDescriptor::ModelExtension::URDF) {
         return _loadURDFSceneModel(descriptor, submitQueue);
-    } else if (descriptor.getModelExtension() == vax::objects::LoaderDescriptor::ModelExtension::GLB) {
+    } else if (descriptor.getModelExtension() == vax::objects::ModelDescriptor::ModelExtension::GLB) {
         return _loadGLBSceneModel(descriptor, submitQueue);
     }
     return std::nullopt;
 }
 
-void ModelLoader::loadStaged(vax::vk::CommandBuffer& commandBuffer) {
-    _textureLoader.get().loadStaged(commandBuffer);
-}
+void ModelLoader::loadStaged(vax::vk::CommandBuffer& commandBuffer) { _textureLoader.get().loadStaged(commandBuffer); }
 
-void ModelLoader::cleanupStaged() {
-    _textureLoader.get().cleanupStaged();
-}
+void ModelLoader::cleanupStaged() { _textureLoader.get().cleanupStaged(); }
