@@ -13,36 +13,36 @@ bool GwSceneGraph::load(
     const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor,
     VkQueue submitQueue
 ) {
-    auto agentModel = modelLoader.loadSceneModel(descriptor.agentDrawableDescriptor, submitQueue);
-    agentModel->updateTransform([](vax::math::TransformHandle& transformHandle) {
-        transformHandle.updateTransform([](vax::math::Transform& transform) {
-            transform.updateRotationInDegrees({-90.0f, 0.0f, 0.0f});
-        });
-    });
-    if (!agentModel.has_value()) {
-        _logger.error("Failed to load agent model: {}", descriptor.agentDrawableDescriptor.path);
-        return false;
-    }
-    _agentNode = std::make_unique<vax::objects::SceneNode>(std::move(agentModel.value()));
-    _roverModelProxy = std::make_unique<vax::rl::models::RoverModelProxy>();
-    _roverModelProxy->linkModelNode(_agentNode);
+    // auto agentModel = modelLoader.loadSceneModel(descriptor.agentDrawableDescriptor, submitQueue);
+    // agentModel->updateTransform([](vax::math::TransformHandle& transformHandle) {
+    //     transformHandle.updateTransform([](vax::math::Transform& transform) {
+    //         transform.updateRotationInDegrees({-90.0f, 0.0f, 0.0f});
+    //     });
+    // });
+    // if (!agentModel.has_value()) {
+    //     _logger.error("Failed to load agent model: {}", descriptor.agentDrawableDescriptor.path);
+    //     return false;
+    // }
+    // _agentNode = std::make_unique<vax::objects::SceneNode>(std::move(agentModel.value()));
+    // _roverModelProxy = std::make_unique<vax::rl::models::RoverModelProxy>();
+    // _roverModelProxy->linkModelNode(_agentNode);
 
-    _envNodes.reserve(descriptor.drawableDescriptors.size());
-    for (const auto& drawableDescriptor : descriptor.drawableDescriptors) {
-        auto model = modelLoader.loadSceneModel(drawableDescriptor, submitQueue);
-        if (!model.has_value()) {
-            _logger.error("Failed to load model: {}", drawableDescriptor.path);
-            continue;
-        }
-        model->updateTransform([&](vax::math::TransformHandle& transformHandle) {
-            transformHandle.updateTransform([&](vax::math::Transform& transform) {
-                transform.position = drawableDescriptor.initialTransform.position;
-                transform.rotation = drawableDescriptor.initialTransform.rotation;
-                transform.scale = drawableDescriptor.initialTransform.scale;
-            });
-        });
-        _envNodes.push_back(std::move(model.value()));
-    }
+    // _envNodes.reserve(descriptor.drawableDescriptors.size());
+    // for (const auto& drawableDescriptor : descriptor.drawableDescriptors) {
+    //     auto model = modelLoader.loadSceneModel(drawableDescriptor, submitQueue);
+    //     if (!model.has_value()) {
+    //         _logger.error("Failed to load model: {}", drawableDescriptor.path);
+    //         continue;
+    //     }
+    //     model->updateTransform([&](vax::math::TransformHandle& transformHandle) {
+    //         transformHandle.updateTransform([&](vax::math::Transform& transform) {
+    //             transform.position = drawableDescriptor.initialTransform.position;
+    //             transform.rotation = drawableDescriptor.initialTransform.rotation;
+    //             transform.scale = drawableDescriptor.initialTransform.scale;
+    //         });
+    //     });
+    //     _envNodes.push_back(std::move(model.value()));
+    // }
     return true;
 }
 

@@ -10,6 +10,7 @@ void ModelsController::preloadModels(
     VkQueue submitQueue
 ) {
     uint32_t totalModelsCount = 0;
+    uint32_t currentModelIndex = 0;
     for (const auto& modelDescriptor : modelDescriptors) {
         totalModelsCount += modelDescriptor.instancesCount;
         if (totalModelsCount > _maxDrawableInstances) {
@@ -19,9 +20,11 @@ void ModelsController::preloadModels(
             );
             break;
         }
+        ++currentModelIndex;
         switch (modelDescriptor.modelType) {
         case vax::objects::ModelDescriptor::ModelType::MODEL: {
-            auto model = _modelLoader.get().loadModel(modelDescriptor.path, modelDescriptor.instancesCount);
+            auto model =
+                _modelLoader.get().loadModel(modelDescriptor.path, currentModelIndex, modelDescriptor.instancesCount);
             if (model) {
                 _drawableModels.push_back(std::move(*model));
                 _modelInfos[modelDescriptor.name] = {modelDescriptor, _drawableModels.size() - 1};
@@ -30,7 +33,9 @@ void ModelsController::preloadModels(
         }
         case vax::objects::ModelDescriptor::ModelType::PRIMITIVE_CUBE: {
             auto primitiveDescriptor = modelDescriptor.primitiveDescriptor;
-            auto primitive = _primitivesBuilder.get().createCube(primitiveDescriptor.size, primitiveDescriptor.color);
+            auto primitive = _primitivesBuilder.get().createCube(
+                primitiveDescriptor.size, primitiveDescriptor.color, currentModelIndex
+            );
             if (primitive) {
                 _drawableModels.push_back(std::move(*primitive));
                 _modelInfos[modelDescriptor.name] = {modelDescriptor, _drawableModels.size() - 1};
@@ -38,7 +43,7 @@ void ModelsController::preloadModels(
             break;
         }
         case vax::objects::ModelDescriptor::ModelType::PRIMITIVE_PLANE: {
-            auto primitive = _primitivesBuilder.get().createPlane();
+            auto primitive = _primitivesBuilder.get().createPlane(currentModelIndex);
             if (primitive) {
                 _drawableModels.push_back(std::move(*primitive));
                 _modelInfos[modelDescriptor.name] = {modelDescriptor, _drawableModels.size() - 1};

@@ -6,7 +6,7 @@
 using namespace vax::objects;
 using namespace vax;
 
-std::optional<DrawableModel> PrimitivesBuilder::createCube(float size, vax::Color color) {
+std::optional<DrawableModel> PrimitivesBuilder::createCube(float size, vax::Color color, uint32_t ssboIndex) {
     auto mesh = _meshManager.get().createEmptyMesh();
     if (!mesh)
         return std::nullopt;
@@ -64,13 +64,14 @@ std::optional<DrawableModel> PrimitivesBuilder::createCube(float size, vax::Colo
         .indexCount = static_cast<uint32_t>(mesh->second->indices().size()),
         .materialIndex = materialIndex,
     };
-    auto drawableModel = vax::objects::DrawableModel(_meshManager.get(), _ssboManager.get(), mesh.value().first);
+    auto drawableModel =
+        vax::objects::DrawableModel(_meshManager.get(), _ssboManager.get(), mesh.value().first, ssboIndex);
     drawableModel._mesh = mesh.value().second;
     drawableModel._submeshes.push_back(submesh);
     return std::optional<DrawableModel>(std::in_place, std::move(drawableModel));
 }
 
-std::optional<DrawableModel> PrimitivesBuilder::createPlane() {
+std::optional<DrawableModel> PrimitivesBuilder::createPlane(uint32_t ssboIndex) {
     auto mesh = _meshManager.get().createEmptyMesh();
     if (!mesh)
         return std::nullopt;
@@ -92,12 +93,13 @@ std::optional<DrawableModel> PrimitivesBuilder::createPlane() {
         .indexCount = static_cast<uint32_t>(mesh->second->indices().size()),
         .materialIndex = NO_MATERIAL_INDEX,
     };
-    auto drawableModel = vax::objects::DrawableModel(_meshManager.get(), _ssboManager.get(), mesh.value().first);
+    auto drawableModel =
+        vax::objects::DrawableModel(_meshManager.get(), _ssboManager.get(), mesh.value().first, ssboIndex);
     drawableModel._mesh = mesh.value().second;
     drawableModel._submeshes.push_back(submesh);
     drawableModel.setSettings(
         DrawableModel::Settings{
-            .skipPushConstants = true,
+        .skipPushConstants = true,
         }
     );
     return std::optional<DrawableModel>(std::in_place, std::move(drawableModel));

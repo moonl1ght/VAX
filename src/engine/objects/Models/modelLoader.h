@@ -1,8 +1,8 @@
 #pragma once
 
 #include "drawableModel.h"
-#include "modelDescriptor.h"
 #include "luna.h"
+#include "modelDescriptor.h"
 #include "resourceManager.h"
 #include "sceneNode.h"
 #include "textureLoader.h"
@@ -24,7 +24,8 @@ class ModelLoader final {
     std::optional<SceneNode>
     loadSceneModel(const vax::objects::ModelDescriptor& descriptor, VkQueue submitQueue = nullptr);
 
-    std::optional<DrawableModel> loadModel(const std::string& path, uint32_t instancesCount = 1, VkQueue submitQueue = nullptr);
+    std::optional<DrawableModel>
+    loadModel(const std::string& path, uint32_t ssboIndex = 0, uint32_t instancesCount = 1);
 
     void loadStaged(vax::vk::CommandBuffer& commandBuffer);
     void cleanupStaged();

@@ -20,7 +20,7 @@ constexpr glm::mat4 toGlm(const aiMatrix4x4& m) {
 }
 
 uint32_t loadTexture(
-    aiString& textureName, VkQueue submitQueue, vax::textures::TextureLoader& textureLoader, const aiScene* scene
+    aiString& textureName, vax::textures::TextureLoader& textureLoader, const aiScene* scene
 ) {
     if (textureName.length > 0) {
         const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(textureName.C_Str());
@@ -32,13 +32,13 @@ uint32_t loadTexture(
             auto data = std::span<unsigned char>(reinterpret_cast<unsigned char*>(textData), size);
             std::string name =
                 std::string(scene->mRootNode->mName.C_Str()) + "_baseColorTexture_" + std::string(textureName.C_Str());
-            auto texture = textureLoader.loadTexture(name, data, submitQueue);
+            auto texture = textureLoader.loadTexture(name, data, nullptr);
             if (texture.has_value()) {
                 return texture->first.id();
             }
             return NO_TEXTURE_FLAG;
         } else {
-            auto texture = textureLoader.loadTexture(textureName.C_Str(), submitQueue);
+            auto texture = textureLoader.loadTexture(textureName.C_Str(), nullptr);
             if (texture.has_value()) {
                 return texture->first.id();
             }
@@ -50,7 +50,6 @@ uint32_t loadTexture(
 
 PBRMaterial processMaterial(
     aiMaterial* mat,
-    VkQueue submitQueue,
     vax::textures::TextureLoader& textureLoader,
     const aiScene* scene,
     vax::SamplerId samplerId
@@ -124,16 +123,16 @@ PBRMaterial processMaterial(
     mat->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoTextureName, nullptr, &material.aoTextureUVIndex);
     mat->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveTextureName, nullptr, &material.emissiveTextureUVIndex);
 
-    material.baseColorTextureIndex = loadTexture(baseColorTextureName, submitQueue, textureLoader, scene);
+    material.baseColorTextureIndex = loadTexture(baseColorTextureName, textureLoader, scene);
     material.baseColorTextureSamplerIndex = samplerId;
-    material.normalMapTextureIndex = loadTexture(normalMapTextureName, submitQueue, textureLoader, scene);
+    material.normalMapTextureIndex = loadTexture(normalMapTextureName, textureLoader, scene);
     material.normalMapTextureSamplerIndex = samplerId;
     material.metallicRoughnessTextureIndex =
-        loadTexture(metallicRoughnessTextureName, submitQueue, textureLoader, scene);
+        loadTexture(metallicRoughnessTextureName, textureLoader, scene);
     material.metallicRoughnessTextureSamplerIndex = samplerId;
-    material.aoTextureIndex = loadTexture(aoTextureName, submitQueue, textureLoader, scene);
+    material.aoTextureIndex = loadTexture(aoTextureName, textureLoader, scene);
     material.aoTextureSamplerIndex = samplerId;
-    material.emissiveTextureIndex = loadTexture(emissiveTextureName, submitQueue, textureLoader, scene);
+    material.emissiveTextureIndex = loadTexture(emissiveTextureName, textureLoader, scene);
     material.emissiveTextureSamplerIndex = samplerId;
 
     return material;
@@ -228,7 +227,7 @@ void processNode(
 }
 
 std::optional<DrawableModel>
-ModelLoader::loadModel(const std::string& path, uint32_t instancesCount, VkQueue submitQueue) {
+ModelLoader::loadModel(const std::string& path, uint32_t ssboIndex, uint32_t instancesCount) {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -261,7 +260,7 @@ ModelLoader::loadModel(const std::string& path, uint32_t instancesCount, VkQueue
     materials.reserve(scene->mNumMaterials);
     for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
         materials.push_back(
-            processMaterial(scene->mMaterials[i], submitQueue, _textureLoader.get(), scene, pbrSamplerId)
+            processMaterial(scene->mMaterials[i], _textureLoader.get(), scene, pbrSamplerId)
         );
     }
 
@@ -296,7 +295,7 @@ ModelLoader::loadModel(const std::string& path, uint32_t instancesCount, VkQueue
     (*mesh).second->setIndices(modelIndices);
 
     auto drawableModel = vax::objects::DrawableModel(
-        _resourceManager.get().meshManager(), _resourceManager.get().ssboManager(), mesh->first
+        _resourceManager.get().meshManager(), _resourceManager.get().ssboManager(), mesh->first, ssboIndex
     );
     drawableModel._mesh = (*mesh).second;
     drawableModel._submeshes = submeshes;
@@ -386,7 +385,7 @@ std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(ModelDescriptor descri
     auto mainPath = descriptor.getMainPath();
     auto rootNode = processURDFLink(
         mainPath, _resourceManager.get(), model->getRoot(), [&](std::string name) -> std::optional<DrawableModel> {
-            return loadModel(name, descriptor.instancesCount, submitQueue);
+            return loadModel(name, descriptor.instancesCount);
         }
     );
     return std::optional<SceneNode>(std::in_place, std::move(rootNode));
@@ -394,7 +393,7 @@ std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(ModelDescriptor descri
 
 std::optional<SceneNode> ModelLoader::_loadGLBSceneModel(ModelDescriptor descriptor, VkQueue submitQueue) {
     auto path = descriptor.path;
-    auto model = loadModel(path, descriptor.instancesCount, submitQueue);
+    auto model = loadModel(path, descriptor.instancesCount);
     if (!model.has_value()) {
         _logger.error("Failed to load GLB model: " + path);
         return std::nullopt;

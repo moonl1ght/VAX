@@ -13,6 +13,7 @@ void SceneNode::draw(const vax::renderer::DrawContext& drawContext) {
 
     for (auto& drawableModel : _drawableModels) {
         drawableModel->instanceTransformMatrixHandles[0] = worldHandle;
+        drawableModel->updateSSBO({worldHandle});
         drawableModel->draw(drawContext);
     }
 

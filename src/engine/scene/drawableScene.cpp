@@ -70,7 +70,7 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
     _modelsController.preloadModels(modelDescriptors, commandBuffer1, submitQueue);
     _gizmo = std::move(_modelsController.getSceneNode("gizmo"));
     for (auto& drawableModel : _gizmo->drawableModels()) {
-        drawableModel->setSettings({.precomputedMVP = true});
+        drawableModel->setSettings({.precomputedMVP = true, .instanceDrawing = true});
     }
     _background = std::move(_modelsController.getSceneNode("background"));
 

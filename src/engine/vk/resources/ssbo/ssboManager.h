@@ -1,11 +1,16 @@
 #pragma once
 
-#include "device.h"
 #include "buffer.h"
+#include "device.h"
+#include <limits>
+#include <cstdint>
 
 namespace vax {
 class SSBOManager final {
   public:
+    using SSBOHandle = uint32_t;
+    constexpr static SSBOHandle NullSSBOHandle = std::numeric_limits<SSBOHandle>::max();
+
     explicit SSBOManager(const vax::vk::Device& device)
         : _device(device) {};
 

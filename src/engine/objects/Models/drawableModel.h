@@ -21,22 +21,25 @@ class DrawableModel final {
         bool hasTangents = false;
         bool skipPushConstants = false;
         bool precomputedMVP = false;
-        uint32_t instancesCount = 1;
         bool instanceDrawing = false;
     };
 
     friend class vax::objects::PrimitivesBuilder;
     friend class vax::objects::ModelLoader;
 
-    // TODO: probably remove this one, as it used for standalone drawing but prefer scene node drawing.
-    std::optional<vax::math::TransformHandle> transformHandle;
-
+    // TODO: remove
     std::vector<vax::math::TransformMatrixHandle> instanceTransformMatrixHandles = {{}};
 
-    explicit DrawableModel(vax::MeshManager& meshManager, vax::SSBOManager& ssboManager, vax::MeshHandle meshHandle)
+    explicit DrawableModel(
+        vax::MeshManager& meshManager,
+        vax::SSBOManager& ssboManager,
+        vax::MeshHandle meshHandle,
+        vax::SSBOManager::SSBOHandle ssboIndex
+    )
         : _meshManager(meshManager)
         , _ssboManager(ssboManager)
-        , _meshHandle(meshHandle) {};
+        , _meshHandle(meshHandle)
+        , _ssboHandle(ssboIndex) {};
 
     DrawableModel(DrawableModel&& other) noexcept = default;
     DrawableModel& operator=(DrawableModel&& other) noexcept = default;
@@ -47,6 +50,8 @@ class DrawableModel final {
     ~DrawableModel() {};
 
     bool loadMesh(const vax::objects::MeshPBR::LoadMeshBuffersContext& context);
+
+    void updateSSBO(std::vector<vax::math::TransformMatrixHandle> instanceTransformMatrixHandles);
 
     void draw(const vax::renderer::DrawContext& drawContext);
 
@@ -74,6 +79,8 @@ class DrawableModel final {
     vax::objects::MeshPBR* _mesh;
     std::vector<vax::objects::Submesh> _submeshes;
     Settings _settings;
+    uint32_t _instancesCount = 1;
+    uint32_t _ssboHandle = vax::SSBOManager::NullSSBOHandle;
 
     void _drawInstance(const vax::renderer::DrawContext& drawContext, uint32_t flags);
     void _drawSingleMesh(const vax::renderer::DrawContext& drawContext, uint32_t flags);

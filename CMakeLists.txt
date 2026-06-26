@@ -117,6 +117,7 @@ foreach(SLANG ${SLANG_SOURCE_FILES})
             -entry ${EP}
             -stage ${STAGE}
             -target spirv
+            -g -O0
             -o "${SPIRV}"
         DEPENDS ${SLANG}
         COMMENT "Compiling ${BASE_NAME} [${STAGE}]"

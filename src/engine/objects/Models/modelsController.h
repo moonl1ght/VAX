@@ -22,6 +22,7 @@ class ModelsController {
         , _modelLoader(modelLoader)
         , _primitivesBuilder(primitivesBuilder) {
         _drawableModels.reserve(_maxDrawableInstances);
+        _sceneNodes.reserve(_maxDrawableInstances);
     };
 
     ~ModelsController() {};
@@ -57,6 +58,7 @@ class ModelsController {
     std::reference_wrapper<vax::objects::PrimitivesBuilder> _primitivesBuilder;
 
     std::unordered_map<std::string, ModelInfo> _modelInfos;
+    std::vector<vax::objects::SceneNode> _sceneNodes;
     std::vector<vax::objects::DrawableModel> _drawableModels;
 };
 } // namespace vax::objects

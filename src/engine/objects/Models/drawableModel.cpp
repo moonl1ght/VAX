@@ -5,6 +5,18 @@ using namespace vax::renderer;
 
 bool DrawableModel::loadMesh(const MeshPBR::LoadMeshBuffersContext& context) { return _mesh->loadBuffers(context); }
 
+void DrawableModel::updateSSBO(std::vector<vax::math::TransformMatrixHandle> instanceTransformMatrixHandles) {
+    if (_ssboHandle == vax::SSBOManager::NullSSBOHandle) {
+        _logger.error("SSBO handle is null!");
+        return;
+    }
+    InstanceData instanceData {
+        .model = instanceTransformMatrixHandles[0].getModelMatrix(),
+        .normalMatrix = instanceTransformMatrixHandles[0].getNormalMatrix(),
+    };
+    _ssboManager.get().updateInstance(_ssboHandle, instanceData);
+}
+
 void DrawableModel::draw(const DrawContext& drawContext) {
     if (!_mesh->isLoaded())
         return;
@@ -23,6 +35,9 @@ void DrawableModel::draw(const DrawContext& drawContext) {
     if (_settings.precomputedMVP) {
         flags |= ObjectFlags::PrecomputedMVP;
     }
+    if (_ssboHandle != vax::SSBOManager::NullSSBOHandle) {
+        flags |= ObjectFlags::InstanceDrawing;
+    }
 
     if (_settings.instanceDrawing) {
         _drawInstance(drawContext, flags);
@@ -32,34 +47,30 @@ void DrawableModel::draw(const DrawContext& drawContext) {
 }
 
 void DrawableModel::_drawInstance(const DrawContext& drawContext, uint32_t flags) {
-    // DrawInstancePushConstants drawPushConstants{};
-    // drawPushConstants.flags = flags;
+    DrawPushConstants drawPushConstants{};
+    drawPushConstants.flags = flags;
+    drawPushConstants.instanceIndex = _ssboHandle;
 
-    // for (auto& submesh : _submeshes) {
-    //     if (!_settings.skipPushConstants) {
-    //         drawPushConstants.materialIndex = submesh.materialIndex;
-    //         vkCmdPushConstants(
-    //             drawContext.commandBuffer,
-    //             drawContext.pipelineLayout,
-    //             VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-    //             0,
-    //             sizeof(DrawInstancePushConstants),
-    //             &drawPushConstants
-    //         );
-    //     }
-    //     vkCmdDrawIndexed(drawContext.commandBuffer, submesh.indexCount, _settings.instancesCount, submesh.firstIndex, submesh.vertexOffset, 0);
-    // }
+    for (auto& submesh : _submeshes) {
+        if (!_settings.skipPushConstants) {
+            drawPushConstants.materialIndex = submesh.materialIndex;
+            vkCmdPushConstants(
+                drawContext.commandBuffer,
+                drawContext.pipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(DrawPushConstants),
+                &drawPushConstants
+            );
+        }
+        vkCmdDrawIndexed(drawContext.commandBuffer, submesh.indexCount, 1, submesh.firstIndex, submesh.vertexOffset, 0);
+    }
 }
 
 void DrawableModel::_drawSingleMesh(const DrawContext& drawContext, uint32_t flags) {
     DrawPushConstants drawPushConstants{};
-    if (transformHandle.has_value()) {
-        drawPushConstants.model = transformHandle->getModelMatrix();
-        drawPushConstants.normalMatrix = transformHandle->getNormalMatrix();
-    } else {
-        drawPushConstants.model = instanceTransformMatrixHandles[0].getModelMatrix();
-        drawPushConstants.normalMatrix = instanceTransformMatrixHandles[0].getNormalMatrix();
-    }
+    drawPushConstants.model = instanceTransformMatrixHandles[0].getModelMatrix();
+    drawPushConstants.normalMatrix = instanceTransformMatrixHandles[0].getNormalMatrix();
     drawPushConstants.flags = flags;
 
     for (auto& submesh : _submeshes) {
