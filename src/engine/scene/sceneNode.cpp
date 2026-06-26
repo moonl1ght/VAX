@@ -12,8 +12,8 @@ void SceneNode::draw(const vax::renderer::DrawContext& drawContext) {
     worldHandle.updateModelMatrix(_parentTransformMatrices.getModelMatrix() * _transformHandle.getModelMatrix());
 
     for (auto& drawableModel : _drawableModels) {
-        drawableModel.instanceTransformMatrixHandles[0] = worldHandle;
-        drawableModel.draw(drawContext);
+        drawableModel->instanceTransformMatrixHandles[0] = worldHandle;
+        drawableModel->draw(drawContext);
     }
 
     for (auto& child : _children) {
@@ -34,13 +34,18 @@ void SceneNode::insertChild(SceneNode&& child) {
     _isChildrenTransformDirty = true;
 }
 
+void SceneNode::addDrawableModel(DrawableModel* drawableModel) {
+    _drawableModels.push_back(drawableModel);
+}
+
 void SceneNode::insertDrawableModel(DrawableModel&& drawableModel) {
-    _drawableModels.push_back(std::move(drawableModel));
+    auto drawableModelPtr = new DrawableModel(std::move(drawableModel));
+    _drawableModels.push_back(drawableModelPtr);
 }
 
 void SceneNode::loadDrawableModelsMeshes(const vax::objects::MeshPBR::LoadMeshBuffersContext& context) {
     for (auto& drawableModel : _drawableModels) {
-        drawableModel.loadMesh(context);
+        drawableModel->loadMesh(context);
     }
     for (auto& child : _children) {
         child.loadDrawableModelsMeshes(context);

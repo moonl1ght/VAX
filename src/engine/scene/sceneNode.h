@@ -1,10 +1,10 @@
 #pragma once
 
+#include "drawContext.h"
 #include "drawableModel.h"
 #include "transform.h"
 #include <optional>
 #include <vector>
-#include "drawContext.h"
 
 namespace vax::objects {
 class ModelLoader;
@@ -52,11 +52,19 @@ class SceneNode final {
 
     void insertChild(SceneNode&& child);
 
+    // TODO: move to private
+    void addDrawableModel(DrawableModel* drawableModel);
+
+    // TODO: remove this one
     void insertDrawableModel(DrawableModel&& drawableModel);
 
     const std::vector<SceneNode>& children() const { return _children; }
-    const std::vector<DrawableModel>& drawableModels() const { return _drawableModels; }
 
+    const std::vector<DrawableModel*>& drawableModelsConst() const { return _drawableModels; }
+
+    std::vector<DrawableModel*> drawableModels() { return _drawableModels; }
+
+    // TODO: remove this one
     void loadDrawableModelsMeshes(const vax::objects::MeshPBR::LoadMeshBuffersContext& context);
 
     const vax::math::TransformHandle& transformHandle() const { return _transformHandle; }
@@ -64,9 +72,9 @@ class SceneNode final {
   private:
     std::string _name;
     std::vector<SceneNode> _children;
-    std::vector<DrawableModel> _drawableModels;
+    std::vector<DrawableModel*> _drawableModels;
     bool _isRoot = false;
-    const vax::math::Transform _originalParentRelativeTransform;
+    vax::math::Transform _originalParentRelativeTransform;
     vax::math::TransformMatrixHandle _parentTransformMatrices;
     vax::math::TransformHandle _transformHandle;
     bool _isChildrenTransformDirty = false;

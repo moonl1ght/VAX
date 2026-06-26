@@ -48,7 +48,7 @@ class DrawableScene final : public vax::input::InputController::Observer {
                   *_vkEngine.get().queueManager
               )
           )
-        , _modelsController(_resourceManager, _modelLoader) {
+        , _modelsController(_resourceManager, _modelLoader, _primitivesBuilder) {
         _environmentMap = std::make_optional<vax::scene::EnvironmentMap>(_textureLoader, *vkEngine.device);
     };
 
@@ -105,8 +105,8 @@ class DrawableScene final : public vax::input::InputController::Observer {
     vax::objects::Camera _gizmoCamera;
     UniformBufferObject _ubo;
     std::unique_ptr<vax::rl::gw::GwSceneGraph> _sceneGraph;
-    std::optional<vax::objects::DrawableModel> _background;
-    std::optional<vax::objects::DrawableModel> _gizmo;
+    std::optional<vax::objects::SceneNode> _background;
+    std::optional<vax::objects::SceneNode> _gizmo;
     std::optional<vax::scene::EnvironmentMap> _environmentMap;
 
     vax::renderer::RenderCallContext _renderCallContext;

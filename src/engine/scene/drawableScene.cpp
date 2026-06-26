@@ -52,13 +52,27 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
         allocation.second->map();
         _sceneUniformBuffers.push_back(allocation.second);
     }
-    _background = _primitivesBuilder.createBackground();
-    if (!_background) {
-        _logger.error("Failed to create background!");
-        return;
+    std::vector<vax::objects::ModelDescriptor> modelDescriptors = {
+        {
+        .path = "",
+        .name = "background",
+        .modelType = vax::objects::ModelDescriptor::ModelType::PRIMITIVE_PLANE,
+        .instancesCount = 1,
+        },
+        {
+        .path = RES_PATH("assets/models/gizmo.glb"),
+        .name = "gizmo",
+        .modelType = vax::objects::ModelDescriptor::ModelType::MODEL,
+        .instancesCount = 1,
+        }
+    };
+    auto commandBuffer1 = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
+    _modelsController.preloadModels(modelDescriptors, commandBuffer1, submitQueue);
+    _gizmo = std::move(_modelsController.getSceneNode("gizmo"));
+    for (auto& drawableModel : _gizmo->drawableModels()) {
+        drawableModel->setSettings({.precomputedMVP = true});
     }
-    _gizmo = _modelLoader.loadModel(RES_PATH("assets/models/gizmo.glb"), 1, submitQueue);
-    _gizmo->setSettings({.precomputedMVP = true});
+    _background = std::move(_modelsController.getSceneNode("background"));
 
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
 
@@ -67,12 +81,11 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
     vax::objects::MeshPBR::LoadMeshBuffersContext context = {
         .commandBuffer = &commandBuffer, .maxFramesInFlight = vax::MAX_FRAMES_IN_FLIGHT
     };
-    _gizmo->loadMesh(context);
-    _background->loadMesh(context);
     _sceneGraph->loadDrawableModels(context);
     commandBuffer.end();
     commandBuffer.submitAndWait(submitQueue);
     _modelLoader.cleanupStaged();
+
     auto cameraPos = glm::vec3(2.0f, 2.0f, 2.0f);
     _mainCamera.setPosition(cameraPos);
     _gizmoCamera.setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
@@ -138,7 +151,9 @@ void vax::DrawableScene::drawGizmo(const DrawContext& drawContext) {
     auto viewMatrix = _gizmoCamera.viewMatrix();
     auto projectionMatrix = _gizmoCamera.projectionMatrix();
     auto viewProjectionMatrix = projectionMatrix * viewMatrix;
-    _gizmo->instanceTransformMatrixHandles[0].updateModelMatrix(viewProjectionMatrix);
+    _gizmo->updateTransform([&](vax::math::TransformHandle& transformHandle) {
+        transformHandle.setCachedTransformMatrix(viewProjectionMatrix);
+    });
     _gizmo->draw(drawContext);
 }
 

@@ -70,6 +70,10 @@ struct TransformHandle final {
         _recalculateMatrices();
     }
 
+    void setCachedTransformMatrix(const TransformMatrixHandle& cachedTransformMatrix) {
+        _cachedTransformMatrix = cachedTransformMatrix;
+    }
+
     glm::mat4 getModelMatrix() const { return _cachedTransformMatrix.getModelMatrix(); }
     glm::mat3x4 getNormalMatrix() const { return _cachedTransformMatrix.getNormalMatrix(); }
     const Transform& getTransform() const { return _transform; }

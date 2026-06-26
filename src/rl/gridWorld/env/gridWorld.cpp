@@ -75,8 +75,10 @@ GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
 
         descriptor.drawableDescriptors.push_back(
             objects::ModelDescriptor{
-            std::string(blockTypeToPath(blockType)),
-            transform,
+            .path = blockTypeToPath(blockType),
+            .name = std::string(blockTypeToPath(blockType)),
+            .modelType = objects::ModelDescriptor::ModelType::MODEL,
+            .initialTransform = transform,
             }
         );
         ++flatIndex;

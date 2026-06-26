@@ -70,7 +70,7 @@ std::optional<DrawableModel> PrimitivesBuilder::createCube(float size, vax::Colo
     return std::optional<DrawableModel>(std::in_place, std::move(drawableModel));
 }
 
-std::optional<DrawableModel> PrimitivesBuilder::createBackground() {
+std::optional<DrawableModel> PrimitivesBuilder::createPlane() {
     auto mesh = _meshManager.get().createEmptyMesh();
     if (!mesh)
         return std::nullopt;
