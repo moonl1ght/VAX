@@ -35,8 +35,8 @@ class PrimitivesBuilder {
     PrimitivesBuilder& operator=(const PrimitivesBuilder& other) = delete;
     PrimitivesBuilder& operator=(PrimitivesBuilder&& other) noexcept = delete;
 
-    std::optional<vax::objects::DrawableModel> createCube(float size, vax::Color color, uint32_t ssboIndex);
-    std::optional<vax::objects::DrawableModel> createPlane(uint32_t ssboIndex);
+    std::optional<vax::objects::DrawableModel> createCube(float size, vax::Color color);
+    std::optional<vax::objects::DrawableModel> createPlane();
 
   private:
     std::reference_wrapper<vax::SSBOManager> _ssboManager;

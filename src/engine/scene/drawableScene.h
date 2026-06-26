@@ -66,7 +66,7 @@ class DrawableScene final : public vax::input::InputController::Observer {
 
     const vax::objects::Camera& gizmoCamera() const { return _gizmoCamera; }
 
-    void loadSceneGraph(const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue);
+    void loadScene(const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue);
 
     void resize();
 
@@ -112,7 +112,6 @@ class DrawableScene final : public vax::input::InputController::Observer {
     vax::renderer::RenderCallContext _renderCallContext;
     vax::SceneUpdateContext _sceneUpdateContext;
 
-    void _load(VkQueue submitQueue);
     void _loadEnvironmentMap(VkQueue submitQueue);
     void
     _drawSceneNode(vax::objects::SceneNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);

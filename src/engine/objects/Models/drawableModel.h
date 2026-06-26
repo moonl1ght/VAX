@@ -27,19 +27,10 @@ class DrawableModel final {
     friend class vax::objects::PrimitivesBuilder;
     friend class vax::objects::ModelLoader;
 
-    // TODO: remove
-    std::vector<vax::math::TransformMatrixHandle> instanceTransformMatrixHandles = {{}};
-
-    explicit DrawableModel(
-        vax::MeshManager& meshManager,
-        vax::SSBOManager& ssboManager,
-        vax::MeshHandle meshHandle,
-        vax::SSBOManager::SSBOHandle ssboIndex
-    )
+    explicit DrawableModel(vax::MeshManager& meshManager, vax::SSBOManager& ssboManager, vax::MeshHandle meshHandle)
         : _meshManager(meshManager)
         , _ssboManager(ssboManager)
-        , _meshHandle(meshHandle)
-        , _ssboHandle(ssboIndex) {};
+        , _meshHandle(meshHandle) {};
 
     DrawableModel(DrawableModel&& other) noexcept = default;
     DrawableModel& operator=(DrawableModel&& other) noexcept = default;
@@ -51,7 +42,8 @@ class DrawableModel final {
 
     bool loadMesh(const vax::objects::MeshPBR::LoadMeshBuffersContext& context);
 
-    void updateSSBO(std::vector<vax::math::TransformMatrixHandle> instanceTransformMatrixHandles);
+    void
+    updateSSBO(uint32_t currentFrame, std::vector<vax::math::TransformMatrixHandle> instanceTransformMatrixHandles);
 
     void draw(const vax::renderer::DrawContext& drawContext);
 
@@ -67,6 +59,8 @@ class DrawableModel final {
 
     size_t submeshCount() const { return _submeshes.size(); }
 
+    void updateSSBOHandle(vax::SSBOManager::SSBOHandle ssboHandle) { _ssboHandle = ssboHandle; }
+
   private:
     vax::utils::Logger _logger = vax::utils::Logger("DrawableModel");
 
@@ -81,8 +75,5 @@ class DrawableModel final {
     Settings _settings;
     uint32_t _instancesCount = 1;
     uint32_t _ssboHandle = vax::SSBOManager::NullSSBOHandle;
-
-    void _drawInstance(const vax::renderer::DrawContext& drawContext, uint32_t flags);
-    void _drawSingleMesh(const vax::renderer::DrawContext& drawContext, uint32_t flags);
 };
 } // namespace vax::objects

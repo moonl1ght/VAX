@@ -37,6 +37,8 @@ float4 fragMain(uniform DrawPushConstants pushConstants, FragmentInput input)
     : SV_Target {
     PBRMaterial material = materials[pushConstants.materialIndex];
     float2[2] UVs = float2[2](input.uv, input.uv2);
+    InstanceData instance = instances[pushConstants.instanceIndex];
+    float3x3 normalMatrix = instance.normalMatrix;
 
     float4 albedo = sampleBaseColor(material, UVs[material.baseColorTextureUVIndex]);
     float4 metallicRoughness = sampleMetallicRoughness(material, UVs[material.metallicRoughnessTextureUVIndex]);
@@ -47,11 +49,11 @@ float4 fragMain(uniform DrawPushConstants pushConstants, FragmentInput input)
     float2 normalUV = UVs[material.normalMapTextureUVIndex];
     float4 sampledNormal = sampleNormalMap(material, normalUV);
     if ((pushConstants.flags & ObjectFlags::NoTangent) != 0) {
-        finalNormal = normalize(mul(pushConstants.normalMatrix, finalNormal));
+        finalNormal = normalize(mul(normalMatrix, finalNormal));
         finalNormal = perturbNormal(finalNormal, input.worldPosition, sampledNormal.xyz, normalUV);
     } else {
-        float3 normal = normalize(mul(pushConstants.normalMatrix, input.normal));
-        float3 tangent = normalize(mul(pushConstants.normalMatrix, input.tangent.xyz));
+        float3 normal = normalize(mul(normalMatrix, input.normal));
+        float3 tangent = normalize(mul(normalMatrix, input.tangent.xyz));
 
         tangent = normalize(tangent - dot(tangent, normal) * normal);
 

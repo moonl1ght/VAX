@@ -52,22 +52,15 @@ class SceneNode final {
 
     void insertChild(SceneNode&& child);
 
-    // TODO: move to private
-    void addDrawableModel(DrawableModel* drawableModel);
-
-    // TODO: remove this one
-    void insertDrawableModel(DrawableModel&& drawableModel);
-
     const std::vector<SceneNode>& children() const { return _children; }
 
     const std::vector<DrawableModel*>& drawableModelsConst() const { return _drawableModels; }
 
     std::vector<DrawableModel*> drawableModels() { return _drawableModels; }
 
-    // TODO: remove this one
-    void loadDrawableModelsMeshes(const vax::objects::MeshPBR::LoadMeshBuffersContext& context);
-
     const vax::math::TransformHandle& transformHandle() const { return _transformHandle; }
+
+    void addDrawableModel(DrawableModel* drawableModel);
 
   private:
     std::string _name;

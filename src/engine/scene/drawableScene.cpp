@@ -4,6 +4,7 @@
 
 using namespace vax;
 using namespace vax::renderer;
+using namespace vax::rl::gw::env;
 
 void DrawableScene::prepareForDraw(renderer::RenderCallContext renderCallContext) {
     _renderCallContext = renderCallContext;
@@ -26,16 +27,9 @@ void vax::DrawableScene::resize() {
     _mainCamera.setViewPortSize(vax::math::SizeUI(swapchainExtent));
 }
 
-void vax::DrawableScene::loadSceneGraph(
-    const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue
-) {
+void vax::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue) {
     _resourceManager.setup(_modelsController.maxDrawableInstances());
     _sceneGraph = std::make_unique<vax::rl::gw::GwSceneGraph>();
-    _sceneGraph->load(_modelLoader, descriptor, nullptr);
-    _load(submitQueue);
-}
-
-void vax::DrawableScene::_load(VkQueue submitQueue) {
     _loadEnvironmentMap(submitQueue);
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
     _sceneUniformBuffers.reserve(vax::MAX_FRAMES_IN_FLIGHT);
@@ -66,22 +60,23 @@ void vax::DrawableScene::_load(VkQueue submitQueue) {
         .instancesCount = 1,
         }
     };
+    for (const auto& drawableDescriptor : descriptor.drawableDescriptors) {
+        modelDescriptors.push_back(drawableDescriptor);
+    }
+    modelDescriptors.push_back(descriptor.agentDrawableDescriptor);
     auto commandBuffer1 = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
-    _modelsController.preloadModels(modelDescriptors, commandBuffer1, submitQueue);
-    _gizmo = std::move(_modelsController.getSceneNode("gizmo"));
+    _modelsController.preload(modelDescriptors, commandBuffer1, submitQueue);
+    _sceneGraph->load(_modelsController, descriptor);
+    _gizmo = std::move(_modelsController.createSceneNodeByModelName("gizmo"));
     for (auto& drawableModel : _gizmo->drawableModels()) {
         drawableModel->setSettings({.precomputedMVP = true, .instanceDrawing = true});
     }
-    _background = std::move(_modelsController.getSceneNode("background"));
+    _background = std::move(_modelsController.createSceneNodeByModelName("background"));
 
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
 
     commandBuffer.begin();
     _modelLoader.loadStaged(commandBuffer);
-    vax::objects::MeshPBR::LoadMeshBuffersContext context = {
-        .commandBuffer = &commandBuffer, .maxFramesInFlight = vax::MAX_FRAMES_IN_FLIGHT
-    };
-    _sceneGraph->loadDrawableModels(context);
     commandBuffer.end();
     commandBuffer.submitAndWait(submitQueue);
     _modelLoader.cleanupStaged();
@@ -129,7 +124,7 @@ bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetHandler& 
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     );
     descriptorHandler.writeBuffer(
-        _resourceManager.ssboManager().instanceBuffer(),
+        _resourceManager.ssboManager().instanceBuffer(_renderCallContext.currentFrame),
         FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER

@@ -26,7 +26,7 @@ void RoverView::load(Engine& engine, InputController& inputController) {
 
     _drawableScene = std::make_unique<DrawableScene>(engine);
     _drawableScene->resize();
-    _drawableScene->loadSceneGraph(_gridWorld->getDrawableDescriptor(), engine.queueManager->graphicsQueue);
+    _drawableScene->loadScene(_gridWorld->getDrawableDescriptor(), engine.queueManager->graphicsQueue);
     _gridWorld->linkSceneGraph(_drawableScene->sceneGraph());
     inputController.addObserver(_drawableScene.get());
     inputController.addObserver(_gridWorld.get());

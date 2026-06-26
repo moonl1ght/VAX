@@ -2,8 +2,10 @@
 
 #include "buffer.h"
 #include "device.h"
-#include <limits>
+#include "vkUtils.h"
+#include <array>
 #include <cstdint>
+#include <limits>
 
 namespace vax {
 class SSBOManager final {
@@ -25,14 +27,14 @@ class SSBOManager final {
 
     void cleanup();
 
-    bool updateInstance(uint32_t index, const InstanceData& instance);
+    bool updateInstance(uint32_t frameIndex, uint32_t index, const InstanceData& instance);
 
-    const vax::vk::Buffer& instanceBuffer() const { return *_buffer; }
+    const vax::vk::Buffer& instanceBuffer(uint32_t frameIndex) const { return *_buffers[frameIndex]; }
 
   private:
     vax::utils::Logger _logger = vax::utils::Logger("SSBOManager");
     std::reference_wrapper<const vax::vk::Device> _device;
-    std::unique_ptr<vax::vk::Buffer> _buffer = nullptr;
+    std::array<std::unique_ptr<vax::vk::Buffer>, vax::MAX_FRAMES_IN_FLIGHT> _buffers;
     uint32_t _maxInstances = 0;
 };
 } // namespace vax

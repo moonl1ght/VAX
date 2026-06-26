@@ -22,7 +22,6 @@ class ModelsController {
         , _modelLoader(modelLoader)
         , _primitivesBuilder(primitivesBuilder) {
         _drawableModels.reserve(_maxDrawableInstances);
-        _sceneNodes.reserve(_maxDrawableInstances);
     };
 
     ~ModelsController() {};
@@ -34,7 +33,7 @@ class ModelsController {
 
     uint32_t maxDrawableInstances() const { return _maxDrawableInstances; }
 
-    void preloadModels(
+    void preload(
         const std::vector<vax::objects::ModelDescriptor>& modelDescriptors,
         vax::vk::CommandBuffer& commandBuffer,
         VkQueue submitQueue
@@ -42,11 +41,19 @@ class ModelsController {
 
     std::vector<std::string> getModelNames() const;
 
-    std::optional<vax::objects::SceneNode> getSceneNode(const std::string& name);
+    std::vector<std::string> getSceneNodeNames() const;
+
+    std::optional<vax::objects::SceneNode> getPreloadedSceneNodeByName(const std::string& name);
+
+    std::optional<vax::objects::SceneNode> createSceneNodeByModelName(const std::string& name);
+
+    DrawableModel* addDrawableModel(std::string name, vax::objects::DrawableModel&& drawableModel);
+
+    DrawableModel* getDrawableModelByName(const std::string& name);
 
   private:
     struct ModelInfo {
-        vax::objects::ModelDescriptor modelDescriptor;
+        std::optional<vax::objects::ModelDescriptor> modelDescriptor;
         size_t modelIndex;
     };
 
@@ -57,8 +64,9 @@ class ModelsController {
     std::reference_wrapper<vax::objects::ModelLoader> _modelLoader;
     std::reference_wrapper<vax::objects::PrimitivesBuilder> _primitivesBuilder;
 
-    std::unordered_map<std::string, ModelInfo> _modelInfos;
-    std::vector<vax::objects::SceneNode> _sceneNodes;
+    std::unordered_map<std::string, vax::objects::SceneNode> _cachedSceneNodeMap;
+
+    std::unordered_map<std::string, ModelInfo> _modelMap;
     std::vector<vax::objects::DrawableModel> _drawableModels;
 };
 } // namespace vax::objects

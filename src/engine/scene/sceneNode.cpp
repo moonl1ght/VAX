@@ -12,8 +12,7 @@ void SceneNode::draw(const vax::renderer::DrawContext& drawContext) {
     worldHandle.updateModelMatrix(_parentTransformMatrices.getModelMatrix() * _transformHandle.getModelMatrix());
 
     for (auto& drawableModel : _drawableModels) {
-        drawableModel->instanceTransformMatrixHandles[0] = worldHandle;
-        drawableModel->updateSSBO({worldHandle});
+        drawableModel->updateSSBO(drawContext.currentFrame, {worldHandle});
         drawableModel->draw(drawContext);
     }
 
@@ -37,20 +36,6 @@ void SceneNode::insertChild(SceneNode&& child) {
 
 void SceneNode::addDrawableModel(DrawableModel* drawableModel) {
     _drawableModels.push_back(drawableModel);
-}
-
-void SceneNode::insertDrawableModel(DrawableModel&& drawableModel) {
-    auto drawableModelPtr = new DrawableModel(std::move(drawableModel));
-    _drawableModels.push_back(drawableModelPtr);
-}
-
-void SceneNode::loadDrawableModelsMeshes(const vax::objects::MeshPBR::LoadMeshBuffersContext& context) {
-    for (auto& drawableModel : _drawableModels) {
-        drawableModel->loadMesh(context);
-    }
-    for (auto& child : _children) {
-        child.loadDrawableModelsMeshes(context);
-    }
 }
 
 SceneNode* SceneNode::getChild(const std::string& name, int depth) {

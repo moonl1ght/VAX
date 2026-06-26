@@ -232,6 +232,7 @@ bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::DrawableScene* sce
         DrawContext drawContext{
             .commandBuffer = commandBuffer,
             .pipelineLayout = pipeline->vkPipelineLayout,
+            .currentFrame = _currentFrame,
         };
         scene->draw(drawContext);
 
@@ -299,6 +300,7 @@ bool Renderer::_drawBackground(VkCommandBuffer commandBuffer, vax::DrawableScene
     DrawContext drawContext{
         .commandBuffer = commandBuffer,
         .pipelineLayout = pipeline->vkPipelineLayout,
+        .currentFrame = _currentFrame,
     };
     scene->drawBackground(drawContext);
     return true;
@@ -344,6 +346,7 @@ bool Renderer::_drawGizmo(VkCommandBuffer commandBuffer, vax::DrawableScene* sce
     DrawContext drawContext{
         .commandBuffer = commandBuffer,
         .pipelineLayout = gizmoPipeline->vkPipelineLayout,
+        .currentFrame = _currentFrame,
     };
     scene->drawGizmo(drawContext);
     return true;

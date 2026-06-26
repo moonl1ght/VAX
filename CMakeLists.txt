@@ -157,6 +157,7 @@ target_include_directories(Luna PUBLIC ${header_list})
 target_include_directories(Luna PRIVATE ${CUDA_PATH}/include)
 set_target_properties(Luna PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 add_dependencies(Luna Shaders)
+target_compile_options(Luna PRIVATE -mavx2)
 
 if(WIN32)
     add_custom_command(TARGET Luna POST_BUILD

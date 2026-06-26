@@ -164,7 +164,7 @@ bool DescriptorSetManager::createDescriptorSetLayouts() {
     perFrameBuilder.addBinding(
         FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-        VK_SHADER_STAGE_VERTEX_BIT,
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         1
     );
     auto globalDescriptorSetLayout = globalBuilder.build(DescriptorSetLayout::SetType::GLOBAL);

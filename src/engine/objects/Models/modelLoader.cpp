@@ -1,4 +1,5 @@
 #include "modelLoader.h"
+#include "modelsController.h"
 #include "shaderSharedUtils.h"
 #include <assimp/GltfMaterial.h>
 #include <assimp/Importer.hpp>
@@ -6,6 +7,7 @@
 #include <assimp/scene.h>
 #include <string>
 #include <urdf_parser/urdf_parser.h>
+#include <uuid_v4.h>
 
 using namespace vax::objects;
 using namespace vax;
@@ -19,9 +21,7 @@ constexpr glm::mat4 toGlm(const aiMatrix4x4& m) {
     };
 }
 
-uint32_t loadTexture(
-    aiString& textureName, vax::textures::TextureLoader& textureLoader, const aiScene* scene
-) {
+uint32_t loadTexture(aiString& textureName, vax::textures::TextureLoader& textureLoader, const aiScene* scene) {
     if (textureName.length > 0) {
         const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(textureName.C_Str());
         if (embeddedTexture) {
@@ -49,10 +49,7 @@ uint32_t loadTexture(
 }
 
 PBRMaterial processMaterial(
-    aiMaterial* mat,
-    vax::textures::TextureLoader& textureLoader,
-    const aiScene* scene,
-    vax::SamplerId samplerId
+    aiMaterial* mat, vax::textures::TextureLoader& textureLoader, const aiScene* scene, vax::SamplerId samplerId
 ) {
     PBRMaterial material{
         .baseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -127,8 +124,7 @@ PBRMaterial processMaterial(
     material.baseColorTextureSamplerIndex = samplerId;
     material.normalMapTextureIndex = loadTexture(normalMapTextureName, textureLoader, scene);
     material.normalMapTextureSamplerIndex = samplerId;
-    material.metallicRoughnessTextureIndex =
-        loadTexture(metallicRoughnessTextureName, textureLoader, scene);
+    material.metallicRoughnessTextureIndex = loadTexture(metallicRoughnessTextureName, textureLoader, scene);
     material.metallicRoughnessTextureSamplerIndex = samplerId;
     material.aoTextureIndex = loadTexture(aoTextureName, textureLoader, scene);
     material.aoTextureSamplerIndex = samplerId;
@@ -227,7 +223,7 @@ void processNode(
 }
 
 std::optional<DrawableModel>
-ModelLoader::loadModel(const std::string& path, uint32_t ssboIndex, uint32_t instancesCount) {
+ModelLoader::loadModel(const std::string& path, uint32_t instancesCount) {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -259,9 +255,7 @@ ModelLoader::loadModel(const std::string& path, uint32_t ssboIndex, uint32_t ins
     std::vector<PBRMaterial> materials;
     materials.reserve(scene->mNumMaterials);
     for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
-        materials.push_back(
-            processMaterial(scene->mMaterials[i], _textureLoader.get(), scene, pbrSamplerId)
-        );
+        materials.push_back(processMaterial(scene->mMaterials[i], _textureLoader.get(), scene, pbrSamplerId));
     }
 
     auto materialIds = _resourceManager.get().materialManager().insertMaterials(materials);
@@ -295,7 +289,7 @@ ModelLoader::loadModel(const std::string& path, uint32_t ssboIndex, uint32_t ins
     (*mesh).second->setIndices(modelIndices);
 
     auto drawableModel = vax::objects::DrawableModel(
-        _resourceManager.get().meshManager(), _resourceManager.get().ssboManager(), mesh->first, ssboIndex
+        _resourceManager.get().meshManager(), _resourceManager.get().ssboManager(), mesh->first
     );
     drawableModel._mesh = (*mesh).second;
     drawableModel._submeshes = submeshes;
@@ -358,11 +352,11 @@ SceneNode processURDFLink(
         if (visual->geometry->type == urdf::Geometry::MESH) {
             const auto* mesh = static_cast<const urdf::Mesh*>(visual->geometry.get());
             auto modelOpt = loadModel(std::string(mainPath) + "/" + mesh->filename);
-            if (modelOpt.has_value()) {
+            if (modelOpt) {
                 for (size_t i = 0; i < modelOpt->submeshCount(); ++i) {
                     modelOpt->submesh(i).materialIndex = materialId;
                 }
-                node.insertDrawableModel(std::move(*modelOpt));
+                node.addDrawableModel(modelOpt);
             }
         }
     }
@@ -375,7 +369,8 @@ SceneNode processURDFLink(
     return node;
 }
 
-std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(ModelDescriptor descriptor, VkQueue submitQueue) {
+std::optional<SceneNode>
+ModelLoader::_loadURDFSceneModel(ModelsController& modelsController, ModelDescriptor descriptor) {
     auto path = descriptor.path;
     auto model = urdf::parseURDFFile(path);
     if (!model) {
@@ -383,15 +378,21 @@ std::optional<SceneNode> ModelLoader::_loadURDFSceneModel(ModelDescriptor descri
         return std::nullopt;
     }
     auto mainPath = descriptor.getMainPath();
-    auto rootNode = processURDFLink(
-        mainPath, _resourceManager.get(), model->getRoot(), [&](std::string name) -> std::optional<DrawableModel> {
-            return loadModel(name, descriptor.instancesCount);
-        }
-    );
+    auto rootNode =
+        processURDFLink(mainPath, _resourceManager.get(), model->getRoot(), [&](std::string path) -> DrawableModel* {
+            auto model = loadModel(path, descriptor.instancesCount);
+            if (!model.has_value()) {
+                _logger.error("Failed to load model: " + path);
+                return nullptr;
+            }
+            static UUIDv4::UUIDGenerator<std::mt19937_64> uuidGen;
+            return modelsController.addDrawableModel(uuidGen.getUUID().str(), std::move(*model));
+        });
     return std::optional<SceneNode>(std::in_place, std::move(rootNode));
 }
 
-std::optional<SceneNode> ModelLoader::_loadGLBSceneModel(ModelDescriptor descriptor, VkQueue submitQueue) {
+std::optional<SceneNode>
+ModelLoader::_loadGLBSceneModel(ModelsController& modelsController, ModelDescriptor descriptor) {
     auto path = descriptor.path;
     auto model = loadModel(path, descriptor.instancesCount);
     if (!model.has_value()) {
@@ -400,16 +401,18 @@ std::optional<SceneNode> ModelLoader::_loadGLBSceneModel(ModelDescriptor descrip
     }
     auto transformHandle = vax::math::TransformHandle();
     auto node = SceneNode(path, transformHandle.getTransform(), {transformHandle.getModelMatrix()}, true);
-    node.insertDrawableModel(std::move(model.value()));
+    static UUIDv4::UUIDGenerator<std::mt19937_64> uuidGen;
+    auto drawableModel = modelsController.addDrawableModel(uuidGen.getUUID().str(), std::move(*model));
+    node.addDrawableModel(drawableModel);
     return std::optional<SceneNode>(std::in_place, std::move(node));
 }
 
 std::optional<SceneNode>
-ModelLoader::loadSceneModel(const vax::objects::ModelDescriptor& descriptor, VkQueue submitQueue) {
+ModelLoader::loadSceneModel(ModelsController& modelsController, const vax::objects::ModelDescriptor& descriptor) {
     if (descriptor.getModelExtension() == vax::objects::ModelDescriptor::ModelExtension::URDF) {
-        return _loadURDFSceneModel(descriptor, submitQueue);
+        return _loadURDFSceneModel(modelsController, descriptor);
     } else if (descriptor.getModelExtension() == vax::objects::ModelDescriptor::ModelExtension::GLB) {
-        return _loadGLBSceneModel(descriptor, submitQueue);
+        return _loadGLBSceneModel(modelsController, descriptor);
     }
     return std::nullopt;
 }

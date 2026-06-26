@@ -10,6 +10,7 @@
 #include <memory>
 #include "rlMath.h"
 #include "drawContext.h"
+#include "modelsController.h"
 
 namespace vax::rl::gw {
 // TODO: move to generic scene graph
@@ -25,12 +26,9 @@ class GwSceneGraph final {
     GwSceneGraph& operator=(GwSceneGraph&& other) noexcept = delete;
 
     bool load(
-        vax::objects::ModelLoader& modelLoader,
-        const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor,
-        VkQueue submitQueue
+        vax::objects::ModelsController& modelsController,
+        const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor
     );
-
-    void loadDrawableModels(const vax::objects::MeshPBR::LoadMeshBuffersContext& context);
 
     void draw(const vax::renderer::DrawContext& drawContext);
 

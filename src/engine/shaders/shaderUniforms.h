@@ -72,7 +72,6 @@ enum ObjectFlags {
     IsWireframe = 1 << 0,    // 0001
     NoTangent = 1 << 1,      // 0010
     PrecomputedMVP = 1 << 2, // 0100
-    InstanceDrawing = 1 << 3, // 1000
 };
 
 struct EnvironmentMapData {
@@ -102,12 +101,9 @@ struct InstanceData {
 };
 
 struct DrawPushConstants {
-    mat4 model;                                 // 64 bytes
-    mat3 normalMatrix;                          // 48 (with padding) bytes
     uint32_t flags;                             // 4 bytes
     uint32_t materialIndex = NO_MATERIAL_INDEX; // 4 bytes
     uint32_t instanceIndex;                     // 4 bytes
-    uint32_t padding[1];                        // 4 bytes
 };
 
 struct PBRMaterial {
