@@ -17,7 +17,7 @@ vax::objects::ModelDescriptor Agent::getDrawableDescriptor() const {
         RES_PATH("assets/models/rover/rover.urdf"),
         "rover",
         vax::objects::ModelDescriptor::ModelType::MODEL,
-        vax::math::Transform(),
+        {vax::math::Transform()},
         vax::objects::ModelDescriptor::PrimitiveDescriptor(),
         1,
     };

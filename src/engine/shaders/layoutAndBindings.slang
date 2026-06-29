@@ -63,5 +63,7 @@ struct VertexOutput {
     float2 uv2 : TEXCOORD1;
 
     uint packedColor : PACKED_COLOR;
+
+    nointerpolation uint instanceIndex : INSTANCE_INDEX;
 };
 

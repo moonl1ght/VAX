@@ -45,10 +45,10 @@ class ModelsController {
 
     std::vector<std::string> getSceneNodeIds() const;
 
-    std::optional<vax::objects::SceneNode>
-    getPreloadedSceneNodeById(const std::string& id, uint32_t instancesCount = 1);
+    std::optional<vax::objects::SceneNode> getPreloadedSceneNodeById(const std::string& id, uint32_t instancesCount);
 
-    std::optional<vax::objects::SceneNode> createSceneNodeById(const std::string& id, uint32_t instancesCount = 1);
+    std::optional<vax::objects::SceneNode>
+    createSceneNodeById(const std::string& id, std::vector<vax::math::Transform> transforms = {vax::math::Transform()});
 
     DrawableModel* getDrawableModelById(const std::string& id);
 
@@ -62,7 +62,6 @@ class ModelsController {
             bool isFull() const { return cursor >= maxInstances; }
         };
 
-        std::optional<vax::objects::ModelDescriptor> modelDescriptor;
         size_t modelIndex;
         std::vector<SSBOChunkInfo> ssboChunkInfos;
         uint32_t ssboChunkCursor = 0;

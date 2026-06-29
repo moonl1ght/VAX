@@ -103,7 +103,6 @@ struct InstanceData {
 struct DrawPushConstants {
     uint32_t flags;                             // 4 bytes
     uint32_t materialIndex = NO_MATERIAL_INDEX; // 4 bytes
-    uint32_t instanceIndex;                     // 4 bytes
 };
 
 struct PBRMaterial {

@@ -17,7 +17,7 @@ struct ModelDescriptor {
     std::string path;
     std::string id;
     ModelType modelType;
-    vax::math::Transform initialTransform;
+    std::vector<vax::math::Transform> transforms;
     PrimitiveDescriptor primitiveDescriptor;
     uint32_t instancesCount = 1;
 

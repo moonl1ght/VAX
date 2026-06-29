@@ -1,4 +1,5 @@
 #include "modelsController.h"
+#include "transform.h"
 #include <strings.h>
 
 using namespace vax::objects;
@@ -66,7 +67,6 @@ void ModelsController::preload(
                 .maxInstances = instanceCount,
             };
             ModelInfo modelInfo = {
-                .modelDescriptor = std::make_optional(modelDescriptor),
                 .modelIndex = _drawableModels.size() - 1,
                 .ssboChunkInfos = {ssboChunkInfo},
                 .ssboChunkCursor = 0,
@@ -95,15 +95,15 @@ std::vector<std::string> ModelsController::getModelIds() const {
     return modelIds;
 }
 
-std::optional<SceneNode> ModelsController::createSceneNodeById(const std::string& id, uint32_t instancesCount) {
+std::optional<SceneNode>
+ModelsController::createSceneNodeById(const std::string& id, std::vector<vax::math::Transform> transforms) {
+    uint32_t instancesCount = transforms.size();
     auto itModelInfo = _modelMap.find(id);
     if (itModelInfo != _modelMap.end()) {
-        auto modelDescriptor = itModelInfo->second.modelDescriptor.value_or(ModelDescriptor());
         auto sceneNode = SceneNode(
             _resourceManager.get().ssboManager(),
             id,
-            modelDescriptor.initialTransform,
-            {modelDescriptor.initialTransform.getModelMatrix()},
+            transforms,
             true
         );
         auto drawableModelPtr = &_drawableModels[itModelInfo->second.modelIndex];
@@ -166,19 +166,12 @@ ModelsController::_addDrawableModel(std::string id, std::string path, DrawableMo
     }
     size_t modelIndex = _drawableModels.size();
     _drawableModels.push_back(std::move(drawableModel));
-    ModelDescriptor modelDescriptor = {
-        .path = path,
-        .id = id,
-        .modelType = ModelDescriptor::ModelType::MODEL,
-        .instancesCount = 1,
-    };
     ModelInfo::SSBOChunkInfo ssboChunkInfo = {
         .instanceOffset = _globalInstanceCursor,
         .cursor = 0,
         .maxInstances = 1,
     };
     ModelInfo modelInfo = {
-        .modelDescriptor = std::make_optional(modelDescriptor),
         .modelIndex = modelIndex,
         .ssboChunkInfos = {ssboChunkInfo},
     };

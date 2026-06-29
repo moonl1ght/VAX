@@ -46,6 +46,29 @@ class SceneNode final {
         }
     };
 
+    SceneNode(
+        vax::SSBOManager& ssboManager,
+        std::string name,
+        std::vector<vax::math::Transform> transforms,
+        bool isRoot = false
+    )
+        : _ssboManager(ssboManager)
+        , _name(std::move(name))
+        , _instancesCount(transforms.size())
+        , _isRoot(isRoot) {
+        _drawableModelTransformInfos.reserve(transforms.size());
+        for (size_t i = 0; i < transforms.size(); ++i) {
+            vax::math::TransformHandle transformHandle;
+            transformHandle.setTransform(transforms[i]);
+            _drawableModelTransformInfos.push_back({
+                ._originalParentRelativeTransform = vax::math::Transform(),
+                ._parentTransformMatrices = vax::math::TransformMatrixHandle(),
+                ._transformHandle = std::move(transformHandle),
+                ._isChildrenTransformDirty = false,
+            });
+        }
+    };
+
     ~SceneNode() = default;
 
     SceneNode(const SceneNode& other) = delete;

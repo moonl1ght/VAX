@@ -62,29 +62,36 @@ void GridWorld::linkSceneGraph(GwSceneGraph* sceneGraph) {
 }
 
 GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
-    GridWorldDrawableDescriptor descriptor;
-    descriptor.drawableDescriptors.reserve(_grid.totalSize());
+    GridWorldDrawableDescriptor worldDescriptor;
+    worldDescriptor.drawableDescriptors.reserve(_grid.totalSize());
     int flatIndex = 0;
+    std::unordered_map<std::string, objects::ModelDescriptor> descriptors;
     for (const auto& block : _grid) {
         BlockType blockType = static_cast<BlockType>(block);
+        auto blockTypeString = blockTypeToPath(blockType);
         Transform transform = Transform();
         transform.position = {_sceneGraphPositions[flatIndex].x, 0.0f, _sceneGraphPositions[flatIndex].y};
         if (blockType == BlockType::WALL) {
             transform.position.y = 0.5f;
         }
-
-        descriptor.drawableDescriptors.push_back(
-            objects::ModelDescriptor{
-            .path = blockTypeToPath(blockType),
-            .id = std::string(blockTypeToPath(blockType)),
-            .modelType = objects::ModelDescriptor::ModelType::MODEL,
-            .initialTransform = transform,
-            }
-        );
+        if (descriptors.find(blockTypeString) == descriptors.end()) {
+            descriptors[blockTypeString] = objects::ModelDescriptor{
+                .path = blockTypeString,
+                .id = blockTypeString,
+                .modelType = objects::ModelDescriptor::ModelType::MODEL,
+                .transforms = {transform},
+            };
+        } else {
+            descriptors[blockTypeString].transforms.push_back(transform);
+            descriptors[blockTypeString].instancesCount += 1;
+        }
         ++flatIndex;
     }
-    descriptor.agentDrawableDescriptor = _agent.getDrawableDescriptor();
-    return descriptor;
+    for (const auto& [blockType, descriptor] : descriptors) {
+        worldDescriptor.drawableDescriptors.push_back(descriptor);
+    }
+    worldDescriptor.agentDrawableDescriptor = _agent.getDrawableDescriptor();
+    return worldDescriptor;
 }
 
 std::string GridWorld::blockTypeToPath(BlockType blockType) const {

@@ -14,6 +14,7 @@ struct FragmentInput {
     float2 uv2 : TEXCOORD1;
     uint packedColor : PACKED_COLOR;
     // float3 baryCoords : SV_Barycentrics;
+    nointerpolation uint instanceIndex : INSTANCE_INDEX;
 };
 
 float edgeFactor(float3 barycoords, float thickness) {
@@ -35,9 +36,10 @@ float3 ACESFilm(float3 x) {
 [shader("fragment")]
 float4 fragMain(uniform DrawPushConstants pushConstants, FragmentInput input)
     : SV_Target {
+    uint instanceIndex = input.instanceIndex;
     PBRMaterial material = materials[pushConstants.materialIndex];
     float2[2] UVs = float2[2](input.uv, input.uv2);
-    InstanceData instance = instances[pushConstants.instanceIndex];
+    InstanceData instance = instances[instanceIndex];
     float3x3 normalMatrix = instance.normalMatrix;
 
     float4 albedo = sampleBaseColor(material, UVs[material.baseColorTextureUVIndex]);
