@@ -66,8 +66,8 @@ void vax::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor
     _modelsController.preload(modelDescriptors, commandBuffer1, submitQueue);
     _sceneGraph->load(_modelsController, descriptor);
     _gizmo = std::move(_modelsController.createSceneNodeById("gizmo"));
-    for (auto& drawableModelHandle : _gizmo->drawableModels()) {
-        drawableModelHandle.drawableModel->setSettings({.precomputedMVP = true, .instanceDrawing = true});
+    for (auto& drawableModel : _gizmo->drawableModels()) {
+        drawableModel->setSettings({.precomputedMVP = true, .instanceDrawing = true});
     }
     _background = std::move(_modelsController.createSceneNodeById("background"));
 

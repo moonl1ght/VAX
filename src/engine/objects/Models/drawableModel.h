@@ -67,8 +67,9 @@ class DrawableModel final {
 };
 
 struct DrawableModelHandle final {
+    using InstanceDrawingRange = std::pair<uint32_t, uint32_t>;
     DrawableModel* drawableModel;
-    uint32_t instanceOffset;
-    uint32_t instancesCount;
+
+    std::vector<InstanceDrawingRange> instanceDrawingRanges;
 };
 } // namespace vax::objects

@@ -7,43 +7,68 @@ using namespace vax;
 using namespace vax::math;
 
 void SceneNode::draw(const vax::renderer::DrawContext& drawContext) {
-    TransformMatrixHandle worldHandle;
-    // TODO: cache this matrix
-
-    worldHandle.updateModelMatrix(_parentTransformMatrices.getModelMatrix() * _transformHandle.getModelMatrix());
-
-    for (auto& drawableModelHandle : _drawableModels) {
-        // InstanceData instanceData = {
-        //     .model = worldHandle.getModelMatrix(),
-        //     .normalMatrix = worldHandle.getNormalMatrix(),
-        // };
-        // auto index = drawableModelHandle.instanceOffset + drawableModelHandle.instancesCount;
-        // _ssboManager.get().updateInstance(drawContext.currentFrame, index, instanceData);
-        drawableModelHandle.drawableModel->draw(
-            drawContext, drawableModelHandle.instanceOffset, drawableModelHandle.instancesCount
+    // TODO: update only dirty instances
+    size_t drawingRangeIndex = 0;
+    for (size_t i = 0; i < _instancesCount; ++i) {
+        TransformMatrixHandle worldHandle;
+        auto& transformInfo = _drawableModelTransformInfos[i];
+        worldHandle.updateModelMatrix(
+            transformInfo._parentTransformMatrices.getModelMatrix() * transformInfo._transformHandle.getModelMatrix()
         );
+        InstanceData instanceData = {
+            .model = worldHandle.getModelMatrix(),
+            .normalMatrix = worldHandle.getNormalMatrix(),
+        };
+        for (auto& drawingRangeForDrawableModel : _drawableModelInstanceDrawingRanges) {
+            auto& drawingRange = drawingRangeForDrawableModel[drawingRangeIndex];
+            auto count = drawingRange.second;
+            while (i >= count) {
+                ++drawingRangeIndex;
+                drawingRange = drawingRangeForDrawableModel[drawingRangeIndex];
+                count = drawingRange.second;
+            }
+            auto offset = drawingRange.first;
+            _ssboManager.get().updateInstance(drawContext.currentFrame, offset + i, instanceData);
+        }
+
+        for (auto& child : _children) {
+            if (transformInfo._isChildrenTransformDirty) {
+                const size_t chunkSize = child._instancesCount / _instancesCount;
+                for (size_t j = 0; j < chunkSize; ++j) {
+                    auto& childTransformInfo = child._drawableModelTransformInfos[i * chunkSize + j];
+                    childTransformInfo._parentTransformMatrices.updateModelMatrix(
+                        worldHandle.getModelMatrix() *
+                        childTransformInfo._originalParentRelativeTransform.getModelMatrix()
+                    );
+                    childTransformInfo._isChildrenTransformDirty = true;
+                }
+            }
+        }
+        _drawableModelTransformInfos[i]._isChildrenTransformDirty = false;
+    }
+
+    for (size_t i = 0; i < _drawableModels.size(); ++i) {
+        auto& drawableModel = _drawableModels[i];
+        for (auto& drawingRange : _drawableModelInstanceDrawingRanges[i]) {
+            drawableModel->draw(drawContext, drawingRange.first, drawingRange.second);
+        }
     }
 
     for (auto& child : _children) {
-        if (_isChildrenTransformDirty) {
-            child._parentTransformMatrices.updateModelMatrix(
-                worldHandle.getModelMatrix() * child._originalParentRelativeTransform.getModelMatrix()
-            );
-            child._isChildrenTransformDirty = true;
-        }
         child.draw(drawContext);
     }
-
-    _isChildrenTransformDirty = false;
 }
 
 void SceneNode::insertChild(SceneNode&& child) {
     _children.push_back(std::move(child));
-    _isChildrenTransformDirty = true;
+    for (size_t i = 0; i < _instancesCount; ++i) {
+        _drawableModelTransformInfos[i]._isChildrenTransformDirty = true;
+    }
 }
 
 void SceneNode::addDrawableModel(DrawableModelHandle drawableModelHandle) {
-    _drawableModels.push_back(drawableModelHandle);
+    _drawableModels.push_back(drawableModelHandle.drawableModel);
+    _drawableModelInstanceDrawingRanges.push_back(drawableModelHandle.instanceDrawingRanges);
 }
 
 SceneNode* SceneNode::getChild(const std::string& name, int depth) {

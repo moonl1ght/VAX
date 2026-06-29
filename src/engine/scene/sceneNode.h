@@ -2,8 +2,8 @@
 
 #include "drawContext.h"
 #include "drawableModel.h"
-#include "transform.h"
 #include "ssboManager.h"
+#include "transform.h"
 #include <optional>
 #include <vector>
 
@@ -16,18 +16,35 @@ class SceneNode final {
   public:
     friend class vax::objects::ModelLoader;
 
+    struct DrawableModelTransformInfo final {
+        vax::math::Transform _originalParentRelativeTransform;
+        vax::math::TransformMatrixHandle _parentTransformMatrices;
+        vax::math::TransformHandle _transformHandle;
+        bool _isChildrenTransformDirty = false;
+    };
+
     explicit SceneNode(
         vax::SSBOManager& ssboManager,
         std::string name,
         const vax::math::Transform& originalParentRelativeTransform,
         vax::math::TransformMatrixHandle parentTransformMatrices,
-        bool isRoot = false
+        bool isRoot = false,
+        uint32_t instancesCount = 1
     )
         : _ssboManager(ssboManager)
         , _name(std::move(name))
-        , _isRoot(isRoot)
-        , _parentTransformMatrices(parentTransformMatrices)
-        , _originalParentRelativeTransform(originalParentRelativeTransform) {};
+        , _instancesCount(instancesCount)
+        , _isRoot(isRoot) {
+        _drawableModelTransformInfos.reserve(instancesCount);
+        for (uint32_t i = 0; i < instancesCount; ++i) {
+            _drawableModelTransformInfos.push_back({
+                ._originalParentRelativeTransform = originalParentRelativeTransform,
+                ._parentTransformMatrices = parentTransformMatrices,
+                ._transformHandle = vax::math::TransformHandle(),
+                ._isChildrenTransformDirty = false,
+            });
+        }
+    };
 
     ~SceneNode() = default;
 
@@ -48,33 +65,35 @@ class SceneNode final {
     SceneNode* getChild(const std::string& name, int depth = -1);
 
     /// Accumulates transform
-    template <typename T> void updateTransform(const T& updater) {
-        updater(_transformHandle);
-        _isChildrenTransformDirty = true;
+    template <typename T> void updateTransform(const T& updater, uint32_t instanceIndex = 0) {
+        if (instanceIndex >= _instancesCount) {
+            return;
+        }
+        updater(_drawableModelTransformInfos[instanceIndex]._transformHandle);
+        _drawableModelTransformInfos[instanceIndex]._isChildrenTransformDirty = true;
     }
 
     void insertChild(SceneNode&& child);
 
     const std::vector<SceneNode>& children() const { return _children; }
 
-    const std::vector<DrawableModelHandle>& drawableModelsConst() const { return _drawableModels; }
+    const std::vector<DrawableModel*>& drawableModelsConst() const { return _drawableModels; }
 
-    std::vector<DrawableModelHandle>& drawableModels() { return _drawableModels; }
-
-    const vax::math::TransformHandle& transformHandle() const { return _transformHandle; }
+    std::vector<DrawableModel*>& drawableModels() { return _drawableModels; }
 
     void addDrawableModel(DrawableModelHandle drawableModelHandle);
+
+    uint32_t instancesCount() const { return _instancesCount; }
 
   private:
     std::reference_wrapper<vax::SSBOManager> _ssboManager;
 
     std::string _name;
+    uint32_t _instancesCount;
     std::vector<SceneNode> _children;
-    std::vector<DrawableModelHandle> _drawableModels;
+    std::vector<DrawableModel*> _drawableModels;
+    std::vector<std::vector<DrawableModelHandle::InstanceDrawingRange>> _drawableModelInstanceDrawingRanges;
     bool _isRoot = false;
-    vax::math::Transform _originalParentRelativeTransform;
-    vax::math::TransformMatrixHandle _parentTransformMatrices;
-    vax::math::TransformHandle _transformHandle;
-    bool _isChildrenTransformDirty = false;
+    std::vector<DrawableModelTransformInfo> _drawableModelTransformInfos;
 };
 } // namespace vax::objects

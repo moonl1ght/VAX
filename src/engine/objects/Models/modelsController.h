@@ -65,7 +65,7 @@ class ModelsController {
         std::optional<vax::objects::ModelDescriptor> modelDescriptor;
         size_t modelIndex;
         std::vector<SSBOChunkInfo> ssboChunkInfos;
-        uint32_t ssboChunkIndex = 0;
+        uint32_t ssboChunkCursor = 0;
     };
 
     vax::utils::Logger _logger = vax::utils::Logger("ModelsController");

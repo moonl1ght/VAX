@@ -1,4 +1,5 @@
 #include "modelsController.h"
+#include <strings.h>
 
 using namespace vax::objects;
 using namespace vax::vk;
@@ -68,6 +69,7 @@ void ModelsController::preload(
                 .modelDescriptor = std::make_optional(modelDescriptor),
                 .modelIndex = _drawableModels.size() - 1,
                 .ssboChunkInfos = {ssboChunkInfo},
+                .ssboChunkCursor = 0,
             };
             _modelMap[modelDescriptor.id] = modelInfo;
             _globalInstanceCursor += instanceCount;
@@ -105,7 +107,40 @@ std::optional<SceneNode> ModelsController::createSceneNodeById(const std::string
             true
         );
         auto drawableModelPtr = &_drawableModels[itModelInfo->second.modelIndex];
-        // sceneNode.addDrawableModel(drawableModelPtr);
+        DrawableModelHandle drawableModelHandle = {drawableModelPtr};
+        auto& chunkInfo = itModelInfo->second.ssboChunkInfos[itModelInfo->second.ssboChunkCursor];
+        if (chunkInfo.isFull()) {
+            ++itModelInfo->second.ssboChunkCursor;
+            ModelInfo::SSBOChunkInfo newChunk = {
+                .instanceOffset = _globalInstanceCursor,
+                .cursor = instancesCount,
+                .maxInstances = instancesCount + 10,
+            };
+            _modelMap[id].ssboChunkInfos.push_back(newChunk);
+            drawableModelHandle.instanceDrawingRanges.push_back({newChunk.instanceOffset, instancesCount});
+            _globalInstanceCursor += newChunk.maxInstances;
+        } else {
+            int leftInstancesCount = static_cast<int>(instancesCount);
+            auto chunkCanTake =
+                std::min(static_cast<int>(chunkInfo.maxInstances - chunkInfo.cursor), leftInstancesCount);
+            drawableModelHandle.instanceDrawingRanges.push_back(
+                {chunkInfo.instanceOffset + chunkInfo.cursor, chunkCanTake}
+            );
+            chunkInfo.cursor += chunkCanTake;
+            leftInstancesCount -= static_cast<int>(chunkCanTake);
+            if (chunkInfo.isFull() && leftInstancesCount > 0) {
+                ++itModelInfo->second.ssboChunkCursor;
+                ModelInfo::SSBOChunkInfo newChunk = {
+                    .instanceOffset = _globalInstanceCursor,
+                    .cursor = static_cast<uint32_t>(leftInstancesCount),
+                    .maxInstances = static_cast<uint32_t>(leftInstancesCount + 10),
+                };
+                _modelMap[id].ssboChunkInfos.push_back(newChunk);
+                drawableModelHandle.instanceDrawingRanges.push_back({newChunk.instanceOffset, leftInstancesCount});
+                _globalInstanceCursor += newChunk.maxInstances;
+            }
+        }
+        sceneNode.addDrawableModel(drawableModelHandle);
         return std::optional<SceneNode>(std::in_place, std::move(sceneNode));
     }
     return std::nullopt;
@@ -124,9 +159,10 @@ ModelsController::_addDrawableModel(std::string id, std::string path, DrawableMo
     auto itModelInfo = _modelMap.find(id);
     if (itModelInfo != _modelMap.end()) {
         // TODO: handle multiple instances
-        auto chunkIndex = itModelInfo->second.ssboChunkIndex;
+        auto chunkIndex = itModelInfo->second.ssboChunkCursor;
         auto ssboChunkInfo = itModelInfo->second.ssboChunkInfos[chunkIndex];
-        return DrawableModelHandle{&_drawableModels[itModelInfo->second.modelIndex], ssboChunkInfo.instanceOffset, 1};
+        std::vector<std::pair<uint32_t, uint32_t>> instanceDrawingRanges = {{{ssboChunkInfo.instanceOffset, 1}}};
+        return DrawableModelHandle{&_drawableModels[itModelInfo->second.modelIndex], instanceDrawingRanges};
     }
     size_t modelIndex = _drawableModels.size();
     _drawableModels.push_back(std::move(drawableModel));
@@ -148,7 +184,8 @@ ModelsController::_addDrawableModel(std::string id, std::string path, DrawableMo
     };
     _globalInstanceCursor += 1;
     _modelMap[id] = modelInfo;
-    return DrawableModelHandle{&_drawableModels.back(), _globalInstanceCursor, 1};
+    std::vector<std::pair<uint32_t, uint32_t>> instanceDrawingRanges = {{{_globalInstanceCursor, 1}}};
+    return DrawableModelHandle{&_drawableModels.back(), instanceDrawingRanges};
 }
 
 DrawableModel* ModelsController::getDrawableModelById(const std::string& id) {
