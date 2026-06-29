@@ -222,8 +222,7 @@ void processNode(
     }
 }
 
-std::optional<DrawableModel>
-ModelLoader::loadModel(const std::string& path, uint32_t instancesCount) {
+std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, uint32_t instancesCount) {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -288,9 +287,7 @@ ModelLoader::loadModel(const std::string& path, uint32_t instancesCount) {
     (*mesh).second->setVertices(modelVertices);
     (*mesh).second->setIndices(modelIndices);
 
-    auto drawableModel = vax::objects::DrawableModel(
-        _resourceManager.get().meshManager(), _resourceManager.get().ssboManager(), mesh->first
-    );
+    auto drawableModel = vax::objects::DrawableModel(_resourceManager.get().meshManager(), mesh->first);
     drawableModel._mesh = (*mesh).second;
     drawableModel._submeshes = submeshes;
     drawableModel._settings.hasTangents = hasTangents;
@@ -329,7 +326,9 @@ SceneNode processURDFLink(
     auto transform = transformHandle.getModelMatrix();
     auto nodeTransform = parentTransform * transform;
 
-    SceneNode node(link->name, transformHandle.getTransform(), {nodeTransform}, !link->parent_joint);
+    SceneNode node(
+        resourceManager.ssboManager(), link->name, transformHandle.getTransform(), {nodeTransform}, !link->parent_joint
+    );
 
     for (const auto& visual : link->visual_array) {
         if (!visual || !visual->geometry)
@@ -352,11 +351,11 @@ SceneNode processURDFLink(
         if (visual->geometry->type == urdf::Geometry::MESH) {
             const auto* mesh = static_cast<const urdf::Mesh*>(visual->geometry.get());
             auto modelOpt = loadModel(std::string(mainPath) + "/" + mesh->filename);
-            if (modelOpt) {
-                for (size_t i = 0; i < modelOpt->submeshCount(); ++i) {
-                    modelOpt->submesh(i).materialIndex = materialId;
+            if (modelOpt.has_value()) {
+                for (size_t i = 0; i < modelOpt->drawableModel->submeshCount(); ++i) {
+                    modelOpt->drawableModel->submesh(i).materialIndex = materialId;
                 }
-                node.addDrawableModel(modelOpt);
+                node.addDrawableModel(std::move(*modelOpt));
             }
         }
     }
@@ -378,31 +377,43 @@ ModelLoader::_loadURDFSceneModel(ModelsController& modelsController, ModelDescri
         return std::nullopt;
     }
     auto mainPath = descriptor.getMainPath();
-    auto rootNode =
-        processURDFLink(mainPath, _resourceManager.get(), model->getRoot(), [&](std::string path) -> DrawableModel* {
-            auto model = loadModel(path, descriptor.instancesCount);
+    auto rootNode = processURDFLink(
+        mainPath,
+        _resourceManager.get(),
+        model->getRoot(),
+        [&](std::string path) -> std::optional<DrawableModelHandle> {
+            auto model = loadModel(path, 1);
             if (!model.has_value()) {
                 _logger.error("Failed to load model: " + path);
-                return nullptr;
+                return std::nullopt;
             }
             static UUIDv4::UUIDGenerator<std::mt19937_64> uuidGen;
-            return modelsController.addDrawableModel(uuidGen.getUUID().str(), std::move(*model));
-        });
+            auto drawableModelHandle =
+                modelsController._addDrawableModel(uuidGen.getUUID().str(), path, std::move(*model));
+            return std::optional<DrawableModelHandle>(std::in_place, std::move(drawableModelHandle));
+        }
+    );
     return std::optional<SceneNode>(std::in_place, std::move(rootNode));
 }
 
 std::optional<SceneNode>
 ModelLoader::_loadGLBSceneModel(ModelsController& modelsController, ModelDescriptor descriptor) {
     auto path = descriptor.path;
-    auto model = loadModel(path, descriptor.instancesCount);
+    auto model = loadModel(path, 1);
     if (!model.has_value()) {
         _logger.error("Failed to load GLB model: " + path);
         return std::nullopt;
     }
     auto transformHandle = vax::math::TransformHandle();
-    auto node = SceneNode(path, transformHandle.getTransform(), {transformHandle.getModelMatrix()}, true);
+    auto node = SceneNode(
+        _resourceManager.get().ssboManager(),
+        path,
+        transformHandle.getTransform(),
+        {transformHandle.getModelMatrix()},
+        true
+    );
     static UUIDv4::UUIDGenerator<std::mt19937_64> uuidGen;
-    auto drawableModel = modelsController.addDrawableModel(uuidGen.getUUID().str(), std::move(*model));
+    auto drawableModel = modelsController._addDrawableModel(uuidGen.getUUID().str(), path, std::move(*model));
     node.addDrawableModel(drawableModel);
     return std::optional<SceneNode>(std::in_place, std::move(node));
 }

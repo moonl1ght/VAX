@@ -11,26 +11,26 @@ using namespace vax::renderer;
 bool GwSceneGraph::load(
     objects::ModelsController& modelsController, const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor
 ) {
-    auto agentNode = modelsController.getPreloadedSceneNodeByName(descriptor.agentDrawableDescriptor.name);
-    if (!agentNode.has_value()) {
-        _logger.error("Failed to load agent model: {}", descriptor.agentDrawableDescriptor.name);
-        return false;
-    }
-    _agentNode = std::make_unique<vax::objects::SceneNode>(std::move(agentNode.value()));
-    _roverModelProxy = std::make_unique<vax::rl::models::RoverModelProxy>();
-    _roverModelProxy->linkModelNode(_agentNode);
+    // auto agentNode = modelsController.getPreloadedSceneNodeById(descriptor.agentDrawableDescriptor.id);
+    // if (!agentNode.has_value()) {
+    //     _logger.error("Failed to load agent model: {}", descriptor.agentDrawableDescriptor.id);
+    //     return false;
+    // }
+    // _agentNode = std::make_unique<vax::objects::SceneNode>(std::move(agentNode.value()));
+    // _roverModelProxy = std::make_unique<vax::rl::models::RoverModelProxy>();
+    // _roverModelProxy->linkModelNode(_agentNode);
 
-    _agentNode->updateTransform([&](TransformHandle& transformHandle) {
-        transformHandle.updateTransform([&](Transform& transform) {
-            transform.updateRotationInDegrees({-90.0f, 0.0f, 0.0f});
-        });
-    });
+    // _agentNode->updateTransform([&](TransformHandle& transformHandle) {
+    //     transformHandle.updateTransform([&](Transform& transform) {
+    //         transform.updateRotationInDegrees({-90.0f, 0.0f, 0.0f});
+    //     });
+    // });
 
     _envNodes.reserve(descriptor.drawableDescriptors.size());
     for (const auto& drawableDescriptor : descriptor.drawableDescriptors) {
-        auto node = modelsController.createSceneNodeByModelName(drawableDescriptor.name);
+        auto node = modelsController.createSceneNodeById(drawableDescriptor.id);
         if (!node.has_value()) {
-            _logger.error("Failed to load model: {}", drawableDescriptor.name);
+            _logger.error("Failed to load model: {}", drawableDescriptor.id);
             continue;
         }
         _envNodes.push_back(std::move(node.value()));

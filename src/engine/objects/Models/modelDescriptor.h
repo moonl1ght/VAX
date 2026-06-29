@@ -15,7 +15,7 @@ struct ModelDescriptor {
     };
 
     std::string path;
-    std::string name;
+    std::string id;
     ModelType modelType;
     vax::math::Transform initialTransform;
     PrimitiveDescriptor primitiveDescriptor;

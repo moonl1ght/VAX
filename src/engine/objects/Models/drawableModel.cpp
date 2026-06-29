@@ -5,21 +5,7 @@ using namespace vax::renderer;
 
 bool DrawableModel::loadMesh(const MeshPBR::LoadMeshBuffersContext& context) { return _mesh->loadBuffers(context); }
 
-void DrawableModel::updateSSBO(
-    uint32_t currentFrame, std::vector<vax::math::TransformMatrixHandle> instanceTransformMatrixHandles
-) {
-    if (_ssboHandle == vax::SSBOManager::NullSSBOHandle) {
-        _logger.error("SSBO handle is null!");
-        return;
-    }
-    InstanceData instanceData{
-        .model = instanceTransformMatrixHandles[0].getModelMatrix(),
-        .normalMatrix = instanceTransformMatrixHandles[0].getNormalMatrix(),
-    };
-    _ssboManager.get().updateInstance(currentFrame, _ssboHandle, instanceData);
-}
-
-void DrawableModel::draw(const DrawContext& drawContext) {
+void DrawableModel::draw(const DrawContext& drawContext, uint32_t instanceOffset, uint32_t instancesCount) {
     if (!_mesh->isLoaded())
         return;
     VkBuffer vertexBuffers[] = {_mesh->vertexBuffer->vkBuffer()};
@@ -40,7 +26,6 @@ void DrawableModel::draw(const DrawContext& drawContext) {
 
     DrawPushConstants drawPushConstants{};
     drawPushConstants.flags = flags;
-    drawPushConstants.instanceIndex = _ssboHandle;
 
     for (auto& submesh : _submeshes) {
         if (!_settings.skipPushConstants) {
@@ -54,6 +39,13 @@ void DrawableModel::draw(const DrawContext& drawContext) {
                 &drawPushConstants
             );
         }
-        vkCmdDrawIndexed(drawContext.commandBuffer, submesh.indexCount, 1, submesh.firstIndex, submesh.vertexOffset, 0);
+        vkCmdDrawIndexed(
+            drawContext.commandBuffer,
+            submesh.indexCount,
+            instancesCount,
+            submesh.firstIndex,
+            submesh.vertexOffset,
+            instanceOffset
+        );
     }
 }

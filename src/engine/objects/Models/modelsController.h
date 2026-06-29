@@ -13,6 +13,8 @@
 namespace vax::objects {
 class ModelsController {
   public:
+    friend class ModelLoader;
+
     explicit ModelsController(
         vax::ResourceManager& resourceManager,
         vax::objects::ModelLoader& modelLoader,
@@ -39,22 +41,31 @@ class ModelsController {
         VkQueue submitQueue
     );
 
-    std::vector<std::string> getModelNames() const;
+    std::vector<std::string> getModelIds() const;
 
-    std::vector<std::string> getSceneNodeNames() const;
+    std::vector<std::string> getSceneNodeIds() const;
 
-    std::optional<vax::objects::SceneNode> getPreloadedSceneNodeByName(const std::string& name);
+    std::optional<vax::objects::SceneNode>
+    getPreloadedSceneNodeById(const std::string& id, uint32_t instancesCount = 1);
 
-    std::optional<vax::objects::SceneNode> createSceneNodeByModelName(const std::string& name);
+    std::optional<vax::objects::SceneNode> createSceneNodeById(const std::string& id, uint32_t instancesCount = 1);
 
-    DrawableModel* addDrawableModel(std::string name, vax::objects::DrawableModel&& drawableModel);
-
-    DrawableModel* getDrawableModelByName(const std::string& name);
+    DrawableModel* getDrawableModelById(const std::string& id);
 
   private:
-    struct ModelInfo {
+    struct ModelInfo final {
+        struct SSBOChunkInfo final {
+            uint32_t instanceOffset;
+            uint32_t cursor;
+            uint32_t maxInstances;
+
+            bool isFull() const { return cursor >= maxInstances; }
+        };
+
         std::optional<vax::objects::ModelDescriptor> modelDescriptor;
         size_t modelIndex;
+        std::vector<SSBOChunkInfo> ssboChunkInfos;
+        uint32_t ssboChunkIndex = 0;
     };
 
     vax::utils::Logger _logger = vax::utils::Logger("ModelsController");
@@ -68,5 +79,10 @@ class ModelsController {
 
     std::unordered_map<std::string, ModelInfo> _modelMap;
     std::vector<vax::objects::DrawableModel> _drawableModels;
+
+    uint32_t _globalInstanceCursor = 0;
+
+    DrawableModelHandle
+    _addDrawableModel(std::string id, std::string path, vax::objects::DrawableModel&& drawableModel);
 };
 } // namespace vax::objects

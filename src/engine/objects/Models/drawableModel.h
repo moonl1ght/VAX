@@ -4,9 +4,7 @@
 #include "luna.h"
 #include "mesh.h"
 #include "resourceHandle.h"
-#include "ssboManager.h"
 #include "submesh.h"
-#include "transform.h"
 
 namespace vax::objects {
 class PrimitivesBuilder;
@@ -27,9 +25,8 @@ class DrawableModel final {
     friend class vax::objects::PrimitivesBuilder;
     friend class vax::objects::ModelLoader;
 
-    explicit DrawableModel(vax::MeshManager& meshManager, vax::SSBOManager& ssboManager, vax::MeshHandle meshHandle)
+    explicit DrawableModel(vax::MeshManager& meshManager, vax::MeshHandle meshHandle)
         : _meshManager(meshManager)
-        , _ssboManager(ssboManager)
         , _meshHandle(meshHandle) {};
 
     DrawableModel(DrawableModel&& other) noexcept = default;
@@ -42,10 +39,7 @@ class DrawableModel final {
 
     bool loadMesh(const vax::objects::MeshPBR::LoadMeshBuffersContext& context);
 
-    void
-    updateSSBO(uint32_t currentFrame, std::vector<vax::math::TransformMatrixHandle> instanceTransformMatrixHandles);
-
-    void draw(const vax::renderer::DrawContext& drawContext);
+    void draw(const vax::renderer::DrawContext& drawContext, uint32_t instanceOffset, uint32_t instancesCount);
 
     Settings& settings() { return _settings; }
 
@@ -59,13 +53,10 @@ class DrawableModel final {
 
     size_t submeshCount() const { return _submeshes.size(); }
 
-    void updateSSBOHandle(vax::SSBOManager::SSBOHandle ssboHandle) { _ssboHandle = ssboHandle; }
-
   private:
     vax::utils::Logger _logger = vax::utils::Logger("DrawableModel");
 
     std::reference_wrapper<vax::MeshManager> _meshManager;
-    std::reference_wrapper<vax::SSBOManager> _ssboManager;
 
     vax::MeshHandle _meshHandle;
 
@@ -73,7 +64,11 @@ class DrawableModel final {
     vax::objects::MeshPBR* _mesh;
     std::vector<vax::objects::Submesh> _submeshes;
     Settings _settings;
-    uint32_t _instancesCount = 1;
-    uint32_t _ssboHandle = vax::SSBOManager::NullSSBOHandle;
+};
+
+struct DrawableModelHandle final {
+    DrawableModel* drawableModel;
+    uint32_t instanceOffset;
+    uint32_t instancesCount;
 };
 } // namespace vax::objects

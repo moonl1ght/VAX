@@ -3,6 +3,7 @@
 #include "drawContext.h"
 #include "drawableModel.h"
 #include "transform.h"
+#include "ssboManager.h"
 #include <optional>
 #include <vector>
 
@@ -16,12 +17,14 @@ class SceneNode final {
     friend class vax::objects::ModelLoader;
 
     explicit SceneNode(
+        vax::SSBOManager& ssboManager,
         std::string name,
         const vax::math::Transform& originalParentRelativeTransform,
         vax::math::TransformMatrixHandle parentTransformMatrices,
         bool isRoot = false
     )
-        : _name(std::move(name))
+        : _ssboManager(ssboManager)
+        , _name(std::move(name))
         , _isRoot(isRoot)
         , _parentTransformMatrices(parentTransformMatrices)
         , _originalParentRelativeTransform(originalParentRelativeTransform) {};
@@ -54,18 +57,20 @@ class SceneNode final {
 
     const std::vector<SceneNode>& children() const { return _children; }
 
-    const std::vector<DrawableModel*>& drawableModelsConst() const { return _drawableModels; }
+    const std::vector<DrawableModelHandle>& drawableModelsConst() const { return _drawableModels; }
 
-    std::vector<DrawableModel*> drawableModels() { return _drawableModels; }
+    std::vector<DrawableModelHandle>& drawableModels() { return _drawableModels; }
 
     const vax::math::TransformHandle& transformHandle() const { return _transformHandle; }
 
-    void addDrawableModel(DrawableModel* drawableModel);
+    void addDrawableModel(DrawableModelHandle drawableModelHandle);
 
   private:
+    std::reference_wrapper<vax::SSBOManager> _ssboManager;
+
     std::string _name;
     std::vector<SceneNode> _children;
-    std::vector<DrawableModel*> _drawableModels;
+    std::vector<DrawableModelHandle> _drawableModels;
     bool _isRoot = false;
     vax::math::Transform _originalParentRelativeTransform;
     vax::math::TransformMatrixHandle _parentTransformMatrices;

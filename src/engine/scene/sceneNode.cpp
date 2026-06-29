@@ -1,4 +1,5 @@
 #include "sceneNode.h"
+#include "shaderUniforms.h"
 #include <glm/ext/matrix_float4x4.hpp>
 
 using namespace vax::objects;
@@ -11,9 +12,16 @@ void SceneNode::draw(const vax::renderer::DrawContext& drawContext) {
 
     worldHandle.updateModelMatrix(_parentTransformMatrices.getModelMatrix() * _transformHandle.getModelMatrix());
 
-    for (auto& drawableModel : _drawableModels) {
-        drawableModel->updateSSBO(drawContext.currentFrame, {worldHandle});
-        drawableModel->draw(drawContext);
+    for (auto& drawableModelHandle : _drawableModels) {
+        // InstanceData instanceData = {
+        //     .model = worldHandle.getModelMatrix(),
+        //     .normalMatrix = worldHandle.getNormalMatrix(),
+        // };
+        // auto index = drawableModelHandle.instanceOffset + drawableModelHandle.instancesCount;
+        // _ssboManager.get().updateInstance(drawContext.currentFrame, index, instanceData);
+        drawableModelHandle.drawableModel->draw(
+            drawContext, drawableModelHandle.instanceOffset, drawableModelHandle.instancesCount
+        );
     }
 
     for (auto& child : _children) {
@@ -34,8 +42,8 @@ void SceneNode::insertChild(SceneNode&& child) {
     _isChildrenTransformDirty = true;
 }
 
-void SceneNode::addDrawableModel(DrawableModel* drawableModel) {
-    _drawableModels.push_back(drawableModel);
+void SceneNode::addDrawableModel(DrawableModelHandle drawableModelHandle) {
+    _drawableModels.push_back(drawableModelHandle);
 }
 
 SceneNode* SceneNode::getChild(const std::string& name, int depth) {

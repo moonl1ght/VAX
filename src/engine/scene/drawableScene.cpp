@@ -49,15 +49,13 @@ void vax::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor
     std::vector<vax::objects::ModelDescriptor> modelDescriptors = {
         {
         .path = "",
-        .name = "background",
+        .id = "background",
         .modelType = vax::objects::ModelDescriptor::ModelType::PRIMITIVE_PLANE,
-        .instancesCount = 1,
         },
         {
         .path = RES_PATH("assets/models/gizmo.glb"),
-        .name = "gizmo",
+        .id = "gizmo",
         .modelType = vax::objects::ModelDescriptor::ModelType::MODEL,
-        .instancesCount = 1,
         }
     };
     for (const auto& drawableDescriptor : descriptor.drawableDescriptors) {
@@ -67,11 +65,11 @@ void vax::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor
     auto commandBuffer1 = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
     _modelsController.preload(modelDescriptors, commandBuffer1, submitQueue);
     _sceneGraph->load(_modelsController, descriptor);
-    _gizmo = std::move(_modelsController.createSceneNodeByModelName("gizmo"));
-    for (auto& drawableModel : _gizmo->drawableModels()) {
-        drawableModel->setSettings({.precomputedMVP = true, .instanceDrawing = true});
+    _gizmo = std::move(_modelsController.createSceneNodeById("gizmo"));
+    for (auto& drawableModelHandle : _gizmo->drawableModels()) {
+        drawableModelHandle.drawableModel->setSettings({.precomputedMVP = true, .instanceDrawing = true});
     }
-    _background = std::move(_modelsController.createSceneNodeByModelName("background"));
+    _background = std::move(_modelsController.createSceneNodeById("background"));
 
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
 
