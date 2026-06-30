@@ -93,7 +93,7 @@ class Pipeline final {
     ~Pipeline() { vkDestroyPipeline(_device.get().vkDevice, vkPipeline, nullptr); };
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("Pipeline");
+    vax::Logger _logger = vax::Logger("Pipeline");
     std::reference_wrapper<const vax::vk::Device> _device;
 };
 } // namespace vax::vk

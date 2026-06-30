@@ -32,7 +32,7 @@ class BufferManager final {
     std::optional<vk::Buffer> detach(vax::BufferHandle handle);
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("BufferManager");
+    vax::Logger _logger = vax::Logger("BufferManager");
 
     std::reference_wrapper<const vax::vk::Device> _device;
     // TODO: change to vector + use generation for stability

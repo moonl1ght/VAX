@@ -4,9 +4,8 @@
 #include <functional>
 #include <mutex>
 #include <vector>
-#include <iostream>
 
-namespace vax::core::concurrency {
+namespace vax::core {
 class ThreadRunner final {
   public:
     ThreadRunner() = default;
@@ -22,7 +21,7 @@ class ThreadRunner final {
             std::lock_guard<std::mutex> lock(_queueMutex);
             _mainThreadQueue.push_back(callback);
         }
-        vax::core::NotificationCenter::getInstance().wakeUpSDL();
+        vax::NotificationCenter::getInstance().wakeUpSDL();
     }
 
     void processThreadQueue() {
@@ -43,4 +42,4 @@ class ThreadRunner final {
     std::vector<std::function<void()>> _mainThreadQueue;
     std::mutex _queueMutex;
 };
-} // namespace vax::core::concurrency
+} // namespace vax::core

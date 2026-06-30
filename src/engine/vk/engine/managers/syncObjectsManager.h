@@ -21,7 +21,7 @@ class SyncObjectsManager {
     std::vector<VkSemaphore> _renderFinishedSemaphores;
     std::vector<VkFence> _inFlightFences;
 
-    vax::utils::Logger _logger = vax::utils::Logger("SyncObjectsManager");
+    vax::Logger _logger = vax::Logger("SyncObjectsManager");
     std::reference_wrapper<const vax::vk::Device> _device;
 };
 } // namespace vax::vk

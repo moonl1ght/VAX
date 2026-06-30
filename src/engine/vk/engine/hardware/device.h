@@ -24,7 +24,7 @@ class Device final {
     VkPhysicalDeviceProperties getPhysicalDeviceProperties() const;
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("Device");
+    vax::Logger _logger = vax::Logger("Device");
 
     utils::QueueFamilyIndices _indices;
 

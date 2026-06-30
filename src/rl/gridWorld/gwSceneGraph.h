@@ -1,16 +1,17 @@
 #pragma once
 
 #include "commandBuffer.h"
+#include "drawContext.h"
 #include "gridWorldDescriptor.h"
+#include "gwenv.h"
 #include "logger.h"
 #include "modelLoader.h"
+#include "modelsController.h"
 #include "pipeline.h"
+#include "rlMath.h"
 #include "roverModelProxy.h"
 #include "sceneNode.h"
 #include <memory>
-#include "rlMath.h"
-#include "drawContext.h"
-#include "modelsController.h"
 
 namespace vax::rl::gw {
 // TODO: move to generic scene graph
@@ -34,10 +35,12 @@ class GwSceneGraph final {
 
     void update(float deltaTime);
 
-    void moveAgent(rl::math::Position2DFloat position);
+    void moveAgentTo(
+        rl::math::Position2DFloat position, vax::rl::gw::AgentOrientation orientation, bool withAnimation = false
+    );
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("GwSceneGraph");
+    vax::Logger _logger = vax::Logger("GwSceneGraph");
     std::vector<vax::objects::SceneNode> _envNodes;
     std::shared_ptr<vax::objects::SceneNode> _agentNode;
     std::unique_ptr<vax::rl::models::RoverModelProxy> _roverModelProxy;

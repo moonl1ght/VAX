@@ -1,5 +1,5 @@
 #include "gridWorld.h"
-#include "fileUtils.h"
+#include "fileSystem.h"
 #include "inputController.h"
 #include "nlohmann/json.hpp"
 #include "randomGenerator.h"
@@ -13,7 +13,7 @@ using namespace vax;
 using namespace vax::math;
 using namespace vax::rl::math;
 using namespace vax::rl;
-using namespace vax::core::utils;
+using namespace vax::core;
 
 void GridWorld::createRandomGrid() {
     int gridDimX = 6;
@@ -24,7 +24,7 @@ void GridWorld::createRandomGrid() {
     emptyIndices.reserve(_grid.totalSize());
     for (int i = 0; i < _grid.totalSize(); ++i) {
         std::vector<int> indices = _grid.indices(i);
-        auto padding = 1.0f;
+        auto padding = 1.1f;
         auto offset = 5.0f / 2.0f - 0.5f;
         Position2DFloat position = {indices[0] * padding - offset * padding, indices[1] * padding - offset * padding};
         _sceneGraphPositions.push_back(position);
@@ -58,7 +58,7 @@ void GridWorld::linkSceneGraph(GwSceneGraph* sceneGraph) {
     auto position = _agent.getPosition();
     auto flatIndex = _grid.flatIndex({position.x, position.y});
     auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex({position.x, position.y})];
-    _sceneGraph->moveAgent(sceneGraphPosition);
+    _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation());
 }
 
 GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
@@ -117,25 +117,25 @@ bool GridWorld::canMoveAgent(const Position2DInt& newPosition) const {
     return _grid.get({newPosition.x, newPosition.y}) != static_cast<float>(BlockType::WALL);
 }
 
-void GridWorld::onKeyEvent(const vax::input::KeyEvent& keyEvent) {
+void GridWorld::onKeyEvent(const KeyEvent& keyEvent) {
     if (_evalMode == vax::rl::EvalMode::TRAINING) {
         return;
     }
-    if (keyEvent.state != vax::input::KeyEvent::State::DOWN) {
+    if (keyEvent.state != KeyEvent::State::DOWN) {
         return;
     }
     MoveAction action;
     switch (keyEvent.key) {
-    case vax::input::KeyCode::A:
+    case vax::KeyCode::A:
         action = MoveAction::WEST;
         break;
-    case vax::input::KeyCode::S:
+    case vax::KeyCode::S:
         action = MoveAction::SOUTH;
         break;
-    case vax::input::KeyCode::D:
+    case vax::KeyCode::D:
         action = MoveAction::EAST;
         break;
-    case vax::input::KeyCode::W:
+    case vax::KeyCode::W:
         action = MoveAction::NORTH;
         break;
     default:
@@ -150,7 +150,7 @@ void GridWorld::agentMoved() {
     }
     auto newPosition = std::vector<int>({_agent.getPosition().x, _agent.getPosition().y});
     auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex(newPosition)];
-    _sceneGraph->moveAgent(sceneGraphPosition);
+    _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation());
 }
 
 const Tensor& GridWorld::getGrid() const { return _grid; }
@@ -193,10 +193,10 @@ void GridWorld::setEvalModeImpl(vax::rl::EvalMode evalMode) {
     _agent.setEvalModeImpl(evalMode);
     switch (evalMode) {
     case vax::rl::EvalMode::TRAINING:
-        _logger.setMode(vax::utils::Logger::Mode::FILE);
+        _logger.setMode(vax::Logger::Mode::FILE);
         break;
     case vax::rl::EvalMode::EVALUATION:
-        _logger.setMode(vax::utils::Logger::Mode::CONSOLE);
+        _logger.setMode(vax::Logger::Mode::CONSOLE);
         break;
     }
 }
@@ -244,7 +244,7 @@ bool GridWorld::load(const std::string& folderPath) {
     return true;
 }
 
-void GridWorld::setFsLogger(std::shared_ptr<vax::utils::FsLogger> fsLogger) {
+void GridWorld::setFsLogger(std::shared_ptr<vax::FsLogger> fsLogger) {
     _logger.setFsLogger(fsLogger);
     _agent.setFsLogger(fsLogger);
 }

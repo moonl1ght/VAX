@@ -19,6 +19,6 @@ class QueueManager final {
     void setup(const Device& device);
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("QueueManager");
+    vax::Logger _logger = vax::Logger("QueueManager");
 };
 } // namespace vax::vk

@@ -88,7 +88,7 @@ template <typename VertexType> class Mesh final {
     void setName(const std::string& name) { _name = name; }
 
   private:
-    utils::Logger _logger = utils::Logger("Mesh");
+    vax::Logger _logger = vax::Logger("Mesh");
 
     std::reference_wrapper<const vax::vk::Device> _device;
     std::string _name;

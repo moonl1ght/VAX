@@ -36,7 +36,7 @@ class PipelineManager final {
     VkPipelineLayout getPipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) const;
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("PipelineManager");
+    vax::Logger _logger = vax::Logger("PipelineManager");
     std::reference_wrapper<const vax::vk::Device> _device;
     std::reference_wrapper<const vax::vk::DescriptorSetManager> _descriptorSetManager;
     vax::vk::ShaderModuleBuilder _shaderModuleBuilder;

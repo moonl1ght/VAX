@@ -67,7 +67,7 @@ class ModelsController {
         uint32_t ssboChunkCursor = 0;
     };
 
-    vax::utils::Logger _logger = vax::utils::Logger("ModelsController");
+    vax::Logger _logger = vax::Logger("ModelsController");
     const uint32_t _maxDrawableInstances = vax::MAX_DRAWABLE_INSTANCES;
 
     std::reference_wrapper<vax::ResourceManager> _resourceManager;

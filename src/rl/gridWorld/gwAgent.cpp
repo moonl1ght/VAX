@@ -9,7 +9,6 @@ using namespace vax;
 using namespace vax::rl::gw::env;
 using namespace vax::rl::math;
 using namespace vax::math;
-using namespace vax::utils;
 
 vax::objects::ModelDescriptor Agent::getDrawableDescriptor() const {
     // TODO: check if initial transform affects the model
@@ -43,6 +42,7 @@ void Agent::_tryToMove(MoveAction action) {
         _oldPosition = _position;
         _position = getNewPosition(action);
         if (_evalMode == vax::rl::EvalMode::EVALUATION) {
+            _updateOrientation(action);
             _gridWorld->agentMoved();
         }
     }
@@ -160,7 +160,24 @@ void Agent::setQTable(vax::math::Tensor&& qTable) { _qTable = std::move(qTable);
 
 void Agent::setQLearningConfig(const vax::rl::ql::QLearningConfig& qlConfig) { _qlConfig = qlConfig; }
 
-void Agent::setFsLogger(std::shared_ptr<vax::utils::FsLogger> fsLogger) {
+void Agent::setFsLogger(std::shared_ptr<vax::FsLogger> fsLogger) {
     _logger.setFsLogger(fsLogger);
-    _logger.setMode(vax::utils::Logger::Mode::FILE);
+    _logger.setMode(vax::Logger::Mode::FILE);
+}
+
+void Agent::_updateOrientation(MoveAction action) {
+    switch (action) {
+    case MoveAction::NORTH:
+        _orientation = AgentOrientation::NORTH;
+        break;
+    case MoveAction::SOUTH:
+        _orientation = AgentOrientation::SOUTH;
+        break;
+    case MoveAction::EAST:
+        _orientation = AgentOrientation::EAST;
+        break;
+    case MoveAction::WEST:
+        _orientation = AgentOrientation::WEST;
+        break;
+    }
 }

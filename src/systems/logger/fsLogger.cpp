@@ -1,7 +1,7 @@
 #include "fsLogger.h"
 #include <fstream>
 
-using namespace vax::utils;
+using namespace vax;
 
 FsLogger::~FsLogger() {
     dump();

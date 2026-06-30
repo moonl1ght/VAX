@@ -24,7 +24,7 @@ class Renderer final {
     void prepare(DrawableScene* scene);
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("Renderer");
+    vax::Logger _logger = vax::Logger("Renderer");
 
     std::reference_wrapper<vax::vk::Engine> _vkEngine;
     std::reference_wrapper<vax::ui::UIEngine> _uiEngine;

@@ -54,7 +54,7 @@ class TextureManager final {
     ) const;
 
   private:
-    utils::Logger _logger = utils::Logger("TextureManager");
+    vax::Logger _logger = vax::Logger("TextureManager");
 
     std::reference_wrapper<const vk::Device> _device;
     VmaAllocator _allocator;

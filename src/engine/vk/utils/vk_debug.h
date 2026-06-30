@@ -11,16 +11,16 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 ) {
     switch (messageType) {
     case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:
-        vax::utils::Logger::getInstance().info("validation layer: ", pCallbackData->pMessage);
+        vax::Logger::getInstance().info("validation layer: ", pCallbackData->pMessage);
         break;
     case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
-        vax::utils::Logger::getInstance().error("validation layer: ", pCallbackData->pMessage);
+        vax::Logger::getInstance().error("validation layer: ", pCallbackData->pMessage);
         break;
     case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
-        vax::utils::Logger::getInstance().error("validation layer: ", pCallbackData->pMessage);
+        vax::Logger::getInstance().error("validation layer: ", pCallbackData->pMessage);
         break;
     default:
-        vax::utils::Logger::getInstance().warning("validation layer: ", pCallbackData->pMessage);
+        vax::Logger::getInstance().warning("validation layer: ", pCallbackData->pMessage);
         break;
     }
     return VK_FALSE;

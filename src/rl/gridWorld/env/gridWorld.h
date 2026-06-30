@@ -5,14 +5,14 @@
 #include "gwSceneGraph.h"
 #include "gwenv.h"
 #include "inputController.h"
+#include "logger.h"
 #include "qlConfig.h"
 #include "rlMath.h"
 #include "rlenv.h"
 #include "tensor.h"
-#include "logger.h"
 
 namespace vax::rl::gw::env {
-class GridWorld final : public vax::input::InputController::Observer,
+class GridWorld final : public vax::InputController::Observer,
                         public vax::rl::Environment<GridWorld, State, MoveAction> {
   public:
     enum class BlockType : uint8_t {
@@ -47,11 +47,11 @@ class GridWorld final : public vax::input::InputController::Observer,
 
     bool canMoveAgent(const vax::rl::math::Position2DInt& newPosition) const;
 
-    void onMouseMove(const vax::input::MouseMoveValue& value) {};
+    void onMouseMove(const vax::MouseMoveValue& value) {};
 
     void onMouseWheel(float delta) {};
 
-    void onKeyEvent(const vax::input::KeyEvent& keyEvent);
+    void onKeyEvent(const vax::KeyEvent& keyEvent);
 
     void linkSceneGraph(GwSceneGraph* sceneGraph);
 
@@ -71,10 +71,10 @@ class GridWorld final : public vax::input::InputController::Observer,
 
     vax::rl::gw::Agent& getAgent() { return _agent; }
 
-    void setFsLogger(std::shared_ptr<vax::utils::FsLogger> fsLogger);
+    void setFsLogger(std::shared_ptr<vax::FsLogger> fsLogger);
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("GridWorld");
+    vax::Logger _logger = vax::Logger("GridWorld");
     vax::rl::ql::QLearningConfig _qlConfig;
     std::string _name = "GridWorld";
     vax::math::Tensor _grid;

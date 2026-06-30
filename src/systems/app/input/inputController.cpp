@@ -1,94 +1,93 @@
 #include "inputController.h"
 
-using namespace vax::input;
 using namespace vax;
 
-inline vax::input::KeyCode keyCodeFromScancode(SDL_Scancode scancode) {
+inline vax::KeyCode keyCodeFromScancode(SDL_Scancode scancode) {
     switch (scancode) {
     case SDL_SCANCODE_A:
-        return vax::input::KeyCode::A;
+        return vax::KeyCode::A;
     case SDL_SCANCODE_B:
-        return vax::input::KeyCode::B;
+        return vax::KeyCode::B;
     case SDL_SCANCODE_C:
-        return vax::input::KeyCode::C;
+        return vax::KeyCode::C;
     case SDL_SCANCODE_D:
-        return vax::input::KeyCode::D;
+        return vax::KeyCode::D;
     case SDL_SCANCODE_E:
-        return vax::input::KeyCode::E;
+        return vax::KeyCode::E;
     case SDL_SCANCODE_F:
-        return vax::input::KeyCode::F;
+        return vax::KeyCode::F;
     case SDL_SCANCODE_G:
-        return vax::input::KeyCode::G;
+        return vax::KeyCode::G;
     case SDL_SCANCODE_H:
-        return vax::input::KeyCode::H;
+        return vax::KeyCode::H;
     case SDL_SCANCODE_I:
-        return vax::input::KeyCode::I;
+        return vax::KeyCode::I;
     case SDL_SCANCODE_J:
-        return vax::input::KeyCode::J;
+        return vax::KeyCode::J;
     case SDL_SCANCODE_K:
-        return vax::input::KeyCode::K;
+        return vax::KeyCode::K;
     case SDL_SCANCODE_L:
-        return vax::input::KeyCode::L;
+        return vax::KeyCode::L;
     case SDL_SCANCODE_M:
-        return vax::input::KeyCode::M;
+        return vax::KeyCode::M;
     case SDL_SCANCODE_N:
-        return vax::input::KeyCode::N;
+        return vax::KeyCode::N;
     case SDL_SCANCODE_O:
-        return vax::input::KeyCode::O;
+        return vax::KeyCode::O;
     case SDL_SCANCODE_P:
-        return vax::input::KeyCode::P;
+        return vax::KeyCode::P;
     case SDL_SCANCODE_Q:
-        return vax::input::KeyCode::Q;
+        return vax::KeyCode::Q;
     case SDL_SCANCODE_R:
-        return vax::input::KeyCode::R;
+        return vax::KeyCode::R;
     case SDL_SCANCODE_S:
-        return vax::input::KeyCode::S;
+        return vax::KeyCode::S;
     case SDL_SCANCODE_T:
-        return vax::input::KeyCode::T;
+        return vax::KeyCode::T;
     case SDL_SCANCODE_U:
-        return vax::input::KeyCode::U;
+        return vax::KeyCode::U;
     case SDL_SCANCODE_V:
-        return vax::input::KeyCode::V;
+        return vax::KeyCode::V;
     case SDL_SCANCODE_W:
-        return vax::input::KeyCode::W;
+        return vax::KeyCode::W;
     case SDL_SCANCODE_X:
-        return vax::input::KeyCode::X;
+        return vax::KeyCode::X;
     case SDL_SCANCODE_Y:
-        return vax::input::KeyCode::Y;
+        return vax::KeyCode::Y;
     case SDL_SCANCODE_Z:
-        return vax::input::KeyCode::Z;
+        return vax::KeyCode::Z;
     case SDL_SCANCODE_0:
-        return vax::input::KeyCode::_0;
+        return vax::KeyCode::_0;
     case SDL_SCANCODE_1:
-        return vax::input::KeyCode::_1;
+        return vax::KeyCode::_1;
     case SDL_SCANCODE_2:
-        return vax::input::KeyCode::_2;
+        return vax::KeyCode::_2;
     case SDL_SCANCODE_3:
-        return vax::input::KeyCode::_3;
+        return vax::KeyCode::_3;
     case SDL_SCANCODE_4:
-        return vax::input::KeyCode::_4;
+        return vax::KeyCode::_4;
     case SDL_SCANCODE_5:
-        return vax::input::KeyCode::_5;
+        return vax::KeyCode::_5;
     case SDL_SCANCODE_6:
-        return vax::input::KeyCode::_6;
+        return vax::KeyCode::_6;
     case SDL_SCANCODE_7:
-        return vax::input::KeyCode::_7;
+        return vax::KeyCode::_7;
     case SDL_SCANCODE_8:
-        return vax::input::KeyCode::_8;
+        return vax::KeyCode::_8;
     case SDL_SCANCODE_9:
-        return vax::input::KeyCode::_9;
+        return vax::KeyCode::_9;
     case SDL_SCANCODE_LEFT:
-        return vax::input::KeyCode::arrow_left;
+        return vax::KeyCode::arrow_left;
     case SDL_SCANCODE_RIGHT:
-        return vax::input::KeyCode::arrow_right;
+        return vax::KeyCode::arrow_right;
     case SDL_SCANCODE_UP:
-        return vax::input::KeyCode::arrow_up;
+        return vax::KeyCode::arrow_up;
     case SDL_SCANCODE_DOWN:
-        return vax::input::KeyCode::arrow_down;
+        return vax::KeyCode::arrow_down;
     default:
-        return vax::input::KeyCode::UNKNOWN;
+        return vax::KeyCode::UNKNOWN;
     }
-    return vax::input::KeyCode::UNKNOWN;
+    return vax::KeyCode::UNKNOWN;
 }
 
 void InputController::handleEvent(const SDL_Event& event) {

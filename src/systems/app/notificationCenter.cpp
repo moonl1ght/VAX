@@ -1,7 +1,7 @@
 #include "notificationCenter.h"
 #include "luna.h"
 
-using namespace vax::core;
+using namespace vax;
 
 void NotificationCenter::setup() { _wakeUpSDLEventId.store(SDL_RegisterEvents(1)); }
 

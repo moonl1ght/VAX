@@ -16,7 +16,7 @@ class RenderPassBuilder {
     std::optional<std::unique_ptr<vax::vk::RenderPass>> build() const noexcept;
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("RenderPassBuilder");
+    vax::Logger _logger = vax::Logger("RenderPassBuilder");
     std::reference_wrapper<const vax::vk::Device> _device;
     std::reference_wrapper<const vax::vk::Swapchain> _swapchain;
 };

@@ -15,7 +15,7 @@ constexpr int MAX_DRAWABLE_INSTANCES = 2000;
     ({                                                                                                                 \
         VkResult err = (x);                                                                                            \
         if (err != VK_SUCCESS) {                                                                                       \
-            vax::utils::Logger::getInstance().error("Detected Vulkan error: {}", err);                                 \
+            vax::Logger::getInstance().error("Detected Vulkan error: {}", err);                                 \
         }                                                                                                              \
         (err == VK_SUCCESS);                                                                                           \
     })

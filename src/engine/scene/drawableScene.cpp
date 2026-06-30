@@ -79,9 +79,9 @@ void vax::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor
     commandBuffer.submitAndWait(submitQueue);
     _modelLoader.cleanupStaged();
 
-    auto cameraPos = glm::vec3(2.0f, 2.0f, 2.0f);
+    auto cameraPos = glm::vec3(1.0f, 5.0f, -3.0f);
     _mainCamera.setPosition(cameraPos);
-    _gizmoCamera.setPosition(glm::vec3(1.0f, 1.0f, 1.0f));
+    _gizmoCamera.setPosition(cameraPos);
     _gizmoCamera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));
     _gizmoCamera.setViewPortSize(math::SizeUI(256, 256));
     _gizmoCamera.setProjection(objects::Camera::Projection::orthographic);
@@ -150,14 +150,14 @@ void vax::DrawableScene::drawGizmo(const DrawContext& drawContext) {
     _gizmo->draw(drawContext);
 }
 
-void vax::DrawableScene::onMouseMove(const vax::input::MouseMoveValue& value) {
+void vax::DrawableScene::onMouseMove(const vax::MouseMoveValue& value) {
     _mainCamera.rotateBy(value.delta);
     _gizmoCamera.rotateBy(value.delta);
 }
 
 void vax::DrawableScene::onMouseWheel(float delta) { _mainCamera.zoomBy(0.1f * delta); }
 
-void vax::DrawableScene::onKeyEvent(const vax::input::KeyEvent& keyEvent) {}
+void vax::DrawableScene::onKeyEvent(const vax::KeyEvent& keyEvent) {}
 
 void vax::DrawableScene::_loadEnvironmentMap(VkQueue submitQueue) {
     _environmentMap->load(

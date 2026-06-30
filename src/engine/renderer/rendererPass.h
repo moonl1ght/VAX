@@ -24,7 +24,7 @@ class RendererPass final {
     }
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("RendererPass");
+    vax::Logger _logger = vax::Logger("RendererPass");
     VkRenderPassBeginInfo _renderPassInfo;
 };
 } // namespace vax::renderer

@@ -26,7 +26,7 @@ class DescriptorSetLayoutBuilder final {
     build(DescriptorSetLayout::SetType setType, VkDescriptorSetLayoutCreateFlags flags = 0);
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("DescriptorSetLayoutBuilder");
+    vax::Logger _logger = vax::Logger("DescriptorSetLayoutBuilder");
     std::reference_wrapper<const vax::vk::Device> _device;
     std::vector<VkDescriptorSetLayoutBinding> _bindings;
     std::string _name;

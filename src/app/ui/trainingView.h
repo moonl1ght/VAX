@@ -23,7 +23,7 @@ class TrainingView final {
   private:
     std::reference_wrapper<UIEngine> _uiEngine;
     std::unique_ptr<vax::rl::gw::GWTrainingManager> _trainingManager;
-    vax::core::concurrency::ThreadRunner _mainThreadRunner;
+    vax::core::ThreadRunner _mainThreadRunner;
     std::string _trainingStatus;
 };
 } // namespace vax::ui

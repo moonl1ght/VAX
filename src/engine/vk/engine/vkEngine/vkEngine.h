@@ -64,7 +64,7 @@ class Engine final {
     void resize();
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("Engine");
+    vax::Logger _logger = vax::Logger("Engine");
 
     std::reference_wrapper<vax::vk::Window> _window;
 

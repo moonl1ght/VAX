@@ -7,6 +7,13 @@
 namespace vax::rl::gw {
 using State = vax::rl::math::Position2DInt;
 
+enum class AgentOrientation : uint8_t {
+    NORTH = 0,
+    SOUTH = 1,
+    EAST = 2,
+    WEST = 3,
+};
+
 enum class MoveAction : uint8_t {
     NORTH = 0,
     SOUTH = 1,

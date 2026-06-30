@@ -35,7 +35,7 @@ class ModelLoader final {
     void cleanupStaged();
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("ModelLoader");
+    vax::Logger _logger = vax::Logger("ModelLoader");
 
     std::reference_wrapper<vax::ResourceManager> _resourceManager;
     std::reference_wrapper<vax::textures::TextureLoader> _textureLoader;

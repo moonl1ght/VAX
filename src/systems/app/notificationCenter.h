@@ -2,7 +2,7 @@
 
 #include <atomic>
 
-namespace vax::core {
+namespace vax {
 
 class NotificationCenter final {
   public:
@@ -26,4 +26,4 @@ class NotificationCenter final {
     std::atomic<int> _wakeUpSDLEventId = 0;
 };
 
-} // namespace vax::core
+} // namespace vax

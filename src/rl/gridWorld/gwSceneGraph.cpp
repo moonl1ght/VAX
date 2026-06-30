@@ -58,11 +58,27 @@ void GwSceneGraph::update(float deltaTime) {
     }
 }
 
-void GwSceneGraph::moveAgent(Position2DFloat position) {
+void GwSceneGraph::moveAgentTo(Position2DFloat position, AgentOrientation orientation, bool withAnimation) {
     if (_agentNode) {
+        float rotation = 0.0f;
+        switch (orientation) {
+        case AgentOrientation::NORTH:
+            rotation = 90.0f;
+            break;
+        case AgentOrientation::SOUTH:
+            rotation = -90.0f;
+            break;
+        case AgentOrientation::EAST:
+            rotation = 0.0f;
+            break;
+        case AgentOrientation::WEST:
+            rotation = 180.0f;
+            break;
+        }
         _agentNode->updateTransform([&](TransformHandle& transformHandle) {
             transformHandle.updateTransform([&](Transform& transform) {
                 transform.position = {position.x, 0.0f, position.y};
+                transform.updateRotationInDegrees({-90.0f, rotation, 0.0f});
             });
         });
     } else {

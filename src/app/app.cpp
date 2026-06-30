@@ -20,7 +20,7 @@ bool App::run() {
 
 bool App::_setup() {
     RenderDoc::init();
-    vax::core::NotificationCenter::getInstance().setup();
+    vax::NotificationCenter::getInstance().setup();
     _window = std::make_unique<vk::Window>();
     if (!_window->load()) {
         return false;

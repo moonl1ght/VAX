@@ -27,6 +27,6 @@ class Window final {
 
   private:
     VkInstance _instance = VK_NULL_HANDLE;
-    vax::utils::Logger _logger = vax::utils::Logger("Window");
+    vax::Logger _logger = vax::Logger("Window");
 };
 }; // namespace vax::vk

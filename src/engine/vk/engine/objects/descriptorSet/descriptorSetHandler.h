@@ -53,7 +53,7 @@ struct DescriptorSetHandler {
     uint32_t id() const { return _id; }
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("DescriptorSetWriter");
+    vax::Logger _logger = vax::Logger("DescriptorSetWriter");
     std::reference_wrapper<const vax::vk::Device> _device;
     uint32_t _id;
     VkDescriptorSet _descriptorSet;

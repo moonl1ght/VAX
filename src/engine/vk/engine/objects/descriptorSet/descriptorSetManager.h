@@ -32,7 +32,7 @@ class DescriptorSetManager {
     const DescriptorSetLayout* getDescriptorSetLayout(DescriptorSetLayout::SetType setType) const;
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("DescriptorSetManager");
+    vax::Logger _logger = vax::Logger("DescriptorSetManager");
     std::reference_wrapper<const vax::vk::Device> _device;
     const int32_t _maxFramesInFlight;
 

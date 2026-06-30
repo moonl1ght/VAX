@@ -112,7 +112,7 @@ class Buffer final {
     const std::string& name() const { return _name; }
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("Buffer");
+    vax::Logger _logger = vax::Logger("Buffer");
     std::reference_wrapper<const vax::vk::Device> _device;
 
     std::string _name;

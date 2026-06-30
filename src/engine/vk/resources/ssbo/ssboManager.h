@@ -32,7 +32,7 @@ class SSBOManager final {
     const vax::vk::Buffer& instanceBuffer(uint32_t frameIndex) const { return *_buffers[frameIndex]; }
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("SSBOManager");
+    vax::Logger _logger = vax::Logger("SSBOManager");
     std::reference_wrapper<const vax::vk::Device> _device;
     std::array<std::unique_ptr<vax::vk::Buffer>, vax::MAX_FRAMES_IN_FLIGHT> _buffers;
     uint32_t _maxInstances = 0;

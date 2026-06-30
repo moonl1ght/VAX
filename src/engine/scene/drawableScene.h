@@ -28,7 +28,7 @@ struct SceneUpdateContext {
     float deltaTime;
 };
 
-class DrawableScene final : public vax::input::InputController::Observer {
+class DrawableScene final : public vax::InputController::Observer {
   public:
     DrawableScene(vax::vk::Engine& vkEngine)
         : _vkEngine(vkEngine)
@@ -84,16 +84,16 @@ class DrawableScene final : public vax::input::InputController::Observer {
 
     void drawGizmo(const vax::renderer::DrawContext& drawContext);
 
-    void onMouseMove(const vax::input::MouseMoveValue& value);
+    void onMouseMove(const vax::MouseMoveValue& value);
 
     void onMouseWheel(float delta);
 
-    void onKeyEvent(const vax::input::KeyEvent& keyEvent);
+    void onKeyEvent(const vax::KeyEvent& keyEvent);
 
     vax::rl::gw::GwSceneGraph* sceneGraph() const { return _sceneGraph.get(); }
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("DrawableScene");
+    vax::Logger _logger = vax::Logger("DrawableScene");
     std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
     std::reference_wrapper<vax::vk::Engine> _vkEngine;
     vax::objects::ModelsController _modelsController;

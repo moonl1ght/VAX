@@ -25,7 +25,7 @@ class RenderDestinationBuilder {
     std::optional<std::unique_ptr<vax::vk::RenderDestination>> build(vax::vk::Engine* vkEngine) const noexcept;
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("RenderDestinationBuilder");
+    vax::Logger _logger = vax::Logger("RenderDestinationBuilder");
     std::reference_wrapper<const vax::vk::Device> _device;
     VmaAllocator _allocator;
     std::reference_wrapper<const vax::vk::Swapchain> _swapchain;

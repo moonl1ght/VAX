@@ -16,7 +16,7 @@ class RoverModelProxy final {
     void update(float deltaTime);
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("RoverModelProxy");
+    vax::Logger _logger = vax::Logger("RoverModelProxy");
     std::shared_ptr<vax::objects::SceneNode> _modelNode;
     vax::objects::SceneNode* _rightFrontWheel;
     vax::objects::SceneNode* _leftFrontWheel;

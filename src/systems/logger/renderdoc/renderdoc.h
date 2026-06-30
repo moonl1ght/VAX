@@ -25,7 +25,7 @@ class RenderDoc {
 #elif defined(__linux__)
         auto getApi = reinterpret_cast<pRENDERDOC_GetAPI>(dlsym(RTLD_DEFAULT, "RENDERDOC_GetAPI"));
         if (!getApi) {
-            void *mod = dlopen("/opt/renderdoc/lib/librenderdoc.so", RTLD_NOW | RTLD_NOLOAD);
+            void* mod = dlopen("/opt/renderdoc/lib/librenderdoc.so", RTLD_NOW | RTLD_NOLOAD);
             if (!mod)
                 mod = dlopen("/opt/renderdoc/lib/librenderdoc.so", RTLD_NOW);
             if (!mod)
@@ -37,8 +37,8 @@ class RenderDoc {
         if (!getApi)
             return;
 
-        RENDERDOC_API_1_6_0 *api = nullptr;
-        if (getApi(eRENDERDOC_API_Version_1_6_0, reinterpret_cast<void **>(&api)) != 1)
+        RENDERDOC_API_1_6_0* api = nullptr;
+        if (getApi(eRENDERDOC_API_Version_1_6_0, reinterpret_cast<void**>(&api)) != 1)
             return;
         _api = api;
 
@@ -59,7 +59,7 @@ class RenderDoc {
     static bool isLoaded() { return _api != nullptr; }
 
   private:
-    inline static RENDERDOC_API_1_6_0 *_api = nullptr;
+    inline static RENDERDOC_API_1_6_0* _api = nullptr;
 };
 
 } // namespace vax

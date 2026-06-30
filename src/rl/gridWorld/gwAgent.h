@@ -69,20 +69,24 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
 
     void setQLearningConfig(const vax::rl::ql::QLearningConfig& qlConfig);
 
-    void setFsLogger(std::shared_ptr<vax::utils::FsLogger> fsLogger);
+    void setFsLogger(std::shared_ptr<vax::FsLogger> fsLogger);
+
+    AgentOrientation getOrientation() const { return _orientation; }
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("GWAgent");
+    vax::Logger _logger = vax::Logger("GWAgent");
     vax::rl::ql::QLearningConfig _qlConfig;
     vax::rl::math::Position2DInt _startPosition = {0, 0};
     vax::rl::math::Position2DInt _position = {0, 0};
     vax::rl::math::Position2DInt _oldPosition = {0, 0};
     vax::rl::gw::env::GridWorld* _gridWorld = nullptr;
     vax::rl::EvalMode _evalMode = vax::rl::EvalMode::EVALUATION;
+    AgentOrientation _orientation = AgentOrientation::NORTH;
 
     vax::math::Tensor _qTable;
 
     void _tryToMove(MoveAction action);
     bool _canTakeAction(MoveAction action) const;
+    void _updateOrientation(MoveAction action);
 };
 } // namespace vax::rl::gw

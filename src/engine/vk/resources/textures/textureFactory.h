@@ -48,7 +48,7 @@ class TextureFactory final {
     std::optional<Texture> makeTextureDetached(const TextureCreateInfo& createInfo);
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("TextureFactory");
+    vax::Logger _logger = vax::Logger("TextureFactory");
     std::reference_wrapper<const vk::Device> _device;
     TextureManager* _textureManager;
     VmaAllocator _allocator;

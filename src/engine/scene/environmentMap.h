@@ -47,7 +47,7 @@ class EnvironmentMap final {
     const vax::vk::Buffer& environmentMapBuffer() const { return *_buffer; }
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("EnvironmentMap");
+    vax::Logger _logger = vax::Logger("EnvironmentMap");
     std::reference_wrapper<vax::textures::TextureLoader> _textureLoader;
     std::reference_wrapper<const vax::vk::Device> _device;
     EnvironmentMapData _environmentMapData;

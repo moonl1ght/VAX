@@ -28,7 +28,7 @@ class Swapchain final {
     bool recreate();
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("Swapchain");
+    vax::Logger _logger = vax::Logger("Swapchain");
 
     std::reference_wrapper<const vax::vk::Window> _window;
     std::reference_wrapper<const vax::vk::Device> _device;

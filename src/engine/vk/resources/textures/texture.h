@@ -127,7 +127,7 @@ class Texture final {
     void createSampler();
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("Texture");
+    vax::Logger _logger = vax::Logger("Texture");
     vax::math::SizeUI _size = vax::math::SizeUI::zero();
     VkFormat _format = VK_FORMAT_UNDEFINED;
     VkImageAspectFlags _aspectMask = VK_IMAGE_ASPECT_NONE;

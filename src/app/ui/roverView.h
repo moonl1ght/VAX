@@ -19,7 +19,7 @@ class RoverView final {
     RoverView& operator=(RoverView&& other) noexcept = delete;
 
     void updateImGui();
-    void load(vax::vk::Engine& engine, vax::input::InputController& inputController);
+    void load(vax::vk::Engine& engine, vax::InputController& inputController);
 
     DrawableScene* drawableScene() const { return _drawableScene.get(); }
 

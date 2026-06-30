@@ -3,7 +3,7 @@
 using namespace vax::objects;
 using namespace vax;
 
-void Submesh::debugPrint(const utils::Logger& logger) const {
+void Submesh::debugPrint(const Logger& logger) const {
     logger.debug(
         "Submesh: indexCount=",
         indexCount,

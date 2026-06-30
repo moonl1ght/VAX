@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace vax::input {
+namespace vax {
 enum class KeyCode: uint32_t {
     UNKNOWN = 0,
     A = 1,
@@ -46,4 +46,4 @@ enum class KeyCode: uint32_t {
     arrow_up = 39,
     arrow_down = 40,
 };
-} // namespace vax::input
+} // namespace vax

@@ -34,7 +34,7 @@ class MaterialManager final {
     const vax::vk::Buffer& materialBuffer() const { return *_buffer; }
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("MaterialManager");
+    vax::Logger _logger = vax::Logger("MaterialManager");
     std::reference_wrapper<const vax::vk::Device> _device;
     // TODO: change to vector of buffers to handle material overflow
     std::unique_ptr<vax::vk::Buffer> _buffer = nullptr;

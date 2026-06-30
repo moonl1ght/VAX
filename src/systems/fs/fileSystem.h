@@ -3,8 +3,12 @@
 #include <filesystem>
 #include <optional>
 
-namespace vax::core::utils {
-std::string getCurrentDatetimeString();
-
+namespace vax::fs {
 std::optional<std::filesystem::path> getLatestFolder(const std::filesystem::path& parent_dir);
-} // namespace vax::core::utils
+
+class FileSystem final {
+  public:
+    FileSystem();
+    ~FileSystem();
+};
+} // namespace vax::fs

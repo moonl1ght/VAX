@@ -54,7 +54,7 @@ class DrawableModel final {
     size_t submeshCount() const { return _submeshes.size(); }
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("DrawableModel");
+    vax::Logger _logger = vax::Logger("DrawableModel");
 
     std::reference_wrapper<vax::MeshManager> _meshManager;
 

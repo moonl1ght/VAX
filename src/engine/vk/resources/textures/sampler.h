@@ -42,7 +42,7 @@ class Sampler final {
     void setName(const std::string& name) { _name = name; }
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("Sampler");
+    vax::Logger _logger = vax::Logger("Sampler");
     std::string _name;
     std::reference_wrapper<const vax::vk::Device> _device;
 };

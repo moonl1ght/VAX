@@ -33,7 +33,7 @@ class TextureLoader final {
     void cleanupStaged();
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("TextureLoader");
+    vax::Logger _logger = vax::Logger("TextureLoader");
     std::reference_wrapper<const vax::vk::Device> _device;
     std::reference_wrapper<vax::TextureManager> _textureManager;
     std::reference_wrapper<vax::vk::CommandManager> _commandManager;

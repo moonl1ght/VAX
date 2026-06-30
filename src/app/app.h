@@ -1,7 +1,5 @@
 #pragma once
 
-#include "drawableScene.h"
-#include "gridWorld.h"
 #include "inputController.h"
 #include "logger.h"
 #include "luna.h"
@@ -18,7 +16,7 @@ enum class AppMode { Menu, Demo, Training };
 
 class App final {
   public:
-    App() { _inputController = vax::input::InputController(); };
+    App() { _inputController = vax::InputController(); };
     ~App() {};
 
     bool run();
@@ -26,9 +24,9 @@ class App final {
     vax::vk::Engine* getEngine() const { return _engine.get(); }
 
   private:
-    utils::Logger _logger = utils::Logger("App");
+    vax::Logger _logger = vax::Logger("App");
 
-    vax::input::InputController _inputController;
+    vax::InputController _inputController;
     vax::AppMode _appMode = vax::AppMode::Menu;
     float _timestamp = 0.0f;
 

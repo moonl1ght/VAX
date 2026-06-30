@@ -52,7 +52,7 @@ class ComputePipelineBuilder final {
     void setShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* name);
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("ComputePipelineBuilder");
+    vax::Logger _logger = vax::Logger("ComputePipelineBuilder");
     std::reference_wrapper<const vax::vk::Device> _device;
     VkPipelineLayout _pipelineLayout = VK_NULL_HANDLE;
     VkPipelineShaderStageCreateInfo _shaderStageInfo = {};
@@ -81,7 +81,7 @@ class GraphicsPipelineBuilder final {
     void setDepthStencilState(DepthStencilState depthStencilState) { _depthStencilState = depthStencilState; }
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("GraphicsPipelineBuilder");
+    vax::Logger _logger = vax::Logger("GraphicsPipelineBuilder");
     std::reference_wrapper<const vax::vk::Device> _device;
     std::vector<VkPipelineShaderStageCreateInfo> _shaderStages;
     VkVertexInputBindingDescription _bindingDescription = {};

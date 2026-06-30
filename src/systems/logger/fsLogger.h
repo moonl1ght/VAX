@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace vax::utils {
+namespace vax {
 class FsLogger final {
   public:
     FsLogger(const std::string& path, int inMemoryMessages = 10000)
@@ -22,4 +22,4 @@ class FsLogger final {
     int _inMemoryMessages;
     std::vector<std::string> _messages;
 };
-} // namespace vax::utils
+} // namespace vax

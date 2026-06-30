@@ -3,6 +3,7 @@
 #include "deletionQueue.h"
 #include "luna.h"
 #include "vk_debug.h"
+#include "vkUtils.h"
 
 namespace vax {
 class VkInstanceBuilder {
@@ -17,7 +18,7 @@ class VkInstanceBuilder {
         , enableValidationLayers(enableValidationLayers)
         , validationLayers(validationLayers)
         , vulkanApiVersion(vulkanApiVersion) {
-        _logger = vax::utils::Logger("VkInstanceBuilder");
+        _logger = vax::Logger("VkInstanceBuilder");
     };
 
     std::optional<VkInstance> build() {
@@ -70,7 +71,7 @@ class VkInstanceBuilder {
     }
 
   private:
-    vax::utils::Logger _logger = vax::utils::Logger("VkInstanceBuilder");
+    vax::Logger _logger = vax::Logger("VkInstanceBuilder");
     vax::utils::DeletionQueue& deletionQueue;
     const bool enableValidationLayers;
     const std::vector<const char*>& validationLayers;

@@ -27,7 +27,7 @@ std::optional<Sampler> Sampler::createSampler(const vk::Device& device, std::str
 
     VkSampler vkSampler;
     if (vkCreateSampler(device.vkDevice, &samplerInfo, nullptr, &vkSampler) != VK_SUCCESS) {
-        utils::Logger::getInstance().error("failed to create texture sampler!");
+        Logger::getInstance().error("failed to create texture sampler!");
         return std::nullopt;
     }
     if (!name.empty()) {
