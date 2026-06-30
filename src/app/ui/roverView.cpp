@@ -3,8 +3,7 @@
 #include "qlConfig.h"
 
 using namespace vax::ui;
-using namespace vax::rl::gw::env;
-using namespace vax::rl::ql;
+using namespace vax::rl;
 using namespace vax::vk;
 using namespace vax;
 

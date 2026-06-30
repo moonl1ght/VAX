@@ -19,9 +19,9 @@
 #include "textureLoader.h"
 #include "vkEngine.h"
 
-namespace vax::rl::gw::env {
+namespace vax::rl {
 struct GridWorldDrawableDescriptor;
-} // namespace vax::rl::gw::env
+} // namespace vax::rl
 
 namespace vax {
 struct SceneUpdateContext {
@@ -66,7 +66,7 @@ class DrawableScene final : public vax::InputController::Observer {
 
     const vax::objects::Camera& gizmoCamera() const { return _gizmoCamera; }
 
-    void loadScene(const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue);
+    void loadScene(const vax::rl::GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue);
 
     void resize();
 
@@ -90,7 +90,7 @@ class DrawableScene final : public vax::InputController::Observer {
 
     void onKeyEvent(const vax::KeyEvent& keyEvent);
 
-    vax::rl::gw::GwSceneGraph* sceneGraph() const { return _sceneGraph.get(); }
+    vax::rl::GwSceneGraph* sceneGraph() const { return _sceneGraph.get(); }
 
   private:
     vax::Logger _logger = vax::Logger("DrawableScene");
@@ -104,7 +104,7 @@ class DrawableScene final : public vax::InputController::Observer {
     vax::objects::Camera _mainCamera;
     vax::objects::Camera _gizmoCamera;
     UniformBufferObject _ubo;
-    std::unique_ptr<vax::rl::gw::GwSceneGraph> _sceneGraph;
+    std::unique_ptr<vax::rl::GwSceneGraph> _sceneGraph;
     std::optional<vax::objects::SceneNode> _background;
     std::optional<vax::objects::SceneNode> _gizmo;
     std::optional<vax::scene::EnvironmentMap> _environmentMap;

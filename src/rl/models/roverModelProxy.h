@@ -3,10 +3,10 @@
 #include "logger.h"
 #include "sceneNode.h"
 
-namespace vax::rl::models {
+namespace vax::rl {
 class RoverModelProxy final {
   public:
-    explicit RoverModelProxy() { };
+    explicit RoverModelProxy() {};
     ~RoverModelProxy() = default;
 
     void updateSceneNode(vax::objects::SceneNode& sceneNode);
@@ -24,4 +24,4 @@ class RoverModelProxy final {
     vax::objects::SceneNode* _leftRearWheel;
     float _wheelSpinAngle = 0.0f;
 };
-} // namespace vax::rl::models
+} // namespace vax::rl

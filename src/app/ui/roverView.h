@@ -27,6 +27,6 @@ class RoverView final {
     std::reference_wrapper<UIEngine> _uiEngine;
 
     std::unique_ptr<DrawableScene> _drawableScene;
-    std::unique_ptr<vax::rl::gw::env::GridWorld> _gridWorld;
+    std::unique_ptr<vax::rl::GridWorld> _gridWorld;
 };
 } // namespace vax::ui

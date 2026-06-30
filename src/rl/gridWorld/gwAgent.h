@@ -9,18 +9,18 @@
 #include "vaxMath.h"
 #include "tensor.h"
 
-namespace vax::rl::gw::env {
+namespace vax::rl {
 class GridWorld;
 }
 
-namespace vax::rl::gw {
-class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
+namespace vax::rl {
+class GWAgent final : public vax::rl::Agent<GWAgent, State, MoveAction> {
   public:
-    explicit Agent(vax::rl::ql::QLearningConfig qlConfig)
+    explicit GWAgent(vax::rl::QLearningConfig qlConfig)
         : _qlConfig(qlConfig) {};
 
-    Agent(
-        vax::rl::ql::QLearningConfig qlConfig,
+    GWAgent(
+        vax::rl::QLearningConfig qlConfig,
         const vax::math::Position2DInt& startPosition,
         vax::math::Tensor&& qTable
     )
@@ -28,12 +28,12 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
         , _startPosition(startPosition)
         , _qTable(std::move(qTable)) {};
 
-    ~Agent() = default;
+    ~GWAgent() = default;
 
-    Agent(const Agent& other) = delete;
-    Agent& operator=(const Agent& other) = delete;
-    Agent(Agent&& other) noexcept = delete;
-    Agent& operator=(Agent&& other) noexcept = delete;
+    GWAgent(const GWAgent& other) = delete;
+    GWAgent& operator=(const GWAgent& other) = delete;
+    GWAgent(GWAgent&& other) noexcept = delete;
+    GWAgent& operator=(GWAgent&& other) noexcept = delete;
 
     vax::objects::ModelDescriptor getDrawableDescriptor() const;
 
@@ -41,7 +41,7 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
 
     void allowAction(MoveAction action);
 
-    void linkGridWorld(vax::rl::gw::env::GridWorld* gridWorld);
+    void linkGridWorld(vax::rl::GridWorld* gridWorld);
 
     const vax::math::Position2DInt& getPosition() const;
     const vax::math::Position2DInt& getOldPosition() const;
@@ -67,7 +67,7 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
 
     void setQTable(vax::math::Tensor&& qTable);
 
-    void setQLearningConfig(const vax::rl::ql::QLearningConfig& qlConfig);
+    void setQLearningConfig(const vax::rl::QLearningConfig& qlConfig);
 
     void setFsLogger(std::shared_ptr<vax::FsLogger> fsLogger);
 
@@ -75,11 +75,11 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
 
   private:
     vax::Logger _logger = vax::Logger("GWAgent");
-    vax::rl::ql::QLearningConfig _qlConfig;
+    vax::rl::QLearningConfig _qlConfig;
     vax::math::Position2DInt _startPosition = {0, 0};
     vax::math::Position2DInt _position = {0, 0};
     vax::math::Position2DInt _oldPosition = {0, 0};
-    vax::rl::gw::env::GridWorld* _gridWorld = nullptr;
+    vax::rl::GridWorld* _gridWorld = nullptr;
     vax::rl::EvalMode _evalMode = vax::rl::EvalMode::EVALUATION;
     AgentOrientation _orientation = AgentOrientation::NORTH;
 

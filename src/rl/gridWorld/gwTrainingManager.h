@@ -6,7 +6,7 @@
 #include <thread>
 #include "qlConfig.h"
 
-namespace vax::rl::gw {
+namespace vax::rl {
 struct TrainingStatus {
     std::string message = "";
     bool isCompleted = false;
@@ -29,9 +29,9 @@ class GWTrainingManager final {
   private:
     std::shared_ptr<vax::FsLogger> _fsLogger;
     vax::Logger _logger = vax::Logger("GWTrainingManager");
-    std::unique_ptr<vax::rl::training::TrainingEngine> _trainingEngine;
-    std::unique_ptr<vax::rl::gw::env::GridWorld> _gridWorld;
-    vax::rl::ql::QLearningConfig _qlConfig;
+    std::unique_ptr<vax::rl::TrainingEngine> _trainingEngine;
+    std::unique_ptr<vax::rl::GridWorld> _gridWorld;
+    vax::rl::QLearningConfig _qlConfig;
     std::string _trainDirectory;
 
     std::jthread _trainingThread;

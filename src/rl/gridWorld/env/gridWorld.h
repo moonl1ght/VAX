@@ -7,11 +7,11 @@
 #include "inputController.h"
 #include "logger.h"
 #include "qlConfig.h"
-#include "vaxMath.h"
 #include "rlenv.h"
 #include "tensor.h"
+#include "vaxMath.h"
 
-namespace vax::rl::gw::env {
+namespace vax::rl {
 class GridWorld final : public vax::InputController::Observer,
                         public vax::rl::Environment<GridWorld, State, MoveAction> {
   public:
@@ -23,7 +23,7 @@ class GridWorld final : public vax::InputController::Observer,
         TRAP = 4,
     };
 
-    explicit GridWorld(vax::rl::ql::QLearningConfig qlConfig)
+    explicit GridWorld(vax::rl::QLearningConfig qlConfig)
         : _qlConfig(qlConfig) {};
 
     ~GridWorld() {
@@ -43,7 +43,7 @@ class GridWorld final : public vax::InputController::Observer,
 
     bool load(const std::string& folderPath);
 
-    vax::rl::gw::env::GridWorldDrawableDescriptor getDrawableDescriptor() const;
+    vax::rl::GridWorldDrawableDescriptor getDrawableDescriptor() const;
 
     bool canMoveAgent(const vax::math::Position2DInt& newPosition) const;
 
@@ -69,20 +69,20 @@ class GridWorld final : public vax::InputController::Observer,
 
     void setEvalModeImpl(vax::rl::EvalMode evalMode);
 
-    vax::rl::gw::Agent& getAgent() { return _agent; }
+    vax::rl::GWAgent& getAgent() { return _agent; }
 
     void setFsLogger(std::shared_ptr<vax::FsLogger> fsLogger);
 
   private:
     vax::Logger _logger = vax::Logger("GridWorld");
-    vax::rl::ql::QLearningConfig _qlConfig;
+    vax::rl::QLearningConfig _qlConfig;
     std::string _name = "GridWorld";
     vax::math::Tensor _grid;
-    vax::rl::gw::Agent _agent = vax::rl::gw::Agent(_qlConfig);
+    vax::rl::GWAgent _agent = vax::rl::GWAgent(_qlConfig);
     std::vector<vax::math::Position2DFloat> _sceneGraphPositions;
 
     std::string blockTypeToPath(BlockType blockType) const;
     GwSceneGraph* _sceneGraph;
     vax::rl::EvalMode _evalMode = vax::rl::EvalMode::EVALUATION;
 };
-} // namespace vax::rl::gw::env
+} // namespace vax::rl

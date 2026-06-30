@@ -2,13 +2,13 @@
 #include "gridWorldDescriptor.h"
 #include "modelDescriptor.h"
 
-using namespace vax::rl::gw;
 using namespace vax;
 using namespace vax::math;
+using namespace vax::rl;
 using namespace vax::renderer;
 
 bool GwSceneGraph::load(
-    objects::ModelsController& modelsController, const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor
+    objects::ModelsController& modelsController, const vax::rl::GridWorldDrawableDescriptor& descriptor
 ) {
     auto agentNode = modelsController.getPreloadedSceneNodeById(descriptor.agentDrawableDescriptor.id, 1);
     if (!agentNode.has_value()) {
@@ -16,7 +16,7 @@ bool GwSceneGraph::load(
         return false;
     }
     _agentNode = std::make_unique<vax::objects::SceneNode>(std::move(agentNode.value()));
-    _roverModelProxy = std::make_unique<vax::rl::models::RoverModelProxy>();
+    _roverModelProxy = std::make_unique<vax::rl::RoverModelProxy>();
     _roverModelProxy->linkModelNode(_agentNode);
 
     _agentNode->updateTransform([&](TransformHandle& transformHandle) {

@@ -4,8 +4,8 @@
 #include "nlohmann/json.hpp"
 #include <filesystem>
 
-using namespace vax::rl::gw;
-using namespace vax::rl::gw::env;
+using namespace vax;
+using namespace vax::rl;
 using namespace vax::core;
 
 GWTrainingManager::GWTrainingManager() {
@@ -30,8 +30,8 @@ void GWTrainingManager::startTraining(ThreadRunner& threadRunner, std::function<
 }
 
 void GWTrainingManager::_setupTraining(ThreadRunner& threadRunner, std::function<TrainingCallback>& callback) {
-    _trainingEngine = std::make_unique<vax::rl::training::TrainingEngine>();
-    _gridWorld = std::make_unique<vax::rl::gw::env::GridWorld>(_qlConfig);
+    _trainingEngine = std::make_unique<vax::rl::TrainingEngine>();
+    _gridWorld = std::make_unique<vax::rl::GridWorld>(_qlConfig);
     _gridWorld->setFsLogger(_fsLogger);
     _gridWorld->setEvalModeImpl(vax::rl::EvalMode::TRAINING);
     _gridWorld->createRandomGrid();
@@ -40,7 +40,7 @@ void GWTrainingManager::_setupTraining(ThreadRunner& threadRunner, std::function
 
 void GWTrainingManager::_train(ThreadRunner& threadRunner, std::function<TrainingCallback>& callback) {
     threadRunner.runOnThread([callback]() { callback(TrainingStatus{"Training in progress...", false}); });
-    _trainingEngine->train<GridWorld, Agent, State, MoveAction>(
+    _trainingEngine->train<GridWorld, GWAgent, State, MoveAction>(
         *_gridWorld, _gridWorld->getAgent(), _qlConfig.episodes
     );
     {

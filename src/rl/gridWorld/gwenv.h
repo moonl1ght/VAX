@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace vax::rl::gw {
+namespace vax::rl {
 using State = vax::math::Position2DInt;
 
 enum class AgentOrientation : uint8_t {
@@ -37,4 +37,4 @@ inline const std::string_view moveActionToString(MoveAction action) {
 }
 
 inline constexpr int numMoveActions = 4;
-} // namespace vax::rl::gw
+} // namespace vax::rl

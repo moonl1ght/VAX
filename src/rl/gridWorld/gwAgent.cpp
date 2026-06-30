@@ -4,12 +4,11 @@
 #include "randomGenerator.h"
 #include "tensorOp.h"
 
-using namespace vax::rl::gw;
 using namespace vax;
-using namespace vax::rl::gw::env;
+using namespace vax::rl;
 using namespace vax::math;
 
-vax::objects::ModelDescriptor Agent::getDrawableDescriptor() const {
+vax::objects::ModelDescriptor GWAgent::getDrawableDescriptor() const {
     // TODO: check if initial transform affects the model
     return {
         RES_PATH("assets/models/rover/rover.urdf"),
@@ -21,7 +20,7 @@ vax::objects::ModelDescriptor Agent::getDrawableDescriptor() const {
     };
 }
 
-void Agent::allowAction(MoveAction action) {
+void GWAgent::allowAction(MoveAction action) {
     _oldPosition = _position;
     _position = getNewPosition(action);
     if (_evalMode == vax::rl::EvalMode::EVALUATION) {
@@ -29,14 +28,14 @@ void Agent::allowAction(MoveAction action) {
     }
 }
 
-void Agent::linkGridWorld(vax::rl::gw::env::GridWorld* gridWorld) {
+void GWAgent::linkGridWorld(vax::rl::GridWorld* gridWorld) {
     _gridWorld = gridWorld;
     _qTable = Tensor::createZeros({_gridWorld->getGrid().totalSize(), numMoveActions});
 }
 
-void Agent::moveByOutsideAction(MoveAction action) { _tryToMove(action); }
+void GWAgent::moveByOutsideAction(MoveAction action) { _tryToMove(action); }
 
-void Agent::_tryToMove(MoveAction action) {
+void GWAgent::_tryToMove(MoveAction action) {
     if (_canTakeAction(action)) {
         _oldPosition = _position;
         _position = getNewPosition(action);
@@ -47,7 +46,7 @@ void Agent::_tryToMove(MoveAction action) {
     }
 }
 
-bool Agent::_canTakeAction(MoveAction action) const {
+bool GWAgent::_canTakeAction(MoveAction action) const {
     Position2DInt newPosition = getNewPosition(action);
     if (_gridWorld) {
         return _gridWorld->canMoveAgent(newPosition);
@@ -56,7 +55,7 @@ bool Agent::_canTakeAction(MoveAction action) const {
     return false;
 }
 
-Position2DInt Agent::getNewPosition(MoveAction action) const {
+Position2DInt GWAgent::getNewPosition(MoveAction action) const {
     Position2DInt newPosition = _position;
     switch (action) {
     case MoveAction::NORTH:
@@ -75,11 +74,11 @@ Position2DInt Agent::getNewPosition(MoveAction action) const {
     return newPosition;
 }
 
-const Position2DInt& Agent::getPosition() const { return _position; }
+const Position2DInt& GWAgent::getPosition() const { return _position; }
 
-const Position2DInt& Agent::getOldPosition() const { return _oldPosition; }
+const Position2DInt& GWAgent::getOldPosition() const { return _oldPosition; }
 
-MoveAction Agent::chooseActionImpl(const State& state) {
+MoveAction GWAgent::chooseActionImpl(const State& state) {
     core::RandomGenerator& generator = core::RandomGenerator::getInstance();
     if (generator.uniformFloat() < _qlConfig.epsilon) {
         auto action = static_cast<MoveAction>(generator.uniformInt(0, numMoveActions - 1));
@@ -97,7 +96,7 @@ MoveAction Agent::chooseActionImpl(const State& state) {
     return action;
 }
 
-void Agent::updateImpl(const State& state, MoveAction action, double reward, const State& nextState, bool done) {
+void GWAgent::updateImpl(const State& state, MoveAction action, double reward, const State& nextState, bool done) {
     float maxFuture = 0.0f;
     auto flatIndexNextState = _gridWorld->getGrid().flatIndex({nextState.x, nextState.y});
     auto flatIndexState = _gridWorld->getGrid().flatIndex({state.x, state.y});
@@ -148,23 +147,23 @@ void Agent::updateImpl(const State& state, MoveAction action, double reward, con
     _qTable.set({flatIndexState, static_cast<int>(action)}, updatedValue);
 }
 
-void Agent::reset() {
+void GWAgent::reset() {
     _position = _startPosition;
     _oldPosition = _startPosition;
 }
 
-void Agent::setEvalModeImpl(vax::rl::EvalMode evalMode) { _evalMode = evalMode; }
+void GWAgent::setEvalModeImpl(vax::rl::EvalMode evalMode) { _evalMode = evalMode; }
 
-void Agent::setQTable(vax::math::Tensor&& qTable) { _qTable = std::move(qTable); }
+void GWAgent::setQTable(vax::math::Tensor&& qTable) { _qTable = std::move(qTable); }
 
-void Agent::setQLearningConfig(const vax::rl::ql::QLearningConfig& qlConfig) { _qlConfig = qlConfig; }
+void GWAgent::setQLearningConfig(const vax::rl::QLearningConfig& qlConfig) { _qlConfig = qlConfig; }
 
-void Agent::setFsLogger(std::shared_ptr<vax::FsLogger> fsLogger) {
+void GWAgent::setFsLogger(std::shared_ptr<vax::FsLogger> fsLogger) {
     _logger.setFsLogger(fsLogger);
     _logger.setMode(vax::Logger::Mode::FILE);
 }
 
-void Agent::_updateOrientation(MoveAction action) {
+void GWAgent::_updateOrientation(MoveAction action) {
     switch (action) {
     case MoveAction::NORTH:
         _orientation = AgentOrientation::NORTH;

@@ -1,7 +1,7 @@
 #include "roverModelProxy.h"
 #include "transform.h"
 
-using namespace vax::rl::models;
+using namespace vax::rl;
 using namespace vax;
 
 void RoverModelProxy::updateSceneNode(vax::objects::SceneNode& sceneNode) {

@@ -3,7 +3,7 @@
 #include "logger.h"
 #include "rlenv.h"
 
-namespace vax::rl::training {
+namespace vax::rl {
 class TrainingEngine final {
   public:
     TrainingEngine() = default;
@@ -48,4 +48,4 @@ class TrainingEngine final {
   private:
     vax::Logger _logger = vax::Logger("TrainingEngine");
 };
-} // namespace vax::rl::training
+} // namespace vax::rl

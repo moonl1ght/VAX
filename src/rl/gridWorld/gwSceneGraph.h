@@ -7,12 +7,12 @@
 #include "logger.h"
 #include "modelLoader.h"
 #include "modelsController.h"
-#include "vaxMath.h"
 #include "roverModelProxy.h"
 #include "sceneNode.h"
+#include "vaxMath.h"
 #include <memory>
 
-namespace vax::rl::gw {
+namespace vax::rl {
 // TODO: move to generic scene graph
 class GwSceneGraph final {
   public:
@@ -25,23 +25,19 @@ class GwSceneGraph final {
     GwSceneGraph(GwSceneGraph&& other) noexcept = delete;
     GwSceneGraph& operator=(GwSceneGraph&& other) noexcept = delete;
 
-    bool load(
-        vax::objects::ModelsController& modelsController,
-        const vax::rl::gw::env::GridWorldDrawableDescriptor& descriptor
-    );
+    bool load(vax::objects::ModelsController& modelsController, const vax::rl::GridWorldDrawableDescriptor& descriptor);
 
     void draw(const vax::renderer::DrawContext& drawContext);
 
     void update(float deltaTime);
 
-    void moveAgentTo(
-        vax::math::Position2DFloat position, vax::rl::gw::AgentOrientation orientation, bool withAnimation = false
-    );
+    void
+    moveAgentTo(vax::math::Position2DFloat position, vax::rl::AgentOrientation orientation, bool withAnimation = false);
 
   private:
     vax::Logger _logger = vax::Logger("GwSceneGraph");
     std::vector<vax::objects::SceneNode> _envNodes;
     std::shared_ptr<vax::objects::SceneNode> _agentNode;
-    std::unique_ptr<vax::rl::models::RoverModelProxy> _roverModelProxy;
+    std::unique_ptr<vax::rl::RoverModelProxy> _roverModelProxy;
 };
-} // namespace vax::rl::gw
+} // namespace vax::rl

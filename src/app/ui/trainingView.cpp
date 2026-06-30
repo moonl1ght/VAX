@@ -2,7 +2,7 @@
 #include "imgui.h"
 
 using namespace vax::ui;
-using namespace vax::rl::gw;
+using namespace vax::rl;
 
 void TrainingView::updateImGui() {
     _mainThreadRunner.processThreadQueue();
@@ -14,7 +14,7 @@ void TrainingView::updateImGui() {
 }
 
 void TrainingView::startTraining() {
-    _trainingManager = std::make_unique<vax::rl::gw::GWTrainingManager>();
+    _trainingManager = std::make_unique<vax::rl::GWTrainingManager>();
     _trainingManager->startTraining(_mainThreadRunner, [this](TrainingStatus trainingStatus) {
         _trainingStatus = trainingStatus.message;
         if (trainingStatus.isCompleted) {

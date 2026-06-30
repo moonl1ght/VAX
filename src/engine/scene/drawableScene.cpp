@@ -4,7 +4,7 @@
 
 using namespace vax;
 using namespace vax::renderer;
-using namespace vax::rl::gw::env;
+using namespace vax::rl;
 
 void DrawableScene::prepareForDraw(renderer::RenderCallContext renderCallContext) {
     _renderCallContext = renderCallContext;
@@ -29,7 +29,7 @@ void vax::DrawableScene::resize() {
 
 void vax::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue) {
     _resourceManager.setup(_modelsController.maxDrawableInstances());
-    _sceneGraph = std::make_unique<vax::rl::gw::GwSceneGraph>();
+    _sceneGraph = std::make_unique<GwSceneGraph>();
     _loadEnvironmentMap(submitQueue);
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
     _sceneUniformBuffers.reserve(vax::MAX_FRAMES_IN_FLIGHT);

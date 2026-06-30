@@ -6,8 +6,6 @@
 #include "tensorOp.h"
 #include "transform.h"
 
-using namespace vax::rl::gw::env;
-using namespace vax::rl::gw;
 using namespace vax;
 using namespace vax::math;
 using namespace vax::rl;
@@ -230,7 +228,7 @@ bool GridWorld::load(const std::string& folderPath) {
     auto gamma = config["gamma"].get<float>();
     auto epsilon = config["epsilon"].get<float>();
     auto episodes = config["episodes"].get<int>();
-    _qlConfig = vax::rl::ql::QLearningConfig{learningRate, gamma, epsilon, episodes};
+    _qlConfig = vax::rl::QLearningConfig{learningRate, gamma, epsilon, episodes};
     _agent.setQLearningConfig(_qlConfig);
 
     nlohmann::json info;
