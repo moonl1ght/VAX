@@ -7,8 +7,7 @@
 #include "logger.h"
 #include "modelLoader.h"
 #include "modelsController.h"
-#include "pipeline.h"
-#include "rlMath.h"
+#include "vaxMath.h"
 #include "roverModelProxy.h"
 #include "sceneNode.h"
 #include <memory>
@@ -36,7 +35,7 @@ class GwSceneGraph final {
     void update(float deltaTime);
 
     void moveAgentTo(
-        rl::math::Position2DFloat position, vax::rl::gw::AgentOrientation orientation, bool withAnimation = false
+        vax::math::Position2DFloat position, vax::rl::gw::AgentOrientation orientation, bool withAnimation = false
     );
 
   private:

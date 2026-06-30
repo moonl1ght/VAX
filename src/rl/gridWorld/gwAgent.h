@@ -6,7 +6,7 @@
 #include "logger.h"
 #include "luna.h"
 #include "qlConfig.h"
-#include "rlMath.h"
+#include "vaxMath.h"
 #include "tensor.h"
 
 namespace vax::rl::gw::env {
@@ -21,7 +21,7 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
 
     Agent(
         vax::rl::ql::QLearningConfig qlConfig,
-        const vax::rl::math::Position2DInt& startPosition,
+        const vax::math::Position2DInt& startPosition,
         vax::math::Tensor&& qTable
     )
         : _qlConfig(qlConfig)
@@ -43,15 +43,15 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
 
     void linkGridWorld(vax::rl::gw::env::GridWorld* gridWorld);
 
-    const vax::rl::math::Position2DInt& getPosition() const;
-    const vax::rl::math::Position2DInt& getOldPosition() const;
+    const vax::math::Position2DInt& getPosition() const;
+    const vax::math::Position2DInt& getOldPosition() const;
 
     void setStartPosition(int x, int y) {
         _startPosition = {x, y};
         _position = _startPosition;
     }
 
-    vax::rl::math::Position2DInt getNewPosition(MoveAction action) const;
+    vax::math::Position2DInt getNewPosition(MoveAction action) const;
 
     MoveAction chooseActionImpl(const State& state);
 
@@ -63,7 +63,7 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
 
     const vax::math::Tensor& getQTable() const { return _qTable; }
 
-    const vax::rl::math::Position2DInt& getStartPosition() const { return _startPosition; }
+    const vax::math::Position2DInt& getStartPosition() const { return _startPosition; }
 
     void setQTable(vax::math::Tensor&& qTable);
 
@@ -76,9 +76,9 @@ class Agent final : public vax::rl::Agent<Agent, State, MoveAction> {
   private:
     vax::Logger _logger = vax::Logger("GWAgent");
     vax::rl::ql::QLearningConfig _qlConfig;
-    vax::rl::math::Position2DInt _startPosition = {0, 0};
-    vax::rl::math::Position2DInt _position = {0, 0};
-    vax::rl::math::Position2DInt _oldPosition = {0, 0};
+    vax::math::Position2DInt _startPosition = {0, 0};
+    vax::math::Position2DInt _position = {0, 0};
+    vax::math::Position2DInt _oldPosition = {0, 0};
     vax::rl::gw::env::GridWorld* _gridWorld = nullptr;
     vax::rl::EvalMode _evalMode = vax::rl::EvalMode::EVALUATION;
     AgentOrientation _orientation = AgentOrientation::NORTH;

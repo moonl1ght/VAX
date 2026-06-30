@@ -3,7 +3,6 @@
 #include "inputController.h"
 #include "nlohmann/json.hpp"
 #include "randomGenerator.h"
-#include "rlMath.h"
 #include "tensorOp.h"
 #include "transform.h"
 
@@ -11,7 +10,6 @@ using namespace vax::rl::gw::env;
 using namespace vax::rl::gw;
 using namespace vax;
 using namespace vax::math;
-using namespace vax::rl::math;
 using namespace vax::rl;
 using namespace vax::core;
 

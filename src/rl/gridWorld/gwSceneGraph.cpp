@@ -5,7 +5,6 @@
 using namespace vax::rl::gw;
 using namespace vax;
 using namespace vax::math;
-using namespace vax::rl::math;
 using namespace vax::renderer;
 
 bool GwSceneGraph::load(

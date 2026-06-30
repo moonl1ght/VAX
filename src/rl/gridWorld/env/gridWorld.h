@@ -7,7 +7,7 @@
 #include "inputController.h"
 #include "logger.h"
 #include "qlConfig.h"
-#include "rlMath.h"
+#include "vaxMath.h"
 #include "rlenv.h"
 #include "tensor.h"
 
@@ -45,7 +45,7 @@ class GridWorld final : public vax::InputController::Observer,
 
     vax::rl::gw::env::GridWorldDrawableDescriptor getDrawableDescriptor() const;
 
-    bool canMoveAgent(const vax::rl::math::Position2DInt& newPosition) const;
+    bool canMoveAgent(const vax::math::Position2DInt& newPosition) const;
 
     void onMouseMove(const vax::MouseMoveValue& value) {};
 
@@ -79,7 +79,7 @@ class GridWorld final : public vax::InputController::Observer,
     std::string _name = "GridWorld";
     vax::math::Tensor _grid;
     vax::rl::gw::Agent _agent = vax::rl::gw::Agent(_qlConfig);
-    std::vector<vax::rl::math::Position2DFloat> _sceneGraphPositions;
+    std::vector<vax::math::Position2DFloat> _sceneGraphPositions;
 
     std::string blockTypeToPath(BlockType blockType) const;
     GwSceneGraph* _sceneGraph;

@@ -7,7 +7,6 @@
 using namespace vax::rl::gw;
 using namespace vax;
 using namespace vax::rl::gw::env;
-using namespace vax::rl::math;
 using namespace vax::math;
 
 vax::objects::ModelDescriptor Agent::getDrawableDescriptor() const {

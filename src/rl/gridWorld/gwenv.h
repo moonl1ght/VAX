@@ -1,11 +1,11 @@
 #pragma once
 
-#include "rlMath.h"
+#include "vaxMath.h"
 #include <cstdint>
 #include <string_view>
 
 namespace vax::rl::gw {
-using State = vax::rl::math::Position2DInt;
+using State = vax::math::Position2DInt;
 
 enum class AgentOrientation : uint8_t {
     NORTH = 0,
