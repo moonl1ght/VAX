@@ -19,14 +19,14 @@ class Device final {
     bool load(VkInstance instance, VkSurfaceKHR surface, bool enableValidationLayers);
     void destroy();
 
-    utils::QueueFamilyIndices getQueueFamilyIndices() const { return _indices; }
+    QueueFamilyIndices getQueueFamilyIndices() const { return _indices; }
 
     VkPhysicalDeviceProperties getPhysicalDeviceProperties() const;
 
   private:
     vax::Logger _logger = vax::Logger("Device");
 
-    utils::QueueFamilyIndices _indices;
+    QueueFamilyIndices _indices;
 
     int createLogicalDevice(
         const VkPhysicalDevice& physicalDevice,

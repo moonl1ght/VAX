@@ -32,9 +32,9 @@ class DrawableScene final : public vax::InputController::Observer {
   public:
     DrawableScene(vax::vk::Engine& vkEngine)
         : _vkEngine(vkEngine)
-        , _resourceManager(vax::ResourceManager(*vkEngine.device, vkEngine.allocator))
+        , _resourceManager(vax::vk::ResourceManager(*vkEngine.device, vkEngine.allocator))
         , _textureLoader(
-              vax::textures::TextureLoader(
+              vax::vk::TextureLoader(
                   *vkEngine.device, _resourceManager.textureManager(), *vkEngine.commandManager
               )
           )
@@ -97,8 +97,8 @@ class DrawableScene final : public vax::InputController::Observer {
     std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
     std::reference_wrapper<vax::vk::Engine> _vkEngine;
     vax::objects::ModelsController _modelsController;
-    vax::ResourceManager _resourceManager;
-    vax::textures::TextureLoader _textureLoader;
+    vax::vk::ResourceManager _resourceManager;
+    vax::vk::TextureLoader _textureLoader;
     vax::objects::ModelLoader _modelLoader;
     vax::objects::PrimitivesBuilder _primitivesBuilder;
     vax::objects::Camera _mainCamera;

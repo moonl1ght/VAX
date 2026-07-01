@@ -11,6 +11,7 @@
 
 using namespace vax::objects;
 using namespace vax;
+using namespace vax::vk;
 
 constexpr glm::mat4 toGlm(const aiMatrix4x4& m) {
     return {
@@ -21,7 +22,7 @@ constexpr glm::mat4 toGlm(const aiMatrix4x4& m) {
     };
 }
 
-uint32_t loadTexture(aiString& textureName, vax::textures::TextureLoader& textureLoader, const aiScene* scene) {
+uint32_t loadTexture(aiString& textureName, vax::vk::TextureLoader& textureLoader, const aiScene* scene) {
     if (textureName.length > 0) {
         const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(textureName.C_Str());
         if (embeddedTexture) {
@@ -49,7 +50,7 @@ uint32_t loadTexture(aiString& textureName, vax::textures::TextureLoader& textur
 }
 
 PBRMaterial processMaterial(
-    aiMaterial* mat, vax::textures::TextureLoader& textureLoader, const aiScene* scene, vax::SamplerId samplerId
+    aiMaterial* mat, vax::vk::TextureLoader& textureLoader, const aiScene* scene, vax::vk::SamplerId samplerId
 ) {
     PBRMaterial material{
         .baseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -237,7 +238,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, uin
         totalIndexCount += scene->mMeshes[i]->mNumFaces * 3;
     }
 
-    auto pbrSamplerId = static_cast<vax::SamplerId>(vax::GlobalSampler::PBRSampler);
+    auto pbrSamplerId = static_cast<vax::vk::SamplerId>(vax::vk::GlobalSampler::PBRSampler);
 
     std::vector<Vertex> modelVertices;
     modelVertices.reserve(totalVertexCount);
@@ -308,7 +309,7 @@ static glm::mat4 urdfPoseToMat4(const urdf::Pose& pose) {
 template <typename ModelLoaderFunc>
 SceneNode processURDFLink(
     const std::string_view mainPath,
-    vax::ResourceManager& resourceManager,
+    vax::vk::ResourceManager& resourceManager,
     urdf::LinkConstSharedPtr link,
     ModelLoaderFunc loadModel,
     const glm::mat4& parentTransform = glm::mat4(1.0f)

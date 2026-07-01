@@ -3,7 +3,7 @@
 #include "textureFactory.h"
 
 using namespace vax;
-using namespace vax::textures;
+using namespace vax::vk;
 
 bool TextureManager::setup() {
     VkPhysicalDeviceProperties properties{};
@@ -42,9 +42,9 @@ bool TextureManager::setup() {
         .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
         .unnormalizedCoordinates = VK_FALSE,
     };
-    auto globalSampler = vax::textures::Sampler::createSampler(_device.get(), "global_sampler", globalSamplerInfo);
+    auto globalSampler = Sampler::createSampler(_device.get(), "global_sampler", globalSamplerInfo);
     auto globalCubeMapSampler =
-        vax::textures::Sampler::createSampler(_device.get(), "global_cube_map_sampler", globalCubeMapSamplerInfo);
+        Sampler::createSampler(_device.get(), "global_cube_map_sampler", globalCubeMapSamplerInfo);
     if (!globalSampler.has_value() || !globalCubeMapSampler.has_value()) {
         _logger.error("Failed to create global sampler");
         return false;
@@ -65,7 +65,7 @@ TextureFactory TextureManager::createTextureFactory() const {
     return TextureFactory(_device.get(), _allocator, const_cast<TextureManager* const>(this));
 }
 
-std::optional<TextureManager::TextureResource> TextureManager::attach(textures::Texture&& texture) {
+std::optional<TextureManager::TextureResource> TextureManager::attach(Texture&& texture) {
     texture._id = _lastId++;
     auto [it, inserted] = _pool.try_emplace(texture.id(), std::move(texture));
     if (!inserted) {
@@ -92,7 +92,7 @@ bool TextureManager::deleteTexture(TextureHandle handle) {
     return true;
 }
 
-std::optional<textures::Texture> TextureManager::detach(TextureHandle handle) {
+std::optional<Texture> TextureManager::detach(TextureHandle handle) {
     auto it = _pool.find(handle.id());
     if (it == _pool.end())
         return std::nullopt;
@@ -104,7 +104,7 @@ std::optional<textures::Texture> TextureManager::detach(TextureHandle handle) {
 void TextureManager::updateDescriptorHandlerWithAllTextures(
     vax::vk::DescriptorSetHandler& descriptorHandler, uint32_t binding
 ) const {
-    std::vector<const textures::Texture*> textures(_pool.size());
+    std::vector<const Texture*> textures(_pool.size());
     for (auto& [id, texture] : _pool) {
         textures[texture.id()] = &texture;
     }

@@ -6,24 +6,21 @@
 #include "texture.h"
 #include <unordered_map>
 
-namespace vax::textures {
+namespace vax::vk {
 class TextureFactory;
-}
+class DescriptorSetHandler;
+} // namespace vax::vk
 
 namespace vax::vk {
-class DescriptorSetHandler;
-}
-
-namespace vax {
 class TextureManager final {
   public:
-    using TextureResource = std::pair<TextureHandle, textures::Texture*>;
-    using SamplerResource = std::pair<SamplerHandle, vax::textures::Sampler*>;
+    using TextureResource = std::pair<TextureHandle, Texture*>;
+    using SamplerResource = std::pair<SamplerHandle, Sampler*>;
 
     explicit TextureManager(const vk::Device& device, VmaAllocator allocator)
         : _device(device)
         , _allocator(allocator) {
-        _globalSamplers.reserve(vax::MAX_GLOBAL_SAMPLERS);
+        _globalSamplers.reserve(vax::vk::MAX_GLOBAL_SAMPLERS);
     };
 
     ~TextureManager() { fullCleanup(); }
@@ -37,21 +34,20 @@ class TextureManager final {
 
     bool setup();
 
-    vax::textures::TextureFactory createTextureFactory() const;
+    TextureFactory createTextureFactory() const;
 
     std::optional<TextureResource> find(TextureHandle handle);
 
     bool deleteTexture(TextureHandle handle);
 
-    std::optional<textures::Texture> detach(TextureHandle handle);
+    std::optional<Texture> detach(TextureHandle handle);
 
-    std::optional<TextureResource> attach(textures::Texture&& texture);
+    std::optional<TextureResource> attach(Texture&& texture);
 
-    std::optional<SamplerResource> getGlobalSampler(vax::GlobalSampler sampler);
+    std::optional<SamplerResource> getGlobalSampler(GlobalSampler sampler);
 
-    void updateDescriptorHandlerWithAllTextures(
-        vax::vk::DescriptorSetHandler& descriptorHandler, uint32_t binding
-    ) const;
+    void
+    updateDescriptorHandlerWithAllTextures(vax::vk::DescriptorSetHandler& descriptorHandler, uint32_t binding) const;
 
   private:
     vax::Logger _logger = vax::Logger("TextureManager");
@@ -60,8 +56,8 @@ class TextureManager final {
     VmaAllocator _allocator;
     // TODO: change to vector + use generation for stability
     // maybe vector of vectors of buffers?
-    std::unordered_map<TextureId, textures::Texture> _pool;
-    std::vector<vax::textures::Sampler> _globalSamplers;
+    std::unordered_map<TextureId, Texture> _pool;
+    std::vector<Sampler> _globalSamplers;
     TextureId _lastId = 0;
 };
-} // namespace vax
+} // namespace vax::vk

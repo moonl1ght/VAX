@@ -1,6 +1,6 @@
 #include "bufferManager.h"
 
-using namespace vax;
+using namespace vax::vk;
 
 void BufferManager::fullCleanup() {
     for (auto& [id, buffer] : _pool) {
@@ -26,14 +26,14 @@ std::optional<BufferManager::BufferResource> BufferManager::allocateBuffer(
     return std::make_pair(it->first, &it->second);
 }
 
-std::optional<BufferManager::BufferResource> BufferManager::find(vax::BufferHandle handle) {
+std::optional<BufferManager::BufferResource> BufferManager::find(BufferHandle handle) {
     auto it = _pool.find(handle.id());
     if (it == _pool.end())
         return std::nullopt;
     return std::make_pair(handle, &it->second);
 }
 
-bool BufferManager::deleteBuffer(vax::BufferHandle handle) {
+bool BufferManager::deleteBuffer(BufferHandle handle) {
     auto it = _pool.find(handle.id());
     if (it == _pool.end())
         return false;
@@ -42,7 +42,7 @@ bool BufferManager::deleteBuffer(vax::BufferHandle handle) {
     return true;
 }
 
-std::optional<vk::Buffer> BufferManager::detach(vax::BufferHandle handle) {
+std::optional<Buffer> BufferManager::detach(BufferHandle handle) {
     auto it = _pool.find(handle.id());
     if (it == _pool.end())
         return std::nullopt;

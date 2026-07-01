@@ -6,9 +6,9 @@ using namespace vax::vk;
 
 bool vax::vk::SyncObjectsManager::setup() {
     _logger.info("Creating synchronization objects...");
-    _imageAvailableSemaphores.resize(vax::MAX_FRAMES_IN_FLIGHT);
-    _renderFinishedSemaphores.resize(vax::MAX_FRAMES_IN_FLIGHT);
-    _inFlightFences.resize(vax::MAX_FRAMES_IN_FLIGHT);
+    _imageAvailableSemaphores.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
+    _renderFinishedSemaphores.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
+    _inFlightFences.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -16,7 +16,7 @@ bool vax::vk::SyncObjectsManager::setup() {
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (size_t i = 0; i < vax::MAX_FRAMES_IN_FLIGHT; ++i) {
+    for (size_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
         if (!VK_CHECK(
                 vkCreateSemaphore(_device.get().vkDevice, &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i])
             )) {

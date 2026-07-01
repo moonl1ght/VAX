@@ -3,6 +3,7 @@
 #include "swapchain.h"
 
 using namespace vax;
+using namespace vax::vk;
 using namespace vax::renderer;
 using namespace vax::rl;
 
@@ -32,8 +33,8 @@ void vax::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor
     _sceneGraph = std::make_unique<GwSceneGraph>();
     _loadEnvironmentMap(submitQueue);
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-    _sceneUniformBuffers.reserve(vax::MAX_FRAMES_IN_FLIGHT);
-    for (size_t i = 0; i < vax::MAX_FRAMES_IN_FLIGHT; ++i) {
+    _sceneUniformBuffers.reserve(vax::vk::MAX_FRAMES_IN_FLIGHT);
+    for (size_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
         auto& bufferManager = _resourceManager.bufferManager();
         auto allocation = bufferManager
                               .allocateBuffer(

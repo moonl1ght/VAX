@@ -7,7 +7,7 @@ class CommandBuffer;
 class Engine;
 }; // namespace vax::vk
 
-namespace vax::textures::utils {
+namespace vax::vk {
 
 // TODO: Move to textureTaskScheduler
 void copyImageToImage(
@@ -35,4 +35,4 @@ std::optional<std::pair<VkImage, VmaAllocation>> createImage(
     uint32_t mipLevels = 1,
     VkImageCreateFlags flags = 0
 );
-}; // namespace vax::textures::utils
+}; // namespace vax::vk

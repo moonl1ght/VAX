@@ -14,6 +14,7 @@
 #include "syncObjectsManager.h"
 #include "vkUtils.h"
 #include "window.h"
+#include "deletionQueue.h"
 
 namespace vax::vk {
 class Device;
@@ -31,7 +32,7 @@ class Engine final {
 
     bool framebufferResized = false;
 
-    vax::utils::DeletionQueue deletionQueue;
+    vax::core::DeletionQueue deletionQueue;
 
     VkDebugUtilsMessengerEXT debugMessenger;
 

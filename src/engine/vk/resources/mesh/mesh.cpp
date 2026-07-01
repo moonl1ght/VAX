@@ -1,12 +1,12 @@
 #include "mesh.h"
 
-using namespace vax;
+using namespace vax::vk;
 
 template <typename VertexType>
-bool vax::objects::Mesh<VertexType>::loadBuffers(const LoadMeshBuffersContext& context) {
+bool vax::vk::Mesh<VertexType>::loadBuffers(const LoadMeshBuffersContext& context) {
     VkDeviceSize bufferSize = sizeof(_vertices[0]) * _vertices.size();
     VkDeviceSize indexBufferSize = sizeof(_indices[0]) * _indices.size();
-    _stagingVertexBuffer = vk::Buffer::allocateAndFillData(
+    _stagingVertexBuffer = Buffer::allocateAndFillData(
         _device.get(),
         _name + "_vertex_buffer_staging",
         _vertices.data(),
@@ -14,7 +14,7 @@ bool vax::objects::Mesh<VertexType>::loadBuffers(const LoadMeshBuffersContext& c
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
     );
-    vertexBuffer = vk::Buffer::allocate(
+    vertexBuffer = Buffer::allocate(
         _device.get(),
         _name + "_vertex_buffer",
         bufferSize,
@@ -51,12 +51,12 @@ bool vax::objects::Mesh<VertexType>::loadBuffers(const LoadMeshBuffersContext& c
     return true;
 }
 
-template <typename VertexType> void vax::objects::Mesh<VertexType>::cleanup() {
+template <typename VertexType> void vax::vk::Mesh<VertexType>::cleanup() {
     if (isDetached())
         _destroy();
 }
 
-template <typename VertexType> void vax::objects::Mesh<VertexType>::_destroy() {
+template <typename VertexType> void vax::vk::Mesh<VertexType>::_destroy() {
     if (vertexBuffer.has_value()) {
         vertexBuffer.value().cleanup();
     }
@@ -64,15 +64,15 @@ template <typename VertexType> void vax::objects::Mesh<VertexType>::_destroy() {
         indexBuffer.value().cleanup();
     }
     _isDetached = true;
-    _id = vax::NullId;
+    _id = NullId;
     _vertices.clear();
     _indices.clear();
     _isLoaded = false;
 }
 
-template <typename VertexType> void vax::objects::Mesh<VertexType>::_detach() { _isDetached = true; }
+template <typename VertexType> void vax::vk::Mesh<VertexType>::_detach() { _isDetached = true; }
 
-template <typename VertexType> void vax::objects::Mesh<VertexType>::cleanupStagingBuffers() {
+template <typename VertexType> void vax::vk::Mesh<VertexType>::cleanupStagingBuffers() {
     if (_stagingVertexBuffer.has_value()) {
         _stagingVertexBuffer->cleanup();
     }
@@ -83,5 +83,5 @@ template <typename VertexType> void vax::objects::Mesh<VertexType>::cleanupStagi
     _stagingIndexBuffer = std::nullopt;
 }
 
-template class vax::objects::Mesh<vax::objects::Vertex>;
-template class vax::objects::Mesh<vax::objects::VertexPUV>;
+template class vax::vk::Mesh<vax::vk::Vertex>;
+template class vax::vk::Mesh<vax::vk::VertexPUV>;

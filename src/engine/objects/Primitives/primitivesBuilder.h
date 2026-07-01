@@ -16,9 +16,9 @@ namespace vax::objects {
 class PrimitivesBuilder {
   public:
     explicit PrimitivesBuilder(
-        vax::MeshManager& meshManager,
-        vax::SSBOManager& ssboManager,
-        vax::MaterialManager& materialManager,
+        vax::vk::MeshManager& meshManager,
+        vax::vk::SSBOManager& ssboManager,
+        vax::vk::MaterialManager& materialManager,
         vax::vk::CommandManager& commandManager,
         vax::vk::QueueManager& queueManager
     )
@@ -39,9 +39,9 @@ class PrimitivesBuilder {
     std::optional<vax::objects::DrawableModel> createPlane();
 
   private:
-    std::reference_wrapper<vax::SSBOManager> _ssboManager;
-    std::reference_wrapper<vax::MeshManager> _meshManager;
-    std::reference_wrapper<vax::MaterialManager> _materialManager;
+    std::reference_wrapper<vax::vk::SSBOManager> _ssboManager;
+    std::reference_wrapper<vax::vk::MeshManager> _meshManager;
+    std::reference_wrapper<vax::vk::MaterialManager> _materialManager;
     std::reference_wrapper<vax::vk::CommandManager> _commandManager;
     std::reference_wrapper<vax::vk::QueueManager> _queueManager;
 };

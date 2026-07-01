@@ -26,7 +26,7 @@ void vax::vk::CommandManager::cleanup() {
 
 bool vax::vk::CommandManager::createCommandPool() {
     _logger.info("Creating command pool...");
-    utils::QueueFamilyIndices queueFamilyIndices = _device.get().getQueueFamilyIndices();
+    QueueFamilyIndices queueFamilyIndices = _device.get().getQueueFamilyIndices();
 
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -43,7 +43,7 @@ bool vax::vk::CommandManager::createCommandPool() {
 
 bool vax::vk::CommandManager::createCommandBuffer() {
     _logger.info("Creating command buffer...");
-    commandBuffers.resize(vax::MAX_FRAMES_IN_FLIGHT);
+    commandBuffers.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = commandPool;

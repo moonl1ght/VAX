@@ -5,7 +5,7 @@
 #include "texture.h"
 #include "textureLoader.h"
 #include "vkInstanceBuilder.h"
-#include "vk_debug.h"
+#include "vkDebug.h"
 
 using namespace vax::vk;
 
@@ -43,7 +43,7 @@ void validationLayersDestroyDebugUtilsMessengerEXT(
 
 bool vax::vk::Engine::setup() {
     std::optional<VkInstance> instanceOptional =
-        vax::VkInstanceBuilder(deletionQueue, enableValidationLayers, validationLayers, vulkanApiVersion).build();
+        VkInstanceBuilder(deletionQueue, enableValidationLayers, validationLayers, vulkanApiVersion).build();
     if (instanceOptional.has_value()) {
         instance = *instanceOptional;
     } else {
@@ -54,7 +54,7 @@ bool vax::vk::Engine::setup() {
         vkDestroyInstance(instance, nullptr);
         instance = VK_NULL_HANDLE;
     });
-    vax::vk::utils::setPfnSetDebugUtilsObjectNameEXT(instance);
+    vax::vk::setPfnSetDebugUtilsObjectNameEXT(instance);
 
     if (!setupDebugMessenger())
         return false;
@@ -166,7 +166,7 @@ bool vax::vk::Engine::setupDebugMessenger() {
         return false;
 
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
-    vax::populateDebugMessengerCreateInfo(createInfo);
+    vax::vk::populateDebugMessengerCreateInfo(createInfo);
 
     if (!VK_CHECK(CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger))) {
         LOG_ERROR("Failed to set up debug messenger!");

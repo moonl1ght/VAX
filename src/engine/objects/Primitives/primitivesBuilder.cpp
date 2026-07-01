@@ -4,6 +4,7 @@
 #include "shaderSharedUtils.h"
 
 using namespace vax::objects;
+using namespace vax::vk;
 using namespace vax;
 
 std::optional<DrawableModel> PrimitivesBuilder::createCube(float size, vax::Color color) {

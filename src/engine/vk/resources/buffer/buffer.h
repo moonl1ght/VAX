@@ -8,16 +8,13 @@
 
 namespace vax::vk {
 class CommandBuffer;
-}
-
-namespace vax {
 class BufferManager;
 }
 
 namespace vax::vk {
 class Buffer final {
   public:
-    friend class vax::BufferManager;
+    friend class vax::vk::BufferManager;
 
     static std::optional<Buffer> allocateAndFillData(
         const vax::vk::Device& device,
@@ -56,7 +53,7 @@ class Buffer final {
         other._vkBufferMemory = VK_NULL_HANDLE;
         other._size = 0;
         other._isDetached = true;
-        other._id = vax::NullId;
+        other._id = NullId;
     }
 
     Buffer& operator=(Buffer&& other) noexcept {
@@ -72,7 +69,7 @@ class Buffer final {
             other._vkBufferMemory = VK_NULL_HANDLE;
             other._size = 0;
             other._isDetached = true;
-            other._id = vax::NullId;
+            other._id = NullId;
         }
         return *this;
     }
@@ -116,7 +113,7 @@ class Buffer final {
     std::reference_wrapper<const vax::vk::Device> _device;
 
     std::string _name;
-    BufferId _id = vax::NullBufferId;
+    BufferId _id = NullBufferId;
     VkBuffer _vkBuffer = VK_NULL_HANDLE;
     VkDeviceMemory _vkBufferMemory = VK_NULL_HANDLE;
     VkDeviceSize _size = 0;

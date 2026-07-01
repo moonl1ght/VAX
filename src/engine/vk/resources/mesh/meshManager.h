@@ -5,12 +5,12 @@
 #include "mesh.h"
 #include "resourceHandle.h"
 
-namespace vax {
+namespace vax::vk {
 class MeshManager final {
   public:
-    using MeshResource = std::pair<vax::MeshHandle, vax::objects::MeshPBR*>;
+    using MeshResource = std::pair<MeshHandle, MeshPBR*>;
 
-    explicit MeshManager(const vax::vk::Device& device)
+    explicit MeshManager(const Device& device)
         : _device(device) {};
 
     ~MeshManager() { fullCleanup(); }
@@ -24,19 +24,19 @@ class MeshManager final {
 
     std::optional<MeshResource> createEmptyMesh(uint32_t instancesCount = 1);
 
-    std::optional<MeshResource> find(vax::MeshHandle handle);
+    std::optional<MeshResource> find(MeshHandle handle);
 
-    bool deleteMesh(vax::MeshHandle handle);
+    bool deleteMesh(MeshHandle handle);
 
-    std::optional<vax::objects::MeshPBR> detach(vax::MeshHandle handle);
+    std::optional<MeshPBR> detach(MeshHandle handle);
 
   private:
-    vax::Logger _logger = vax::Logger("BufferManager");
+    vax::Logger _logger = vax::Logger("MeshManager");
 
-    std::reference_wrapper<const vax::vk::Device> _device;
+    std::reference_wrapper<const Device> _device;
     // TODO: change to vector + use generation for stability
     // maybe vector of vectors of buffers?
-    std::unordered_map<MeshId, vax::objects::MeshPBR> _pool;
+    std::unordered_map<MeshId, MeshPBR> _pool;
     MeshId _lastId = 0;
 };
 } // namespace vax

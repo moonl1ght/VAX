@@ -1,7 +1,6 @@
 #include "sampler.h"
 
-using namespace vax::textures;
-using namespace vax;
+using namespace vax::vk;
 
 std::optional<Sampler> Sampler::createSampler(const vk::Device& device, std::string name, VkSamplerCreateInfo samplerInfo) {
     // VkPhysicalDeviceProperties properties{};
@@ -37,7 +36,7 @@ std::optional<Sampler> Sampler::createSampler(const vk::Device& device, std::str
             .objectHandle = reinterpret_cast<size_t>(vkSampler),
             .pObjectName = name.c_str(),
         };
-        vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(device.vkDevice, &nameInfo);
+        vax::vk::pfnSetDebugUtilsObjectNameEXT(device.vkDevice, &nameInfo);
     }
     return Sampler(vkSampler, device);
 }

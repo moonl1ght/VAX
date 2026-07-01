@@ -8,7 +8,7 @@
 #include "textureTaskScheduler.h"
 #include <ktx.h>
 
-using namespace vax::textures;
+using namespace vax::vk;
 using namespace vax;
 
 VkFormat getVkFormatFromGlInternalFormat(uint32_t glInternalFormat) {

@@ -132,7 +132,7 @@ bool Buffer::_allocate(VkBufferUsageFlags usage, VkMemoryPropertyFlags propertie
             .objectHandle = reinterpret_cast<size_t>(_vkBuffer),
             .pObjectName = _name.c_str(),
         };
-        vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
+        vax::vk::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
     }
 
     VkMemoryRequirements memRequirements;
@@ -142,7 +142,7 @@ bool Buffer::_allocate(VkBufferUsageFlags usage, VkMemoryPropertyFlags propertie
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex =
-        utils::findMemoryType(_device.get().vkPhysicalDevice, memRequirements.memoryTypeBits, properties);
+        findMemoryType(_device.get().vkPhysicalDevice, memRequirements.memoryTypeBits, properties);
 
     if (vkAllocateMemory(_device.get().vkDevice, &allocInfo, nullptr, &_vkBufferMemory) != VK_SUCCESS) {
         _logger.error("failed to allocate buffer memory!");

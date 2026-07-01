@@ -22,8 +22,8 @@ bool DescriptorSetManager::createDescriptorSetPool() {
     uint32_t uniformBufferCount = 1;
     uint32_t materialBufferCount = 1;
     uint32_t environmentMapCount = 1;
-    uint32_t samplerCount = vax::MAX_GLOBAL_SAMPLERS;
-    uint32_t textureCount = vax::MAX_GLOBAL_TEXTURES;
+    uint32_t samplerCount = vax::vk::MAX_GLOBAL_SAMPLERS;
+    uint32_t textureCount = vax::vk::MAX_GLOBAL_TEXTURES;
     // auto samplersImageLimit = _device.get().getPhysicalDeviceProperties().limits.maxPerStageDescriptorSamplers;
     uint32_t maxUniformBuffers = static_cast<uint32_t>(_maxFramesInFlight) * uniformBufferCount;
     uint32_t maxEnvironmentMaps = static_cast<uint32_t>(_maxFramesInFlight) * environmentMapCount;
@@ -146,13 +146,13 @@ bool DescriptorSetManager::createDescriptorSetLayouts() {
         GlobalBindingIndices::GLOBAL_SAMPLER_INDEX,
         VK_DESCRIPTOR_TYPE_SAMPLER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
-        vax::MAX_GLOBAL_SAMPLERS
+        vax::vk::MAX_GLOBAL_SAMPLERS
     );
     globalBuilder.addBinding(
         GlobalBindingIndices::GLOBAL_TEXTURE_INDEX,
         VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
         VK_SHADER_STAGE_FRAGMENT_BIT,
-        vax::MAX_GLOBAL_TEXTURES
+        vax::vk::MAX_GLOBAL_TEXTURES
     );
     DescriptorSetLayoutBuilder perFrameBuilder(_device.get(), "per_frame_descriptor_set_layout");
     perFrameBuilder.addBinding(

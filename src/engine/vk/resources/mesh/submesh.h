@@ -1,9 +1,9 @@
 #pragma once
 
-#include "luna.h"
 #include "shaderUniforms.h"
+#include "logger.h"
 
-namespace vax::objects {
+namespace vax::vk {
 struct Submesh final {
     uint32_t indexCount = 0;
     uint32_t firstIndex = 0;
@@ -12,4 +12,4 @@ struct Submesh final {
 
     void debugPrint(const vax::Logger& logger) const;
 };
-} // namespace vax::objects
+} // namespace vax::vk

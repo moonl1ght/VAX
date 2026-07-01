@@ -16,7 +16,7 @@ class ModelsController {
     friend class ModelLoader;
 
     explicit ModelsController(
-        vax::ResourceManager& resourceManager,
+        vax::vk::ResourceManager& resourceManager,
         vax::objects::ModelLoader& modelLoader,
         vax::objects::PrimitivesBuilder& primitivesBuilder
     )
@@ -68,9 +68,9 @@ class ModelsController {
     };
 
     vax::Logger _logger = vax::Logger("ModelsController");
-    const uint32_t _maxDrawableInstances = vax::MAX_DRAWABLE_INSTANCES;
+    const uint32_t _maxDrawableInstances = vax::vk::MAX_DRAWABLE_INSTANCES;
 
-    std::reference_wrapper<vax::ResourceManager> _resourceManager;
+    std::reference_wrapper<vax::vk::ResourceManager> _resourceManager;
     std::reference_wrapper<vax::objects::ModelLoader> _modelLoader;
     std::reference_wrapper<vax::objects::PrimitivesBuilder> _primitivesBuilder;
 

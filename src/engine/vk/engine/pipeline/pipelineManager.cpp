@@ -54,8 +54,8 @@ bool vax::vk::PipelineManager::_createBackgroundPipeline(const vax::vk::RenderPa
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     pipelineBuilder.addShaderStage(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule.value(), "main");
     pipelineBuilder.addShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule.value(), "main");
-    auto bindingDescription = vax::objects::Vertex::getBindingDescription();
-    auto attributeDescriptions = vax::objects::Vertex::getAttributeDescriptions();
+    auto bindingDescription = Vertex::getBindingDescription();
+    auto attributeDescriptions = Vertex::getAttributeDescriptions();
     auto attributeDescriptionsVector =
         std::vector<VkVertexInputAttributeDescription>(attributeDescriptions.begin(), attributeDescriptions.end());
     pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
@@ -96,8 +96,8 @@ bool vax::vk::PipelineManager::_createPBRPipeline(const vax::vk::RenderPass& ren
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     pipelineBuilder.addShaderStage(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule.value(), "main");
     pipelineBuilder.addShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule.value(), "main");
-    auto bindingDescription = vax::objects::Vertex::getBindingDescription();
-    auto attributeDescriptions = vax::objects::Vertex::getAttributeDescriptions();
+    auto bindingDescription = Vertex::getBindingDescription();
+    auto attributeDescriptions = Vertex::getAttributeDescriptions();
     auto attributeDescriptionsVector =
         std::vector<VkVertexInputAttributeDescription>(attributeDescriptions.begin(), attributeDescriptions.end());
     pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
@@ -132,8 +132,8 @@ bool vax::vk::PipelineManager::_createBasePipeline(const vax::vk::RenderPass& re
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     pipelineBuilder.addShaderStage(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule.value(), "main");
     pipelineBuilder.addShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule.value(), "main");
-    auto bindingDescription = vax::objects::Vertex::getBindingDescription();
-    auto attributeDescriptions = vax::objects::Vertex::getAttributeDescriptions();
+    auto bindingDescription = Vertex::getBindingDescription();
+    auto attributeDescriptions = Vertex::getAttributeDescriptions();
     auto attributeDescriptionsVector =
         std::vector<VkVertexInputAttributeDescription>(attributeDescriptions.begin(), attributeDescriptions.end());
     pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);

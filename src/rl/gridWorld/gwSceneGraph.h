@@ -10,6 +10,7 @@
 #include "roverModelProxy.h"
 #include "sceneNode.h"
 #include "vaxMath.h"
+#include "animation.h"
 #include <memory>
 
 namespace vax::rl {

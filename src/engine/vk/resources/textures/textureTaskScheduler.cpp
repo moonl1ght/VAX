@@ -1,7 +1,6 @@
 #include "textureTaskScheduler.h"
 
-using namespace vax::textures;
-using namespace vax;
+using namespace vax::vk;
 
 void TextureTaskSchedulerInline::transitionTextureLayout(
     Texture& texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlags aspectMask

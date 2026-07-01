@@ -9,11 +9,11 @@
 #include "vkUtils.h"
 #include <span>
 
-namespace vax::textures {
+namespace vax::vk {
 class TextureLoader final {
   public:
     TextureLoader(
-        const vax::vk::Device& device, vax::TextureManager& textureManager, vax::vk::CommandManager& commandManager
+        const vax::vk::Device& device, TextureManager& textureManager, vax::vk::CommandManager& commandManager
     )
         : _device(device)
         , _textureManager(textureManager)
@@ -35,8 +35,8 @@ class TextureLoader final {
   private:
     vax::Logger _logger = vax::Logger("TextureLoader");
     std::reference_wrapper<const vax::vk::Device> _device;
-    std::reference_wrapper<vax::TextureManager> _textureManager;
-    std::reference_wrapper<vax::vk::CommandManager> _commandManager;
+    std::reference_wrapper<TextureManager> _textureManager;
+    std::reference_wrapper<CommandManager> _commandManager;
 
     std::optional<TextureManager::TextureResource> _loadTexture(
         std::string name, unsigned char* pixels, VkQueue submitQueue, int texWidth, int texHeight, int texChannels
@@ -44,6 +44,6 @@ class TextureLoader final {
 
     std::optional<TextureManager::TextureResource> _loadKTXTexture(std::string path, VkQueue submitQueue);
 
-    std::vector<std::pair<vax::vk::Buffer, vax::TextureManager::TextureResource>> _stagingTextures;
+    std::vector<std::pair<Buffer, TextureManager::TextureResource>> _stagingTextures;
 };
-} // namespace vax::textures
+} // namespace vax::vk

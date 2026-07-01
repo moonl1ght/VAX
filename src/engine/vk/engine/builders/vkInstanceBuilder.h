@@ -2,14 +2,15 @@
 
 #include "deletionQueue.h"
 #include "luna.h"
-#include "vk_debug.h"
 #include "vkUtils.h"
+#include "vkDebug.h"
+#include "deletionQueue.h"
 
-namespace vax {
+namespace vax::vk {
 class VkInstanceBuilder {
   public:
     VkInstanceBuilder(
-        vax::utils::DeletionQueue& deletionQueue,
+        vax::core::DeletionQueue& deletionQueue,
         const bool enableValidationLayers,
         const std::vector<const char*>& validationLayers,
         const uint32_t vulkanApiVersion
@@ -53,7 +54,7 @@ class VkInstanceBuilder {
             createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
             createInfo.ppEnabledLayerNames = validationLayers.data();
 
-            vax::populateDebugMessengerCreateInfo(debugCreateInfo);
+            vax::vk::populateDebugMessengerCreateInfo(debugCreateInfo);
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
         } else {
             createInfo.enabledLayerCount = 0;
@@ -72,7 +73,7 @@ class VkInstanceBuilder {
 
   private:
     vax::Logger _logger = vax::Logger("VkInstanceBuilder");
-    vax::utils::DeletionQueue& deletionQueue;
+    vax::core::DeletionQueue& deletionQueue;
     const bool enableValidationLayers;
     const std::vector<const char*>& validationLayers;
     const uint32_t vulkanApiVersion;
@@ -124,4 +125,4 @@ class VkInstanceBuilder {
         return true;
     }
 };
-} // namespace vax
+} // namespace vax::vk

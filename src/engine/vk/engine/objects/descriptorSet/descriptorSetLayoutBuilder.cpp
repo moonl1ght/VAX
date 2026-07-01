@@ -51,7 +51,7 @@ DescriptorSetLayoutBuilder::build(DescriptorSetLayout::SetType setType, VkDescri
             .objectHandle = reinterpret_cast<size_t>(descriptorSetLayout),
             .pObjectName = _name.c_str(),
         };
-        vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
+        vax::vk::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
     }
 
     return std::make_optional<DescriptorSetLayout>(_device, descriptorSetLayout, setType);

@@ -5,19 +5,16 @@
 #include "sampler.h"
 #include "vaxMath.h"
 
-namespace vax {
+namespace vax::vk {
 class TextureManager;
-}
-
-namespace vax::textures {
 class TextureFactory;
-}
+} // namespace vax::vk
 
-namespace vax::textures {
+namespace vax::vk {
 class Texture final {
   public:
-    friend class vax::TextureManager;
-    friend class vax::textures::TextureFactory;
+    friend class vax::vk::TextureManager;
+    friend class vax::vk::TextureFactory;
 
     Texture(const vax::vk::Device& device, VmaAllocator allocator)
         : _device(device)
@@ -65,7 +62,7 @@ class Texture final {
         other._format = VK_FORMAT_UNDEFINED;
         other._aspectMask = VK_IMAGE_ASPECT_NONE;
         other._isDetached = true;
-        other._id = vax::NullTextureId;
+        other._id = NullTextureId;
     }
 
     Texture& operator=(Texture&& other) noexcept {
@@ -91,7 +88,7 @@ class Texture final {
             other._format = VK_FORMAT_UNDEFINED;
             other._aspectMask = VK_IMAGE_ASPECT_NONE;
             other._isDetached = true;
-            other._id = vax::NullTextureId;
+            other._id = NullTextureId;
         }
         return *this;
     }
@@ -132,7 +129,7 @@ class Texture final {
     VkFormat _format = VK_FORMAT_UNDEFINED;
     VkImageAspectFlags _aspectMask = VK_IMAGE_ASPECT_NONE;
     std::string _name;
-    TextureId _id = vax::NullTextureId;
+    TextureId _id = NullTextureId;
     VkImage _image = VK_NULL_HANDLE;
     VkImageView _imageView = VK_NULL_HANDLE;
     VmaAllocation _allocation = VK_NULL_HANDLE;
@@ -142,4 +139,4 @@ class Texture final {
 
     void _destroy();
 };
-} // namespace vax::textures
+} // namespace vax::vk

@@ -5,24 +5,24 @@
 #include "resourceUtils.h"
 #include "vertex.h"
 
-namespace vax {
+namespace vax::vk {
 class MeshManager;
 }
 
-namespace vax::objects {
+namespace vax::vk {
 template <typename VertexType> class Mesh final {
   public:
     struct LoadMeshBuffersContext final {
-        vax::vk::CommandBuffer* commandBuffer;
+        CommandBuffer* commandBuffer;
         uint32_t maxFramesInFlight;
     };
 
-    friend class vax::MeshManager;
+    friend class vax::vk::MeshManager;
 
-    std::optional<vax::vk::Buffer> vertexBuffer = std::nullopt;
-    std::optional<vax::vk::Buffer> indexBuffer = std::nullopt;
+    std::optional<Buffer> vertexBuffer = std::nullopt;
+    std::optional<Buffer> indexBuffer = std::nullopt;
 
-    explicit Mesh(const vax::vk::Device& device, uint32_t instancesCount = 1)
+    explicit Mesh(const Device& device, uint32_t instancesCount = 1)
         : _device(device) {};
     ~Mesh() { cleanup(); };
 
@@ -40,7 +40,7 @@ template <typename VertexType> class Mesh final {
         , vertexBuffer(std::move(other.vertexBuffer))
         , indexBuffer(std::move(other.indexBuffer)) {
         other._isLoaded = false;
-        other._id = vax::NullId;
+        other._id = NullId;
         other._isDetached = true;
         other._name.clear();
     }
@@ -90,17 +90,17 @@ template <typename VertexType> class Mesh final {
   private:
     vax::Logger _logger = vax::Logger("Mesh");
 
-    std::reference_wrapper<const vax::vk::Device> _device;
+    std::reference_wrapper<const Device> _device;
     std::string _name;
 
     std::vector<VertexType> _vertices;
     std::vector<uint32_t> _indices;
 
-    std::optional<vax::vk::Buffer> _stagingVertexBuffer = std::nullopt;
-    std::optional<vax::vk::Buffer> _stagingIndexBuffer = std::nullopt;
+    std::optional<Buffer> _stagingVertexBuffer = std::nullopt;
+    std::optional<Buffer> _stagingIndexBuffer = std::nullopt;
 
     bool _isLoaded = false;
-    MeshId _id = vax::NullId;
+    MeshId _id = NullId;
     bool _isDetached = true;
 
     void _destroy();
@@ -110,4 +110,4 @@ template <typename VertexType> class Mesh final {
 
 using MeshPBR = Mesh<Vertex>;
 using MeshPUV = Mesh<VertexPUV>;
-} // namespace vax::objects
+} // namespace vax::vk

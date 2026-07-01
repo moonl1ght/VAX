@@ -12,7 +12,7 @@ using namespace vax::renderer;
 using namespace vax;
 
 void Renderer::prepare(DrawableScene* scene) {
-    for (uint32_t i = 0; i < vax::MAX_FRAMES_IN_FLIGHT; ++i) {
+    for (uint32_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
         if (scene != nullptr) {
             scene->prepareForDraw(renderer::RenderCallContext{.currentFrame = i});
         }
@@ -130,7 +130,7 @@ bool Renderer::render(DrawableScene* scene, float deltaTime) {
         return false;
     }
 
-    _currentFrame = (_currentFrame + 1) % vax::MAX_FRAMES_IN_FLIGHT;
+    _currentFrame = (_currentFrame + 1) % vax::vk::MAX_FRAMES_IN_FLIGHT;
     return true;
 }
 

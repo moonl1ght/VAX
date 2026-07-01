@@ -6,7 +6,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-namespace vax::objects {
+namespace vax::vk {
 struct VertexNoTangent {
     glm::vec4 color;
     glm::vec3 position;
@@ -109,4 +109,4 @@ struct Vertex {
         return attributeDescriptions;
     }
 };
-} // namespace vax::objects
+} // namespace vax::vk

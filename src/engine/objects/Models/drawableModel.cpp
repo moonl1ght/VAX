@@ -2,6 +2,7 @@
 
 using namespace vax::objects;
 using namespace vax::renderer;
+using namespace vax::vk;
 
 bool DrawableModel::loadMesh(const MeshPBR::LoadMeshBuffersContext& context) { return _mesh->loadBuffers(context); }
 

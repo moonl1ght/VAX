@@ -7,7 +7,7 @@
 #include "luna.h"
 #include "texture.h"
 
-namespace vax::textures {
+namespace vax::vk {
 class TextureTaskSchedulerInline final {
   public:
     explicit TextureTaskSchedulerInline(const vax::vk::Device& device, vax::vk::CommandBuffer& commandBuffer)
@@ -59,4 +59,4 @@ class TextureTaskScheduler final {
     std::reference_wrapper<const vax::vk::Device> _device;
     std::reference_wrapper<vax::vk::CommandManager> _commandManager;
 };
-}; // namespace vax::textures
+}; // namespace vax::vk

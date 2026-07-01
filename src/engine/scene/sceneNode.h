@@ -24,7 +24,7 @@ class SceneNode final {
     };
 
     explicit SceneNode(
-        vax::SSBOManager& ssboManager,
+        vax::vk::SSBOManager& ssboManager,
         std::string name,
         const vax::math::Transform& originalParentRelativeTransform,
         vax::math::TransformMatrixHandle parentTransformMatrices,
@@ -47,7 +47,7 @@ class SceneNode final {
     };
 
     SceneNode(
-        vax::SSBOManager& ssboManager,
+        vax::vk::SSBOManager& ssboManager,
         std::string name,
         std::vector<vax::math::Transform> transforms,
         bool isRoot = false
@@ -109,7 +109,7 @@ class SceneNode final {
     uint32_t instancesCount() const { return _instancesCount; }
 
   private:
-    std::reference_wrapper<vax::SSBOManager> _ssboManager;
+    std::reference_wrapper<vax::vk::SSBOManager> _ssboManager;
 
     std::string _name;
     uint32_t _instancesCount;

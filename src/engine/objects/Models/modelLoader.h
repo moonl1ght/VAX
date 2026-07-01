@@ -14,7 +14,7 @@ class ModelsController;
 namespace vax::objects {
 class ModelLoader final {
   public:
-    explicit ModelLoader(vax::ResourceManager& resourceManager, vax::textures::TextureLoader& textureLoader)
+    explicit ModelLoader(vax::vk::ResourceManager& resourceManager, vax::vk::TextureLoader& textureLoader)
         : _resourceManager(resourceManager)
         , _textureLoader(textureLoader) {};
 
@@ -37,8 +37,8 @@ class ModelLoader final {
   private:
     vax::Logger _logger = vax::Logger("ModelLoader");
 
-    std::reference_wrapper<vax::ResourceManager> _resourceManager;
-    std::reference_wrapper<vax::textures::TextureLoader> _textureLoader;
+    std::reference_wrapper<vax::vk::ResourceManager> _resourceManager;
+    std::reference_wrapper<vax::vk::TextureLoader> _textureLoader;
 
     std::optional<SceneNode>
     _loadURDFSceneModel(vax::objects::ModelsController& modelsController, vax::objects::ModelDescriptor descriptor);

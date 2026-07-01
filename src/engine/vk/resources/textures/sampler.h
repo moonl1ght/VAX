@@ -3,12 +3,12 @@
 #include "device.h"
 #include "luna.h"
 
-namespace vax::textures {
+namespace vax::vk {
 class Sampler final {
   public:
     VkSampler vkSampler = VK_NULL_HANDLE;
 
-    static std::optional<vax::textures::Sampler>
+    static std::optional<vax::vk::Sampler>
     createSampler(const vax::vk::Device& device, std::string name, VkSamplerCreateInfo samplerInfo);
 
     explicit Sampler(VkSampler vkSampler, const vax::vk::Device& device)
@@ -46,4 +46,4 @@ class Sampler final {
     std::string _name;
     std::reference_wrapper<const vax::vk::Device> _device;
 };
-} // namespace vax::textures
+} // namespace vax::vk

@@ -10,7 +10,7 @@ class CommandBuffer;
 class CommandManager;
 } // namespace vax::vk
 
-namespace vax::textures {
+namespace vax::vk {
 class TextureFactory final {
   public:
     struct TextureCreateInfo {
@@ -39,18 +39,18 @@ class TextureFactory final {
     TextureFactory(TextureFactory&& other) noexcept = delete;
     TextureFactory& operator=(TextureFactory&& other) noexcept = delete;
 
-    std::optional<vax::TextureManager::TextureResource> makeDepthTexture(VkFormat format, math::SizeUI size);
+    std::optional<vax::vk::TextureManager::TextureResource> makeDepthTexture(VkFormat format, math::SizeUI size);
 
     std::optional<Texture> makeDepthTextureDetached(VkFormat format, math::SizeUI size);
 
-    std::optional<vax::TextureManager::TextureResource> makeTexture(const TextureCreateInfo& createInfo);
+    std::optional<vax::vk::TextureManager::TextureResource> makeTexture(const TextureCreateInfo& createInfo);
 
     std::optional<Texture> makeTextureDetached(const TextureCreateInfo& createInfo);
 
   private:
     vax::Logger _logger = vax::Logger("TextureFactory");
-    std::reference_wrapper<const vk::Device> _device;
+    std::reference_wrapper<const Device> _device;
     TextureManager* _textureManager;
     VmaAllocator _allocator;
 };
-} // namespace vax::textures
+} // namespace vax::vk

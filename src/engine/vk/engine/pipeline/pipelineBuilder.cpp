@@ -93,7 +93,7 @@ VkPipelineLayout GraphicsPipelineBuilder::buildPipelineLayout(std::string name) 
         .objectHandle = reinterpret_cast<size_t>(pipelineLayout),
         .pObjectName = (name + "_pipeline_layout").c_str(),
     };
-    vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
+    vax::vk::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
     return pipelineLayout;
 }
 
@@ -189,7 +189,7 @@ std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(std::string name
         .objectHandle = reinterpret_cast<size_t>(pipeline),
         .pObjectName = (name + "_pipeline").c_str(),
     };
-    vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &baseGraphicsPipelineNameInfo);
+    vax::vk::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &baseGraphicsPipelineNameInfo);
     return vax::vk::Pipeline(_device.get(), name, vax::vk::PipelineType::RENDER, pipelineLayout, pipeline);
 }
 

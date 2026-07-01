@@ -1,8 +1,8 @@
 #include "meshManager.h"
 
-using namespace vax;
+using namespace vax::vk;
 
-void vax::MeshManager::fullCleanup() {
+void MeshManager::fullCleanup() {
     for (auto& [handle, mesh] : _pool) {
         mesh._destroy();
     }
@@ -10,7 +10,7 @@ void vax::MeshManager::fullCleanup() {
 }
 
 std::optional<MeshManager::MeshResource> MeshManager::createEmptyMesh(uint32_t instancesCount) {
-    auto mesh = vax::objects::MeshPBR(_device.get(), instancesCount);
+    auto mesh = MeshPBR(_device.get(), instancesCount);
     mesh._id = _lastId++;
     auto [it, inserted] = _pool.try_emplace(mesh.id(), std::move(mesh));
     if (!inserted) {
@@ -20,14 +20,14 @@ std::optional<MeshManager::MeshResource> MeshManager::createEmptyMesh(uint32_t i
     return std::make_pair(it->first, &it->second);
 }
 
-std::optional<MeshManager::MeshResource> MeshManager::find(vax::MeshHandle handle) {
+std::optional<MeshManager::MeshResource> MeshManager::find(MeshHandle handle) {
     auto it = _pool.find(handle.id());
     if (it == _pool.end())
         return std::nullopt;
     return std::make_pair(handle, &it->second);
 }
 
-bool MeshManager::deleteMesh(vax::MeshHandle handle) {
+bool MeshManager::deleteMesh(MeshHandle handle) {
     auto it = _pool.find(handle.id());
     if (it == _pool.end())
         return false;
@@ -36,7 +36,7 @@ bool MeshManager::deleteMesh(vax::MeshHandle handle) {
     return true;
 }
 
-std::optional<vax::objects::MeshPBR> MeshManager::detach(vax::MeshHandle handle) {
+std::optional<MeshPBR> MeshManager::detach(MeshHandle handle) {
     auto it = _pool.find(handle.id());
     if (it == _pool.end())
         return std::nullopt;

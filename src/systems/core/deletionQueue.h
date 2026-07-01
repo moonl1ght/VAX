@@ -4,7 +4,7 @@
 #include <deque>
 #include <functional>
 
-namespace vax::utils {
+namespace vax::core {
 class DeletionQueue {
   public:
     std::deque<std::function<void()>> deletors;
@@ -23,4 +23,4 @@ class DeletionQueue {
   private:
     Logger _logger = Logger("DeletionQueue");
 };
-} // namespace vax::utils
+} // namespace vax::core

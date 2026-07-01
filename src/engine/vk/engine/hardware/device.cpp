@@ -28,7 +28,7 @@ void Device::destroy() {
     _logger.info("Destroying device...");
     vkDestroyDevice(vkDevice, nullptr);
     vkDevice = VK_NULL_HANDLE;
-    _indices = utils::QueueFamilyIndices();
+    _indices = QueueFamilyIndices();
 }
 
 int Device::createLogicalDevice(
@@ -107,13 +107,13 @@ int Device::createLogicalDevice(
 }
 
 bool Device::isDeviceSuitable(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
-    utils::QueueFamilyIndices indices = utils::findQueueFamilies(device, surface);
+    QueueFamilyIndices indices = findQueueFamilies(device, surface);
 
     bool extensionsSupported = checkDeviceExtensionSupport(device);
 
     bool swapChainAdequate = false;
     if (extensionsSupported) {
-        utils::SwapChainSupportDetails swapChainSupport = utils::querySwapChainSupport(device, surface);
+        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device, surface);
         swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
     }
 
@@ -154,7 +154,7 @@ int Device::pickPhysicalDevice(
 bool Device::load(VkInstance instance, VkSurfaceKHR surface, bool enableValidationLayers) {
     _logger.info("Loading device...");
     if (pickPhysicalDevice(instance, surface, vkPhysicalDevice) == EXIT_SUCCESS) {
-        _indices = utils::findQueueFamilies(vkPhysicalDevice, surface);
+        _indices = findQueueFamilies(vkPhysicalDevice, surface);
         if (createLogicalDevice(vkPhysicalDevice, surface, vkDevice, enableValidationLayers) == EXIT_SUCCESS) {
             _logger.info("Device loaded successfully!");
             return true;

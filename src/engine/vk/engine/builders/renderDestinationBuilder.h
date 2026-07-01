@@ -32,7 +32,7 @@ class RenderDestinationBuilder {
     std::reference_wrapper<const vax::vk::RenderPass> _renderPass;
 
     bool createFramebuffers(
-        const vax::textures::Texture& depthTexture, std::vector<VkFramebuffer>& swapchainFramebuffers
+        const vax::vk::Texture& depthTexture, std::vector<VkFramebuffer>& swapchainFramebuffers
     ) const;
 };
 } // namespace vax::vk

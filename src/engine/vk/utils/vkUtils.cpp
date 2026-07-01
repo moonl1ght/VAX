@@ -1,6 +1,6 @@
 #include "vkUtils.h"
 
-uint32_t vax::vk::utils::findMemoryType(
+uint32_t vax::vk::findMemoryType(
     const VkPhysicalDevice& physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties
 ) {
     VkPhysicalDeviceMemoryProperties memProperties;
@@ -15,9 +15,9 @@ uint32_t vax::vk::utils::findMemoryType(
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-vax::vk::utils::SwapChainSupportDetails
-vax::vk::utils::querySwapChainSupport(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
-    vax::vk::utils::SwapChainSupportDetails details;
+vax::vk::SwapChainSupportDetails
+vax::vk::querySwapChainSupport(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
+    vax::vk::SwapChainSupportDetails details;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
 
@@ -40,9 +40,9 @@ vax::vk::utils::querySwapChainSupport(const VkPhysicalDevice& device, const VkSu
     return details;
 }
 
-vax::vk::utils::QueueFamilyIndices
-vax::vk::utils::findQueueFamilies(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
-    vax::vk::utils::QueueFamilyIndices indices;
+vax::vk::QueueFamilyIndices
+vax::vk::findQueueFamilies(const VkPhysicalDevice& device, const VkSurfaceKHR& surface) {
+    vax::vk::QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -73,7 +73,7 @@ vax::vk::utils::findQueueFamilies(const VkPhysicalDevice& device, const VkSurfac
     return indices;
 }
 
-VkFormat vax::vk::utils::findDepthFormat(VkPhysicalDevice physicalDevice) {
+VkFormat vax::vk::findDepthFormat(VkPhysicalDevice physicalDevice) {
     return findSupportedFormat(
         physicalDevice,
         {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
@@ -82,7 +82,7 @@ VkFormat vax::vk::utils::findDepthFormat(VkPhysicalDevice physicalDevice) {
     );
 }
 
-VkFormat vax::vk::utils::findSupportedFormat(
+VkFormat vax::vk::findSupportedFormat(
     VkPhysicalDevice physicalDevice,
     const std::vector<VkFormat>& candidates,
     VkImageTiling tiling,

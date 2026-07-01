@@ -7,14 +7,14 @@
 namespace vax::vk {
 class RenderDestination final {
   public:
-    std::unique_ptr<vax::textures::Texture> depthTexture;
-    std::unique_ptr<vax::textures::Texture> drawImage;
+    std::unique_ptr<vax::vk::Texture> depthTexture;
+    std::unique_ptr<vax::vk::Texture> drawImage;
     std::vector<VkFramebuffer> swapchainFramebuffers;
 
     explicit RenderDestination(
         const vax::vk::Device& device,
-        std::unique_ptr<vax::textures::Texture> depthTexture,
-        std::unique_ptr<vax::textures::Texture> drawImage,
+        std::unique_ptr<vax::vk::Texture> depthTexture,
+        std::unique_ptr<vax::vk::Texture> drawImage,
         std::vector<VkFramebuffer> swapchainFramebuffers
     )
         : _device(device)

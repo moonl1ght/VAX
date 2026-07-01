@@ -1,7 +1,7 @@
 #include "materialManager.h"
 #include <numeric>
 
-using namespace vax;
+using namespace vax::vk;
 
 void MaterialManager::cleanup() {
     _materials.clear();
@@ -9,7 +9,7 @@ void MaterialManager::cleanup() {
 }
 
 bool MaterialManager::setup() {
-    VkDeviceSize bufferSize = sizeof(PBRMaterial) * vax::MAX_MATERIALS;
+    VkDeviceSize bufferSize = sizeof(PBRMaterial) * vax::vk::MAX_MATERIALS;
     auto allocation = vk::Buffer::allocate(
         _device.get(),
         "global_material_buffer",
@@ -21,8 +21,8 @@ bool MaterialManager::setup() {
         return false;
     _buffer = std::make_unique<vk::Buffer>(std::move(*allocation));
     _buffer->map();
-    _materials.reserve(vax::MAX_MATERIALS);
-    _materialsToDelete.reserve(vax::MAX_MATERIALS);
+    _materials.reserve(vax::vk::MAX_MATERIALS);
+    _materialsToDelete.reserve(vax::vk::MAX_MATERIALS);
     return true;
 }
 
@@ -38,7 +38,7 @@ bool MaterialManager::_updateBuffer(MaterialId id, PBRMaterial material) {
 }
 
 std::vector<MaterialId> MaterialManager::insertMaterials(std::vector<PBRMaterial> materials) {
-    if (_materials.size() + materials.size() >= vax::MAX_MATERIALS)
+    if (_materials.size() + materials.size() >= vax::vk::MAX_MATERIALS)
         return {};
     if (materials.empty())
         return {};
@@ -59,15 +59,15 @@ MaterialId MaterialManager::insert(PBRMaterial material) {
     if (!_materialsToDelete.empty()) {
         auto id = _materialsToDelete.back();
         if (!_updateBuffer(id, material))
-            return vax::NullMaterialId;
+            return NullMaterialId;
         _materials[id] = material;
         _materialsToDelete.pop_back();
         return id;
     }
-    if (_materials.size() >= vax::MAX_MATERIALS)
-        return vax::NullMaterialId;
+    if (_materials.size() >= vax::vk::MAX_MATERIALS)
+        return NullMaterialId;
     if (!_updateBuffer(_materials.size(), material))
-        return vax::NullMaterialId;
+        return NullMaterialId;
     _materials.push_back(material);
     return _materials.size() - 1;
 }

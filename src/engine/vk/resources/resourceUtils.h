@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <limits>
 
-namespace vax {
+namespace vax::vk {
 constexpr uint32_t NullId = std::numeric_limits<uint32_t>::max();
 
 using MeshId = uint32_t;
@@ -18,4 +18,4 @@ using MaterialId = uint32_t;
 constexpr MaterialId NullMaterialId = std::numeric_limits<MaterialId>::max();
 
 enum class GlobalSampler : SamplerId { PBRSampler = 0, CubeMapSampler = 1 };
-} // namespace vax
+} // namespace vax::vk

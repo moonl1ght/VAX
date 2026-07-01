@@ -25,7 +25,7 @@ class DrawableModel final {
     friend class vax::objects::PrimitivesBuilder;
     friend class vax::objects::ModelLoader;
 
-    explicit DrawableModel(vax::MeshManager& meshManager, vax::MeshHandle meshHandle)
+    explicit DrawableModel(vax::vk::MeshManager& meshManager, vax::vk::MeshHandle meshHandle)
         : _meshManager(meshManager)
         , _meshHandle(meshHandle) {};
 
@@ -37,7 +37,7 @@ class DrawableModel final {
 
     ~DrawableModel() {};
 
-    bool loadMesh(const vax::objects::MeshPBR::LoadMeshBuffersContext& context);
+    bool loadMesh(const vax::vk::MeshPBR::LoadMeshBuffersContext& context);
 
     void draw(const vax::renderer::DrawContext& drawContext, uint32_t instanceOffset, uint32_t instancesCount);
 
@@ -47,22 +47,22 @@ class DrawableModel final {
 
     void setSettings(const Settings& settings) { _settings = settings; }
 
-    vax::objects::Submesh& submesh(size_t index) { return _submeshes[index]; }
+    vax::vk::Submesh& submesh(size_t index) { return _submeshes[index]; }
 
-    const vax::objects::Submesh& submesh(size_t index) const { return _submeshes[index]; }
+    const vax::vk::Submesh& submesh(size_t index) const { return _submeshes[index]; }
 
     size_t submeshCount() const { return _submeshes.size(); }
 
   private:
     vax::Logger _logger = vax::Logger("DrawableModel");
 
-    std::reference_wrapper<vax::MeshManager> _meshManager;
+    std::reference_wrapper<vax::vk::MeshManager> _meshManager;
 
-    vax::MeshHandle _meshHandle;
+    vax::vk::MeshHandle _meshHandle;
 
     // TODO: remove this will need to use mesh manager to get the mesh
-    vax::objects::MeshPBR* _mesh;
-    std::vector<vax::objects::Submesh> _submeshes;
+    vax::vk::MeshPBR* _mesh;
+    std::vector<vax::vk::Submesh> _submeshes;
     Settings _settings;
 };
 

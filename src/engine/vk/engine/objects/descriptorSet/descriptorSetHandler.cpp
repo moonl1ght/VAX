@@ -27,7 +27,7 @@ void DescriptorSetHandler::writeBuffer(
 }
 
 void DescriptorSetHandler::writeTexture(
-    const vax::textures::Texture& texture, uint32_t binding, uint32_t arrayElement
+    const Texture& texture, uint32_t binding, uint32_t arrayElement
 ) {
     auto imageInfoOpt = texture.descriptorImageInfoNoSampler();
     if (!imageInfoOpt) {
@@ -50,7 +50,7 @@ void DescriptorSetHandler::writeTexture(
     _writes.push_back(write);
 }
 
-void DescriptorSetHandler::writeTextures(const std::vector<const vax::textures::Texture*>& textures, uint32_t binding) {
+void DescriptorSetHandler::writeTextures(const std::vector<const Texture*>& textures, uint32_t binding) {
     std::vector<VkDescriptorImageInfo> imageInfos;
     imageInfos.reserve(textures.size());
     for (const auto& texture : textures) {
@@ -76,7 +76,7 @@ void DescriptorSetHandler::writeTextures(const std::vector<const vax::textures::
     _writes.push_back(write);
 }
 
-void DescriptorSetHandler::writeSampler(const vax::textures::Sampler& sampler, uint32_t binding, uint32_t arrayElement) {
+void DescriptorSetHandler::writeSampler(const Sampler& sampler, uint32_t binding, uint32_t arrayElement) {
     VkDescriptorImageInfo& samplerInfo = _imageInfos.emplace_back(
         VkDescriptorImageInfo{
             .sampler = sampler.vkSampler,

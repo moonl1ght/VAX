@@ -4,10 +4,10 @@
 #include "luna.h"
 #include "materialManager.h"
 #include "meshManager.h"
-#include "textureManager.h"
 #include "ssboManager.h"
+#include "textureManager.h"
 
-namespace vax {
+namespace vax::vk {
 class ResourceManager final {
   public:
     explicit ResourceManager(const vax::vk::Device& device, VmaAllocator allocator)
@@ -26,23 +26,23 @@ class ResourceManager final {
 
     void cleanup();
 
-    vax::BufferManager& bufferManager() { return _bufferManager; }
+    BufferManager& bufferManager() { return _bufferManager; }
 
-    vax::MeshManager& meshManager() { return _meshManager; }
+    MeshManager& meshManager() { return _meshManager; }
 
-    vax::TextureManager& textureManager() { return _textureManager; }
+    TextureManager& textureManager() { return _textureManager; }
 
-    vax::MaterialManager& materialManager() { return _materialManager; }
+    MaterialManager& materialManager() { return _materialManager; }
 
-    vax::SSBOManager& ssboManager() { return _ssboManager; }
+    SSBOManager& ssboManager() { return _ssboManager; }
 
   private:
     vax::Logger _logger = vax::Logger("ResourceManager");
 
-    vax::BufferManager _bufferManager;
-    vax::MeshManager _meshManager;
-    vax::TextureManager _textureManager;
-    vax::MaterialManager _materialManager;
-    vax::SSBOManager _ssboManager;
+    BufferManager _bufferManager;
+    MeshManager _meshManager;
+    TextureManager _textureManager;
+    MaterialManager _materialManager;
+    SSBOManager _ssboManager;
 };
-} // namespace vax
+} // namespace vax::vk

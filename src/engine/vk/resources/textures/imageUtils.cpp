@@ -1,9 +1,7 @@
 #include "imageUtils.h"
 #include "vkEngine.h"
 
-using namespace vax;
-
-namespace vax::textures::utils {
+namespace vax::vk {
 
 void copyImageToImage(
     VkCommandBuffer commandBuffer, VkImage source, VkImage destination, VkExtent2D srcSize, VkExtent2D dstSize
@@ -73,7 +71,7 @@ std::optional<std::pair<VkImage, VmaAllocation>> createImage(
         .requiredFlags = properties,
     };
     if (!VK_CHECK(vmaCreateImage(allocator, &imageInfo, &allocInfo, &image, &allocation, nullptr))) {
-        Logger::getInstance().error("Failed to create image!");
+        vax::Logger::getInstance().error("Failed to create image!");
         return std::nullopt;
     }
     return std::make_optional(std::make_pair(image, allocation));
@@ -94,11 +92,11 @@ std::optional<VkImageView> createImageView(
         .viewType = viewType,
         .format = format,
         .subresourceRange = {
-            .aspectMask = aspectMask,
-            .baseMipLevel = 0,
-            .levelCount = levelCount,
-            .baseArrayLayer = 0,
-            .layerCount = layerCount,
+        .aspectMask = aspectMask,
+        .baseMipLevel = 0,
+        .levelCount = levelCount,
+        .baseArrayLayer = 0,
+        .layerCount = layerCount,
         },
     };
 
@@ -109,4 +107,4 @@ std::optional<VkImageView> createImageView(
     return std::make_optional(imageView);
 }
 
-} // namespace vax::textures::utils
+}; // namespace vax::vk

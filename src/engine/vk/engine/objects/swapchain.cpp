@@ -63,8 +63,8 @@ VkExtent2D Swapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilit
 }
 
 bool Swapchain::createSwapchain() {
-    utils::SwapChainSupportDetails swapChainSupport =
-        utils::querySwapChainSupport(_device.get().vkPhysicalDevice, _window.get().surface);
+    SwapChainSupportDetails swapChainSupport =
+        querySwapChainSupport(_device.get().vkPhysicalDevice, _window.get().surface);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -87,7 +87,7 @@ bool Swapchain::createSwapchain() {
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-    utils::QueueFamilyIndices indices = utils::findQueueFamilies(_device.get().vkPhysicalDevice, _window.get().surface);
+    QueueFamilyIndices indices = findQueueFamilies(_device.get().vkPhysicalDevice, _window.get().surface);
     if (!indices.isComplete()) {
         _logger.error("Queue family indices are not complete!");
         return false;
@@ -134,7 +134,7 @@ bool Swapchain::createImageViews() {
     swapchainImageViews.resize(swapchainImages.size());
 
     for (uint32_t i = 0; i < swapchainImages.size(); i++) {
-        auto swapchainImageView = textures::utils::createImageView(
+        auto swapchainImageView = createImageView(
             _device.get().vkDevice, swapchainImages[i], swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT
         );
         if (swapchainImageView) {

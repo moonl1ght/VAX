@@ -3,24 +3,24 @@
 #include "luna.h"
 #include "shaderUniforms.h"
 
-namespace vax {
+namespace vax::vk {
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 constexpr int MAX_GLOBAL_TEXTURES = MAX_TEXTURES;
 constexpr int MAX_MATERIALS = 500;
 constexpr int MAX_GLOBAL_SAMPLERS = MAX_SAMPLERS;
 constexpr int MAX_DRAWABLE_INSTANCES = 2000;
-} // namespace vax
+} // namespace vax::vk
 
 #define VK_CHECK(x)                                                                                                    \
     ({                                                                                                                 \
         VkResult err = (x);                                                                                            \
         if (err != VK_SUCCESS) {                                                                                       \
-            vax::Logger::getInstance().error("Detected Vulkan error: {}", err);                                 \
+            vax::Logger::getInstance().error("Detected Vulkan error: {}", err);                                        \
         }                                                                                                              \
         (err == VK_SUCCESS);                                                                                           \
     })
 
-namespace vax::vk::utils {
+namespace vax::vk {
 
 inline PFN_vkSetDebugUtilsObjectNameEXT pfnSetDebugUtilsObjectNameEXT = nullptr;
 
@@ -58,4 +58,4 @@ VkFormat findSupportedFormat(
 );
 
 VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
-} // namespace vax::vk::utils
+} // namespace vax::vk

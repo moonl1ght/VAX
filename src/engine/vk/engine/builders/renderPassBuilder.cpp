@@ -17,7 +17,7 @@ std::optional<std::unique_ptr<vax::vk::RenderPass>> RenderPassBuilder::build() c
     colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
     VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = utils::findDepthFormat(_device.get().vkPhysicalDevice);
+    depthAttachment.format = findDepthFormat(_device.get().vkPhysicalDevice);
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;

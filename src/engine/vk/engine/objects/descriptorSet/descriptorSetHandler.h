@@ -6,12 +6,9 @@
 
 namespace vax::vk {
 class Buffer;
-}
-
-namespace vax::textures {
 class Texture;
 class Sampler;
-} // namespace vax::textures
+} // namespace vax::vk
 
 namespace vax::vk {
 struct DescriptorSetHandler {
@@ -38,11 +35,11 @@ struct DescriptorSetHandler {
         uint32_t arrayElement = 0
     );
 
-    void writeTexture(const vax::textures::Texture& texture, uint32_t binding, uint32_t arrayElement = 0);
+    void writeTexture(const Texture& texture, uint32_t binding, uint32_t arrayElement = 0);
 
-    void writeTextures(const std::vector<const vax::textures::Texture*>& textures, uint32_t binding);
+    void writeTextures(const std::vector<const Texture*>& textures, uint32_t binding);
 
-    void writeSampler(const vax::textures::Sampler& sampler, uint32_t binding, uint32_t arrayElement = 0);
+    void writeSampler(const Sampler& sampler, uint32_t binding, uint32_t arrayElement = 0);
 
     VkDescriptorSet getDescriptorSet() const { return _descriptorSet; }
 

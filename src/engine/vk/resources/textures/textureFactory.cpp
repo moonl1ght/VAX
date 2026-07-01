@@ -1,11 +1,11 @@
 #include "textureFactory.h"
 #include "imageUtils.h"
 
-using namespace vax::textures;
+using namespace vax::vk;
 using namespace vax;
 
 std::optional<Texture> TextureFactory::makeDepthTextureDetached(VkFormat format, vax::math::SizeUI size) {
-    auto imageResult = utils::createImage(
+    auto imageResult = vax::vk::createImage(
         _allocator,
         size.toExtent3D(),
         format,
@@ -23,9 +23,9 @@ std::optional<Texture> TextureFactory::makeDepthTextureDetached(VkFormat format,
         .objectHandle = reinterpret_cast<size_t>(imageResult->first),
         .pObjectName = "depth_texture",
     };
-    vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
+    vax::vk::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
     auto [depthImage, allocation] = imageResult.value();
-    auto texture = vax::textures::Texture(
+    auto texture = Texture(
         _device.get(), _allocator, "depth_texture", depthImage, allocation, size, format, VK_IMAGE_ASPECT_DEPTH_BIT
     );
     return std::make_optional(std::move(texture));
@@ -48,7 +48,7 @@ std::optional<TextureManager::TextureResource> TextureFactory::makeDepthTexture(
 }
 
 std::optional<Texture> TextureFactory::makeTextureDetached(const TextureCreateInfo& createInfo) {
-    auto imageResult = utils::createImage(
+    auto imageResult = createImage(
         _allocator,
         createInfo.size.toExtent3D(),
         createInfo.format,
@@ -61,7 +61,7 @@ std::optional<Texture> TextureFactory::makeTextureDetached(const TextureCreateIn
     );
     if (imageResult) {
         auto [image, allocation] = imageResult.value();
-        auto texture = vax::textures::Texture(
+        auto texture = Texture(
             _device.get(),
             _allocator,
             createInfo.name,
@@ -78,7 +78,7 @@ std::optional<Texture> TextureFactory::makeTextureDetached(const TextureCreateIn
                 .objectHandle = reinterpret_cast<size_t>(image),
                 .pObjectName = createInfo.name.c_str(),
             };
-            vax::vk::utils::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
+            vax::vk::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
         }
         texture.loadImageView(createInfo.viewType, createInfo.numLayers, createInfo.numMips);
         return std::make_optional(std::move(texture));
