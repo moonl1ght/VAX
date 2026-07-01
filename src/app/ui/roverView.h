@@ -21,12 +21,12 @@ class RoverView final {
     void updateImGui();
     void load(vax::vk::Engine& engine, vax::InputController& inputController);
 
-    DrawableScene* drawableScene() const { return _drawableScene.get(); }
+    vax::engine::DrawableScene* drawableScene() const { return _drawableScene.get(); }
 
   private:
     std::reference_wrapper<UIEngine> _uiEngine;
 
-    std::unique_ptr<DrawableScene> _drawableScene;
+    std::unique_ptr<vax::engine::DrawableScene> _drawableScene;
     std::unique_ptr<vax::rl::GridWorld> _gridWorld;
 };
 } // namespace vax::ui

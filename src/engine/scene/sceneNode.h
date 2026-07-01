@@ -7,14 +7,14 @@
 #include <optional>
 #include <vector>
 
-namespace vax::objects {
+namespace vax::engine {
 class ModelLoader;
 }
 
-namespace vax::objects {
+namespace vax::engine {
 class SceneNode final {
   public:
-    friend class vax::objects::ModelLoader;
+    friend class vax::engine::ModelLoader;
 
     struct DrawableModelTransformInfo final {
         vax::math::Transform _originalParentRelativeTransform;
@@ -81,7 +81,7 @@ class SceneNode final {
     const std::string& name() const { return _name; };
     bool hasDrawableModels() const { return !_drawableModels.empty(); };
 
-    void draw(const vax::renderer::DrawContext& drawContext);
+    void draw(const vax::engine::DrawContext& drawContext);
 
     /// @param depth - depth of the child, if -1 search from all children with max depth,
     ///                 if 0 will compare only with node itself.
@@ -119,4 +119,4 @@ class SceneNode final {
     bool _isRoot = false;
     std::vector<DrawableModelTransformInfo> _drawableModelTransformInfos;
 };
-} // namespace vax::objects
+} // namespace vax::engine

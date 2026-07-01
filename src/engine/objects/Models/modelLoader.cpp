@@ -9,7 +9,7 @@
 #include <urdf_parser/urdf_parser.h>
 #include <uuid_v4.h>
 
-using namespace vax::objects;
+using namespace vax::engine;
 using namespace vax;
 using namespace vax::vk;
 
@@ -288,7 +288,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, uin
     (*mesh).second->setVertices(modelVertices);
     (*mesh).second->setIndices(modelIndices);
 
-    auto drawableModel = vax::objects::DrawableModel(_resourceManager.get().meshManager(), mesh->first);
+    auto drawableModel = vax::engine::DrawableModel(_resourceManager.get().meshManager(), mesh->first);
     drawableModel._mesh = (*mesh).second;
     drawableModel._submeshes = submeshes;
     drawableModel._settings.hasTangents = hasTangents;
@@ -420,10 +420,10 @@ ModelLoader::_loadGLBSceneModel(ModelsController& modelsController, ModelDescrip
 }
 
 std::optional<SceneNode>
-ModelLoader::loadSceneModel(ModelsController& modelsController, const vax::objects::ModelDescriptor& descriptor) {
-    if (descriptor.getModelExtension() == vax::objects::ModelDescriptor::ModelExtension::URDF) {
+ModelLoader::loadSceneModel(ModelsController& modelsController, const vax::engine::ModelDescriptor& descriptor) {
+    if (descriptor.getModelExtension() == vax::engine::ModelDescriptor::ModelExtension::URDF) {
         return _loadURDFSceneModel(modelsController, descriptor);
-    } else if (descriptor.getModelExtension() == vax::objects::ModelDescriptor::ModelExtension::GLB) {
+    } else if (descriptor.getModelExtension() == vax::engine::ModelDescriptor::ModelExtension::GLB) {
         return _loadGLBSceneModel(modelsController, descriptor);
     }
     return std::nullopt;

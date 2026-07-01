@@ -12,7 +12,7 @@ class CommandManager;
 class QueueManager;
 } // namespace vax::vk
 
-namespace vax::objects {
+namespace vax::engine {
 class PrimitivesBuilder {
   public:
     explicit PrimitivesBuilder(
@@ -35,8 +35,8 @@ class PrimitivesBuilder {
     PrimitivesBuilder& operator=(const PrimitivesBuilder& other) = delete;
     PrimitivesBuilder& operator=(PrimitivesBuilder&& other) noexcept = delete;
 
-    std::optional<vax::objects::DrawableModel> createCube(float size, vax::Color color);
-    std::optional<vax::objects::DrawableModel> createPlane();
+    std::optional<vax::engine::DrawableModel> createCube(float size, vax::engine::Color color);
+    std::optional<vax::engine::DrawableModel> createPlane();
 
   private:
     std::reference_wrapper<vax::vk::SSBOManager> _ssboManager;
@@ -45,4 +45,4 @@ class PrimitivesBuilder {
     std::reference_wrapper<vax::vk::CommandManager> _commandManager;
     std::reference_wrapper<vax::vk::QueueManager> _queueManager;
 };
-} // namespace vax::objects
+} // namespace vax::engine

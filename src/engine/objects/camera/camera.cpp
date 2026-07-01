@@ -1,7 +1,6 @@
 #include "camera.h"
 
-using namespace vax::objects;
-using namespace vax;
+using namespace vax::engine;
 
 static constexpr float epsilon = 0.00001f;
 

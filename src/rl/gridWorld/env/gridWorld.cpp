@@ -61,7 +61,7 @@ GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
     GridWorldDrawableDescriptor worldDescriptor;
     worldDescriptor.drawableDescriptors.reserve(_grid.totalSize());
     int flatIndex = 0;
-    std::unordered_map<std::string, objects::ModelDescriptor> descriptors;
+    std::unordered_map<std::string, engine::ModelDescriptor> descriptors;
     for (const auto& block : _grid) {
         BlockType blockType = static_cast<BlockType>(block);
         auto blockTypeString = blockTypeToPath(blockType);
@@ -71,10 +71,10 @@ GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
             transform.position.y = 0.5f;
         }
         if (descriptors.find(blockTypeString) == descriptors.end()) {
-            descriptors[blockTypeString] = objects::ModelDescriptor{
+            descriptors[blockTypeString] = engine::ModelDescriptor{
                 .path = blockTypeString,
                 .id = blockTypeString,
-                .modelType = objects::ModelDescriptor::ModelType::MODEL,
+                .modelType = engine::ModelDescriptor::ModelType::MODEL,
                 .transforms = {transform},
             };
         } else {

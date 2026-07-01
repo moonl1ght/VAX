@@ -4,10 +4,10 @@
 
 using namespace vax;
 using namespace vax::vk;
-using namespace vax::renderer;
+using namespace vax::engine;
 using namespace vax::rl;
 
-void DrawableScene::prepareForDraw(renderer::RenderCallContext renderCallContext) {
+void DrawableScene::prepareForDraw(engine::RenderCallContext renderCallContext) {
     _renderCallContext = renderCallContext;
     if (auto mappedMemory = _sceneUniformBuffers[renderCallContext.currentFrame]->mappedMemory()) {
         memcpy(mappedMemory.value(), &_ubo, sizeof(_ubo));
@@ -16,19 +16,19 @@ void DrawableScene::prepareForDraw(renderer::RenderCallContext renderCallContext
     }
 }
 
-void DrawableScene::update(SceneUpdateContext sceneUpdateContext) {
+void DrawableScene::update(engine::SceneUpdateContext sceneUpdateContext) {
     _sceneUpdateContext = sceneUpdateContext;
     _ubo = _mainCamera.getUniformBufferObject();
     _ubo.environmentMapIndex = 0;
     _sceneGraph->update(sceneUpdateContext.deltaTime);
 }
 
-void vax::DrawableScene::resize() {
+void vax::engine::DrawableScene::resize() {
     auto swapchainExtent = _vkEngine.get().swapchain->swapchainExtent;
     _mainCamera.setViewPortSize(vax::math::SizeUI(swapchainExtent));
 }
 
-void vax::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue) {
+void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue) {
     _resourceManager.setup(_modelsController.maxDrawableInstances());
     _sceneGraph = std::make_unique<GwSceneGraph>();
     _loadEnvironmentMap(submitQueue);
@@ -47,16 +47,16 @@ void vax::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor
         allocation.second->map();
         _sceneUniformBuffers.push_back(allocation.second);
     }
-    std::vector<vax::objects::ModelDescriptor> modelDescriptors = {
+    std::vector<vax::engine::ModelDescriptor> modelDescriptors = {
         {
         .path = "",
         .id = "background",
-        .modelType = vax::objects::ModelDescriptor::ModelType::PRIMITIVE_PLANE,
+        .modelType = vax::engine::ModelDescriptor::ModelType::PRIMITIVE_PLANE,
         },
         {
         .path = RES_PATH("assets/models/gizmo.glb"),
         .id = "gizmo",
-        .modelType = vax::objects::ModelDescriptor::ModelType::MODEL,
+        .modelType = vax::engine::ModelDescriptor::ModelType::MODEL,
         }
     };
     for (const auto& drawableDescriptor : descriptor.drawableDescriptors) {
@@ -85,11 +85,11 @@ void vax::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor
     _gizmoCamera.setPosition(cameraPos);
     _gizmoCamera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));
     _gizmoCamera.setViewPortSize(math::SizeUI(256, 256));
-    _gizmoCamera.setProjection(objects::Camera::Projection::orthographic);
+    _gizmoCamera.setProjection(engine::Camera::Projection::orthographic);
     _gizmoCamera.setViewSize(1.5f);
 }
 
-bool vax::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler) {
+bool vax::engine::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler) {
     auto globalSampler = _resourceManager.textureManager().getGlobalSampler(GlobalSampler::PBRSampler);
     auto globalCubeMapSampler = _resourceManager.textureManager().getGlobalSampler(GlobalSampler::CubeMapSampler);
     if (!globalSampler.has_value() || !globalCubeMapSampler.has_value()) {
@@ -115,7 +115,7 @@ bool vax::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetHandler&
     return true;
 }
 
-bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler) {
+bool vax::engine::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler) {
     descriptorHandler.writeBuffer(
         *_sceneUniformBuffers[_renderCallContext.currentFrame],
         FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
@@ -131,15 +131,15 @@ bool vax::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetHandler& 
     return true;
 }
 
-void vax::DrawableScene::draw(const DrawContext& drawContext) { _sceneGraph->draw(drawContext); }
+void vax::engine::DrawableScene::draw(const DrawContext& drawContext) { _sceneGraph->draw(drawContext); }
 
-void vax::DrawableScene::drawBackground(const DrawContext& drawContext) {
+void vax::engine::DrawableScene::drawBackground(const DrawContext& drawContext) {
     if (!_background)
         return;
     _background->draw(drawContext);
 }
 
-void vax::DrawableScene::drawGizmo(const DrawContext& drawContext) {
+void vax::engine::DrawableScene::drawGizmo(const DrawContext& drawContext) {
     if (!_gizmo)
         return;
     auto viewMatrix = _gizmoCamera.viewMatrix();
@@ -151,23 +151,23 @@ void vax::DrawableScene::drawGizmo(const DrawContext& drawContext) {
     _gizmo->draw(drawContext);
 }
 
-void vax::DrawableScene::onMouseMove(const vax::MouseMoveValue& value) {
+void vax::engine::DrawableScene::onMouseMove(const vax::MouseMoveValue& value) {
     _mainCamera.rotateBy(value.delta);
     _gizmoCamera.rotateBy(value.delta);
 }
 
-void vax::DrawableScene::onMouseWheel(float delta) { _mainCamera.zoomBy(0.1f * delta); }
+void vax::engine::DrawableScene::onMouseWheel(float delta) { _mainCamera.zoomBy(0.1f * delta); }
 
-void vax::DrawableScene::onKeyEvent(const vax::KeyEvent& keyEvent) {}
+void vax::engine::DrawableScene::onKeyEvent(const vax::KeyEvent& keyEvent) {}
 
-void vax::DrawableScene::_loadEnvironmentMap(VkQueue submitQueue) {
+void vax::engine::DrawableScene::_loadEnvironmentMap(VkQueue submitQueue) {
     _environmentMap->load(
         {
         .textures =
             {
-            {scene::EnvironmentMap::TextureType::BRDFLUT, RES_PATH("brdf/brdfLUT.ktx")},
-            {scene::EnvironmentMap::TextureType::EnvMapIrradiance, RES_PATH("brdf/irradiance.ktx")},
-            {scene::EnvironmentMap::TextureType::EnvMap, RES_PATH("brdf/prefilter.ktx")},
+            {engine::EnvironmentMap::TextureType::BRDFLUT, RES_PATH("brdf/brdfLUT.ktx")},
+            {engine::EnvironmentMap::TextureType::EnvMapIrradiance, RES_PATH("brdf/irradiance.ktx")},
+            {engine::EnvironmentMap::TextureType::EnvMap, RES_PATH("brdf/prefilter.ktx")},
             },
         },
         submitQueue

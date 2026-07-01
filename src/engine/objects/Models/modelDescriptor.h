@@ -3,7 +3,7 @@
 #include "colorPalette.h"
 #include "transform.h"
 
-namespace vax::objects {
+namespace vax::engine {
 struct ModelDescriptor {
     enum class ModelExtension { GLB, URDF, UNKNOWN };
 
@@ -11,7 +11,7 @@ struct ModelDescriptor {
 
     struct PrimitiveDescriptor {
         float size = 1.0f;
-        vax::Color color = vax::ColorPalette::White;
+        Color color = ColorPalette::White;
     };
 
     std::string path;
@@ -24,4 +24,4 @@ struct ModelDescriptor {
     ModelExtension getModelExtension() const;
     const std::string_view getMainPath() const;
 };
-} // namespace vax::objects
+} // namespace vax::engine

@@ -2,12 +2,12 @@
 #include "transform.h"
 #include <strings.h>
 
-using namespace vax::objects;
+using namespace vax::engine;
 using namespace vax::vk;
 using namespace vax;
 
 void ModelsController::preload(
-    const std::vector<vax::objects::ModelDescriptor>& modelDescriptors,
+    const std::vector<vax::engine::ModelDescriptor>& modelDescriptors,
     vax::vk::CommandBuffer& commandBuffer,
     VkQueue submitQueue
 ) {
@@ -28,8 +28,8 @@ void ModelsController::preload(
         }
         bool isURDF = false;
         switch (modelDescriptor.modelType) {
-        case vax::objects::ModelDescriptor::ModelType::MODEL: {
-            if (modelDescriptor.getModelExtension() == vax::objects::ModelDescriptor::ModelExtension::URDF) {
+        case vax::engine::ModelDescriptor::ModelType::MODEL: {
+            if (modelDescriptor.getModelExtension() == vax::engine::ModelDescriptor::ModelExtension::URDF) {
                 auto sceneNode = _modelLoader.get().loadSceneModel(*this, modelDescriptor);
                 if (sceneNode) {
                     _cachedSceneNodeMap.insert_or_assign(modelDescriptor.id, std::move(*sceneNode));
@@ -43,7 +43,7 @@ void ModelsController::preload(
             }
             break;
         }
-        case vax::objects::ModelDescriptor::ModelType::PRIMITIVE_CUBE: {
+        case vax::engine::ModelDescriptor::ModelType::PRIMITIVE_CUBE: {
             auto primitiveDescriptor = modelDescriptor.primitiveDescriptor;
             auto primitive = _primitivesBuilder.get().createCube(primitiveDescriptor.size, primitiveDescriptor.color);
             if (primitive) {

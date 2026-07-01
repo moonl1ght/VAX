@@ -5,7 +5,7 @@
 
 namespace vax::rl {
 struct GridWorldDrawableDescriptor final {
-    std::vector<vax::objects::ModelDescriptor> drawableDescriptors;
-    vax::objects::ModelDescriptor agentDrawableDescriptor;
+    std::vector<vax::engine::ModelDescriptor> drawableDescriptors;
+    vax::engine::ModelDescriptor agentDrawableDescriptor;
 };
 } // namespace vax::rl

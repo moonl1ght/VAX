@@ -1,6 +1,6 @@
 #include "environmentMap.h"
 
-using namespace vax::scene;
+using namespace vax::engine;
 using namespace vax;
 
 void EnvironmentMap::load(const Descriptor& descriptor, VkQueue submitQueue) {

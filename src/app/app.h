@@ -32,7 +32,7 @@ class App final {
 
     std::unique_ptr<vax::vk::Window> _window;
     std::unique_ptr<vax::vk::Engine> _engine;
-    std::unique_ptr<vax::renderer::Renderer> _renderer;
+    std::unique_ptr<vax::engine::Renderer> _renderer;
     std::unique_ptr<vax::ui::UIEngine> _uiEngine;
     std::unique_ptr<vax::ui::MenuView> _menuView;
     std::unique_ptr<vax::ui::RoverView> _roverView;

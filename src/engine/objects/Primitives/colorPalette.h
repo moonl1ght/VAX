@@ -2,7 +2,7 @@
 
 #include "luna.h"
 
-namespace vax {
+namespace vax::engine {
 using Color = glm::vec4;
 namespace ColorPalette {
 static constexpr Color Red = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -16,4 +16,4 @@ static constexpr Color Gray = {0.5f, 0.5f, 0.5f, 1.0f};
 static constexpr Color Black = {0.0f, 0.0f, 0.0f, 1.0f};
 static constexpr Color White = {1.0f, 1.0f, 1.0f, 1.0f};
 }; // namespace ColorPalette
-} // namespace vax
+} // namespace vax::engine

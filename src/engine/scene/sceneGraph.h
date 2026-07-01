@@ -1,9 +1,9 @@
 #pragma once
 
-namespace vax::scene {
+namespace vax::engine {
 class SceneGraph final {
   public:
     SceneGraph();
     ~SceneGraph();
 };
-} // namespace vax::scene
+} // namespace vax::engine

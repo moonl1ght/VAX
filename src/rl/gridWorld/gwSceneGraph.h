@@ -26,9 +26,9 @@ class GwSceneGraph final {
     GwSceneGraph(GwSceneGraph&& other) noexcept = delete;
     GwSceneGraph& operator=(GwSceneGraph&& other) noexcept = delete;
 
-    bool load(vax::objects::ModelsController& modelsController, const vax::rl::GridWorldDrawableDescriptor& descriptor);
+    bool load(vax::engine::ModelsController& modelsController, const vax::rl::GridWorldDrawableDescriptor& descriptor);
 
-    void draw(const vax::renderer::DrawContext& drawContext);
+    void draw(const vax::engine::DrawContext& drawContext);
 
     void update(float deltaTime);
 
@@ -37,8 +37,8 @@ class GwSceneGraph final {
 
   private:
     vax::Logger _logger = vax::Logger("GwSceneGraph");
-    std::vector<vax::objects::SceneNode> _envNodes;
-    std::shared_ptr<vax::objects::SceneNode> _agentNode;
+    std::vector<vax::engine::SceneNode> _envNodes;
+    std::shared_ptr<vax::engine::SceneNode> _agentNode;
     std::unique_ptr<vax::rl::RoverModelProxy> _roverModelProxy;
 };
 } // namespace vax::rl

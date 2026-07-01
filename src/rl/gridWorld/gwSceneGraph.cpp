@@ -5,17 +5,17 @@
 using namespace vax;
 using namespace vax::math;
 using namespace vax::rl;
-using namespace vax::renderer;
+using namespace vax::engine;
 
 bool GwSceneGraph::load(
-    objects::ModelsController& modelsController, const vax::rl::GridWorldDrawableDescriptor& descriptor
+    engine::ModelsController& modelsController, const vax::rl::GridWorldDrawableDescriptor& descriptor
 ) {
     auto agentNode = modelsController.getPreloadedSceneNodeById(descriptor.agentDrawableDescriptor.id, 1);
     if (!agentNode.has_value()) {
         _logger.error("Failed to load agent model: {}", descriptor.agentDrawableDescriptor.id);
         return false;
     }
-    _agentNode = std::make_unique<vax::objects::SceneNode>(std::move(agentNode.value()));
+    _agentNode = std::make_unique<vax::engine::SceneNode>(std::move(agentNode.value()));
     _roverModelProxy = std::make_unique<vax::rl::RoverModelProxy>();
     _roverModelProxy->linkModelNode(_agentNode);
 

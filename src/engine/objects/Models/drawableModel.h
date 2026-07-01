@@ -6,12 +6,12 @@
 #include "resourceHandle.h"
 #include "submesh.h"
 
-namespace vax::objects {
+namespace vax::engine {
 class PrimitivesBuilder;
 class ModelLoader;
-} // namespace vax::objects
+} // namespace vax::engine
 
-namespace vax::objects {
+namespace vax::engine {
 class DrawableModel final {
   public:
     struct Settings {
@@ -22,8 +22,8 @@ class DrawableModel final {
         bool instanceDrawing = false;
     };
 
-    friend class vax::objects::PrimitivesBuilder;
-    friend class vax::objects::ModelLoader;
+    friend class vax::engine::PrimitivesBuilder;
+    friend class vax::engine::ModelLoader;
 
     explicit DrawableModel(vax::vk::MeshManager& meshManager, vax::vk::MeshHandle meshHandle)
         : _meshManager(meshManager)
@@ -39,7 +39,7 @@ class DrawableModel final {
 
     bool loadMesh(const vax::vk::MeshPBR::LoadMeshBuffersContext& context);
 
-    void draw(const vax::renderer::DrawContext& drawContext, uint32_t instanceOffset, uint32_t instancesCount);
+    void draw(const vax::engine::DrawContext& drawContext, uint32_t instanceOffset, uint32_t instancesCount);
 
     Settings& settings() { return _settings; }
 
@@ -72,4 +72,4 @@ struct DrawableModelHandle final {
 
     std::vector<InstanceDrawingRange> instanceDrawingRanges;
 };
-} // namespace vax::objects
+} // namespace vax::engine

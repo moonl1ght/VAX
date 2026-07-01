@@ -2,8 +2,8 @@
 
 #include "luna.h"
 
-namespace vax::renderer {
+namespace vax::engine {
 struct RenderCallContext {
     uint32_t currentFrame;
 };
-} // namespace vax::renderer
+} // namespace vax::engine

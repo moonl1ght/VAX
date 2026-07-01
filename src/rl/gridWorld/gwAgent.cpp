@@ -7,15 +7,16 @@
 using namespace vax;
 using namespace vax::rl;
 using namespace vax::math;
+using namespace vax::engine;
 
-vax::objects::ModelDescriptor GWAgent::getDrawableDescriptor() const {
+vax::engine::ModelDescriptor GWAgent::getDrawableDescriptor() const {
     // TODO: check if initial transform affects the model
     return {
         RES_PATH("assets/models/rover/rover.urdf"),
         "rover",
-        vax::objects::ModelDescriptor::ModelType::MODEL,
+        vax::engine::ModelDescriptor::ModelType::MODEL,
         {vax::math::Transform()},
-        vax::objects::ModelDescriptor::PrimitiveDescriptor(),
+        vax::engine::ModelDescriptor::PrimitiveDescriptor(),
         1,
     };
 }

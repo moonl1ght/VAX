@@ -6,7 +6,7 @@
 #include "uiEngine.h"
 #include "vkEngine.h"
 
-namespace vax::renderer {
+namespace vax::engine {
 class Renderer final {
   public:
     Renderer(vax::vk::Engine& vkEngine, vax::ui::UIEngine& uiEngine)
@@ -20,7 +20,7 @@ class Renderer final {
     Renderer(Renderer&& other) noexcept = delete;
     Renderer& operator=(Renderer&& other) noexcept = delete;
 
-    bool render(vax::DrawableScene* scene, float deltaTime);
+    bool render(vax::engine::DrawableScene* scene, float deltaTime);
     void prepare(DrawableScene* scene);
 
   private:
@@ -31,16 +31,16 @@ class Renderer final {
 
     uint32_t _currentFrame = 0;
 
-    bool _updateCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::DrawableScene* scene);
-    bool _drawScene(VkCommandBuffer commandBuffer, vax::DrawableScene* scene, uint32_t imageIndex);
+    bool _updateCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::engine::DrawableScene* scene);
+    bool _drawScene(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex);
     void _drawUi(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
     void _setViewportAndScissor(VkCommandBuffer commandBuffer);
     bool _updateGlobalDescriptorSet(
-        VkCommandBuffer commandBuffer, vax::DrawableScene* scene, VkPipelineLayout pipelineLayout
+        VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, VkPipelineLayout pipelineLayout
     );
 
-    bool _drawGizmo(VkCommandBuffer commandBuffer, vax::DrawableScene* scene);
-    bool _drawBackground(VkCommandBuffer commandBuffer, vax::DrawableScene* scene);
+    bool _drawGizmo(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene);
+    bool _drawBackground(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene);
 };
-} // namespace vax::renderer
+} // namespace vax::engine

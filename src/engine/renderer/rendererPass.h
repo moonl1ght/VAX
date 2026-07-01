@@ -4,7 +4,7 @@
 #include "luna.h"
 #include "pipeline.h"
 
-namespace vax::renderer {
+namespace vax::engine {
 class RendererPass final {
   public:
     explicit RendererPass(VkRenderPassBeginInfo renderPassInfo)
@@ -27,4 +27,4 @@ class RendererPass final {
     vax::Logger _logger = vax::Logger("RendererPass");
     VkRenderPassBeginInfo _renderPassInfo;
 };
-} // namespace vax::renderer
+} // namespace vax::engine

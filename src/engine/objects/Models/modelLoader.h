@@ -7,11 +7,11 @@
 #include "sceneNode.h"
 #include "textureLoader.h"
 
-namespace vax::objects {
+namespace vax::engine {
 class ModelsController;
-} // namespace vax::objects
+} // namespace vax::engine
 
-namespace vax::objects {
+namespace vax::engine {
 class ModelLoader final {
   public:
     explicit ModelLoader(vax::vk::ResourceManager& resourceManager, vax::vk::TextureLoader& textureLoader)
@@ -26,10 +26,9 @@ class ModelLoader final {
     ModelLoader& operator=(ModelLoader&& other) noexcept = delete;
 
     std::optional<SceneNode>
-    loadSceneModel(vax::objects::ModelsController& modelsController, const vax::objects::ModelDescriptor& descriptor);
+    loadSceneModel(vax::engine::ModelsController& modelsController, const vax::engine::ModelDescriptor& descriptor);
 
-    std::optional<DrawableModel>
-    loadModel(const std::string& path, uint32_t instancesCount = 1);
+    std::optional<vax::engine::DrawableModel> loadModel(const std::string& path, uint32_t instancesCount = 1);
 
     void loadStaged(vax::vk::CommandBuffer& commandBuffer);
     void cleanupStaged();
@@ -41,8 +40,8 @@ class ModelLoader final {
     std::reference_wrapper<vax::vk::TextureLoader> _textureLoader;
 
     std::optional<SceneNode>
-    _loadURDFSceneModel(vax::objects::ModelsController& modelsController, vax::objects::ModelDescriptor descriptor);
+    _loadURDFSceneModel(vax::engine::ModelsController& modelsController, vax::engine::ModelDescriptor descriptor);
     std::optional<SceneNode>
-    _loadGLBSceneModel(vax::objects::ModelsController& modelsController, vax::objects::ModelDescriptor descriptor);
+    _loadGLBSceneModel(vax::engine::ModelsController& modelsController, vax::engine::ModelDescriptor descriptor);
 };
-} // namespace vax::objects
+} // namespace vax::engine

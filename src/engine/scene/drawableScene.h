@@ -23,7 +23,7 @@ namespace vax::rl {
 struct GridWorldDrawableDescriptor;
 } // namespace vax::rl
 
-namespace vax {
+namespace vax::engine {
 struct SceneUpdateContext {
     float deltaTime;
 };
@@ -34,13 +34,11 @@ class DrawableScene final : public vax::InputController::Observer {
         : _vkEngine(vkEngine)
         , _resourceManager(vax::vk::ResourceManager(*vkEngine.device, vkEngine.allocator))
         , _textureLoader(
-              vax::vk::TextureLoader(
-                  *vkEngine.device, _resourceManager.textureManager(), *vkEngine.commandManager
-              )
+              vax::vk::TextureLoader(*vkEngine.device, _resourceManager.textureManager(), *vkEngine.commandManager)
           )
-        , _modelLoader(vax::objects::ModelLoader(_resourceManager, _textureLoader))
+        , _modelLoader(vax::engine::ModelLoader(_resourceManager, _textureLoader))
         , _primitivesBuilder(
-              vax::objects::PrimitivesBuilder(
+              vax::engine::PrimitivesBuilder(
                   _resourceManager.meshManager(),
                   _resourceManager.ssboManager(),
                   _resourceManager.materialManager(),
@@ -49,7 +47,7 @@ class DrawableScene final : public vax::InputController::Observer {
               )
           )
         , _modelsController(_resourceManager, _modelLoader, _primitivesBuilder) {
-        _environmentMap = std::make_optional<vax::scene::EnvironmentMap>(_textureLoader, *vkEngine.device);
+        _environmentMap = std::make_optional<vax::engine::EnvironmentMap>(_textureLoader, *vkEngine.device);
     };
 
     ~DrawableScene() {
@@ -64,25 +62,25 @@ class DrawableScene final : public vax::InputController::Observer {
     DrawableScene(DrawableScene&& other) noexcept = delete;
     DrawableScene& operator=(DrawableScene&& other) noexcept = delete;
 
-    const vax::objects::Camera& gizmoCamera() const { return _gizmoCamera; }
+    const vax::engine::Camera& gizmoCamera() const { return _gizmoCamera; }
 
     void loadScene(const vax::rl::GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue);
 
     void resize();
 
-    void prepareForDraw(vax::renderer::RenderCallContext renderCallContext);
+    void prepareForDraw(vax::engine::RenderCallContext renderCallContext);
 
-    void update(vax::SceneUpdateContext sceneUpdateContext);
+    void update(vax::engine::SceneUpdateContext sceneUpdateContext);
 
     bool writeGlobalDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler);
 
     bool writeFrameDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler);
 
-    void draw(const vax::renderer::DrawContext& drawContext);
+    void draw(const vax::engine::DrawContext& drawContext);
 
-    void drawBackground(const vax::renderer::DrawContext& drawContext);
+    void drawBackground(const vax::engine::DrawContext& drawContext);
 
-    void drawGizmo(const vax::renderer::DrawContext& drawContext);
+    void drawGizmo(const vax::engine::DrawContext& drawContext);
 
     void onMouseMove(const vax::MouseMoveValue& value);
 
@@ -96,24 +94,23 @@ class DrawableScene final : public vax::InputController::Observer {
     vax::Logger _logger = vax::Logger("DrawableScene");
     std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
     std::reference_wrapper<vax::vk::Engine> _vkEngine;
-    vax::objects::ModelsController _modelsController;
+    vax::engine::ModelsController _modelsController;
     vax::vk::ResourceManager _resourceManager;
     vax::vk::TextureLoader _textureLoader;
-    vax::objects::ModelLoader _modelLoader;
-    vax::objects::PrimitivesBuilder _primitivesBuilder;
-    vax::objects::Camera _mainCamera;
-    vax::objects::Camera _gizmoCamera;
+    vax::engine::ModelLoader _modelLoader;
+    vax::engine::PrimitivesBuilder _primitivesBuilder;
+    vax::engine::Camera _mainCamera;
+    vax::engine::Camera _gizmoCamera;
     UniformBufferObject _ubo;
     std::unique_ptr<vax::rl::GwSceneGraph> _sceneGraph;
-    std::optional<vax::objects::SceneNode> _background;
-    std::optional<vax::objects::SceneNode> _gizmo;
-    std::optional<vax::scene::EnvironmentMap> _environmentMap;
+    std::optional<vax::engine::SceneNode> _background;
+    std::optional<vax::engine::SceneNode> _gizmo;
+    std::optional<vax::engine::EnvironmentMap> _environmentMap;
 
-    vax::renderer::RenderCallContext _renderCallContext;
-    vax::SceneUpdateContext _sceneUpdateContext;
+    vax::engine::RenderCallContext _renderCallContext;
+    vax::engine::SceneUpdateContext _sceneUpdateContext;
 
     void _loadEnvironmentMap(VkQueue submitQueue);
-    void
-    _drawSceneNode(vax::objects::SceneNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
+    void _drawSceneNode(vax::engine::SceneNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
 };
-} // namespace vax
+} // namespace vax::engine

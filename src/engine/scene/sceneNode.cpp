@@ -2,11 +2,11 @@
 #include "shaderUniforms.h"
 #include <glm/ext/matrix_float4x4.hpp>
 
-using namespace vax::objects;
+using namespace vax::engine;
 using namespace vax;
 using namespace vax::math;
 
-void SceneNode::draw(const vax::renderer::DrawContext& drawContext) {
+void SceneNode::draw(const DrawContext& drawContext) {
     // TODO: update only dirty instances
     size_t drawingRangeIndex = 0;
     for (size_t i = 0; i < _instancesCount; ++i) {

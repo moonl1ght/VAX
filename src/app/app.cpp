@@ -34,7 +34,7 @@ bool App::_setup() {
     _roverView = std::make_unique<ui::RoverView>(*_uiEngine);
     _trainingView = std::make_unique<ui::TrainingView>(*_uiEngine);
 
-    _renderer = std::make_unique<renderer::Renderer>(*_engine, *_uiEngine);
+    _renderer = std::make_unique<engine::Renderer>(*_engine, *_uiEngine);
 
     return true;
 }
@@ -129,7 +129,7 @@ void App::_loopContinuousUpdate() {
     _updateTimestamp();
 
     bool renderResult = false;
-    vax::SceneUpdateContext sceneUpdateContext{.deltaTime = _timestamp};
+    vax::engine::SceneUpdateContext sceneUpdateContext{.deltaTime = _timestamp};
     if (firstTime) {
         _renderer->prepare(_roverView->drawableScene());
         firstTime = false;

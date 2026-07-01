@@ -10,15 +10,15 @@
 #include "sceneNode.h"
 #include "vkUtils.h"
 
-namespace vax::objects {
+namespace vax::engine {
 class ModelsController {
   public:
     friend class ModelLoader;
 
     explicit ModelsController(
         vax::vk::ResourceManager& resourceManager,
-        vax::objects::ModelLoader& modelLoader,
-        vax::objects::PrimitivesBuilder& primitivesBuilder
+        vax::engine::ModelLoader& modelLoader,
+        vax::engine::PrimitivesBuilder& primitivesBuilder
     )
         : _resourceManager(resourceManager)
         , _modelLoader(modelLoader)
@@ -36,7 +36,7 @@ class ModelsController {
     uint32_t maxDrawableInstances() const { return _maxDrawableInstances; }
 
     void preload(
-        const std::vector<vax::objects::ModelDescriptor>& modelDescriptors,
+        const std::vector<vax::engine::ModelDescriptor>& modelDescriptors,
         vax::vk::CommandBuffer& commandBuffer,
         VkQueue submitQueue
     );
@@ -45,9 +45,9 @@ class ModelsController {
 
     std::vector<std::string> getSceneNodeIds() const;
 
-    std::optional<vax::objects::SceneNode> getPreloadedSceneNodeById(const std::string& id, uint32_t instancesCount);
+    std::optional<vax::engine::SceneNode> getPreloadedSceneNodeById(const std::string& id, uint32_t instancesCount);
 
-    std::optional<vax::objects::SceneNode>
+    std::optional<vax::engine::SceneNode>
     createSceneNodeById(const std::string& id, std::vector<vax::math::Transform> transforms = {vax::math::Transform()});
 
     DrawableModel* getDrawableModelById(const std::string& id);
@@ -71,17 +71,17 @@ class ModelsController {
     const uint32_t _maxDrawableInstances = vax::vk::MAX_DRAWABLE_INSTANCES;
 
     std::reference_wrapper<vax::vk::ResourceManager> _resourceManager;
-    std::reference_wrapper<vax::objects::ModelLoader> _modelLoader;
-    std::reference_wrapper<vax::objects::PrimitivesBuilder> _primitivesBuilder;
+    std::reference_wrapper<vax::engine::ModelLoader> _modelLoader;
+    std::reference_wrapper<vax::engine::PrimitivesBuilder> _primitivesBuilder;
 
-    std::unordered_map<std::string, vax::objects::SceneNode> _cachedSceneNodeMap;
+    std::unordered_map<std::string, vax::engine::SceneNode> _cachedSceneNodeMap;
 
     std::unordered_map<std::string, ModelInfo> _modelMap;
-    std::vector<vax::objects::DrawableModel> _drawableModels;
+    std::vector<vax::engine::DrawableModel> _drawableModels;
 
     uint32_t _globalInstanceCursor = 0;
 
     DrawableModelHandle
-    _addDrawableModel(std::string id, std::string path, vax::objects::DrawableModel&& drawableModel);
+    _addDrawableModel(std::string id, std::string path, vax::engine::DrawableModel&& drawableModel);
 };
-} // namespace vax::objects
+} // namespace vax::engine

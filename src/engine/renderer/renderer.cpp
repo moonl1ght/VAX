@@ -8,13 +8,13 @@
 #include "rendererPass.h"
 #include "vkEngine.h"
 
-using namespace vax::renderer;
+using namespace vax::engine;
 using namespace vax;
 
 void Renderer::prepare(DrawableScene* scene) {
     for (uint32_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
         if (scene != nullptr) {
-            scene->prepareForDraw(renderer::RenderCallContext{.currentFrame = i});
+            scene->prepareForDraw(engine::RenderCallContext{.currentFrame = i});
         }
         auto globalDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
             i, vax::vk::DescriptorSetLayout::SetType::GLOBAL
@@ -40,7 +40,7 @@ void Renderer::prepare(DrawableScene* scene) {
 bool Renderer::render(DrawableScene* scene, float deltaTime) {
     ZoneScopedN("Renderer::render");
     if (scene != nullptr) {
-        scene->prepareForDraw(renderer::RenderCallContext{.currentFrame = _currentFrame});
+        scene->prepareForDraw(engine::RenderCallContext{.currentFrame = _currentFrame});
     }
 
     vkWaitForFences(
@@ -134,7 +134,7 @@ bool Renderer::render(DrawableScene* scene, float deltaTime) {
     return true;
 }
 
-bool Renderer::_updateCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::DrawableScene* scene) {
+bool Renderer::_updateCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::engine::DrawableScene* scene) {
     ZoneScopedN("Renderer::updateCommandBuffer");
     VkCommandBufferBeginInfo beginInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -177,7 +177,7 @@ void Renderer::_drawUi(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
     renderPass.pass(commandBuffer, [&]() { _uiEngine.get().render(commandBuffer); });
 }
 
-bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::DrawableScene* scene, uint32_t imageIndex) {
+bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex) {
     auto pipelineLayout = _vkEngine.get().pipelineManager->getPipelineLayout(vax::vk::PipelineLayoutName::BASE);
     if (!pipelineLayout) {
         _logger.error("Failed to get base pipeline layout!");
@@ -267,7 +267,7 @@ void Renderer::_setViewportAndScissor(VkCommandBuffer commandBuffer) {
 }
 
 bool Renderer::_updateGlobalDescriptorSet(
-    VkCommandBuffer commandBuffer, vax::DrawableScene* scene, VkPipelineLayout pipelineLayout
+    VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, VkPipelineLayout pipelineLayout
 ) {
     auto globalDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
         _currentFrame, vax::vk::DescriptorSetLayout::SetType::GLOBAL
@@ -290,7 +290,7 @@ bool Renderer::_updateGlobalDescriptorSet(
     return true;
 }
 
-bool Renderer::_drawBackground(VkCommandBuffer commandBuffer, vax::DrawableScene* scene) {
+bool Renderer::_drawBackground(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene) {
     auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::BACKGROUND);
     if (!pipeline) {
         _logger.error("Failed to get background pipeline!");
@@ -306,7 +306,7 @@ bool Renderer::_drawBackground(VkCommandBuffer commandBuffer, vax::DrawableScene
     return true;
 }
 
-bool Renderer::_drawGizmo(VkCommandBuffer commandBuffer, vax::DrawableScene* scene) {
+bool Renderer::_drawGizmo(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene) {
     VkClearAttachment clearAttachment{
         .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
         .clearValue = {.depthStencil = {1.0f, 0}},

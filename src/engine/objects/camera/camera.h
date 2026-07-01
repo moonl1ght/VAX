@@ -4,7 +4,7 @@
 #include "shaderUniforms.h"
 #include "vaxMath.h"
 
-namespace vax::objects {
+namespace vax::engine {
 class Camera final {
   public:
     enum class Projection { perspective, orthographic };
@@ -87,4 +87,4 @@ class Camera final {
     void _updateProjectionMatrix();
     void _updateRotationForPosition();
 };
-} // namespace vax::objects
+} // namespace vax::engine

@@ -1,6 +1,6 @@
 #include "modelDescriptor.h"
 
-using namespace vax::objects;
+using namespace vax::engine;
 
 ModelDescriptor::ModelExtension ModelDescriptor::getModelExtension() const {
     auto dot = path.rfind('.');

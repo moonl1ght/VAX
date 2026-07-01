@@ -5,7 +5,7 @@
 #include "shaderUniforms.h"
 #include "textureLoader.h"
 
-namespace vax::scene {
+namespace vax::engine {
 class EnvironmentMap final {
   public:
     enum class TextureType {
@@ -53,4 +53,4 @@ class EnvironmentMap final {
     EnvironmentMapData _environmentMapData;
     std::unique_ptr<vax::vk::Buffer> _buffer = nullptr;
 };
-} // namespace vax::scene
+} // namespace vax::engine
