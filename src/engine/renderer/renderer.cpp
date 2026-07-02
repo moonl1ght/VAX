@@ -37,7 +37,7 @@ void Renderer::prepare(DrawableScene* scene) {
     }
 }
 
-bool Renderer::render(DrawableScene* scene, float deltaTime) {
+bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
     ZoneScopedN("Renderer::render");
     if (scene != nullptr) {
         scene->prepareForDraw(engine::RenderCallContext{.currentFrame = _currentFrame});

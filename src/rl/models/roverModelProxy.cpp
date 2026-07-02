@@ -17,12 +17,12 @@ void RoverModelProxy::linkModelNode(std::shared_ptr<vax::engine::SceneNode>& mod
     _leftRearWheel = _modelNode->getChild("rear_left_wheel_link");
 }
 
-void RoverModelProxy::update(float deltaTime) {
+void RoverModelProxy::update(const vax::engine::FrameTime& frameTime) {
     auto spinWheel = [&](vax::engine::SceneNode* wheel) {
         if (!wheel) return;
         wheel->updateTransform([&](math::TransformHandle& transformHandle) {
             transformHandle.updateTransform([&](math::Transform& transform) {
-                transform.updateRotationInDegrees({0.0f, deltaTime * -10.0f, 0.0f});
+                transform.updateRotationInDegrees({0.0f, frameTime._deltaTime * -10.0f, 0.0f});
             });
         });
     };

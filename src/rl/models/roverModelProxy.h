@@ -2,6 +2,7 @@
 
 #include "logger.h"
 #include "sceneNode.h"
+#include "frameTime.h"
 
 namespace vax::rl {
 class RoverModelProxy final {
@@ -13,7 +14,7 @@ class RoverModelProxy final {
 
     void linkModelNode(std::shared_ptr<vax::engine::SceneNode>& modelNode);
 
-    void update(float deltaTime);
+    void update(const vax::engine::FrameTime& frameTime);
 
   private:
     vax::Logger _logger = vax::Logger("RoverModelProxy");

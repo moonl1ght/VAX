@@ -35,6 +35,8 @@ bool GwSceneGraph::load(
         _envNodes.push_back(std::move(node.value()));
     }
 
+    _animations.push_back(vax::ValueAnimation(1.0f, 5.0f, -5.0f));
+
     return true;
 }
 
@@ -49,11 +51,14 @@ void GwSceneGraph::draw(const DrawContext& drawContext) {
     }
 }
 
-void GwSceneGraph::update(float deltaTime) {
+void GwSceneGraph::update(const engine::FrameTime& frameTime) {
     if (_roverModelProxy) {
-        _roverModelProxy->update(deltaTime);
+        _roverModelProxy->update(frameTime);
     } else {
         _logger.warning("Rover model proxy not loaded!");
+    }
+    for (auto& animation : _animations) {
+        animation.update(frameTime);
     }
 }
 

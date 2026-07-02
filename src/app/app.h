@@ -10,6 +10,7 @@
 #include "uiEngine.h"
 #include "vkEngine.h"
 #include "window.h"
+#include "frameTime.h"
 
 namespace vax {
 enum class AppMode { Menu, Demo, Training };
@@ -28,7 +29,7 @@ class App final {
 
     vax::InputController _inputController;
     vax::AppMode _appMode = vax::AppMode::Menu;
-    float _timestamp = 0.0f;
+    vax::engine::FrameTime _frameTime;
 
     std::unique_ptr<vax::vk::Window> _window;
     std::unique_ptr<vax::vk::Engine> _engine;

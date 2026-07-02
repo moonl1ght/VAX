@@ -18,6 +18,7 @@
 #include "shaderUniforms.h"
 #include "textureLoader.h"
 #include "vkEngine.h"
+#include "frameTime.h"
 
 namespace vax::rl {
 struct GridWorldDrawableDescriptor;
@@ -25,7 +26,7 @@ struct GridWorldDrawableDescriptor;
 
 namespace vax::engine {
 struct SceneUpdateContext {
-    float deltaTime;
+    FrameTime frameTime;
 };
 
 class DrawableScene final : public vax::InputController::Observer {

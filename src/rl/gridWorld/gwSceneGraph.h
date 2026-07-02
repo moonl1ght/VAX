@@ -1,5 +1,6 @@
 #pragma once
 
+#include "valueAnimation.h"
 #include "commandBuffer.h"
 #include "drawContext.h"
 #include "gridWorldDescriptor.h"
@@ -10,8 +11,8 @@
 #include "roverModelProxy.h"
 #include "sceneNode.h"
 #include "vaxMath.h"
-#include "animation.h"
 #include <memory>
+#include "frameTime.h"
 
 namespace vax::rl {
 // TODO: move to generic scene graph
@@ -30,7 +31,7 @@ class GwSceneGraph final {
 
     void draw(const vax::engine::DrawContext& drawContext);
 
-    void update(float deltaTime);
+    void update(const vax::engine::FrameTime& frameTime);
 
     void
     moveAgentTo(vax::math::Position2DFloat position, vax::rl::AgentOrientation orientation, bool withAnimation = false);
@@ -40,5 +41,6 @@ class GwSceneGraph final {
     std::vector<vax::engine::SceneNode> _envNodes;
     std::shared_ptr<vax::engine::SceneNode> _agentNode;
     std::unique_ptr<vax::rl::RoverModelProxy> _roverModelProxy;
+    std::vector<vax::ValueAnimation> _animations;
 };
 } // namespace vax::rl

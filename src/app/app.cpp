@@ -1,7 +1,7 @@
 #include "app.h"
-#include "renderdoc.h"
 #include "notificationCenter.h"
 #include "profiler.h"
+#include "renderdoc.h"
 
 using namespace vax;
 
@@ -94,8 +94,16 @@ void App::_mainLoop() {
 
 void App::_updateTimestamp() {
     static auto startTime = std::chrono::high_resolution_clock::now();
+    static uint32_t frameCount = 0;
+    static auto previousTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
-    _timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    _frameTime._timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    _frameTime._deltaTime =
+        std::chrono::duration<float, std::chrono::seconds::period>(currentTime - previousTime).count();
+    _frameTime._fps = 1.0f / _frameTime._deltaTime;
+    ++frameCount;
+    _frameTime._frameCount = frameCount;
+    previousTime = currentTime;
 }
 
 void App::_loopByEventUpdate() {
@@ -111,7 +119,7 @@ void App::_loopByEventUpdate() {
     _updateTimestamp();
 
     bool renderResult = false;
-    renderResult = _renderer->render(nullptr, _timestamp);
+    renderResult = _renderer->render(nullptr, _frameTime);
 
     if (!renderResult) {
         _logger.error("Failed to render scene!");
@@ -129,14 +137,14 @@ void App::_loopContinuousUpdate() {
     _updateTimestamp();
 
     bool renderResult = false;
-    vax::engine::SceneUpdateContext sceneUpdateContext{.deltaTime = _timestamp};
+    vax::engine::SceneUpdateContext sceneUpdateContext{.frameTime = _frameTime};
     if (firstTime) {
         _renderer->prepare(_roverView->drawableScene());
         firstTime = false;
     }
     _roverView->drawableScene()->update(sceneUpdateContext);
 
-    renderResult = _renderer->render(_roverView->drawableScene(), _timestamp);
+    renderResult = _renderer->render(_roverView->drawableScene(), _frameTime);
 
     if (!renderResult) {
         _logger.error("Failed to render scene!");

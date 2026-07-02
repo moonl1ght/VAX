@@ -20,7 +20,7 @@ void DrawableScene::update(engine::SceneUpdateContext sceneUpdateContext) {
     _sceneUpdateContext = sceneUpdateContext;
     _ubo = _mainCamera.getUniformBufferObject();
     _ubo.environmentMapIndex = 0;
-    _sceneGraph->update(sceneUpdateContext.deltaTime);
+    _sceneGraph->update(sceneUpdateContext.frameTime);
 }
 
 void vax::engine::DrawableScene::resize() {

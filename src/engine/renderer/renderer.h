@@ -5,6 +5,7 @@
 #include "luna.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
+#include "frameTime.h"
 
 namespace vax::engine {
 class Renderer final {
@@ -20,7 +21,7 @@ class Renderer final {
     Renderer(Renderer&& other) noexcept = delete;
     Renderer& operator=(Renderer&& other) noexcept = delete;
 
-    bool render(vax::engine::DrawableScene* scene, float deltaTime);
+    bool render(DrawableScene* scene, const FrameTime& frameTime);
     void prepare(DrawableScene* scene);
 
   private:
