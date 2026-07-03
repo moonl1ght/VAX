@@ -3,12 +3,15 @@
 
 using namespace vax;
 
-bool ValueAnimation::update(const engine::FrameTime& frameTime) {
+bool ValueAnimation::updateImpl(const engine::FrameTime& frameTime) {
     if (_isCompleted)
         return true;
     _isStarted = true;
     _currentDuration += frameTime._deltaTime;
     _calculateInterpolatedValue();
+    for (auto& animationHandler : _animationHandlers) {
+        animationHandler(_currentValue);
+    }
     if (_currentDuration >= _duration) {
         _isCompleted = true;
         return true;
@@ -29,4 +32,8 @@ void ValueAnimation::_calculateInterpolatedValue() {
             _currentValue = interpolatedValue;
         }
     }
+}
+
+void ValueAnimation::addAnimationHandler(std::function<void(float)> animationHandler) {
+    _animationHandlers.push_back(animationHandler);
 }

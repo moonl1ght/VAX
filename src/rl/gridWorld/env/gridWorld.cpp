@@ -54,7 +54,7 @@ void GridWorld::linkSceneGraph(GwSceneGraph* sceneGraph) {
     auto position = _agent.getPosition();
     auto flatIndex = _grid.flatIndex({position.x, position.y});
     auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex({position.x, position.y})];
-    _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation());
+    _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation(), false);
 }
 
 GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
@@ -137,6 +137,9 @@ void GridWorld::onKeyEvent(const KeyEvent& keyEvent) {
     default:
         return;
     }
+    if (_sceneGraph->isMovingAgent()) {
+        return;
+    }
     _agent.moveByOutsideAction(action);
 }
 
@@ -146,7 +149,7 @@ void GridWorld::agentMoved() {
     }
     auto newPosition = std::vector<int>({_agent.getPosition().x, _agent.getPosition().y});
     auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex(newPosition)];
-    _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation());
+    _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation(), true);
 }
 
 const Tensor& GridWorld::getGrid() const { return _grid; }

@@ -5,6 +5,8 @@
 #include "ssboManager.h"
 #include "transform.h"
 #include <optional>
+#include <unordered_map>
+#include <variant>
 #include <vector>
 
 namespace vax::engine {
@@ -15,6 +17,8 @@ namespace vax::engine {
 class SceneNode final {
   public:
     friend class vax::engine::ModelLoader;
+
+    using MetadataValue = std::variant<std::string, float, int, bool>;
 
     struct DrawableModelTransformInfo final {
         vax::math::Transform _originalParentRelativeTransform;
@@ -96,6 +100,10 @@ class SceneNode final {
         _drawableModelTransformInfos[instanceIndex]._isChildrenTransformDirty = true;
     }
 
+    const vax::math::Transform& getTransform(uint32_t instanceIndex = 0) const {
+        return _drawableModelTransformInfos[instanceIndex]._transformHandle.getTransform();
+    }
+
     void insertChild(SceneNode&& child);
 
     const std::vector<SceneNode>& children() const { return _children; }
@@ -108,12 +116,24 @@ class SceneNode final {
 
     uint32_t instancesCount() const { return _instancesCount; }
 
+    void setMetadata(const std::string& key, const MetadataValue& value) {
+        _metadata[key] = value;
+    }
+
+    const std::optional<MetadataValue> getMetadata(const std::string& key) const {
+        if (auto it = _metadata.find(key); it != _metadata.end()) {
+            return it->second;
+        }
+        return std::nullopt;
+    }
+
   private:
     std::reference_wrapper<vax::vk::SSBOManager> _ssboManager;
 
     std::string _name;
     uint32_t _instancesCount;
     std::vector<SceneNode> _children;
+    std::unordered_map<std::string, MetadataValue> _metadata;
     std::vector<DrawableModel*> _drawableModels;
     std::vector<std::vector<DrawableModelHandle::InstanceDrawingRange>> _drawableModelInstanceDrawingRanges;
     bool _isRoot = false;
