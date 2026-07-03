@@ -10,12 +10,13 @@ using namespace vax::math;
 using namespace vax::engine;
 
 vax::engine::ModelDescriptor GWAgent::getDrawableDescriptor() const {
-    // TODO: check if initial transform affects the model
+    auto transform = Transform();
+    transform.scale = {0.5f, 0.5f, 0.5f};
     return {
         RES_PATH("assets/models/rover/rover.urdf"),
         "rover",
         vax::engine::ModelDescriptor::ModelType::MODEL,
-        {vax::math::Transform()},
+        {transform},
         vax::engine::ModelDescriptor::PrimitiveDescriptor(),
         1,
     };

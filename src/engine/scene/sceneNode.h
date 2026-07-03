@@ -100,6 +100,13 @@ class SceneNode final {
         _drawableModelTransformInfos[instanceIndex]._isChildrenTransformDirty = true;
     }
 
+    template <typename T> void updateTransforms(const T& updater) {
+        for (uint32_t i = 0; i < _instancesCount; ++i) {
+            updater(i, _drawableModelTransformInfos[i]._transformHandle);
+            _drawableModelTransformInfos[i]._isChildrenTransformDirty = true;
+        }
+    }
+
     const vax::math::Transform& getTransform(uint32_t instanceIndex = 0) const {
         return _drawableModelTransformInfos[instanceIndex]._transformHandle.getTransform();
     }

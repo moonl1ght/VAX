@@ -394,6 +394,11 @@ ModelLoader::_loadURDFSceneModel(ModelsController& modelsController, ModelDescri
             return std::optional<DrawableModelHandle>(std::in_place, std::move(drawableModelHandle));
         }
     );
+    rootNode.updateTransforms([&](uint32_t instanceIndex, math::TransformHandle& transformHandle) {
+        transformHandle.updateTransform([&](math::Transform& transform) {
+            transform = descriptor.transforms[instanceIndex];
+        });
+    });
     return std::optional<SceneNode>(std::in_place, std::move(rootNode));
 }
 
