@@ -7,30 +7,31 @@
 namespace vax::vk {
 class RenderDestination final {
   public:
-    std::unique_ptr<vax::vk::Texture> depthTexture;
-    std::unique_ptr<vax::vk::Texture> drawImage;
-    std::vector<VkFramebuffer> swapchainFramebuffers;
+    std::vector<VkFramebuffer> framebuffers;
 
     explicit RenderDestination(
-        const vax::vk::Device& device,
-        std::unique_ptr<vax::vk::Texture> depthTexture,
-        std::unique_ptr<vax::vk::Texture> drawImage,
-        std::vector<VkFramebuffer> swapchainFramebuffers
+        const Device& device,
+        std::unique_ptr<Texture> depthTexture,
+        std::vector<Texture> textures,
+        std::vector<VkFramebuffer> framebuffers
     )
         : _device(device)
-        , depthTexture(std::move(depthTexture))
-        , drawImage(std::move(drawImage))
-        , swapchainFramebuffers(std::move(swapchainFramebuffers)) {};
+        , _depthTexture(std::move(depthTexture))
+        , _textures(std::move(textures))
+        , framebuffers(std::move(framebuffers)) {}
 
     RenderDestination(const RenderDestination& other) = delete;
     RenderDestination& operator=(const RenderDestination& other) = delete;
-    RenderDestination(RenderDestination&& other) = delete;
-    RenderDestination& operator=(RenderDestination&& other) = delete;
+
+    RenderDestination(RenderDestination&& other) = default;
+    RenderDestination& operator=(RenderDestination&& other) = default;
 
     ~RenderDestination() { destroy(); }
 
   private:
-    std::reference_wrapper<const vax::vk::Device> _device;
+    std::reference_wrapper<const Device> _device;
+    std::vector<Texture> _textures;
+    std::unique_ptr<Texture> _depthTexture;
 
     void destroy();
 };

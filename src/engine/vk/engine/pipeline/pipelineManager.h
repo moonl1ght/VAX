@@ -5,16 +5,13 @@
 #include "luna.h"
 #include "pipeline.h"
 #include "shaderModuleBuilder.h"
+#include "renderPassDescriptor.h"
 #include "vertex.h"
-
-namespace vax::vk {
-class RenderPass;
-}
 
 namespace vax::vk {
 class PipelineManager final {
   public:
-    PipelineManager(const vax::vk::Device& device, const vax::vk::DescriptorSetManager& descriptorSetManager)
+    PipelineManager(const Device& device, const DescriptorSetManager& descriptorSetManager)
         : _device(device)
         , _descriptorSetManager(descriptorSetManager)
         , _shaderModuleBuilder(device) {};
@@ -30,25 +27,25 @@ class PipelineManager final {
     PipelineManager(PipelineManager&& other) = delete;
     PipelineManager& operator=(PipelineManager&& other) = delete;
 
-    bool setup(const vax::vk::RenderPass& renderPass);
+    bool setup(const RenderPassDescriptor& renderPassDescriptor);
 
-    const vax::vk::Pipeline* getPipeline(vax::vk::PipelineName pipelineName) const;
-    VkPipelineLayout getPipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) const;
+    const Pipeline* getPipeline(PipelineName pipelineName) const;
+    VkPipelineLayout getPipelineLayout(PipelineLayoutName pipelineLayoutName) const;
 
   private:
     vax::Logger _logger = vax::Logger("PipelineManager");
-    std::reference_wrapper<const vax::vk::Device> _device;
-    std::reference_wrapper<const vax::vk::DescriptorSetManager> _descriptorSetManager;
-    vax::vk::ShaderModuleBuilder _shaderModuleBuilder;
+    std::reference_wrapper<const Device> _device;
+    std::reference_wrapper<const DescriptorSetManager> _descriptorSetManager;
+    ShaderModuleBuilder _shaderModuleBuilder;
 
-    std::unordered_map<std::string, vax::vk::Pipeline> _pipelines;
+    std::unordered_map<std::string, Pipeline> _pipelines;
     std::unordered_map<std::string, VkPipelineLayout> _pipelineLayouts;
 
-    bool _createBackgroundPipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName);
-    bool _createBasePipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName);
+    bool _createBackgroundPipelineLayout(PipelineLayoutName pipelineLayoutName);
+    bool _createBasePipelineLayout(PipelineLayoutName pipelineLayoutName);
 
-    bool _createPBRPipeline(const vax::vk::RenderPass& renderPass);
-    bool _createBackgroundPipeline(const vax::vk::RenderPass& renderPass);
-    bool _createBasePipeline(const vax::vk::RenderPass& renderPass);
+    bool _createPBRPipeline(const RenderPassDescriptor& renderPassDescriptor);
+    bool _createBackgroundPipeline(const RenderPassDescriptor& renderPassDescriptor);
+    bool _createBasePipeline(const RenderPassDescriptor& renderPassDescriptor);
 };
 } // namespace vax::vk

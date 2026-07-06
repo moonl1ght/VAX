@@ -5,17 +5,17 @@
 #include "pipeline.h"
 
 namespace vax::engine {
-class RendererPass final {
+class RenderPass final {
   public:
-    explicit RendererPass(VkRenderPassBeginInfo renderPassInfo)
+    explicit RenderPass(VkRenderPassBeginInfo renderPassInfo)
         : _renderPassInfo(renderPassInfo) {};
 
-    RendererPass(const RendererPass& other) = delete;
-    RendererPass& operator=(const RendererPass& other) = delete;
-    RendererPass(RendererPass&& other) noexcept = delete;
-    RendererPass& operator=(RendererPass&& other) noexcept = delete;
+    RenderPass(const RenderPass& other) = delete;
+    RenderPass& operator=(const RenderPass& other) = delete;
+    RenderPass(RenderPass&& other) noexcept = delete;
+    RenderPass& operator=(RenderPass&& other) noexcept = delete;
 
-    ~RendererPass() {};
+    ~RenderPass() {};
 
     template <typename Work> void pass(VkCommandBuffer commandBuffer, Work work) {
         vkCmdBeginRenderPass(commandBuffer, &_renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -24,7 +24,7 @@ class RendererPass final {
     }
 
   private:
-    vax::Logger _logger = vax::Logger("RendererPass");
+    vax::Logger _logger = vax::Logger("RenderPass");
     VkRenderPassBeginInfo _renderPassInfo;
 };
 } // namespace vax::engine

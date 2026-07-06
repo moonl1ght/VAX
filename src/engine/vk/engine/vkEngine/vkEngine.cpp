@@ -1,11 +1,6 @@
 #include "vkEngine.h"
-#include "renderDestination.h"
-#include "renderDestinationBuilder.h"
-#include "renderPassBuilder.h"
-#include "texture.h"
-#include "textureLoader.h"
-#include "vkInstanceBuilder.h"
 #include "vkDebug.h"
+#include "vkInstanceBuilder.h"
 
 using namespace vax::vk;
 
@@ -100,24 +95,6 @@ bool vax::vk::Engine::setup() {
         return false;
     deletionQueue.push_function([&]() { swapchain->cleanup(); });
 
-    std::optional<std::unique_ptr<RenderPass>> renderPassOptional = RenderPassBuilder(*device, *swapchain).build();
-    if (!renderPassOptional.has_value())
-        return false;
-    renderPass = std::move(*renderPassOptional);
-    deletionQueue.push_function([&]() {
-        _logger.debug("Destroying render pass...");
-        renderPass = nullptr; // TODO: remove from destructor
-    });
-
-    auto renderDestinationOptional = RenderDestinationBuilder(*device, allocator, *swapchain, *renderPass).build(this);
-    if (!renderDestinationOptional.has_value())
-        return false;
-    renderDestination = std::move(*renderDestinationOptional);
-    deletionQueue.push_function([&]() {
-        _logger.debug("Destroying render destination...");
-        renderDestination = nullptr; // TODO: remove from destructor
-    });
-
     descriptorSetManager = std::make_unique<DescriptorSetManager>(*device, MAX_FRAMES_IN_FLIGHT);
     if (!descriptorSetManager->setup())
         return false;
@@ -128,7 +105,6 @@ bool vax::vk::Engine::setup() {
     });
 
     pipelineManager = std::make_unique<PipelineManager>(*device, *descriptorSetManager);
-    pipelineManager->setup(*renderPass);
     deletionQueue.push_function([&]() {
         _logger.debug("Destroying pipeline manager...");
         pipelineManager = nullptr; // TODO: remove from destructor
@@ -154,10 +130,6 @@ void vax::vk::Engine::resize() {
     vkDeviceWaitIdle(device->vkDevice);
 
     swapchain->recreate();
-    auto renderDestinationOptional = RenderDestinationBuilder(*device, allocator, *swapchain, *renderPass).build(this);
-    if (!renderDestinationOptional.has_value())
-        return;
-    renderDestination = std::move(*renderDestinationOptional);
 }
 
 bool vax::vk::Engine::setupDebugMessenger() {
@@ -182,11 +154,12 @@ bool vax::vk::Engine::setupDebugMessenger() {
 }
 
 VkResult vax::vk::Engine::createAllocator() {
-    VmaAllocatorCreateInfo allocatorInfo{};
-    allocatorInfo.physicalDevice = device->vkPhysicalDevice;
-    allocatorInfo.device = device->vkDevice;
-    allocatorInfo.instance = instance;
-    allocatorInfo.vulkanApiVersion = vulkanApiVersion;
-    allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+    VmaAllocatorCreateInfo allocatorInfo{
+        .flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
+        .physicalDevice = device->vkPhysicalDevice,
+        .device = device->vkDevice,
+        .instance = instance,
+        .vulkanApiVersion = vulkanApiVersion,
+    };
     return vmaCreateAllocator(&allocatorInfo, &allocator);
 }

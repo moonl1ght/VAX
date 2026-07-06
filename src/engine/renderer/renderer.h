@@ -3,9 +3,11 @@
 #include "buffer.h"
 #include "drawableScene.h"
 #include "luna.h"
+#include "renderDestination.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
 #include "frameTime.h"
+#include "renderPassDescriptor.h"
 
 namespace vax::engine {
 class Renderer final {
@@ -22,6 +24,7 @@ class Renderer final {
     Renderer& operator=(Renderer&& other) noexcept = delete;
 
     bool render(DrawableScene* scene, const FrameTime& frameTime);
+    void setup();
     void prepare(DrawableScene* scene);
 
   private:
@@ -29,6 +32,9 @@ class Renderer final {
 
     std::reference_wrapper<vax::vk::Engine> _vkEngine;
     std::reference_wrapper<vax::ui::UIEngine> _uiEngine;
+
+    std::optional<vax::vk::RenderPassDescriptor> _renderPassDescriptor;
+    std::optional<vax::vk::RenderDestination> _renderDestination;
 
     uint32_t _currentFrame = 0;
 
@@ -43,5 +49,7 @@ class Renderer final {
 
     bool _drawGizmo(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene);
     bool _drawBackground(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene);
+
+    void _resize();
 };
 } // namespace vax::engine

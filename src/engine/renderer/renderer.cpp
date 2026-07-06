@@ -4,12 +4,36 @@
 #include "imgui_impl_vulkan.h"
 #include "pipeline.h"
 #include "profiler.h"
-#include "renderDestination.h"
-#include "rendererPass.h"
+#include "renderDestinationBuilder.h"
+#include "renderPassDescriptorBuilder.h"
+#include "renderPass.h"
 #include "vkEngine.h"
 
 using namespace vax::engine;
 using namespace vax;
+using namespace vax::vk;
+
+void Renderer::setup() {
+    _renderPassDescriptor = RenderPassDescriptorBuilder(*_vkEngine.get().device)
+                                .buildMainSwapchain(_vkEngine.get().swapchain->swapchainImageFormat);
+    if (!_renderPassDescriptor.has_value()) {
+        _logger.error("Failed to create render pass descriptor!");
+        return;
+    }
+    _renderDestination = RenderDestinationBuilder(*_vkEngine.get().device, _vkEngine.get().allocator)
+                             .build(
+                                 *_vkEngine.get().commandManager,
+                                 _vkEngine.get().queueManager->graphicsQueue,
+                                 *_vkEngine.get().swapchain,
+                                 *_renderPassDescriptor
+                             );
+    if (!_renderDestination.has_value()) {
+        _logger.error("Failed to create render destination!");
+        return;
+    }
+    _uiEngine.get().setup(_renderPassDescriptor->getVkRenderPass());
+    _vkEngine.get().pipelineManager->setup(*_renderPassDescriptor);
+}
 
 void Renderer::prepare(DrawableScene* scene) {
     for (uint32_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
@@ -63,6 +87,7 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         _vkEngine.get().resize();
+        _resize();
         if (scene != nullptr) {
             scene->resize();
         }
@@ -123,7 +148,10 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _vkEngine.get().framebufferResized) {
         _vkEngine.get().framebufferResized = false;
         _vkEngine.get().resize();
-        scene->resize();
+        _resize();
+        if (scene != nullptr) {
+            scene->resize();
+        }
         return false;
     } else if (result != VK_SUCCESS) {
         _logger.error("failed to present swap chain image!");
@@ -134,7 +162,9 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
     return true;
 }
 
-bool Renderer::_updateCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::engine::DrawableScene* scene) {
+bool Renderer::_updateCommandBuffer(
+    VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::engine::DrawableScene* scene
+) {
     ZoneScopedN("Renderer::updateCommandBuffer");
     VkCommandBufferBeginInfo beginInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -166,14 +196,14 @@ void Renderer::_drawUi(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
     clearValues[1].depthStencil = {1.0f, 0};
     VkRenderPassBeginInfo renderPassInfo{
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .renderPass = _vkEngine.get().renderPass->getVkRenderPass(),
-        .framebuffer = _vkEngine.get().renderDestination->swapchainFramebuffers[imageIndex],
+        .renderPass = _renderPassDescriptor->getVkRenderPass(),
+        .framebuffer = _renderDestination->framebuffers[imageIndex],
         .renderArea = {.offset = {0, 0}, .extent = _vkEngine.get().swapchain->swapchainExtent},
         .clearValueCount = 2,
         .pClearValues = clearValues.data()
     };
 
-    RendererPass renderPass(renderPassInfo);
+    RenderPass renderPass(renderPassInfo);
     renderPass.pass(commandBuffer, [&]() { _uiEngine.get().render(commandBuffer); });
 }
 
@@ -193,14 +223,14 @@ bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::engine::DrawableSc
     clearValues[1].depthStencil = {1.0f, 0};
     VkRenderPassBeginInfo renderPassInfo{
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .renderPass = _vkEngine.get().renderPass->getVkRenderPass(),
-        .framebuffer = _vkEngine.get().renderDestination->swapchainFramebuffers[imageIndex],
+        .renderPass = _renderPassDescriptor->getVkRenderPass(),
+        .framebuffer = _renderDestination->framebuffers[imageIndex],
         .renderArea = {.offset = {0, 0}, .extent = _vkEngine.get().swapchain->swapchainExtent},
         .clearValueCount = 2,
         .pClearValues = clearValues.data()
     };
 
-    RendererPass renderPass(renderPassInfo);
+    RenderPass renderPass(renderPassInfo);
     renderPass.pass(commandBuffer, [&]() {
         auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
             _currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
@@ -350,4 +380,18 @@ bool Renderer::_drawGizmo(VkCommandBuffer commandBuffer, vax::engine::DrawableSc
     };
     scene->drawGizmo(drawContext);
     return true;
+}
+
+void Renderer::_resize() {
+    _renderDestination = RenderDestinationBuilder(*_vkEngine.get().device, _vkEngine.get().allocator)
+                              .build(
+                                  *_vkEngine.get().commandManager,
+                                  _vkEngine.get().queueManager->graphicsQueue,
+                                  *_vkEngine.get().swapchain,
+                                  *_renderPassDescriptor
+                              );
+    if (!_renderDestination.has_value()) {
+        _logger.error("Failed to create render destination!");
+        return;
+    }
 }

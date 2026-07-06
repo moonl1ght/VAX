@@ -25,7 +25,7 @@ class UIEngine final {
     void updateUiEnd();
 
     void render(VkCommandBuffer commandBuffer);
-    void setup();
+    void setup(VkRenderPass renderPass);
     void cleanup();
     void processEvents(SDL_Event& event);
 

@@ -56,6 +56,4 @@ VkFormat findSupportedFormat(
     VkImageTiling tiling,
     VkFormatFeatureFlags features
 );
-
-VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
 } // namespace vax::vk

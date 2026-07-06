@@ -7,14 +7,10 @@
 #include "luna.h"
 #include "pipelineManager.h"
 #include "queueManager.h"
-#include "renderDestination.h"
-#include "renderPass.h"
-#include "resourceManager.h"
 #include "swapchain.h"
 #include "syncObjectsManager.h"
 #include "vkUtils.h"
 #include "window.h"
-#include "deletionQueue.h"
 
 namespace vax::vk {
 class Device;
@@ -43,8 +39,6 @@ class Engine final {
 
     std::unique_ptr<vax::vk::QueueManager> queueManager;
     std::unique_ptr<vax::vk::Swapchain> swapchain;
-    std::unique_ptr<vax::vk::RenderPass> renderPass;
-    std::unique_ptr<vax::vk::RenderDestination> renderDestination;
     std::unique_ptr<vax::vk::DescriptorSetManager> descriptorSetManager;
     std::unique_ptr<vax::vk::PipelineManager> pipelineManager;
     std::unique_ptr<vax::vk::CommandManager> commandManager;

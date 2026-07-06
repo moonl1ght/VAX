@@ -5,7 +5,7 @@
 using namespace vax::ui;
 using namespace vax;
 
-void UIEngine::setup() {
+void UIEngine::setup(VkRenderPass renderPass) {
     ImGui::CreateContext();
 
     VkDescriptorPoolSize pool_size = {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1};
@@ -27,7 +27,7 @@ void UIEngine::setup() {
     init_info.QueueFamily = _vkEngine.get().device->getQueueFamilyIndices().graphicsFamily.value();
     init_info.Queue = _vkEngine.get().queueManager->graphicsQueue;
     init_info.DescriptorPool = _imguiDescriptorPool;
-    init_info.RenderPass = _vkEngine.get().renderPass->getVkRenderPass();
+    init_info.RenderPass = renderPass;
     init_info.MinImageCount = 2;
     init_info.ImageCount = static_cast<uint32_t>(_vkEngine.get().swapchain->swapchainImages.size());
     init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;

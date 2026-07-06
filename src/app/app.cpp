@@ -29,12 +29,12 @@ bool App::_setup() {
     _engine->setup();
 
     _uiEngine = std::make_unique<ui::UIEngine>(*_engine, *_window);
-    _uiEngine->setup();
     _menuView = std::make_unique<ui::MenuView>(*_uiEngine);
     _roverView = std::make_unique<ui::RoverView>(*_uiEngine);
     _trainingView = std::make_unique<ui::TrainingView>(*_uiEngine);
 
     _renderer = std::make_unique<engine::Renderer>(*_engine, *_uiEngine);
+    _renderer->setup();
 
     return true;
 }

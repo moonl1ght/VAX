@@ -3,7 +3,7 @@
 using namespace vax::vk;
 
 void vax::vk::RenderDestination::destroy() {
-    for (auto framebuffer : swapchainFramebuffers) {
+    for (auto& framebuffer : framebuffers) {
         vkDestroyFramebuffer(_device.get().vkDevice, framebuffer, nullptr);
     }
 }
