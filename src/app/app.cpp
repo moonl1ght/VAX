@@ -97,12 +97,12 @@ void App::_updateTimestamp() {
     static uint32_t frameCount = 0;
     static auto previousTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
-    _frameTime._timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-    _frameTime._deltaTime =
+    _frameTime.timestamp = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    _frameTime.deltaTime =
         std::chrono::duration<float, std::chrono::seconds::period>(currentTime - previousTime).count();
-    _frameTime._fps = 1.0f / _frameTime._deltaTime;
+    _frameTime.fps = 1.0f / _frameTime.deltaTime;
     ++frameCount;
-    _frameTime._frameCount = frameCount;
+    _frameTime.frameCount = frameCount;
     previousTime = currentTime;
 }
 

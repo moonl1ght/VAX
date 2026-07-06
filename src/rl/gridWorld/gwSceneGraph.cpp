@@ -50,13 +50,13 @@ void GwSceneGraph::draw(const DrawContext& drawContext) {
 }
 
 void GwSceneGraph::update(const engine::FrameTime& frameTime) {
-    if (_roverModelProxy) {
-        _roverModelProxy->update(frameTime);
-    } else {
-        _logger.warning("Rover model proxy not loaded!");
-    }
     if (_animations.has_value()) {
         auto isCompleted = _animations->update(frameTime);
+        if (_roverModelProxy) {
+            _roverModelProxy->update(frameTime);
+        } else {
+            _logger.warning("Rover model proxy not loaded!");
+        }
         if (isCompleted) {
             _animations = std::nullopt;
         }
@@ -82,7 +82,7 @@ void GwSceneGraph::moveAgentTo(Position2DFloat position, AgentOrientation orient
             if (orientationDelta != 0) {
                 orientationDelta = orientationDelta == 3 ? -1 : orientationDelta == -3 ? 1 : orientationDelta;
                 float rotation = startRotation + orientationDelta * 90.0f;
-                auto animation = vax::ValueAnimation(0.5f, startRotation, rotation);
+                auto animation = vax::ValueAnimation(1.0f, startRotation, rotation);
                 animation.addAnimationHandler([&](float value) {
                     _agentNode->updateTransform([&](TransformHandle& transformHandle) {
                         transformHandle.updateTransform([&](Transform& transform) {
@@ -103,7 +103,7 @@ void GwSceneGraph::moveAgentTo(Position2DFloat position, AgentOrientation orient
                 startPosition = previousPositionY;
                 endPosition = position.y;
             }
-            auto moveAnimation = vax::ValueAnimation(0.5f, startPosition, endPosition);
+            auto moveAnimation = vax::ValueAnimation(2.0f, startPosition, endPosition);
             moveAnimation.addAnimationHandler([=, this](float value) {
                 _agentNode->updateTransform([=](TransformHandle& transformHandle) {
                     transformHandle.updateTransform([=](Transform& transform) {

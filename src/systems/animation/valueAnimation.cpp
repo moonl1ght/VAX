@@ -7,7 +7,7 @@ bool ValueAnimation::updateImpl(const engine::FrameTime& frameTime) {
     if (_isCompleted)
         return true;
     _isStarted = true;
-    _currentDuration += frameTime._deltaTime;
+    _currentDuration += frameTime.deltaTime;
     _calculateInterpolatedValue();
     for (auto& animationHandler : _animationHandlers) {
         animationHandler(_currentValue);
