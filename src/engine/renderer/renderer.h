@@ -2,12 +2,12 @@
 
 #include "buffer.h"
 #include "drawableScene.h"
+#include "frameTime.h"
 #include "luna.h"
 #include "renderDestination.h"
+#include "renderPassDescriptor.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
-#include "frameTime.h"
-#include "renderPassDescriptor.h"
 
 namespace vax::engine {
 class Renderer final {
@@ -33,8 +33,13 @@ class Renderer final {
     std::reference_wrapper<vax::vk::Engine> _vkEngine;
     std::reference_wrapper<vax::ui::UIEngine> _uiEngine;
 
-    std::optional<vax::vk::RenderPassDescriptor> _renderPassDescriptor;
-    std::optional<vax::vk::RenderDestination> _renderDestination;
+    std::optional<vax::vk::RenderPassDescriptor> _mainRenderPassDescriptor;
+    std::optional<vax::vk::RenderPassDescriptor> _maskRenderPassDescriptor;
+    std::optional<vax::vk::RenderPassDescriptor> _swapchainRenderPassDescriptor;
+
+    std::optional<vax::vk::RenderDestination> _mainRenderDestination;
+    std::optional<vax::vk::RenderDestination> _maskRenderDestination;
+    std::optional<vax::vk::RenderDestination> _swapchainRenderDestination;
 
     uint32_t _currentFrame = 0;
 
@@ -51,5 +56,14 @@ class Renderer final {
     bool _drawBackground(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene);
 
     void _resize();
+    void _createRenderDestinations();
+
+    void _mainPass(
+        VkPipelineLayout pipelineLayout,
+        VkCommandBuffer commandBuffer,
+        vax::engine::DrawableScene* scene,
+        uint32_t imageIndex
+    );
+    void _postProcessPass(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex);
 };
 } // namespace vax::engine

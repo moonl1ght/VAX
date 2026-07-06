@@ -27,9 +27,9 @@ void DescriptorSetHandler::writeBuffer(
 }
 
 void DescriptorSetHandler::writeTexture(
-    const Texture& texture, uint32_t binding, uint32_t arrayElement
+    const Texture& texture, uint32_t binding, uint32_t arrayElement, bool withSampler
 ) {
-    auto imageInfoOpt = texture.descriptorImageInfoNoSampler();
+    auto imageInfoOpt = withSampler ? texture.descriptorImageInfoWithSampler() : texture.descriptorImageInfoNoSampler();
     if (!imageInfoOpt) {
         _logger.error("Failed to write descriptor image info");
         return;
@@ -43,18 +43,21 @@ void DescriptorSetHandler::writeTexture(
         .dstBinding = binding,
         .dstArrayElement = arrayElement,
         .descriptorCount = 1,
-        .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+        .descriptorType = withSampler ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
         .pImageInfo = &imageInfo
     };
 
     _writes.push_back(write);
 }
 
-void DescriptorSetHandler::writeTextures(const std::vector<const Texture*>& textures, uint32_t binding) {
+void DescriptorSetHandler::writeTextures(
+    const std::vector<const Texture*>& textures, uint32_t binding, bool withSampler
+) {
     std::vector<VkDescriptorImageInfo> imageInfos;
     imageInfos.reserve(textures.size());
     for (const auto& texture : textures) {
-        auto imageInfoOpt = texture->descriptorImageInfoNoSampler();
+        auto imageInfoOpt =
+            withSampler ? texture->descriptorImageInfoWithSampler() : texture->descriptorImageInfoNoSampler();
         if (!imageInfoOpt) {
             _logger.error("Failed to write descriptor image info");
             return;
@@ -69,7 +72,7 @@ void DescriptorSetHandler::writeTextures(const std::vector<const Texture*>& text
         .dstBinding = binding,
         .dstArrayElement = 0,
         .descriptorCount = static_cast<uint32_t>(imageInfosSaved.size()),
-        .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+        .descriptorType = withSampler ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
         .pImageInfo = imageInfosSaved.data()
     };
 
@@ -79,7 +82,7 @@ void DescriptorSetHandler::writeTextures(const std::vector<const Texture*>& text
 void DescriptorSetHandler::writeSampler(const Sampler& sampler, uint32_t binding, uint32_t arrayElement) {
     VkDescriptorImageInfo& samplerInfo = _imageInfos.emplace_back(
         VkDescriptorImageInfo{
-            .sampler = sampler.vkSampler,
+        .sampler = sampler.vkSampler,
         }
     );
 

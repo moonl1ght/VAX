@@ -10,6 +10,7 @@ class DescriptorSetLayout final {
     enum class SetType {
         GLOBAL = 0,
         PER_FRAME = 1,
+        POST_PROCESS = 2,
     };
 
     explicit DescriptorSetLayout(

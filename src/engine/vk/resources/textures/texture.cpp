@@ -48,16 +48,32 @@ std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfoNoSampler() con
     );
 }
 
-std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfo(const Sampler& sampler) const {
+std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfoWithSampler() const {
     if (_imageView == VK_NULL_HANDLE) {
         _logger.error("Image view is not set");
         return std::nullopt;
     }
     return std::make_optional(
         VkDescriptorImageInfo{
-        .sampler = sampler.vkSampler,
+        .sampler = _sampler.value().vkSampler,
         .imageView = _imageView,
         .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         }
     );
+}
+
+void Texture::createSampler() {
+    if (_sampler.has_value()) {
+        return;
+    }
+    VkSamplerCreateInfo samplerInfo{
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+    };
+    _sampler = Sampler::createSampler(_device.get(), _name, samplerInfo);
 }

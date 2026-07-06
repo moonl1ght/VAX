@@ -53,7 +53,8 @@ class Texture final {
         , _format(other._format)
         , _aspectMask(other._aspectMask)
         , _isDetached(other._isDetached)
-        , _id(other._id) {
+        , _id(other._id)
+        , _sampler(std::move(other._sampler)) {
         other._name.clear();
         other._image = VK_NULL_HANDLE;
         other._allocation = VK_NULL_HANDLE;
@@ -63,6 +64,7 @@ class Texture final {
         other._aspectMask = VK_IMAGE_ASPECT_NONE;
         other._isDetached = true;
         other._id = NullTextureId;
+        other._sampler = std::nullopt;
     }
 
     Texture& operator=(Texture&& other) noexcept {
@@ -79,6 +81,7 @@ class Texture final {
             _aspectMask = other._aspectMask;
             _isDetached = other._isDetached;
             _id = other._id;
+            _sampler = std::move(other._sampler);
 
             other._name.clear();
             other._image = VK_NULL_HANDLE;
@@ -89,6 +92,7 @@ class Texture final {
             other._aspectMask = VK_IMAGE_ASPECT_NONE;
             other._isDetached = true;
             other._id = NullTextureId;
+            other._sampler = std::nullopt;
         }
         return *this;
     }
@@ -113,7 +117,7 @@ class Texture final {
 
     std::optional<VkDescriptorImageInfo> descriptorImageInfoNoSampler() const;
 
-    std::optional<VkDescriptorImageInfo> descriptorImageInfo(const Sampler& sampler) const;
+    std::optional<VkDescriptorImageInfo> descriptorImageInfoWithSampler() const;
 
     vax::math::SizeUI size() const { return _size; }
 
@@ -122,6 +126,10 @@ class Texture final {
     uint32_t height() const { return _size.height; }
 
     void createSampler();
+
+    void setSampler(Sampler&& sampler) { _sampler = std::move(sampler); }
+
+    const Sampler& sampler() const { return _sampler.value(); }
 
   private:
     vax::Logger _logger = vax::Logger("Texture");
@@ -136,6 +144,7 @@ class Texture final {
     VmaAllocator _allocator = VK_NULL_HANDLE;
     std::reference_wrapper<const vax::vk::Device> _device;
     bool _isDetached = true;
+    std::optional<Sampler> _sampler;
 
     void _destroy();
 };

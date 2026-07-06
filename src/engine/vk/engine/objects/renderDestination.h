@@ -28,6 +28,8 @@ class RenderDestination final {
 
     ~RenderDestination() { destroy(); }
 
+    const std::vector<Texture>& textures() const { return _textures; }
+
   private:
     std::reference_wrapper<const Device> _device;
     std::vector<Texture> _textures;

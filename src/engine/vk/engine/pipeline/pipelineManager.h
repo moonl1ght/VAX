@@ -4,8 +4,8 @@
 #include "device.h"
 #include "luna.h"
 #include "pipeline.h"
-#include "shaderModuleBuilder.h"
 #include "renderPassDescriptor.h"
+#include "shaderModuleBuilder.h"
 #include "vertex.h"
 
 namespace vax::vk {
@@ -27,7 +27,9 @@ class PipelineManager final {
     PipelineManager(PipelineManager&& other) = delete;
     PipelineManager& operator=(PipelineManager&& other) = delete;
 
-    bool setup(const RenderPassDescriptor& renderPassDescriptor);
+    bool setup(
+        const RenderPassDescriptor& renderPassDescriptor, const RenderPassDescriptor& postProcessRenderPassDescriptor
+    );
 
     const Pipeline* getPipeline(PipelineName pipelineName) const;
     VkPipelineLayout getPipelineLayout(PipelineLayoutName pipelineLayoutName) const;
@@ -43,9 +45,11 @@ class PipelineManager final {
 
     bool _createBackgroundPipelineLayout(PipelineLayoutName pipelineLayoutName);
     bool _createBasePipelineLayout(PipelineLayoutName pipelineLayoutName);
+    bool _createPostProcessPipelineLayout(PipelineLayoutName pipelineLayoutName);
 
     bool _createPBRPipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createBackgroundPipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createBasePipeline(const RenderPassDescriptor& renderPassDescriptor);
+    bool _createPostProcessPipeline(const RenderPassDescriptor& renderPassDescriptor);
 };
 } // namespace vax::vk

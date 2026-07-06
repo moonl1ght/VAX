@@ -38,13 +38,16 @@ class DescriptorSetManager {
 
     std::optional<DescriptorSetLayout> _globalDescriptorSetLayout = std::nullopt;
     std::optional<DescriptorSetLayout> _perFrameDescriptorSetLayout = std::nullopt;
+    std::optional<DescriptorSetLayout> _postProcessDescriptorSetLayout = std::nullopt;
 
     VkDescriptorPool _descriptorPool = VK_NULL_HANDLE;
+    VkDescriptorPool _postProcessDescriptorPool = VK_NULL_HANDLE;
 
     std::vector<VkDescriptorSet> _globalDescriptorSets;
     std::vector<VkDescriptorSet> _perFrameDescriptorSets;
+    std::vector<VkDescriptorSet> _postProcessDescriptorSets;
 
-    bool createDescriptorSetLayouts();
-    bool createDescriptorSetPool();
+    bool _createDescriptorSetLayouts();
+    bool _createDescriptorSetPools();
 };
 } // namespace vax::vk

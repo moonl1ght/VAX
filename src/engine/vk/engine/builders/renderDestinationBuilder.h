@@ -14,10 +14,17 @@ class RenderDestinationBuilder {
         : _device(device)
         , _allocator(allocator) {};
 
-    std::optional<RenderDestination> build(
+    std::optional<RenderDestination> buildMainSwapchain(
         CommandManager& commandManager,
         VkQueue submitQueue,
         Swapchain& swapchain,
+        RenderPassDescriptor& renderPassDescriptor
+    ) const noexcept;
+
+    std::optional<RenderDestination> buildMainOffscreen(
+        CommandManager& commandManager,
+        VkQueue submitQueue,
+        VkExtent2D extent,
         RenderPassDescriptor& renderPassDescriptor
     ) const noexcept;
 

@@ -35,9 +35,9 @@ struct DescriptorSetHandler {
         uint32_t arrayElement = 0
     );
 
-    void writeTexture(const Texture& texture, uint32_t binding, uint32_t arrayElement = 0);
+    void writeTexture(const Texture& texture, uint32_t binding, uint32_t arrayElement = 0, bool withSampler = false);
 
-    void writeTextures(const std::vector<const Texture*>& textures, uint32_t binding);
+    void writeTextures(const std::vector<const Texture*>& textures, uint32_t binding, bool withSampler = false);
 
     void writeSampler(const Sampler& sampler, uint32_t binding, uint32_t arrayElement = 0);
 

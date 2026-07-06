@@ -4,9 +4,9 @@
 #include "luna.h"
 
 namespace vax::vk {
-enum class PipelineLayoutName : uint32_t { BACKGROUND = 0, BASE = 1 };
+enum class PipelineLayoutName : uint32_t { BACKGROUND = 0, BASE = 1, POST_PROCESS = 2 };
 
-enum class PipelineName : uint32_t { BACKGROUND = 0, PBR = 1, BASE = 2 };
+enum class PipelineName : uint32_t { BACKGROUND = 0, PBR = 1, BASE = 2, POST_PROCESS = 3 };
 
 enum class PipelineType { RENDER, COMPUTE, UNKNOWN };
 
@@ -20,6 +20,8 @@ class Pipeline final {
             return "pbr_pipeline";
         case PipelineName::BASE:
             return "base_pipeline";
+        case PipelineName::POST_PROCESS:
+            return "post_process_pipeline";
         default:
             return "unknown_pipeline";
         }
@@ -31,6 +33,8 @@ class Pipeline final {
             return "background_pipeline_layout";
         case PipelineLayoutName::BASE:
             return "base_pipeline_layout";
+        case PipelineLayoutName::POST_PROCESS:
+            return "post_process_pipeline_layout";
         default:
             return "unknown_pipeline_layout";
         }

@@ -5,6 +5,8 @@
 using namespace vax::vk;
 using namespace vax;
 
+#define POST_PROCESS_TEXTURE_COUNT static_cast<uint32_t>(2)
+
 void DescriptorSetManager::cleanup() {
     vkDestroyDescriptorPool(_device.get().vkDevice, _descriptorPool, nullptr);
     _globalDescriptorSetLayout = std::nullopt;
@@ -12,13 +14,13 @@ void DescriptorSetManager::cleanup() {
 }
 
 bool DescriptorSetManager::setup() {
-    if (!createDescriptorSetLayouts()) {
+    if (!_createDescriptorSetLayouts()) {
         return false;
     }
-    return createDescriptorSetPool();
+    return _createDescriptorSetPools();
 }
 
-bool DescriptorSetManager::createDescriptorSetPool() {
+bool DescriptorSetManager::_createDescriptorSetPools() {
     uint32_t uniformBufferCount = 1;
     uint32_t materialBufferCount = 1;
     uint32_t environmentMapCount = 1;
@@ -57,6 +59,27 @@ bool DescriptorSetManager::createDescriptorSetPool() {
         return false;
     }
 
+    uint32_t numberOfCombinedImages = 2;
+    uint32_t maxCombinedImageSamplers = static_cast<uint32_t>(_maxFramesInFlight) * numberOfCombinedImages;
+    std::vector<VkDescriptorPoolSize> postProcessDescriptorPoolSizes = {
+        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxCombinedImageSamplers},
+    };
+
+    VkDescriptorPoolCreateInfo postProcessDescriptorPoolInfo{
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
+        .maxSets = maxCombinedImageSamplers,
+        .poolSizeCount = static_cast<uint32_t>(postProcessDescriptorPoolSizes.size()),
+        .pPoolSizes = postProcessDescriptorPoolSizes.data(),
+    };
+
+    if (!VK_CHECK(vkCreateDescriptorPool(
+            _device.get().vkDevice, &postProcessDescriptorPoolInfo, nullptr, &_postProcessDescriptorPool
+        ))) {
+        _logger.error("Failed to create descriptor pool!");
+        return false;
+    }
+
     return true;
 }
 
@@ -65,6 +88,8 @@ const DescriptorSetLayout* DescriptorSetManager::getDescriptorSetLayout(Descript
         return &_globalDescriptorSetLayout.value();
     } else if (setType == DescriptorSetLayout::SetType::PER_FRAME) {
         return &_perFrameDescriptorSetLayout.value();
+    } else if (setType == DescriptorSetLayout::SetType::POST_PROCESS) {
+        return &_postProcessDescriptorSetLayout.value();
     }
     return nullptr;
 }
@@ -122,13 +147,23 @@ DescriptorSetManager::getDescriptorSetHandler(uint32_t frameIndex, DescriptorSet
             _maxFramesInFlight,
             frameIndex
         );
+    case DescriptorSetLayout::SetType::POST_PROCESS:
+        return createOrGetDescriptorSet(
+            _device.get(),
+            2,
+            _postProcessDescriptorSets,
+            _postProcessDescriptorSetLayout.value(),
+            _postProcessDescriptorPool,
+            _maxFramesInFlight,
+            frameIndex
+        );
     default:
         _logger.error("Invalid descriptor set type!");
         return std::nullopt;
     }
 }
 
-bool DescriptorSetManager::createDescriptorSetLayouts() {
+bool DescriptorSetManager::_createDescriptorSetLayouts() {
     DescriptorSetLayoutBuilder globalBuilder(_device.get(), "global_descriptor_set_layout");
     globalBuilder.addBinding(
         GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX,
@@ -177,5 +212,19 @@ bool DescriptorSetManager::createDescriptorSetLayouts() {
     }
     _globalDescriptorSetLayout = std::move(globalDescriptorSetLayout.value());
     _perFrameDescriptorSetLayout = std::move(perFrameDescriptorSetLayout.value());
+
+    DescriptorSetLayoutBuilder postProcessBuilder(_device.get(), "post_process_descriptor_set_layout");
+    postProcessBuilder.addBinding(
+        PostProcessBindingIndices::POST_PROCESS_TEXTURE_INDEX,
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        VK_SHADER_STAGE_FRAGMENT_BIT,
+        POST_PROCESS_TEXTURE_COUNT
+    );
+    auto postProcessDescriptorSetLayout = postProcessBuilder.build(DescriptorSetLayout::SetType::POST_PROCESS);
+    if (!postProcessDescriptorSetLayout) {
+        _logger.error("Failed to create post process descriptor set layout!");
+        return false;
+    }
+    _postProcessDescriptorSetLayout = std::move(postProcessDescriptorSetLayout.value());
     return true;
 }

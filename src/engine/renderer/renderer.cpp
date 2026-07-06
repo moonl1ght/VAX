@@ -5,8 +5,8 @@
 #include "pipeline.h"
 #include "profiler.h"
 #include "renderDestinationBuilder.h"
-#include "renderPassDescriptorBuilder.h"
 #include "renderPass.h"
+#include "renderPassDescriptorBuilder.h"
 #include "vkEngine.h"
 
 using namespace vax::engine;
@@ -14,25 +14,27 @@ using namespace vax;
 using namespace vax::vk;
 
 void Renderer::setup() {
-    _renderPassDescriptor = RenderPassDescriptorBuilder(*_vkEngine.get().device)
-                                .buildMainSwapchain(_vkEngine.get().swapchain->swapchainImageFormat);
-    if (!_renderPassDescriptor.has_value()) {
+    _mainRenderPassDescriptor = RenderPassDescriptorBuilder(*_vkEngine.get().device)
+                                    .buildMainOffscreen(_vkEngine.get().swapchain->swapchainImageFormat);
+    if (!_mainRenderPassDescriptor.has_value()) {
         _logger.error("Failed to create render pass descriptor!");
         return;
     }
-    _renderDestination = RenderDestinationBuilder(*_vkEngine.get().device, _vkEngine.get().allocator)
-                             .build(
-                                 *_vkEngine.get().commandManager,
-                                 _vkEngine.get().queueManager->graphicsQueue,
-                                 *_vkEngine.get().swapchain,
-                                 *_renderPassDescriptor
-                             );
-    if (!_renderDestination.has_value()) {
-        _logger.error("Failed to create render destination!");
+    _maskRenderPassDescriptor =
+        RenderPassDescriptorBuilder(*_vkEngine.get().device).buildMainSecondaryOffscreen(VK_FORMAT_R8_UNORM);
+    if (!_maskRenderPassDescriptor.has_value()) {
+        _logger.error("Failed to create mask render pass descriptor!");
         return;
     }
-    _uiEngine.get().setup(_renderPassDescriptor->getVkRenderPass());
-    _vkEngine.get().pipelineManager->setup(*_renderPassDescriptor);
+    _swapchainRenderPassDescriptor = RenderPassDescriptorBuilder(*_vkEngine.get().device)
+                                         .buildMainSwapchain(_vkEngine.get().swapchain->swapchainImageFormat);
+    if (!_swapchainRenderPassDescriptor.has_value()) {
+        _logger.error("Failed to create swapchain render pass descriptor!");
+        return;
+    }
+    _createRenderDestinations();
+    _uiEngine.get().setup(_swapchainRenderPassDescriptor->getVkRenderPass());
+    _vkEngine.get().pipelineManager->setup(*_mainRenderPassDescriptor, *_swapchainRenderPassDescriptor);
 }
 
 void Renderer::prepare(DrawableScene* scene) {
@@ -58,6 +60,17 @@ void Renderer::prepare(DrawableScene* scene) {
         }
         scene->writeFrameDescriptorSet(*frameDescriptorSetHandler);
         frameDescriptorSetHandler->update();
+        auto postProcessDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+            i, vax::vk::DescriptorSetLayout::SetType::POST_PROCESS
+        );
+        if (!postProcessDescriptorSetHandler.has_value()) {
+            _logger.error("Failed to get post process descriptor set writer!");
+            return;
+        }
+        postProcessDescriptorSetHandler->writeTexture(
+            _mainRenderDestination->textures()[i], PostProcessBindingIndices::POST_PROCESS_TEXTURE_INDEX, 0, true
+        );
+        postProcessDescriptorSetHandler->update();
     }
 }
 
@@ -196,8 +209,8 @@ void Renderer::_drawUi(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
     clearValues[1].depthStencil = {1.0f, 0};
     VkRenderPassBeginInfo renderPassInfo{
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .renderPass = _renderPassDescriptor->getVkRenderPass(),
-        .framebuffer = _renderDestination->framebuffers[imageIndex],
+        .renderPass = _swapchainRenderPassDescriptor->getVkRenderPass(),
+        .framebuffer = _swapchainRenderDestination->framebuffers[imageIndex],
         .renderArea = {.offset = {0, 0}, .extent = _vkEngine.get().swapchain->swapchainExtent},
         .clearValueCount = 2,
         .pClearValues = clearValues.data()
@@ -218,66 +231,8 @@ bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::engine::DrawableSc
         return false;
     }
 
-    std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-    clearValues[1].depthStencil = {1.0f, 0};
-    VkRenderPassBeginInfo renderPassInfo{
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .renderPass = _renderPassDescriptor->getVkRenderPass(),
-        .framebuffer = _renderDestination->framebuffers[imageIndex],
-        .renderArea = {.offset = {0, 0}, .extent = _vkEngine.get().swapchain->swapchainExtent},
-        .clearValueCount = 2,
-        .pClearValues = clearValues.data()
-    };
-
-    RenderPass renderPass(renderPassInfo);
-    renderPass.pass(commandBuffer, [&]() {
-        auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            _currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
-        );
-
-        if (!frameDescriptorSetHandler.has_value()) {
-            _logger.error("Failed to get default descriptor set writer!");
-            return;
-        }
-        VkDescriptorSet frameDescriptorSet = frameDescriptorSetHandler->getDescriptorSet();
-        std::vector<VkDescriptorSet> descriptorSets = {frameDescriptorSet};
-        vkCmdBindDescriptorSets(
-            commandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            pipelineLayout,
-            SetIndices::PER_FRAME_SET_INDEX,
-            static_cast<uint32_t>(descriptorSets.size()),
-            descriptorSets.data(),
-            0,
-            nullptr
-        );
-
-        auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::PBR);
-        if (!pipeline) {
-            _logger.error("Failed to get PBR pipeline!");
-            return;
-        }
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline);
-        DrawContext drawContext{
-            .commandBuffer = commandBuffer,
-            .pipelineLayout = pipeline->vkPipelineLayout,
-            .currentFrame = _currentFrame,
-        };
-        scene->draw(drawContext);
-
-        if (!_drawBackground(commandBuffer, scene)) {
-            _logger.error("Failed to draw background!");
-            return;
-        }
-
-        if (!_drawGizmo(commandBuffer, scene)) {
-            _logger.error("Failed to draw gizmo!");
-            return;
-        }
-
-        _uiEngine.get().render(commandBuffer);
-    });
+    _mainPass(pipelineLayout, commandBuffer, scene, imageIndex);
+    _postProcessPass(commandBuffer, scene, imageIndex);
     return true;
 }
 
@@ -311,7 +266,7 @@ bool Renderer::_updateGlobalDescriptorSet(
         commandBuffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         pipelineLayout,
-        SetIndices::GLOBAL_SET_INDEX,
+        MainSetIndices::GLOBAL_SET_INDEX,
         static_cast<uint32_t>(descriptorSets.size()),
         descriptorSets.data(),
         0,
@@ -382,16 +337,163 @@ bool Renderer::_drawGizmo(VkCommandBuffer commandBuffer, vax::engine::DrawableSc
     return true;
 }
 
-void Renderer::_resize() {
-    _renderDestination = RenderDestinationBuilder(*_vkEngine.get().device, _vkEngine.get().allocator)
-                              .build(
-                                  *_vkEngine.get().commandManager,
-                                  _vkEngine.get().queueManager->graphicsQueue,
-                                  *_vkEngine.get().swapchain,
-                                  *_renderPassDescriptor
-                              );
-    if (!_renderDestination.has_value()) {
-        _logger.error("Failed to create render destination!");
+void Renderer::_resize() { _createRenderDestinations(); }
+
+void Renderer::_createRenderDestinations() {
+    _mainRenderDestination = RenderDestinationBuilder(*_vkEngine.get().device, _vkEngine.get().allocator)
+                                 .buildMainOffscreen(
+                                     *_vkEngine.get().commandManager,
+                                     _vkEngine.get().queueManager->graphicsQueue,
+                                     _vkEngine.get().swapchain->swapchainExtent,
+                                     *_mainRenderPassDescriptor
+                                 );
+    if (!_mainRenderDestination.has_value()) {
+        _logger.error("Failed to create main render destination!");
         return;
     }
+    _maskRenderDestination = RenderDestinationBuilder(*_vkEngine.get().device, _vkEngine.get().allocator)
+                                 .buildMainOffscreen(
+                                     *_vkEngine.get().commandManager,
+                                     _vkEngine.get().queueManager->graphicsQueue,
+                                     _vkEngine.get().swapchain->swapchainExtent,
+                                     *_maskRenderPassDescriptor
+                                 );
+    if (!_maskRenderDestination.has_value()) {
+        _logger.error("Failed to create mask render destination!");
+        return;
+    }
+    _swapchainRenderDestination = RenderDestinationBuilder(*_vkEngine.get().device, _vkEngine.get().allocator)
+                                      .buildMainSwapchain(
+                                          *_vkEngine.get().commandManager,
+                                          _vkEngine.get().queueManager->graphicsQueue,
+                                          *_vkEngine.get().swapchain,
+                                          *_swapchainRenderPassDescriptor
+                                      );
+    if (!_swapchainRenderDestination.has_value()) {
+        _logger.error("Failed to create swapchain render destination!");
+        return;
+    }
+}
+
+void Renderer::_mainPass(
+    VkPipelineLayout pipelineLayout,
+    VkCommandBuffer commandBuffer,
+    vax::engine::DrawableScene* scene,
+    uint32_t imageIndex
+) {
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValues[1].depthStencil = {1.0f, 0};
+    VkRenderPassBeginInfo renderPassInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .renderPass = _mainRenderPassDescriptor->getVkRenderPass(),
+        .framebuffer = _mainRenderDestination->framebuffers[_currentFrame],
+        .renderArea = {.offset = {0, 0}, .extent = _vkEngine.get().swapchain->swapchainExtent},
+        .clearValueCount = 2,
+        .pClearValues = clearValues.data()
+    };
+
+    RenderPass renderPass(renderPassInfo);
+    renderPass.pass(commandBuffer, [&]() {
+        auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+            _currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
+        );
+
+        if (!frameDescriptorSetHandler.has_value()) {
+            _logger.error("Failed to get default descriptor set writer!");
+            return;
+        }
+        VkDescriptorSet frameDescriptorSet = frameDescriptorSetHandler->getDescriptorSet();
+        std::vector<VkDescriptorSet> descriptorSets = {frameDescriptorSet};
+        vkCmdBindDescriptorSets(
+            commandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipelineLayout,
+            MainSetIndices::PER_FRAME_SET_INDEX,
+            static_cast<uint32_t>(descriptorSets.size()),
+            descriptorSets.data(),
+            0,
+            nullptr
+        );
+
+        auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::PBR);
+        if (!pipeline) {
+            _logger.error("Failed to get PBR pipeline!");
+            return;
+        }
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline);
+        DrawContext drawContext{
+            .commandBuffer = commandBuffer,
+            .pipelineLayout = pipeline->vkPipelineLayout,
+            .currentFrame = _currentFrame,
+        };
+        scene->draw(drawContext);
+
+        if (!_drawBackground(commandBuffer, scene)) {
+            _logger.error("Failed to draw background!");
+            return;
+        }
+
+        if (!_drawGizmo(commandBuffer, scene)) {
+            _logger.error("Failed to draw gizmo!");
+        }
+    });
+}
+
+void Renderer::_postProcessPass(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex) {
+    _setViewportAndScissor(commandBuffer);
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValues[1].depthStencil = {1.0f, 0};
+    VkRenderPassBeginInfo renderPassInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .renderPass = _swapchainRenderPassDescriptor->getVkRenderPass(),
+        .framebuffer = _swapchainRenderDestination->framebuffers[imageIndex],
+        .renderArea = {.offset = {0, 0}, .extent = _vkEngine.get().swapchain->swapchainExtent},
+        .clearValueCount = 2,
+        .pClearValues = clearValues.data()
+    };
+    RenderPass renderPass(renderPassInfo);
+    renderPass.pass(commandBuffer, [&]() {
+        auto pipelineLayout =
+            _vkEngine.get().pipelineManager->getPipelineLayout(vax::vk::PipelineLayoutName::POST_PROCESS);
+        if (!pipelineLayout) {
+            _logger.error("Failed to get post process pipeline layout!");
+            return;
+        }
+        auto postProcessDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+            _currentFrame, vax::vk::DescriptorSetLayout::SetType::POST_PROCESS
+        );
+        if (!postProcessDescriptorSetHandler.has_value()) {
+            _logger.error("Failed to get default descriptor set writer!");
+            return;
+        }
+        VkDescriptorSet postProcessDescriptorSet = postProcessDescriptorSetHandler->getDescriptorSet();
+        std::vector<VkDescriptorSet> descriptorSets = {postProcessDescriptorSet};
+        vkCmdBindDescriptorSets(
+            commandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipelineLayout,
+            0,
+            static_cast<uint32_t>(descriptorSets.size()),
+            descriptorSets.data(),
+            0,
+            nullptr
+        );
+        auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::POST_PROCESS);
+        if (!pipeline) {
+            _logger.error("Failed to get post process pipeline!");
+            return;
+        }
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline);
+
+        DrawContext drawContext{
+            .commandBuffer = commandBuffer,
+            .pipelineLayout = pipeline->vkPipelineLayout,
+            .currentFrame = _currentFrame,
+        };
+        scene->drawBackground(drawContext);
+
+        _uiEngine.get().render(commandBuffer);
+    });
 }
