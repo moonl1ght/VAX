@@ -22,8 +22,8 @@ typedef float4 vec4;
 
 #endif
 
-enum PostProcessBindingIndices {
-    POST_PROCESS_TEXTURE_INDEX = 0,
+enum FinalBlendBindingIndices {
+    FINAL_BLEND_TEXTURE_INDEX = 0,
 };
 
 enum MainSetIndices {
@@ -76,6 +76,7 @@ enum ObjectFlags {
     IsWireframe = 1 << 0,    // 0001
     NoTangent = 1 << 1,      // 0010
     PrecomputedMVP = 1 << 2, // 0100
+    IsInstanceSelected = 1 << 3, // 1000
 };
 
 struct EnvironmentMapData {

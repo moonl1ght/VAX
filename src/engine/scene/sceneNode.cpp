@@ -6,10 +6,21 @@ using namespace vax::engine;
 using namespace vax;
 using namespace vax::math;
 
-void SceneNode::draw(const DrawContext& drawContext) {
+void SceneNode::draw(const DrawContext& drawContext, bool onlySelected) {
     // TODO: update only dirty instances
     size_t drawingRangeIndex = 0;
+    size_t selectedInstanceIndex = 0;
     for (size_t i = 0; i < _instancesCount; ++i) {
+        if (onlySelected) {
+            if (selectedInstanceIndex >= _selectedInstanceDescriptors.size()) {
+                break;
+            }
+            if (i == _selectedInstanceDescriptors[selectedInstanceIndex].instanceIndex) {
+                ++selectedInstanceIndex;
+            } else {
+                continue;
+            }
+        }
         TransformMatrixHandle worldHandle;
         auto& transformInfo = _drawableModelTransformInfos[i];
         worldHandle.updateModelMatrix(
@@ -22,6 +33,8 @@ void SceneNode::draw(const DrawContext& drawContext) {
         for (auto& drawingRangeForDrawableModel : _drawableModelInstanceDrawingRanges) {
             auto& drawingRange = drawingRangeForDrawableModel[drawingRangeIndex];
             auto count = drawingRange.second;
+            // if the instance index is greater than the count (batch size), we need to increment the drawing range
+            // index
             while (i >= count) {
                 ++drawingRangeIndex;
                 drawingRange = drawingRangeForDrawableModel[drawingRangeIndex];
@@ -47,14 +60,34 @@ void SceneNode::draw(const DrawContext& drawContext) {
         _drawableModelTransformInfos[i]._isChildrenTransformDirty = false;
     }
 
-    for (size_t i = 0; i < _drawableModels.size(); ++i) {
-        auto& drawableModel = _drawableModels[i];
-        for (auto& drawingRange : _drawableModelInstanceDrawingRanges[i]) {
-            drawableModel->draw(drawContext, drawingRange.first, drawingRange.second);
+    if (onlySelected) {
+        for (size_t i = 0; i < _drawableModels.size(); ++i) {
+            size_t drawingRangeIndex = 0;
+            size_t accumulatedCount = 0;
+            for (auto& selectedInstanceDescriptor : _selectedInstanceDescriptors) {
+                auto instanceIndex = selectedInstanceDescriptor.instanceIndex;
+                auto& drawingRange = _drawableModelInstanceDrawingRanges[i][drawingRangeIndex];
+                auto count = drawingRange.second;
+                while (instanceIndex >= accumulatedCount + count) {
+                    accumulatedCount += count;
+                    ++drawingRangeIndex;
+                    drawingRange = _drawableModelInstanceDrawingRanges[i][drawingRangeIndex];
+                }
+                auto offset = drawingRange.first;
+                _drawableModels[i]->draw(drawContext, offset + instanceIndex - accumulatedCount, 1);
+            }
+        }
+    } else {
+        for (size_t i = 0; i < _drawableModels.size(); ++i) {
+            auto& drawableModel = _drawableModels[i];
+            for (auto& drawingRange : _drawableModelInstanceDrawingRanges[i]) {
+                drawableModel->draw(drawContext, drawingRange.first, drawingRange.second, isSelected);
+            }
         }
     }
 
     for (auto& child : _children) {
+        child.isSelected = isSelected;
         child.draw(drawContext);
     }
 }

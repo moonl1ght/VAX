@@ -95,17 +95,16 @@ std::vector<std::string> ModelsController::getModelIds() const {
     return modelIds;
 }
 
-std::optional<SceneNode>
-ModelsController::createSceneNodeById(const std::string& id, std::vector<vax::math::Transform> transforms) {
+std::optional<SceneNode> ModelsController::createSceneNodeById(
+    const std::string& id,
+    std::vector<vax::math::Transform> transforms,
+    std::vector<vax::engine::ModelDescriptor::SelectedInstanceDescriptor> selectedInstanceDescriptors
+) {
     uint32_t instancesCount = transforms.size();
     auto itModelInfo = _modelMap.find(id);
     if (itModelInfo != _modelMap.end()) {
-        auto sceneNode = SceneNode(
-            _resourceManager.get().ssboManager(),
-            id,
-            transforms,
-            true
-        );
+        auto sceneNode =
+            SceneNode(_resourceManager.get().ssboManager(), id, transforms, selectedInstanceDescriptors, true);
         auto drawableModelPtr = &_drawableModels[itModelInfo->second.modelIndex];
         DrawableModelHandle drawableModelHandle = {drawableModelPtr};
         auto& chunkInfo = itModelInfo->second.ssboChunkInfos[itModelInfo->second.ssboChunkCursor];

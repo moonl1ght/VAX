@@ -27,7 +27,9 @@ bool GwSceneGraph::load(
 
     _envNodes.reserve(descriptor.drawableDescriptors.size());
     for (const auto& drawableDescriptor : descriptor.drawableDescriptors) {
-        auto node = modelsController.createSceneNodeById(drawableDescriptor.id, drawableDescriptor.transforms);
+        auto node = modelsController.createSceneNodeById(
+            drawableDescriptor.id, drawableDescriptor.transforms, drawableDescriptor.selectedInstanceDescriptors
+        );
         if (!node.has_value()) {
             _logger.error("Failed to load model: {}", drawableDescriptor.id);
             continue;
@@ -46,6 +48,18 @@ void GwSceneGraph::draw(const DrawContext& drawContext) {
     }
     for (auto& node : _envNodes) {
         node.draw(drawContext);
+    }
+}
+
+void GwSceneGraph::drawSelected(const DrawContext& drawContext) {
+    if (_agentNode) {
+        _agentNode->isSelected = true;
+        _agentNode->draw(drawContext);
+    } else {
+        _logger.warning("Agent node not loaded!");
+    }
+    for (auto& node : _envNodes) {
+        node.draw(drawContext, true);
     }
 }
 

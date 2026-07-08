@@ -86,7 +86,7 @@ RenderPassDescriptorBuilder::buildMainSwapchain(VkFormat imageFormat) const noex
 }
 
 std::optional<vax::vk::RenderPassDescriptor>
-RenderPassDescriptorBuilder::buildMainOffscreen(VkFormat imageFormat) const noexcept {
+RenderPassDescriptorBuilder::buildMainOffscreen(VkFormat imageFormat, bool allowComputeUsage) const noexcept {
     VkAttachmentDescription colorAttachment{
         .format = imageFormat,
         .samples = VK_SAMPLE_COUNT_1_BIT,
@@ -95,7 +95,7 @@ RenderPassDescriptorBuilder::buildMainOffscreen(VkFormat imageFormat) const noex
         .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-        .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        .finalLayout = allowComputeUsage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
     };
 
     VkFormat depthFormat = findDepthFormat(_device.get().vkPhysicalDevice);
@@ -142,7 +142,7 @@ RenderPassDescriptorBuilder::buildMainOffscreen(VkFormat imageFormat) const noex
         .srcSubpass = 0,
         .dstSubpass = VK_SUBPASS_EXTERNAL,
         .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
         .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
         .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
         .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,

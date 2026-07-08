@@ -133,6 +133,10 @@ bool vax::engine::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetH
 
 void vax::engine::DrawableScene::draw(const DrawContext& drawContext) { _sceneGraph->draw(drawContext); }
 
+void vax::engine::DrawableScene::drawSelected(const DrawContext& drawContext) {
+    _sceneGraph->drawSelected(drawContext);
+}
+
 void vax::engine::DrawableScene::drawBackground(const DrawContext& drawContext) {
     if (!_background)
         return;

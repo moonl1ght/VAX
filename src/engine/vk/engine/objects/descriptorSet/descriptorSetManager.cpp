@@ -5,7 +5,7 @@
 using namespace vax::vk;
 using namespace vax;
 
-#define POST_PROCESS_TEXTURE_COUNT static_cast<uint32_t>(2)
+#define FINAL_BLEND_TEXTURE_COUNT static_cast<uint32_t>(2)
 
 void DescriptorSetManager::cleanup() {
     vkDestroyDescriptorPool(_device.get().vkDevice, _descriptorPool, nullptr);
@@ -61,20 +61,20 @@ bool DescriptorSetManager::_createDescriptorSetPools() {
 
     uint32_t numberOfCombinedImages = 2;
     uint32_t maxCombinedImageSamplers = static_cast<uint32_t>(_maxFramesInFlight) * numberOfCombinedImages;
-    std::vector<VkDescriptorPoolSize> postProcessDescriptorPoolSizes = {
+    std::vector<VkDescriptorPoolSize> finalBlendDescriptorPoolSizes = {
         {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxCombinedImageSamplers},
     };
 
-    VkDescriptorPoolCreateInfo postProcessDescriptorPoolInfo{
+    VkDescriptorPoolCreateInfo finalBlendDescriptorPoolInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
         .maxSets = maxCombinedImageSamplers,
-        .poolSizeCount = static_cast<uint32_t>(postProcessDescriptorPoolSizes.size()),
-        .pPoolSizes = postProcessDescriptorPoolSizes.data(),
+        .poolSizeCount = static_cast<uint32_t>(finalBlendDescriptorPoolSizes.size()),
+        .pPoolSizes = finalBlendDescriptorPoolSizes.data(),
     };
 
     if (!VK_CHECK(vkCreateDescriptorPool(
-            _device.get().vkDevice, &postProcessDescriptorPoolInfo, nullptr, &_postProcessDescriptorPool
+            _device.get().vkDevice, &finalBlendDescriptorPoolInfo, nullptr, &_finalBlendDescriptorPool
         ))) {
         _logger.error("Failed to create descriptor pool!");
         return false;
@@ -88,8 +88,8 @@ const DescriptorSetLayout* DescriptorSetManager::getDescriptorSetLayout(Descript
         return &_globalDescriptorSetLayout.value();
     } else if (setType == DescriptorSetLayout::SetType::PER_FRAME) {
         return &_perFrameDescriptorSetLayout.value();
-    } else if (setType == DescriptorSetLayout::SetType::POST_PROCESS) {
-        return &_postProcessDescriptorSetLayout.value();
+    } else if (setType == DescriptorSetLayout::SetType::FINAL_BLEND) {
+        return &_finalBlendDescriptorSetLayout.value();
     }
     return nullptr;
 }
@@ -147,13 +147,13 @@ DescriptorSetManager::getDescriptorSetHandler(uint32_t frameIndex, DescriptorSet
             _maxFramesInFlight,
             frameIndex
         );
-    case DescriptorSetLayout::SetType::POST_PROCESS:
+    case DescriptorSetLayout::SetType::FINAL_BLEND:
         return createOrGetDescriptorSet(
             _device.get(),
             2,
-            _postProcessDescriptorSets,
-            _postProcessDescriptorSetLayout.value(),
-            _postProcessDescriptorPool,
+            _finalBlendDescriptorSets,
+            _finalBlendDescriptorSetLayout.value(),
+            _finalBlendDescriptorPool,
             _maxFramesInFlight,
             frameIndex
         );
@@ -213,18 +213,18 @@ bool DescriptorSetManager::_createDescriptorSetLayouts() {
     _globalDescriptorSetLayout = std::move(globalDescriptorSetLayout.value());
     _perFrameDescriptorSetLayout = std::move(perFrameDescriptorSetLayout.value());
 
-    DescriptorSetLayoutBuilder postProcessBuilder(_device.get(), "post_process_descriptor_set_layout");
-    postProcessBuilder.addBinding(
-        PostProcessBindingIndices::POST_PROCESS_TEXTURE_INDEX,
+    DescriptorSetLayoutBuilder finalBlendBuilder(_device.get(), "final_blend_descriptor_set_layout");
+    finalBlendBuilder.addBinding(
+        FinalBlendBindingIndices::FINAL_BLEND_TEXTURE_INDEX,
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
-        POST_PROCESS_TEXTURE_COUNT
+        FINAL_BLEND_TEXTURE_COUNT
     );
-    auto postProcessDescriptorSetLayout = postProcessBuilder.build(DescriptorSetLayout::SetType::POST_PROCESS);
-    if (!postProcessDescriptorSetLayout) {
-        _logger.error("Failed to create post process descriptor set layout!");
+    auto finalBlendDescriptorSetLayout = finalBlendBuilder.build(DescriptorSetLayout::SetType::FINAL_BLEND);
+    if (!finalBlendDescriptorSetLayout) {
+        _logger.error("Failed to create final blend descriptor set layout!");
         return false;
     }
-    _postProcessDescriptorSetLayout = std::move(postProcessDescriptorSetLayout.value());
+    _finalBlendDescriptorSetLayout = std::move(finalBlendDescriptorSetLayout.value());
     return true;
 }

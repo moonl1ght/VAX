@@ -21,7 +21,7 @@ Texture2D globalTextures[MAX_TEXTURES];
 [vk::binding(GlobalBindingIndices::GLOBAL_TEXTURE_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
 TextureCube globalCubeTextures[MAX_TEXTURES];
 
-[vk::binding(PostProcessBindingIndices::POST_PROCESS_TEXTURE_INDEX, 0)]
+[vk::binding(FinalBlendBindingIndices::FINAL_BLEND_TEXTURE_INDEX, 0)]
 Sampler2D postProcessTexture[2];
 
 struct VertexInput {

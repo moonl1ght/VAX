@@ -15,13 +15,13 @@ using namespace vax::vk;
 
 void Renderer::setup() {
     _mainRenderPassDescriptor = RenderPassDescriptorBuilder(*_vkEngine.get().device)
-                                    .buildMainOffscreen(_vkEngine.get().swapchain->swapchainImageFormat);
+                                    .buildMainOffscreen(_vkEngine.get().swapchain->swapchainImageFormat, false);
     if (!_mainRenderPassDescriptor.has_value()) {
         _logger.error("Failed to create render pass descriptor!");
         return;
     }
     _maskRenderPassDescriptor = RenderPassDescriptorBuilder(*_vkEngine.get().device)
-                                    .buildMainOffscreen(_vkEngine.get().swapchain->swapchainImageFormat);
+                                    .buildMainOffscreen(_vkEngine.get().swapchain->swapchainImageFormat, true);
     if (!_maskRenderPassDescriptor.has_value()) {
         _logger.error("Failed to create mask render pass descriptor!");
         return;
@@ -60,17 +60,20 @@ void Renderer::prepare(DrawableScene* scene) {
         }
         scene->writeFrameDescriptorSet(*frameDescriptorSetHandler);
         frameDescriptorSetHandler->update();
-        auto postProcessDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            i, vax::vk::DescriptorSetLayout::SetType::POST_PROCESS
+        auto finalBlendDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+            i, vax::vk::DescriptorSetLayout::SetType::FINAL_BLEND
         );
-        if (!postProcessDescriptorSetHandler.has_value()) {
+        if (!finalBlendDescriptorSetHandler.has_value()) {
             _logger.error("Failed to get post process descriptor set writer!");
             return;
         }
-        postProcessDescriptorSetHandler->writeTexture(
-            _mainRenderDestination->textures()[i], PostProcessBindingIndices::POST_PROCESS_TEXTURE_INDEX, 0, true
+        finalBlendDescriptorSetHandler->writeTexture(
+            _mainRenderDestination->textures()[i], FinalBlendBindingIndices::FINAL_BLEND_TEXTURE_INDEX, 0, true
         );
-        postProcessDescriptorSetHandler->update();
+        finalBlendDescriptorSetHandler->writeTexture(
+            _maskRenderDestination->textures()[i], FinalBlendBindingIndices::FINAL_BLEND_TEXTURE_INDEX, 1, true
+        );
+        finalBlendDescriptorSetHandler->update();
     }
 }
 
@@ -227,7 +230,7 @@ bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::engine::DrawableSc
 
     _mainPass(pipelineLayout, commandBuffer, scene, imageIndex);
     _maskPass(pipelineLayout, commandBuffer, scene, imageIndex);
-    _postProcessPass(commandBuffer, scene, imageIndex);
+    _finalBlendPass(commandBuffer, scene, imageIndex);
     return true;
 }
 
@@ -256,22 +259,6 @@ bool Renderer::_updateGlobalDescriptorSet(
         return false;
     }
     globalDescriptorSetHandler->bind(commandBuffer, pipelineLayout, MainSetIndices::GLOBAL_SET_INDEX);
-    return true;
-}
-
-bool Renderer::_drawBackground(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene) {
-    auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::BACKGROUND);
-    if (!pipeline) {
-        _logger.error("Failed to get background pipeline!");
-        return false;
-    }
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline);
-    DrawContext drawContext{
-        .commandBuffer = commandBuffer,
-        .pipelineLayout = pipeline->vkPipelineLayout,
-        .currentFrame = _currentFrame,
-    };
-    scene->drawBackground(drawContext);
     return true;
 }
 
@@ -396,11 +383,6 @@ void Renderer::_mainPass(
         };
         scene->draw(drawContext);
 
-        if (!_drawBackground(commandBuffer, scene)) {
-            _logger.error("Failed to draw background!");
-            return;
-        }
-
         if (!_drawGizmo(commandBuffer, scene)) {
             _logger.error("Failed to draw gizmo!");
         }
@@ -443,11 +425,11 @@ void Renderer::_maskPass(
             .pipelineLayout = pipeline->vkPipelineLayout,
             .currentFrame = _currentFrame,
         };
-        scene->draw(drawContext);
+        scene->drawSelected(drawContext);
     });
 }
 
-void Renderer::_postProcessPass(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex) {
+void Renderer::_finalBlendPass(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex) {
     _setViewportAndScissor(commandBuffer);
     RenderPass renderPass(
         *_vkEngine.get().device,
@@ -458,22 +440,22 @@ void Renderer::_postProcessPass(VkCommandBuffer commandBuffer, vax::engine::Draw
     );
     renderPass.pass(commandBuffer, [&]() {
         auto pipelineLayout =
-            _vkEngine.get().pipelineManager->getPipelineLayout(vax::vk::PipelineLayoutName::POST_PROCESS);
+            _vkEngine.get().pipelineManager->getPipelineLayout(vax::vk::PipelineLayoutName::FINAL_BLEND);
         if (!pipelineLayout) {
-            _logger.error("Failed to get post process pipeline layout!");
+            _logger.error("Failed to get final blend pipeline layout!");
             return;
         }
-        auto postProcessDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            _currentFrame, vax::vk::DescriptorSetLayout::SetType::POST_PROCESS
+        auto finalBlendDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+            _currentFrame, vax::vk::DescriptorSetLayout::SetType::FINAL_BLEND
         );
-        if (!postProcessDescriptorSetHandler.has_value()) {
+        if (!finalBlendDescriptorSetHandler.has_value()) {
             _logger.error("Failed to get default descriptor set writer!");
             return;
         }
-        postProcessDescriptorSetHandler->bind(commandBuffer, pipelineLayout, 0);
-        auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::POST_PROCESS);
+        finalBlendDescriptorSetHandler->bind(commandBuffer, pipelineLayout, 0);
+        auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::FINAL_BLEND);
         if (!pipeline) {
-            _logger.error("Failed to get post process pipeline!");
+            _logger.error("Failed to get final blend pipeline!");
             return;
         }
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline);

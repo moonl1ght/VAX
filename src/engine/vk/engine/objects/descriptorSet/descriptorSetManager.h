@@ -38,14 +38,14 @@ class DescriptorSetManager {
 
     std::optional<DescriptorSetLayout> _globalDescriptorSetLayout = std::nullopt;
     std::optional<DescriptorSetLayout> _perFrameDescriptorSetLayout = std::nullopt;
-    std::optional<DescriptorSetLayout> _postProcessDescriptorSetLayout = std::nullopt;
+    std::optional<DescriptorSetLayout> _finalBlendDescriptorSetLayout = std::nullopt;
 
     VkDescriptorPool _descriptorPool = VK_NULL_HANDLE;
-    VkDescriptorPool _postProcessDescriptorPool = VK_NULL_HANDLE;
+    VkDescriptorPool _finalBlendDescriptorPool = VK_NULL_HANDLE;
 
     std::vector<VkDescriptorSet> _globalDescriptorSets;
     std::vector<VkDescriptorSet> _perFrameDescriptorSets;
-    std::vector<VkDescriptorSet> _postProcessDescriptorSets;
+    std::vector<VkDescriptorSet> _finalBlendDescriptorSets;
 
     bool _createDescriptorSetLayouts();
     bool _createDescriptorSetPools();

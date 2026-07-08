@@ -46,12 +46,12 @@ class PipelineManager final {
 
     bool _createBackgroundPipelineLayout(PipelineLayoutName pipelineLayoutName);
     bool _createBasePipelineLayout(PipelineLayoutName pipelineLayoutName);
-    bool _createPostProcessPipelineLayout(PipelineLayoutName pipelineLayoutName);
+    bool _createFinalBlendPipelineLayout(PipelineLayoutName pipelineLayoutName);
 
     bool _createPBRPipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createBackgroundPipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createBasePipeline(const RenderPassDescriptor& renderPassDescriptor);
-    bool _createPostProcessPipeline(const RenderPassDescriptor& renderPassDescriptor);
+    bool _createFinalBlendPipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createMaskPipeline(const RenderPassDescriptor& renderPassDescriptor);
 
     bool _createPipeline(

@@ -53,7 +53,6 @@ class Renderer final {
     );
 
     bool _drawGizmo(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene);
-    bool _drawBackground(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene);
 
     void _resize();
     void _createRenderDestinations();
@@ -70,6 +69,6 @@ class Renderer final {
         vax::engine::DrawableScene* scene,
         uint32_t imageIndex
     );
-    void _postProcessPass(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex);
+    void _finalBlendPass(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex);
 };
 } // namespace vax::engine

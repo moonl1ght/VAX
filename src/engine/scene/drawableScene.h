@@ -79,6 +79,8 @@ class DrawableScene final : public vax::InputController::Observer {
 
     void draw(const vax::engine::DrawContext& drawContext);
 
+    void drawSelected(const vax::engine::DrawContext& drawContext);
+
     void drawBackground(const vax::engine::DrawContext& drawContext);
 
     void drawGizmo(const vax::engine::DrawContext& drawContext);

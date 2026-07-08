@@ -24,7 +24,7 @@ class RenderPass final {
             vax::vk::pfnSetDebugUtilsObjectNameEXT(device.vkDevice, &nameInfo);
         }
         _clearValues = std::array<VkClearValue, 2>{};
-        _clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+        _clearValues[0].color = {{0.0f, 0.0f, 0.0f, 0.0f}};
         _clearValues[1].depthStencil = {1.0f, 0};
         _renderPassInfo = {
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,

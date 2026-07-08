@@ -47,8 +47,11 @@ class ModelsController {
 
     std::optional<vax::engine::SceneNode> getPreloadedSceneNodeById(const std::string& id, uint32_t instancesCount);
 
-    std::optional<vax::engine::SceneNode>
-    createSceneNodeById(const std::string& id, std::vector<vax::math::Transform> transforms = {vax::math::Transform()});
+    std::optional<vax::engine::SceneNode> createSceneNodeById(
+        const std::string& id,
+        std::vector<vax::math::Transform> transforms = {vax::math::Transform()},
+        std::vector<vax::engine::ModelDescriptor::SelectedInstanceDescriptor> selectedInstanceDescriptors = {}
+    );
 
     DrawableModel* getDrawableModelById(const std::string& id);
 
@@ -81,7 +84,6 @@ class ModelsController {
 
     uint32_t _globalInstanceCursor = 0;
 
-    DrawableModelHandle
-    _addDrawableModel(std::string id, std::string path, vax::engine::DrawableModel&& drawableModel);
+    DrawableModelHandle _addDrawableModel(std::string id, std::string path, vax::engine::DrawableModel&& drawableModel);
 };
 } // namespace vax::engine

@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
+#include "modelDescriptor.h"
 
 namespace vax::engine {
 class ModelLoader;
@@ -19,6 +20,8 @@ class SceneNode final {
     friend class vax::engine::ModelLoader;
 
     using MetadataValue = std::variant<std::string, float, int, bool>;
+
+    bool isSelected = false;
 
     struct DrawableModelTransformInfo final {
         vax::math::Transform _originalParentRelativeTransform;
@@ -54,12 +57,14 @@ class SceneNode final {
         vax::vk::SSBOManager& ssboManager,
         std::string name,
         std::vector<vax::math::Transform> transforms,
+        std::vector<vax::engine::ModelDescriptor::SelectedInstanceDescriptor> selectedInstanceDescriptors,
         bool isRoot = false
     )
         : _ssboManager(ssboManager)
         , _name(std::move(name))
         , _instancesCount(transforms.size())
-        , _isRoot(isRoot) {
+        , _isRoot(isRoot)
+        , _selectedInstanceDescriptors(std::move(selectedInstanceDescriptors)) {
         _drawableModelTransformInfos.reserve(transforms.size());
         for (size_t i = 0; i < transforms.size(); ++i) {
             vax::math::TransformHandle transformHandle;
@@ -85,7 +90,7 @@ class SceneNode final {
     const std::string& name() const { return _name; };
     bool hasDrawableModels() const { return !_drawableModels.empty(); };
 
-    void draw(const vax::engine::DrawContext& drawContext);
+    void draw(const vax::engine::DrawContext& drawContext, bool onlySelected = false);
 
     /// @param depth - depth of the child, if -1 search from all children with max depth,
     ///                 if 0 will compare only with node itself.
@@ -145,5 +150,6 @@ class SceneNode final {
     std::vector<std::vector<DrawableModelHandle::InstanceDrawingRange>> _drawableModelInstanceDrawingRanges;
     bool _isRoot = false;
     std::vector<DrawableModelTransformInfo> _drawableModelTransformInfos;
+    std::vector<vax::engine::ModelDescriptor::SelectedInstanceDescriptor> _selectedInstanceDescriptors;
 };
 } // namespace vax::engine

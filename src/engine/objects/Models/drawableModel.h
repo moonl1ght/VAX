@@ -39,7 +39,12 @@ class DrawableModel final {
 
     bool loadMesh(const vax::vk::MeshPBR::LoadMeshBuffersContext& context);
 
-    void draw(const vax::engine::DrawContext& drawContext, uint32_t instanceOffset, uint32_t instancesCount);
+    void draw(
+        const vax::engine::DrawContext& drawContext,
+        uint32_t instanceOffset,
+        uint32_t instancesCount,
+        bool isInstanceSelected = false
+    );
 
     Settings& settings() { return _settings; }
 

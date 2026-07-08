@@ -15,5 +15,8 @@ struct FragmentInput {
 
 [shader("fragment")]
 float4 fragMain(uniform DrawPushConstants pushConstants, FragmentInput input) : SV_Target {
-    return float4(1.0f, 0.0f, 0.0f, 1.0f);
+    if ((pushConstants.flags & ObjectFlags::IsInstanceSelected) != 0) {
+        return float4(0.0f, 0.0f, 1.0f, 1.0f / input.instanceIndex);
+    }
+    return float4(0.0f, 1.0f, 0.0f, 1.0f / input.instanceIndex);
 }

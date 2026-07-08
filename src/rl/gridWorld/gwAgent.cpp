@@ -17,6 +17,7 @@ vax::engine::ModelDescriptor GWAgent::getDrawableDescriptor() const {
         "rover",
         vax::engine::ModelDescriptor::ModelType::MODEL,
         {transform},
+        {},
         vax::engine::ModelDescriptor::PrimitiveDescriptor(),
         1,
     };

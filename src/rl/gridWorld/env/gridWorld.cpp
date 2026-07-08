@@ -5,11 +5,24 @@
 #include "randomGenerator.h"
 #include "tensorOp.h"
 #include "transform.h"
+#include "colorPalette.h"
 
 using namespace vax;
 using namespace vax::math;
 using namespace vax::rl;
 using namespace vax::core;
+
+
+glm::vec4 getBlockColor(GridWorld::BlockType blockType) {
+    switch (blockType) {
+    case GridWorld::BlockType::FINISH:
+        return engine::ColorPalette::Green;
+    case GridWorld::BlockType::START:
+        return engine::ColorPalette::Blue;
+    default:
+        return glm::vec4(0.0f);
+    }
+}
 
 void GridWorld::createRandomGrid() {
     int gridDimX = 6;
@@ -20,7 +33,7 @@ void GridWorld::createRandomGrid() {
     emptyIndices.reserve(_grid.totalSize());
     for (int i = 0; i < _grid.totalSize(); ++i) {
         std::vector<int> indices = _grid.indices(i);
-        auto padding = 1.1f;
+        auto padding = 1.0f;
         auto offset = 5.0f / 2.0f - 0.5f;
         Position2DFloat position = {indices[0] * padding - offset * padding, indices[1] * padding - offset * padding};
         _sceneGraphPositions.push_back(position);
@@ -39,6 +52,7 @@ void GridWorld::createRandomGrid() {
     emptyIndices.pop_back();
     _agent.setStartPosition(agentPosition[0], agentPosition[1]);
     _agent.linkGridWorld(this);
+    _grid.set(agentPosition, static_cast<float>(BlockType::START));
 
     indexToChoose = core::RandomGenerator::getInstance().uniformInt(0, emptyIndices.size() - 1);
     auto finishPositionIndex = emptyIndices[indexToChoose];
@@ -71,15 +85,35 @@ GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
             transform.position.y = 0.5f;
         }
         if (descriptors.find(blockTypeString) == descriptors.end()) {
+            auto selectedInstanceDescriptor = std::vector<engine::ModelDescriptor::SelectedInstanceDescriptor>();
+            if (blockType == BlockType::FINISH || blockType == BlockType::START) {
+                selectedInstanceDescriptor.push_back(
+                    engine::ModelDescriptor::SelectedInstanceDescriptor{
+                    .instanceIndex = 0,
+                    .color = getBlockColor(blockType),
+                    }
+                );
+            }
             descriptors[blockTypeString] = engine::ModelDescriptor{
                 .path = blockTypeString,
                 .id = blockTypeString,
                 .modelType = engine::ModelDescriptor::ModelType::MODEL,
                 .transforms = {transform},
+                .selectedInstanceDescriptors = {},
             };
         } else {
-            descriptors[blockTypeString].transforms.push_back(transform);
-            descriptors[blockTypeString].instancesCount += 1;
+            auto& descriptor = descriptors[blockTypeString];
+            auto instanceIndex = descriptor.instancesCount;
+            descriptor.transforms.push_back(transform);
+            descriptor.instancesCount += 1;
+            if (blockType == BlockType::FINISH || blockType == BlockType::START) {
+                descriptor.selectedInstanceDescriptors.push_back(
+                    engine::ModelDescriptor::SelectedInstanceDescriptor{
+                    .instanceIndex = instanceIndex,
+                    .color = getBlockColor(blockType),
+                    }
+                );
+            }
         }
         ++flatIndex;
     }

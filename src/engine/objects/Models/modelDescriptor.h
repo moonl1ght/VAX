@@ -14,10 +14,17 @@ struct ModelDescriptor {
         Color color = ColorPalette::White;
     };
 
+    struct SelectedInstanceDescriptor {
+        uint32_t instanceIndex = 0;
+        glm::vec3 color = ColorPalette::White;
+    };
+
     std::string path;
     std::string id;
     ModelType modelType;
     std::vector<vax::math::Transform> transforms;
+    // should be sorted by instance index
+    std::vector<SelectedInstanceDescriptor> selectedInstanceDescriptors;
     PrimitiveDescriptor primitiveDescriptor;
     uint32_t instancesCount = 1;
 

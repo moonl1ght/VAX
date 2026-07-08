@@ -18,8 +18,8 @@ bool PipelineManager::setup(
         _logger.error("Failed to create base pipeline layout!");
         return false;
     }
-    if (!_createPostProcessPipelineLayout(PipelineLayoutName::POST_PROCESS)) {
-        _logger.error("Failed to create post process pipeline layout!");
+    if (!_createFinalBlendPipelineLayout(PipelineLayoutName::FINAL_BLEND)) {
+        _logger.error("Failed to create final blend pipeline layout!");
         return false;
     }
     if (!_createPBRPipeline(renderPassDescriptor)) {
@@ -34,8 +34,8 @@ bool PipelineManager::setup(
         _logger.error("Failed to create background pipeline!");
         return false;
     }
-    if (!_createPostProcessPipeline(postProcessRenderPassDescriptor)) {
-        _logger.error("Failed to create post process pipeline!");
+    if (!_createFinalBlendPipeline(postProcessRenderPassDescriptor)) {
+        _logger.error("Failed to create final blend pipeline!");
         return false;
     }
     if (!_createMaskPipeline(renderPassDescriptor)) {
@@ -77,13 +77,13 @@ bool PipelineManager::_createBackgroundPipeline(const RenderPassDescriptor& rend
     );
 }
 
-bool PipelineManager::_createPostProcessPipeline(const RenderPassDescriptor& renderPassDescriptor) {
+bool PipelineManager::_createFinalBlendPipeline(const RenderPassDescriptor& renderPassDescriptor) {
     return _createPipeline(
         renderPassDescriptor,
         SRC_PATH("engine/shaders/out/background.vert.spv"),
-        SRC_PATH("engine/shaders/out/postprocess.frag.spv"),
-        PipelineName::POST_PROCESS,
-        PipelineLayoutName::POST_PROCESS,
+        SRC_PATH("engine/shaders/out/finalblend.frag.spv"),
+        PipelineName::FINAL_BLEND,
+        PipelineLayoutName::FINAL_BLEND,
         [](GraphicsPipelineBuilder& pipelineBuilder) {
             auto bindingDescription = Vertex::getBindingDescription();
             auto attributeDescriptions = Vertex::getAttributeDescriptions();
@@ -165,19 +165,19 @@ bool vax::vk::PipelineManager::_createBackgroundPipelineLayout(vax::vk::Pipeline
     return true;
 }
 
-bool vax::vk::PipelineManager::_createPostProcessPipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) {
+bool vax::vk::PipelineManager::_createFinalBlendPipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) {
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     auto name = vax::vk::Pipeline::pipelineLayoutNameToString(pipelineLayoutName);
-    auto postProcessDescriptorSetLayout =
-        _descriptorSetManager.get().getDescriptorSetLayout(DescriptorSetLayout::SetType::POST_PROCESS);
-    if (!postProcessDescriptorSetLayout) {
-        _logger.error("Failed to get post process descriptor set layout!");
+    auto finalBlendDescriptorSetLayout =
+        _descriptorSetManager.get().getDescriptorSetLayout(DescriptorSetLayout::SetType::FINAL_BLEND);
+    if (!finalBlendDescriptorSetLayout) {
+        _logger.error("Failed to get final blend descriptor set layout!");
         return false;
     }
-    pipelineBuilder.addDescriptorSetLayout(postProcessDescriptorSetLayout->getVkDescriptorSetLayout());
+    pipelineBuilder.addDescriptorSetLayout(finalBlendDescriptorSetLayout->getVkDescriptorSetLayout());
     auto pipelineLayout = pipelineBuilder.buildPipelineLayout(name);
     if (!pipelineLayout) {
-        _logger.error("Failed to create post process pipeline layout!");
+        _logger.error("Failed to create final blend pipeline layout!");
         return false;
     }
     _pipelineLayouts.emplace(name, pipelineLayout);
