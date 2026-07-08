@@ -64,6 +64,12 @@ class Renderer final {
         vax::engine::DrawableScene* scene,
         uint32_t imageIndex
     );
+    void _maskPass(
+        VkPipelineLayout pipelineLayout,
+        VkCommandBuffer commandBuffer,
+        vax::engine::DrawableScene* scene,
+        uint32_t imageIndex
+    );
     void _postProcessPass(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex);
 };
 } // namespace vax::engine

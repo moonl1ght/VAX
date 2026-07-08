@@ -9,7 +9,7 @@ class Camera final {
   public:
     enum class Projection { perspective, orthographic };
 
-    explicit Camera(
+    Camera(
         vax::math::SizeUI viewPortSize = vax::math::SizeUI::zero(),
         Projection projection = Projection::perspective,
         glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),

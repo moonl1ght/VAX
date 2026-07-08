@@ -6,7 +6,7 @@
 namespace vax::vk {
 enum class PipelineLayoutName : uint32_t { BACKGROUND = 0, BASE = 1, POST_PROCESS = 2 };
 
-enum class PipelineName : uint32_t { BACKGROUND = 0, PBR = 1, BASE = 2, POST_PROCESS = 3 };
+enum class PipelineName : uint32_t { BACKGROUND = 0, PBR = 1, BASE = 2, POST_PROCESS = 3, MASK = 4 };
 
 enum class PipelineType { RENDER, COMPUTE, UNKNOWN };
 
@@ -22,6 +22,8 @@ class Pipeline final {
             return "base_pipeline";
         case PipelineName::POST_PROCESS:
             return "post_process_pipeline";
+        case PipelineName::MASK:
+            return "mask_pipeline";
         default:
             return "unknown_pipeline";
         }

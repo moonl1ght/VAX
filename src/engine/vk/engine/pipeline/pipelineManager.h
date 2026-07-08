@@ -4,6 +4,7 @@
 #include "device.h"
 #include "luna.h"
 #include "pipeline.h"
+#include "pipelineBuilder.h"
 #include "renderPassDescriptor.h"
 #include "shaderModuleBuilder.h"
 #include "vertex.h"
@@ -51,5 +52,15 @@ class PipelineManager final {
     bool _createBackgroundPipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createBasePipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createPostProcessPipeline(const RenderPassDescriptor& renderPassDescriptor);
+    bool _createMaskPipeline(const RenderPassDescriptor& renderPassDescriptor);
+
+    bool _createPipeline(
+        const RenderPassDescriptor& renderPassDescriptor,
+        std::string vertShaderPath,
+        std::string fragShaderPath,
+        PipelineName pipelineName,
+        PipelineLayoutName pipelineLayoutName,
+        std::function<void(GraphicsPipelineBuilder&)> builder
+    );
 };
 } // namespace vax::vk

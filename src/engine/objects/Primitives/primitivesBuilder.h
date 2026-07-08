@@ -15,7 +15,7 @@ class QueueManager;
 namespace vax::engine {
 class PrimitivesBuilder {
   public:
-    explicit PrimitivesBuilder(
+    PrimitivesBuilder(
         vax::vk::MeshManager& meshManager,
         vax::vk::SSBOManager& ssboManager,
         vax::vk::MaterialManager& materialManager,
