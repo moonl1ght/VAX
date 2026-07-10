@@ -54,5 +54,5 @@ void TransformMatrixHandle::updateModelMatrix(const glm::mat4& modelMatrix) {
 
 void TransformMatrixHandle::_updateNormalMatrix() {
     glm::mat3 upperLeft = glm::mat3(_modelMatrix);
-    _normalMatrix = glm::mat3x4(glm::transpose(glm::inverse(upperLeft)));
+    _normalMatrix = glm::mat4(glm::transpose(glm::inverse(upperLeft)));
 }

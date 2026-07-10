@@ -24,13 +24,8 @@ void DrawableModel::draw(const DrawContext& drawContext, const DrawSettings& dra
         flags |= ObjectFlags::PrecomputedMVP;
     }
 
-    if (drawSettings.isObjectSelected) {
-        flags |= ObjectFlags::IsObjectSelected;
-    }
-
     DrawPushConstants drawPushConstants{};
     drawPushConstants.flags = flags;
-    drawPushConstants.objectId = drawSettings.objectId;
 
     for (auto& submesh : _submeshes) {
         if (!_settings.skipPushConstants) {

@@ -46,7 +46,7 @@ FragmentOutput fragMain(uniform DrawPushConstants pushConstants, FragmentInput i
     PBRMaterial material = materials[pushConstants.materialIndex];
     float2[2] UVs = float2[2](input.uv, input.uv2);
     InstanceData instance = instances[instanceIndex];
-    float3x3 normalMatrix = instance.normalMatrix;
+    float3x3 normalMatrix = float3x3(instance.normalMatrix);
 
     float4 albedo = sampleBaseColor(material, UVs[material.baseColorTextureUVIndex]);
     float4 metallicRoughness = sampleMetallicRoughness(material, UVs[material.metallicRoughnessTextureUVIndex]);
@@ -111,9 +111,8 @@ FragmentOutput fragMain(uniform DrawPushConstants pushConstants, FragmentInput i
     } else {
         finalColor = float4(color, 1.0f);
     }
-    // uint isObjectSelected = (pushConstants.flags & ObjectFlags::IsObjectSelected) != 0u;
-    // uint isInstanceSelected = (instance.flags & InstanceFlags::IsInstanceSelected) != 0u;
-    // uint finalId = instance.instanceId * isInstanceSelected;
-    // finalId = finalId + pushConstants.objectId * isObjectSelected * (1u - isInstanceSelected);
-    return FragmentOutput(finalColor, 0);
+    uint isInstanceSelected = (instance.flags & InstanceFlags::IsInstanceSelected) != 0u;
+    uint isNoId = instance.instanceId == NO_ID;
+    uint finalId = instance.instanceId * isInstanceSelected * (1u - isNoId);
+    return FragmentOutput(finalColor, finalId);
 }

@@ -21,8 +21,6 @@ class SceneNode final {
 
     using MetadataValue = std::variant<std::string, float, int, bool>;
 
-    uint32_t startInstanceId = NO_ID;
-
     struct DrawableModelTransformInfo final {
         vax::math::Transform _originalParentRelativeTransform;
         vax::math::TransformMatrixHandle _parentTransformMatrices;
@@ -135,9 +133,9 @@ class SceneNode final {
         return std::nullopt;
     }
 
-    uint32_t objectId() const { return _objectId; }
+    uint32_t nodeId() const { return _nodeId; }
 
-    void setObjectId(uint32_t objectId, bool propagate = true);
+    void setNodeId(uint32_t nodeId, bool propagate = true);
 
     bool isSelected() const { return _isSelected; }
 
@@ -147,7 +145,7 @@ class SceneNode final {
     std::reference_wrapper<vax::vk::SSBOManager> _ssboManager;
 
     std::string _name;
-    uint32_t _objectId = NO_ID;
+    uint32_t _nodeId = NO_ID;
     uint32_t _instancesCount;
     bool _isSelected = false;
     std::vector<SceneNode> _children;

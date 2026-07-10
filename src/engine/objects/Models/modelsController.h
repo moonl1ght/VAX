@@ -83,7 +83,7 @@ class ModelsController {
     std::vector<vax::engine::DrawableModel> _drawableModels;
 
     uint32_t _globalInstanceCursor = 0;
-    uint32_t _lastObjectId = 0;
+    uint32_t _lastObjectId = 1;
 
     DrawableModelHandle _addDrawableModel(std::string id, std::string path, vax::engine::DrawableModel&& drawableModel);
 };

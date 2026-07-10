@@ -102,6 +102,11 @@ file(GLOB_RECURSE SLANG_SOURCE_FILES
 
 file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/src/engine/shaders/out")
 
+file(GLOB SHADER_SHARED_FILES "${PROJECT_SOURCE_DIR}/src/engine/shaders/*.h")
+file(GLOB SHADER_SHARED_SLANG_FILES "${PROJECT_SOURCE_DIR}/src/engine/shaders/*.slang")
+list(REMOVE_ITEM SHADER_SHARED_SLANG_FILES ${SLANG_SOURCE_FILES})
+list(APPEND SHADER_SHARED_FILES ${SHADER_SHARED_SLANG_FILES})
+
 foreach(SLANG ${SLANG_SOURCE_FILES})
     string(REGEX MATCH "([^/\\]+)\\.([^.]+)\\.slang$" _ "${SLANG}")
     set(BASE_NAME    "${CMAKE_MATCH_1}")
@@ -119,7 +124,7 @@ foreach(SLANG ${SLANG_SOURCE_FILES})
             -target spirv
             -g -O0
             -o "${SPIRV}"
-        DEPENDS ${SLANG}
+        DEPENDS ${SLANG} ${SHADER_SHARED_FILES}
         COMMENT "Compiling ${BASE_NAME} [${STAGE}]"
         VERBATIM
     )

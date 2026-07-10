@@ -52,7 +52,6 @@ class PipelineManager final {
     bool _createBackgroundPipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createBasePipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createFinalBlendPipeline(const RenderPassDescriptor& renderPassDescriptor);
-    bool _createMaskPipeline(const RenderPassDescriptor& renderPassDescriptor);
 
     bool _createPipeline(
         const RenderPassDescriptor& renderPassDescriptor,

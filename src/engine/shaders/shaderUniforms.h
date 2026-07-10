@@ -7,7 +7,6 @@
 #include <glm/glm.hpp>
 
 using mat4 = glm::mat4;
-using mat3 = glm::mat3x4; // for cpu padding
 using vec2 = glm::vec2;
 using vec3 = glm::vec3;
 using vec4 = glm::vec4;
@@ -77,7 +76,6 @@ enum ObjectFlags {
     IsWireframe = 1 << 0,      // 0001
     NoTangent = 1 << 1,        // 0010
     PrecomputedMVP = 1 << 2,   // 0100
-    IsObjectSelected = 1 << 3, // 1000
 };
 
 enum InstanceFlags {
@@ -106,18 +104,17 @@ struct UniformBufferObject { // total size: 160 bytes
     vec3 padding; // 12 bytes
 };
 
-struct InstanceData { // total size: 128 bytes
+struct InstanceData { // total size: 144 bytes
     mat4 model; // 64 bytes
-    mat3 normalMatrix; // 48 bytes
+    mat4 normalMatrix; // 64 bytes
     uint32_t flags; // 4 bytes
-    // uint32_t instanceId; // 4 bytes
-    // uint32_t padding[2]; // 8 bytes
+    uint32_t instanceId; // 4 bytes
+    uint32_t padding[2]; // 8 bytes
 };
 
 struct DrawPushConstants {
     uint32_t flags;                             // 4 bytes
     uint32_t materialIndex = NO_MATERIAL_INDEX; // 4 bytes
-    uint32_t objectId;
 };
 
 struct PBRMaterial {

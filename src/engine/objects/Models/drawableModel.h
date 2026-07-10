@@ -17,8 +17,6 @@ class DrawableModel final {
     struct DrawSettings {
         uint32_t instanceOffset;
         uint32_t instancesCount;
-        uint32_t objectId;
-        bool isObjectSelected;
     };
     
     struct Settings {

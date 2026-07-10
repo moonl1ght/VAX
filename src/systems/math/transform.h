@@ -35,11 +35,11 @@ struct TransformMatrixHandle final {
     void updateModelMatrix(const glm::mat4& modelMatrix);
 
     glm::mat4 getModelMatrix() const { return _modelMatrix; }
-    glm::mat3x4 getNormalMatrix() const { return _normalMatrix; }
+    glm::mat4 getNormalMatrix() const { return _normalMatrix; }
 
   private:
     glm::mat4 _modelMatrix = glm::mat4(1.0f);
-    glm::mat3x4 _normalMatrix = glm::mat3x4(1.0f);
+    glm::mat4 _normalMatrix = glm::mat4(1.0f);
 
     void _updateNormalMatrix();
 };
@@ -75,7 +75,7 @@ struct TransformHandle final {
     }
 
     glm::mat4 getModelMatrix() const { return _cachedTransformMatrix.getModelMatrix(); }
-    glm::mat3x4 getNormalMatrix() const { return _cachedTransformMatrix.getNormalMatrix(); }
+    glm::mat4 getNormalMatrix() const { return _cachedTransformMatrix.getNormalMatrix(); }
     const Transform& getTransform() const { return _transform; }
 
   private:

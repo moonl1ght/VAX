@@ -18,8 +18,10 @@ void SceneNode::draw(const DrawContext& drawContext) {
         InstanceData instanceData = {
             .model = worldHandle.getModelMatrix(),
             .normalMatrix = worldHandle.getNormalMatrix(),
-            // .flags = InstanceFlags::InstanceFlagsNone,
-            // .instanceId = startInstanceId == NO_ID ? NO_ID : static_cast<uint32_t>(startInstanceId + i),
+            .flags = static_cast<uint32_t>(
+                _isSelected ? InstanceFlags::IsInstanceSelected : InstanceFlags::InstanceFlagsNone
+            ),
+            .instanceId = _nodeId == NO_ID ? NO_ID : static_cast<uint32_t>(_nodeId + i),
         };
         for (auto& drawingRangeForDrawableModel : _drawableModelInstanceDrawingRanges) {
             auto& drawingRange = drawingRangeForDrawableModel[drawingRangeIndex];
@@ -57,8 +59,6 @@ void SceneNode::draw(const DrawContext& drawContext) {
             DrawableModel::DrawSettings drawSettings = {
                 .instanceOffset = drawingRange.first,
                 .instancesCount = drawingRange.second,
-                .objectId = _objectId,
-                .isObjectSelected = _isSelected,
             };
             drawableModel->draw(drawContext, drawSettings);
         }
@@ -97,11 +97,11 @@ SceneNode* SceneNode::getChild(const std::string& name, int depth) {
     return nullptr;
 }
 
-void SceneNode::setObjectId(uint32_t objectId, bool propagate) {
-    _objectId = objectId;
+void SceneNode::setNodeId(uint32_t nodeId, bool propagate) {
+    _nodeId = nodeId;
     if (propagate) {
         for (auto& child : _children) {
-            child.setObjectId(objectId, true);
+            child.setNodeId(nodeId, true);
         }
     }
 }

@@ -33,7 +33,7 @@ void ModelsController::preload(
                 auto sceneNode = _modelLoader.get().loadSceneModel(*this, modelDescriptor);
                 if (sceneNode) {
                     if (modelDescriptor.isIdentifiable) {
-                        sceneNode->setObjectId(_lastObjectId);
+                        sceneNode->setNodeId(_lastObjectId);
                         _lastObjectId += modelDescriptor.instancesCount;
                     }
                     _cachedSceneNodeMap.insert_or_assign(modelDescriptor.id, std::move(*sceneNode));
@@ -107,7 +107,7 @@ ModelsController::createSceneNodeById(const std::string& id, std::vector<vax::ma
     if (itModelInfo != _modelMap.end()) {
         auto sceneNode = SceneNode(_resourceManager.get().ssboManager(), id, transforms, true);
         if (itModelInfo->second.isIdentifiable) {
-            sceneNode.setObjectId(_lastObjectId);
+            sceneNode.setNodeId(_lastObjectId);
             _lastObjectId += instancesCount;
         }
         auto drawableModelPtr = &_drawableModels[itModelInfo->second.modelIndex];

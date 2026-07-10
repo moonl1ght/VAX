@@ -38,10 +38,6 @@ bool PipelineManager::setup(
         _logger.error("Failed to create final blend pipeline!");
         return false;
     }
-    if (!_createMaskPipeline(renderPassDescriptor)) {
-        _logger.error("Failed to create mask pipeline!");
-        return false;
-    }
     return true;
 }
 
@@ -105,24 +101,6 @@ bool PipelineManager::_createPBRPipeline(const RenderPassDescriptor& renderPassD
         SRC_PATH("engine/shaders/out/base.vert.spv"),
         SRC_PATH("engine/shaders/out/pbr.frag.spv"),
         PipelineName::PBR,
-        PipelineLayoutName::BASE,
-        [](GraphicsPipelineBuilder& pipelineBuilder) {
-            auto bindingDescription = Vertex::getBindingDescription();
-            auto attributeDescriptions = Vertex::getAttributeDescriptions();
-            auto attributeDescriptionsVector = std::vector<VkVertexInputAttributeDescription>(
-                attributeDescriptions.begin(), attributeDescriptions.end()
-            );
-            pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
-        }
-    );
-}
-
-bool PipelineManager::_createMaskPipeline(const RenderPassDescriptor& renderPassDescriptor) {
-    return _createPipeline(
-        renderPassDescriptor,
-        SRC_PATH("engine/shaders/out/base.vert.spv"),
-        SRC_PATH("engine/shaders/out/mask.frag.spv"),
-        PipelineName::MASK,
         PipelineLayoutName::BASE,
         [](GraphicsPipelineBuilder& pipelineBuilder) {
             auto bindingDescription = Vertex::getBindingDescription();

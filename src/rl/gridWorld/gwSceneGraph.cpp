@@ -15,6 +15,7 @@ bool GwSceneGraph::load(
         _logger.error("Failed to load agent model: {}", descriptor.agentDrawableDescriptor.id);
         return false;
     }
+    agentNode->setIsSelected(true);
     _agentNode = std::make_unique<vax::engine::SceneNode>(std::move(agentNode.value()));
     _roverModelProxy = std::make_unique<vax::rl::RoverModelProxy>();
     _roverModelProxy->linkModelNode(_agentNode);
