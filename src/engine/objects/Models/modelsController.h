@@ -49,8 +49,7 @@ class ModelsController {
 
     std::optional<vax::engine::SceneNode> createSceneNodeById(
         const std::string& id,
-        std::vector<vax::math::Transform> transforms = {vax::math::Transform()},
-        std::vector<vax::engine::ModelDescriptor::SelectedInstanceDescriptor> selectedInstanceDescriptors = {}
+        std::vector<vax::math::Transform> transforms = {vax::math::Transform()}
     );
 
     DrawableModel* getDrawableModelById(const std::string& id);
@@ -68,6 +67,7 @@ class ModelsController {
         size_t modelIndex;
         std::vector<SSBOChunkInfo> ssboChunkInfos;
         uint32_t ssboChunkCursor = 0;
+        bool isIdentifiable = true;
     };
 
     vax::Logger _logger = vax::Logger("ModelsController");
@@ -83,6 +83,7 @@ class ModelsController {
     std::vector<vax::engine::DrawableModel> _drawableModels;
 
     uint32_t _globalInstanceCursor = 0;
+    uint32_t _lastObjectId = 0;
 
     DrawableModelHandle _addDrawableModel(std::string id, std::string path, vax::engine::DrawableModel&& drawableModel);
 };

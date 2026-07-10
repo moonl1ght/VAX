@@ -13,11 +13,13 @@ class RenderDestination final {
         const Device& device,
         std::unique_ptr<Texture> depthTexture,
         std::vector<Texture> textures,
+        std::vector<Texture> maskTextures,
         std::vector<VkFramebuffer> framebuffers
     )
         : _device(device)
         , _depthTexture(std::move(depthTexture))
         , _textures(std::move(textures))
+        , _maskTextures(std::move(maskTextures))
         , framebuffers(std::move(framebuffers)) {}
 
     RenderDestination(const RenderDestination& other) = delete;
@@ -34,6 +36,7 @@ class RenderDestination final {
     std::reference_wrapper<const Device> _device;
     std::vector<Texture> _textures;
     std::unique_ptr<Texture> _depthTexture;
+    std::vector<Texture> _maskTextures;
 
     void destroy();
 };

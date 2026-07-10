@@ -34,8 +34,8 @@ float4 fragMain(float2 uv: TEXCOORD0) : SV_Target {
     float borderMask = saturate(dilated - maskColor.a);
 
     finalColor = lerp(finalColor, sceneColor.rgb, sceneColor.a);
-    borderMask = borderMask / (borderMask == 0.0f ? 1.0f : borderMask);
-    finalColor = lerp(finalColor, borderColor, borderMask);
+    // borderMask = borderMask / (borderMask == 0.0f ? 1.0f : borderMask);
+    // finalColor = lerp(finalColor, borderColor, borderMask);
     // finalColor = lerp(sceneColor.rgb, finalColor, borderMask);
 
     return float4(finalColor, 1.0f);

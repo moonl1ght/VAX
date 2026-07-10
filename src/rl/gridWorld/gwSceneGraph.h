@@ -31,8 +31,6 @@ class GwSceneGraph final {
 
     void draw(const vax::engine::DrawContext& drawContext);
 
-    void drawSelected(const vax::engine::DrawContext& drawContext);
-
     void update(const vax::engine::FrameTime& frameTime);
 
     void moveAgentTo(vax::math::Position2DFloat position, vax::rl::AgentOrientation orientation, bool withAnimation);

@@ -2,13 +2,13 @@
 
 #include "drawContext.h"
 #include "drawableModel.h"
+#include "modelDescriptor.h"
 #include "ssboManager.h"
 #include "transform.h"
 #include <optional>
 #include <unordered_map>
 #include <variant>
 #include <vector>
-#include "modelDescriptor.h"
 
 namespace vax::engine {
 class ModelLoader;
@@ -21,7 +21,7 @@ class SceneNode final {
 
     using MetadataValue = std::variant<std::string, float, int, bool>;
 
-    bool isSelected = false;
+    uint32_t startInstanceId = NO_ID;
 
     struct DrawableModelTransformInfo final {
         vax::math::Transform _originalParentRelativeTransform;
@@ -57,14 +57,12 @@ class SceneNode final {
         vax::vk::SSBOManager& ssboManager,
         std::string name,
         std::vector<vax::math::Transform> transforms,
-        std::vector<vax::engine::ModelDescriptor::SelectedInstanceDescriptor> selectedInstanceDescriptors,
         bool isRoot = false
     )
         : _ssboManager(ssboManager)
         , _name(std::move(name))
         , _instancesCount(transforms.size())
-        , _isRoot(isRoot)
-        , _selectedInstanceDescriptors(std::move(selectedInstanceDescriptors)) {
+        , _isRoot(isRoot) {
         _drawableModelTransformInfos.reserve(transforms.size());
         for (size_t i = 0; i < transforms.size(); ++i) {
             vax::math::TransformHandle transformHandle;
@@ -90,7 +88,7 @@ class SceneNode final {
     const std::string& name() const { return _name; };
     bool hasDrawableModels() const { return !_drawableModels.empty(); };
 
-    void draw(const vax::engine::DrawContext& drawContext, bool onlySelected = false);
+    void draw(const vax::engine::DrawContext& drawContext);
 
     /// @param depth - depth of the child, if -1 search from all children with max depth,
     ///                 if 0 will compare only with node itself.
@@ -128,9 +126,7 @@ class SceneNode final {
 
     uint32_t instancesCount() const { return _instancesCount; }
 
-    void setMetadata(const std::string& key, const MetadataValue& value) {
-        _metadata[key] = value;
-    }
+    void setMetadata(const std::string& key, const MetadataValue& value) { _metadata[key] = value; }
 
     const std::optional<MetadataValue> getMetadata(const std::string& key) const {
         if (auto it = _metadata.find(key); it != _metadata.end()) {
@@ -139,17 +135,26 @@ class SceneNode final {
         return std::nullopt;
     }
 
+    uint32_t objectId() const { return _objectId; }
+
+    void setObjectId(uint32_t objectId, bool propagate = true);
+
+    bool isSelected() const { return _isSelected; }
+
+    void setIsSelected(bool isSelected, bool propagate = true);
+
   private:
     std::reference_wrapper<vax::vk::SSBOManager> _ssboManager;
 
     std::string _name;
+    uint32_t _objectId = NO_ID;
     uint32_t _instancesCount;
+    bool _isSelected = false;
     std::vector<SceneNode> _children;
     std::unordered_map<std::string, MetadataValue> _metadata;
     std::vector<DrawableModel*> _drawableModels;
     std::vector<std::vector<DrawableModelHandle::InstanceDrawingRange>> _drawableModelInstanceDrawingRanges;
     bool _isRoot = false;
     std::vector<DrawableModelTransformInfo> _drawableModelTransformInfos;
-    std::vector<vax::engine::ModelDescriptor::SelectedInstanceDescriptor> _selectedInstanceDescriptors;
 };
 } // namespace vax::engine

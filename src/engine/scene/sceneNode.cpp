@@ -6,21 +6,10 @@ using namespace vax::engine;
 using namespace vax;
 using namespace vax::math;
 
-void SceneNode::draw(const DrawContext& drawContext, bool onlySelected) {
+void SceneNode::draw(const DrawContext& drawContext) {
     // TODO: update only dirty instances
     size_t drawingRangeIndex = 0;
-    size_t selectedInstanceIndex = 0;
     for (size_t i = 0; i < _instancesCount; ++i) {
-        if (onlySelected) {
-            if (selectedInstanceIndex >= _selectedInstanceDescriptors.size()) {
-                break;
-            }
-            if (i == _selectedInstanceDescriptors[selectedInstanceIndex].instanceIndex) {
-                ++selectedInstanceIndex;
-            } else {
-                continue;
-            }
-        }
         TransformMatrixHandle worldHandle;
         auto& transformInfo = _drawableModelTransformInfos[i];
         worldHandle.updateModelMatrix(
@@ -29,6 +18,8 @@ void SceneNode::draw(const DrawContext& drawContext, bool onlySelected) {
         InstanceData instanceData = {
             .model = worldHandle.getModelMatrix(),
             .normalMatrix = worldHandle.getNormalMatrix(),
+            // .flags = InstanceFlags::InstanceFlagsNone,
+            // .instanceId = startInstanceId == NO_ID ? NO_ID : static_cast<uint32_t>(startInstanceId + i),
         };
         for (auto& drawingRangeForDrawableModel : _drawableModelInstanceDrawingRanges) {
             auto& drawingRange = drawingRangeForDrawableModel[drawingRangeIndex];
@@ -60,34 +51,20 @@ void SceneNode::draw(const DrawContext& drawContext, bool onlySelected) {
         _drawableModelTransformInfos[i]._isChildrenTransformDirty = false;
     }
 
-    if (onlySelected) {
-        for (size_t i = 0; i < _drawableModels.size(); ++i) {
-            size_t drawingRangeIndex = 0;
-            size_t accumulatedCount = 0;
-            for (auto& selectedInstanceDescriptor : _selectedInstanceDescriptors) {
-                auto instanceIndex = selectedInstanceDescriptor.instanceIndex;
-                auto& drawingRange = _drawableModelInstanceDrawingRanges[i][drawingRangeIndex];
-                auto count = drawingRange.second;
-                while (instanceIndex >= accumulatedCount + count) {
-                    accumulatedCount += count;
-                    ++drawingRangeIndex;
-                    drawingRange = _drawableModelInstanceDrawingRanges[i][drawingRangeIndex];
-                }
-                auto offset = drawingRange.first;
-                _drawableModels[i]->draw(drawContext, offset + instanceIndex - accumulatedCount, 1);
-            }
-        }
-    } else {
-        for (size_t i = 0; i < _drawableModels.size(); ++i) {
-            auto& drawableModel = _drawableModels[i];
-            for (auto& drawingRange : _drawableModelInstanceDrawingRanges[i]) {
-                drawableModel->draw(drawContext, drawingRange.first, drawingRange.second, isSelected);
-            }
+    for (size_t i = 0; i < _drawableModels.size(); ++i) {
+        auto& drawableModel = _drawableModels[i];
+        for (auto& drawingRange : _drawableModelInstanceDrawingRanges[i]) {
+            DrawableModel::DrawSettings drawSettings = {
+                .instanceOffset = drawingRange.first,
+                .instancesCount = drawingRange.second,
+                .objectId = _objectId,
+                .isObjectSelected = _isSelected,
+            };
+            drawableModel->draw(drawContext, drawSettings);
         }
     }
 
     for (auto& child : _children) {
-        child.isSelected = isSelected;
         child.draw(drawContext);
     }
 }
@@ -118,4 +95,22 @@ SceneNode* SceneNode::getChild(const std::string& name, int depth) {
         }
     }
     return nullptr;
+}
+
+void SceneNode::setObjectId(uint32_t objectId, bool propagate) {
+    _objectId = objectId;
+    if (propagate) {
+        for (auto& child : _children) {
+            child.setObjectId(objectId, true);
+        }
+    }
+}
+
+void SceneNode::setIsSelected(bool isSelected, bool propagate) {
+    _isSelected = isSelected;
+    if (propagate) {
+        for (auto& child : _children) {
+            child.setIsSelected(isSelected, true);
+        }
+    }
 }

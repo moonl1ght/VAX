@@ -12,7 +12,8 @@ class RenderPass final {
         std::string_view name,
         VkRenderPass renderPass,
         VkFramebuffer framebuffer,
-        VkExtent2D extent
+        VkExtent2D extent,
+        uint32_t colorAttachmentCount = 1
     ) noexcept {
         if (!name.empty()) {
             VkDebugUtilsObjectNameInfoEXT nameInfo{
@@ -23,15 +24,14 @@ class RenderPass final {
             };
             vax::vk::pfnSetDebugUtilsObjectNameEXT(device.vkDevice, &nameInfo);
         }
-        _clearValues = std::array<VkClearValue, 2>{};
-        _clearValues[0].color = {{0.0f, 0.0f, 0.0f, 0.0f}};
-        _clearValues[1].depthStencil = {1.0f, 0};
+        _clearValues.assign(colorAttachmentCount, VkClearValue{.color = {{0.0f, 0.0f, 0.0f, 0.0f}}});
+        _clearValues.push_back(VkClearValue{.depthStencil = {1.0f, 0}});
         _renderPassInfo = {
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
             .renderPass = renderPass,
             .framebuffer = framebuffer,
             .renderArea = {.offset = {0, 0}, .extent = extent},
-            .clearValueCount = 2,
+            .clearValueCount = static_cast<uint32_t>(_clearValues.size()),
             .pClearValues = _clearValues.data()
         };
     };
@@ -65,6 +65,6 @@ class RenderPass final {
   private:
     vax::Logger _logger = vax::Logger("RenderPass");
     VkRenderPassBeginInfo _renderPassInfo;
-    std::array<VkClearValue, 2> _clearValues;
+    std::vector<VkClearValue> _clearValues;
 };
 } // namespace vax::engine

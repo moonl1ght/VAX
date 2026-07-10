@@ -14,12 +14,18 @@ class ModelLoader;
 namespace vax::engine {
 class DrawableModel final {
   public:
+    struct DrawSettings {
+        uint32_t instanceOffset;
+        uint32_t instancesCount;
+        uint32_t objectId;
+        bool isObjectSelected;
+    };
+    
     struct Settings {
         bool useWireframe = false;
         bool hasTangents = false;
         bool skipPushConstants = false;
         bool precomputedMVP = false;
-        bool instanceDrawing = false;
     };
 
     friend class vax::engine::PrimitivesBuilder;
@@ -39,12 +45,7 @@ class DrawableModel final {
 
     bool loadMesh(const vax::vk::MeshPBR::LoadMeshBuffersContext& context);
 
-    void draw(
-        const vax::engine::DrawContext& drawContext,
-        uint32_t instanceOffset,
-        uint32_t instancesCount,
-        bool isInstanceSelected = false
-    );
+    void draw(const vax::engine::DrawContext& drawContext, const DrawSettings& drawSettings);
 
     Settings& settings() { return _settings; }
 

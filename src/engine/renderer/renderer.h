@@ -34,11 +34,9 @@ class Renderer final {
     std::reference_wrapper<vax::ui::UIEngine> _uiEngine;
 
     std::optional<vax::vk::RenderPassDescriptor> _mainRenderPassDescriptor;
-    std::optional<vax::vk::RenderPassDescriptor> _maskRenderPassDescriptor;
     std::optional<vax::vk::RenderPassDescriptor> _swapchainRenderPassDescriptor;
 
     std::optional<vax::vk::RenderDestination> _mainRenderDestination;
-    std::optional<vax::vk::RenderDestination> _maskRenderDestination;
     std::optional<vax::vk::RenderDestination> _swapchainRenderDestination;
 
     uint32_t _currentFrame = 0;
@@ -58,12 +56,6 @@ class Renderer final {
     void _createRenderDestinations();
 
     void _mainPass(
-        VkPipelineLayout pipelineLayout,
-        VkCommandBuffer commandBuffer,
-        vax::engine::DrawableScene* scene,
-        uint32_t imageIndex
-    );
-    void _maskPass(
         VkPipelineLayout pipelineLayout,
         VkCommandBuffer commandBuffer,
         vax::engine::DrawableScene* scene,

@@ -243,6 +243,7 @@ bool PipelineManager::_createPipeline(
 
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     pipelineBuilder.setRenderPass(renderPassDescriptor.getVkRenderPass());
+    pipelineBuilder.setColorAttachmentCount(renderPassDescriptor.colorAttachmentCount);
     pipelineBuilder.addShaderStage(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule.value(), "main");
     pipelineBuilder.addShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule.value(), "main");
     builder(pipelineBuilder);

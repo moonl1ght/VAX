@@ -79,6 +79,7 @@ class GraphicsPipelineBuilder final {
     void setPushConstantRange(VkPushConstantRange pushConstantRange) { _pushConstantRange = pushConstantRange; }
     void setRenderPass(VkRenderPass renderPass) { _renderPass = renderPass; }
     void setDepthStencilState(DepthStencilState depthStencilState) { _depthStencilState = depthStencilState; }
+    void setColorAttachmentCount(uint32_t colorAttachmentCount) { _colorAttachmentCount = colorAttachmentCount; }
 
   private:
     vax::Logger _logger = vax::Logger("GraphicsPipelineBuilder");
@@ -91,5 +92,6 @@ class GraphicsPipelineBuilder final {
     VkPushConstantRange _pushConstantRange = {};
     VkRenderPass _renderPass = VK_NULL_HANDLE;
     DepthStencilState _depthStencilState = {};
+    uint32_t _colorAttachmentCount = 1;
 };
 } // namespace vax::vk

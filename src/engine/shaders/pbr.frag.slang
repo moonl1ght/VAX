@@ -33,9 +33,15 @@ float3 ACESFilm(float3 x) {
     return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0f, 1.0f);
 }
 
+struct FragmentOutput
+{
+    float4 color : SV_Target0;
+
+    uint objectId : SV_Target1;
+};
+
 [shader("fragment")]
-float4 fragMain(uniform DrawPushConstants pushConstants, FragmentInput input)
-    : SV_Target {
+FragmentOutput fragMain(uniform DrawPushConstants pushConstants, FragmentInput input) {
     uint instanceIndex = input.instanceIndex;
     PBRMaterial material = materials[pushConstants.materialIndex];
     float2[2] UVs = float2[2](input.uv, input.uv2);
@@ -97,11 +103,17 @@ float4 fragMain(uniform DrawPushConstants pushConstants, FragmentInput input)
 
     // color = ACESFilm(color);
 
+    float4 finalColor;
     if ((pushConstants.flags & ObjectFlags::IsWireframe) != 0) {
         // float val = edgeFactor(input.baryCoords, 1.0);
         // return lerp(albedo, float4(0, 0, 0, 1), 1.0 - val);
-        return float4(1.0f, 0.0f, 0.0f, 1.0f);
+        finalColor = float4(1.0f, 0.0f, 0.0f, 1.0f);
     } else {
-        return float4(color, 1.0f);
+        finalColor = float4(color, 1.0f);
     }
+    // uint isObjectSelected = (pushConstants.flags & ObjectFlags::IsObjectSelected) != 0u;
+    // uint isInstanceSelected = (instance.flags & InstanceFlags::IsInstanceSelected) != 0u;
+    // uint finalId = instance.instanceId * isInstanceSelected;
+    // finalId = finalId + pushConstants.objectId * isObjectSelected * (1u - isInstanceSelected);
+    return FragmentOutput(finalColor, 0);
 }

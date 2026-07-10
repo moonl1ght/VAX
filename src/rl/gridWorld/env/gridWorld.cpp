@@ -85,34 +85,19 @@ GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
             transform.position.y = 0.5f;
         }
         if (descriptors.find(blockTypeString) == descriptors.end()) {
-            auto selectedInstanceDescriptor = std::vector<engine::ModelDescriptor::SelectedInstanceDescriptor>();
-            if (blockType == BlockType::FINISH || blockType == BlockType::START) {
-                selectedInstanceDescriptor.push_back(
-                    engine::ModelDescriptor::SelectedInstanceDescriptor{
-                    .instanceIndex = 0,
-                    .color = getBlockColor(blockType),
-                    }
-                );
-            }
             descriptors[blockTypeString] = engine::ModelDescriptor{
                 .path = blockTypeString,
                 .id = blockTypeString,
                 .modelType = engine::ModelDescriptor::ModelType::MODEL,
                 .transforms = {transform},
-                .selectedInstanceDescriptors = {},
             };
         } else {
             auto& descriptor = descriptors[blockTypeString];
             auto instanceIndex = descriptor.instancesCount;
             descriptor.transforms.push_back(transform);
             descriptor.instancesCount += 1;
+            descriptor.isIdentifiable = true;
             if (blockType == BlockType::FINISH || blockType == BlockType::START) {
-                descriptor.selectedInstanceDescriptors.push_back(
-                    engine::ModelDescriptor::SelectedInstanceDescriptor{
-                    .instanceIndex = instanceIndex,
-                    .color = getBlockColor(blockType),
-                    }
-                );
             }
         }
         ++flatIndex;

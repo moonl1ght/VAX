@@ -13,13 +13,12 @@ vax::engine::ModelDescriptor GWAgent::getDrawableDescriptor() const {
     auto transform = Transform();
     transform.scale = {0.5f, 0.5f, 0.5f};
     return {
-        RES_PATH("assets/models/rover/rover.urdf"),
-        "rover",
-        vax::engine::ModelDescriptor::ModelType::MODEL,
-        {transform},
-        {},
-        vax::engine::ModelDescriptor::PrimitiveDescriptor(),
-        1,
+        .path = RES_PATH("assets/models/rover/rover.urdf"),
+        .id = "rover",
+        .modelType = vax::engine::ModelDescriptor::ModelType::MODEL,
+        .transforms = {transform},
+        .instancesCount = 1,
+        .isIdentifiable = true,
     };
 }
 

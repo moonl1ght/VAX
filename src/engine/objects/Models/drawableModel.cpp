@@ -5,9 +5,7 @@ using namespace vax::vk;
 
 bool DrawableModel::loadMesh(const MeshPBR::LoadMeshBuffersContext& context) { return _mesh->loadBuffers(context); }
 
-void DrawableModel::draw(
-    const DrawContext& drawContext, uint32_t instanceOffset, uint32_t instancesCount, bool isInstanceSelected
-) {
+void DrawableModel::draw(const DrawContext& drawContext, const DrawSettings& drawSettings) {
     if (!_mesh->isLoaded())
         return;
     VkBuffer vertexBuffers[] = {_mesh->vertexBuffer->vkBuffer()};
@@ -26,12 +24,13 @@ void DrawableModel::draw(
         flags |= ObjectFlags::PrecomputedMVP;
     }
 
-    if (isInstanceSelected) {
-        flags |= ObjectFlags::IsInstanceSelected;
+    if (drawSettings.isObjectSelected) {
+        flags |= ObjectFlags::IsObjectSelected;
     }
 
     DrawPushConstants drawPushConstants{};
     drawPushConstants.flags = flags;
+    drawPushConstants.objectId = drawSettings.objectId;
 
     for (auto& submesh : _submeshes) {
         if (!_settings.skipPushConstants) {
@@ -48,10 +47,10 @@ void DrawableModel::draw(
         vkCmdDrawIndexed(
             drawContext.commandBuffer,
             submesh.indexCount,
-            instancesCount,
+            drawSettings.instancesCount,
             submesh.firstIndex,
             submesh.vertexOffset,
-            instanceOffset
+            drawSettings.instanceOffset
         );
     }
 }

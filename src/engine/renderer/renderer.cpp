@@ -20,12 +20,7 @@ void Renderer::setup() {
         _logger.error("Failed to create render pass descriptor!");
         return;
     }
-    _maskRenderPassDescriptor = RenderPassDescriptorBuilder(*_vkEngine.get().device)
-                                    .buildMainOffscreen(_vkEngine.get().swapchain->swapchainImageFormat, true);
-    if (!_maskRenderPassDescriptor.has_value()) {
-        _logger.error("Failed to create mask render pass descriptor!");
-        return;
-    }
+
     _swapchainRenderPassDescriptor = RenderPassDescriptorBuilder(*_vkEngine.get().device)
                                          .buildMainSwapchain(_vkEngine.get().swapchain->swapchainImageFormat);
     if (!_swapchainRenderPassDescriptor.has_value()) {
@@ -69,9 +64,6 @@ void Renderer::prepare(DrawableScene* scene) {
         }
         finalBlendDescriptorSetHandler->writeTexture(
             _mainRenderDestination->textures()[i], FinalBlendBindingIndices::FINAL_BLEND_TEXTURE_INDEX, 0, true
-        );
-        finalBlendDescriptorSetHandler->writeTexture(
-            _maskRenderDestination->textures()[i], FinalBlendBindingIndices::FINAL_BLEND_TEXTURE_INDEX, 1, true
         );
         finalBlendDescriptorSetHandler->update();
     }
@@ -229,7 +221,6 @@ bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::engine::DrawableSc
     }
 
     _mainPass(pipelineLayout, commandBuffer, scene, imageIndex);
-    _maskPass(pipelineLayout, commandBuffer, scene, imageIndex);
     _finalBlendPass(commandBuffer, scene, imageIndex);
     return true;
 }
@@ -322,17 +313,6 @@ void Renderer::_createRenderDestinations() {
         _logger.error("Failed to create main render destination!");
         return;
     }
-    _maskRenderDestination = RenderDestinationBuilder(*_vkEngine.get().device, _vkEngine.get().allocator)
-                                 .buildMainOffscreen(
-                                     *_vkEngine.get().commandManager,
-                                     _vkEngine.get().queueManager->graphicsQueue,
-                                     _vkEngine.get().swapchain->swapchainExtent,
-                                     *_maskRenderPassDescriptor
-                                 );
-    if (!_maskRenderDestination.has_value()) {
-        _logger.error("Failed to create mask render destination!");
-        return;
-    }
     _swapchainRenderDestination = RenderDestinationBuilder(*_vkEngine.get().device, _vkEngine.get().allocator)
                                       .buildMainSwapchain(
                                           *_vkEngine.get().commandManager,
@@ -357,7 +337,8 @@ void Renderer::_mainPass(
         "main_render_pass",
         _mainRenderPassDescriptor->getVkRenderPass(),
         _mainRenderDestination->framebuffers[_currentFrame],
-        _vkEngine.get().swapchain->swapchainExtent
+        _vkEngine.get().swapchain->swapchainExtent,
+        _mainRenderPassDescriptor->colorAttachmentCount
     );
     renderPass.pass(commandBuffer, [&]() {
         auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
@@ -386,46 +367,6 @@ void Renderer::_mainPass(
         if (!_drawGizmo(commandBuffer, scene)) {
             _logger.error("Failed to draw gizmo!");
         }
-    });
-}
-
-void Renderer::_maskPass(
-    VkPipelineLayout pipelineLayout,
-    VkCommandBuffer commandBuffer,
-    vax::engine::DrawableScene* scene,
-    uint32_t imageIndex
-) {
-    _setViewportAndScissor(commandBuffer);
-    RenderPass renderPass(
-        *_vkEngine.get().device,
-        "mask_render_pass",
-        _maskRenderPassDescriptor->getVkRenderPass(),
-        _maskRenderDestination->framebuffers[_currentFrame],
-        _vkEngine.get().swapchain->swapchainExtent
-    );
-    renderPass.pass(commandBuffer, [&]() {
-        auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            _currentFrame, vax::vk::DescriptorSetLayout::SetType::PER_FRAME
-        );
-
-        if (!frameDescriptorSetHandler.has_value()) {
-            _logger.error("Failed to get default descriptor set writer!");
-            return;
-        }
-        frameDescriptorSetHandler->bind(commandBuffer, pipelineLayout, MainSetIndices::PER_FRAME_SET_INDEX);
-
-        auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::MASK);
-        if (!pipeline) {
-            _logger.error("Failed to get PBR pipeline!");
-            return;
-        }
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline);
-        DrawContext drawContext{
-            .commandBuffer = commandBuffer,
-            .pipelineLayout = pipeline->vkPipelineLayout,
-            .currentFrame = _currentFrame,
-        };
-        scene->drawSelected(drawContext);
     });
 }
 

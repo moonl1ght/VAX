@@ -70,13 +70,19 @@ static constexpr uint32_t NO_TEXTURE_FLAG = 0xFFFFFFFF;
 static constexpr uint32_t NO_MATERIAL_INDEX = 0xFFFFFFFF;
 static constexpr uint32_t NO_ENVIRONMENT_MAP_INDEX = 0xFFFFFFFF;
 static constexpr uint32_t NO_SAMPLER_INDEX = 0xFFFFFFFF;
+static constexpr uint32_t NO_ID = 0xFFFFFFFF;
 
 enum ObjectFlags {
     NoFlags = 0,
-    IsWireframe = 1 << 0,    // 0001
-    NoTangent = 1 << 1,      // 0010
-    PrecomputedMVP = 1 << 2, // 0100
-    IsInstanceSelected = 1 << 3, // 1000
+    IsWireframe = 1 << 0,      // 0001
+    NoTangent = 1 << 1,        // 0010
+    PrecomputedMVP = 1 << 2,   // 0100
+    IsObjectSelected = 1 << 3, // 1000
+};
+
+enum InstanceFlags {
+    InstanceFlagsNone = 0,
+    IsInstanceSelected = 1 << 0, // 0001
 };
 
 struct EnvironmentMapData {
@@ -92,22 +98,26 @@ struct EnvironmentMapData {
     uint32_t padding[2];
 };
 
-struct UniformBufferObject {
-    mat4 view;
-    mat4 proj;
-    vec4 cameraPosition;
-    uint32_t environmentMapIndex = NO_ENVIRONMENT_MAP_INDEX;
-    vec3 padding;
+struct UniformBufferObject { // total size: 160 bytes
+    mat4 view; // 64 bytes
+    mat4 proj; // 64 bytes
+    vec4 cameraPosition; // 16 bytes
+    uint32_t environmentMapIndex = NO_ENVIRONMENT_MAP_INDEX; // 4 bytes
+    vec3 padding; // 12 bytes
 };
 
-struct InstanceData {
-    mat4 model;
-    mat3 normalMatrix;
+struct InstanceData { // total size: 128 bytes
+    mat4 model; // 64 bytes
+    mat3 normalMatrix; // 48 bytes
+    uint32_t flags; // 4 bytes
+    // uint32_t instanceId; // 4 bytes
+    // uint32_t padding[2]; // 8 bytes
 };
 
 struct DrawPushConstants {
     uint32_t flags;                             // 4 bytes
     uint32_t materialIndex = NO_MATERIAL_INDEX; // 4 bytes
+    uint32_t objectId;
 };
 
 struct PBRMaterial {

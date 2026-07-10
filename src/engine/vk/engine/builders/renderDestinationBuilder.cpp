@@ -33,6 +33,9 @@ std::optional<RenderDestination> RenderDestinationBuilder::buildMainOffscreen(
     std::vector<Texture> colorTextures;
     colorTextures.reserve(MAX_FRAMES_IN_FLIGHT);
 
+    std::vector<Texture> maskTextures;
+    maskTextures.reserve(MAX_FRAMES_IN_FLIGHT);
+
     std::vector<VkFramebuffer> framebuffers;
     framebuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
@@ -53,7 +56,24 @@ std::optional<RenderDestination> RenderDestinationBuilder::buildMainOffscreen(
         colorTexture->loadImageView(VK_IMAGE_VIEW_TYPE_2D, 1, 1);
         colorTexture->createSampler();
 
-        std::array<VkImageView, 2> attachments = {colorTexture->imageView(), depthTexture->imageView()};
+        auto maskTexture = TextureFactory(_device.get(), _allocator)
+                               .makeTextureDetached(
+                                   TextureFactory::TextureCreateInfo{
+                                   .name = "main_offscreen_mask_" + std::to_string(i),
+                                   .format = VK_FORMAT_R8_UINT,
+                                   .size = math::SizeUI(extent),
+                                   .imageUsageFlags = colorImageUsage,
+                                   }
+                               );
+        if (!maskTexture.has_value()) {
+            _logger.error("Failed to create offscreen color texture!");
+            return std::nullopt;
+        }
+        maskTexture->loadImageView(VK_IMAGE_VIEW_TYPE_2D, 1, 1);
+
+        std::array<VkImageView, 3> attachments = {
+            colorTexture->imageView(), maskTexture->imageView(), depthTexture->imageView()
+        };
         VkFramebufferCreateInfo framebufferInfo{
             .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .renderPass = renderPassDescriptor.getVkRenderPass(),
@@ -69,12 +89,14 @@ std::optional<RenderDestination> RenderDestinationBuilder::buildMainOffscreen(
         }
 
         colorTextures.push_back(std::move(*colorTexture));
+        maskTextures.push_back(std::move(*maskTexture));
     }
 
     return std::make_optional<RenderDestination>(
         _device.get(),
         std::make_unique<Texture>(std::move(*depthTexture)),
         std::move(colorTextures),
+        std::move(maskTextures),
         std::move(framebuffers)
     );
 }
@@ -130,6 +152,7 @@ std::optional<RenderDestination> RenderDestinationBuilder::buildMainSwapchain(
     return std::make_optional<RenderDestination>(
         _device.get(),
         std::make_unique<Texture>(std::move(*depthTexture)),
+        std::vector<Texture>{},
         std::vector<Texture>{},
         std::move(swapchainFramebuffers)
     );

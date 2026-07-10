@@ -98,6 +98,17 @@ RenderPassDescriptorBuilder::buildMainOffscreen(VkFormat imageFormat, bool allow
         .finalLayout = allowComputeUsage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
     };
 
+    VkAttachmentDescription maskAttachment{
+        .format = VK_FORMAT_R8_UINT,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    };
+
     VkFormat depthFormat = findDepthFormat(_device.get().vkPhysicalDevice);
     VkAttachmentDescription depthAttachment{
         .format = depthFormat,
@@ -110,20 +121,26 @@ RenderPassDescriptorBuilder::buildMainOffscreen(VkFormat imageFormat, bool allow
         .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
     };
 
-    VkAttachmentReference colorAttachmentRef{
-        .attachment = 0,
-        .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    std::array<VkAttachmentReference, 2> colorAttachmentRefs{
+        VkAttachmentReference{
+            .attachment = 0,
+            .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        },
+        VkAttachmentReference{
+            .attachment = 1,
+            .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        },
     };
 
     VkAttachmentReference depthAttachmentRef{
-        .attachment = 1,
+        .attachment = 2,
         .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
     };
 
     VkSubpassDescription subpass{
         .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-        .colorAttachmentCount = 1,
-        .pColorAttachments = &colorAttachmentRef,
+        .colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size()),
+        .pColorAttachments = colorAttachmentRefs.data(),
         .pDepthStencilAttachment = &depthAttachmentRef,
     };
 
@@ -148,7 +165,7 @@ RenderPassDescriptorBuilder::buildMainOffscreen(VkFormat imageFormat, bool allow
         .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
     };
 
-    std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
+    std::array<VkAttachmentDescription, 3> attachments = {colorAttachment, maskAttachment, depthAttachment};
     VkRenderPassCreateInfo renderPassInfo{
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
         .attachmentCount = static_cast<uint32_t>(attachments.size()),
@@ -165,5 +182,7 @@ RenderPassDescriptorBuilder::buildMainOffscreen(VkFormat imageFormat, bool allow
         return std::nullopt;
     }
 
-    return std::make_optional<vax::vk::RenderPassDescriptor>(_device.get(), renderPass, imageFormat, depthFormat);
+    return std::make_optional<vax::vk::RenderPassDescriptor>(
+        _device.get(), renderPass, imageFormat, depthFormat, static_cast<uint32_t>(colorAttachmentRefs.size())
+    );
 }

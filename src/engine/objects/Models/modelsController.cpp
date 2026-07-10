@@ -32,6 +32,10 @@ void ModelsController::preload(
             if (modelDescriptor.getModelExtension() == vax::engine::ModelDescriptor::ModelExtension::URDF) {
                 auto sceneNode = _modelLoader.get().loadSceneModel(*this, modelDescriptor);
                 if (sceneNode) {
+                    if (modelDescriptor.isIdentifiable) {
+                        sceneNode->setObjectId(_lastObjectId);
+                        _lastObjectId += modelDescriptor.instancesCount;
+                    }
                     _cachedSceneNodeMap.insert_or_assign(modelDescriptor.id, std::move(*sceneNode));
                     isURDF = true;
                 }
@@ -70,6 +74,7 @@ void ModelsController::preload(
                 .modelIndex = _drawableModels.size() - 1,
                 .ssboChunkInfos = {ssboChunkInfo},
                 .ssboChunkCursor = 0,
+                .isIdentifiable = modelDescriptor.isIdentifiable,
             };
             _modelMap[modelDescriptor.id] = modelInfo;
             _globalInstanceCursor += instanceCount;
@@ -95,16 +100,16 @@ std::vector<std::string> ModelsController::getModelIds() const {
     return modelIds;
 }
 
-std::optional<SceneNode> ModelsController::createSceneNodeById(
-    const std::string& id,
-    std::vector<vax::math::Transform> transforms,
-    std::vector<vax::engine::ModelDescriptor::SelectedInstanceDescriptor> selectedInstanceDescriptors
-) {
+std::optional<SceneNode>
+ModelsController::createSceneNodeById(const std::string& id, std::vector<vax::math::Transform> transforms) {
     uint32_t instancesCount = transforms.size();
     auto itModelInfo = _modelMap.find(id);
     if (itModelInfo != _modelMap.end()) {
-        auto sceneNode =
-            SceneNode(_resourceManager.get().ssboManager(), id, transforms, selectedInstanceDescriptors, true);
+        auto sceneNode = SceneNode(_resourceManager.get().ssboManager(), id, transforms, true);
+        if (itModelInfo->second.isIdentifiable) {
+            sceneNode.setObjectId(_lastObjectId);
+            _lastObjectId += instancesCount;
+        }
         auto drawableModelPtr = &_drawableModels[itModelInfo->second.modelIndex];
         DrawableModelHandle drawableModelHandle = {drawableModelPtr};
         auto& chunkInfo = itModelInfo->second.ssboChunkInfos[itModelInfo->second.ssboChunkCursor];

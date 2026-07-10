@@ -8,14 +8,20 @@ class RenderPassDescriptor final {
   public:
     VkFormat imageFormat;
     VkFormat depthFormat;
+    uint32_t colorAttachmentCount;
 
     explicit RenderPassDescriptor(
-        const vax::vk::Device& device, VkRenderPass renderPass, VkFormat imageFormat, VkFormat depthFormat
+        const vax::vk::Device& device,
+        VkRenderPass renderPass,
+        VkFormat imageFormat,
+        VkFormat depthFormat,
+        uint32_t colorAttachmentCount = 1
     )
         : _device(device)
         , _renderPass(renderPass)
         , imageFormat(imageFormat)
-        , depthFormat(depthFormat) {};
+        , depthFormat(depthFormat)
+        , colorAttachmentCount(colorAttachmentCount) {};
 
     RenderPassDescriptor(const RenderPassDescriptor& other) = delete;
     RenderPassDescriptor& operator=(const RenderPassDescriptor& other) = delete;
@@ -24,7 +30,8 @@ class RenderPassDescriptor final {
         : _device(other._device)
         , _renderPass(other._renderPass)
         , imageFormat(other.imageFormat)
-        , depthFormat(other.depthFormat) {
+        , depthFormat(other.depthFormat)
+        , colorAttachmentCount(other.colorAttachmentCount) {
         other._renderPass = VK_NULL_HANDLE;
     }
 
@@ -35,6 +42,7 @@ class RenderPassDescriptor final {
             _renderPass = other._renderPass;
             imageFormat = other.imageFormat;
             depthFormat = other.depthFormat;
+            colorAttachmentCount = other.colorAttachmentCount;
             other._renderPass = VK_NULL_HANDLE;
         }
         return *this;

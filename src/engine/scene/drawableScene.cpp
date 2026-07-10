@@ -68,7 +68,7 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
     _sceneGraph->load(_modelsController, descriptor);
     _gizmo = std::move(_modelsController.createSceneNodeById("gizmo"));
     for (auto& drawableModel : _gizmo->drawableModels()) {
-        drawableModel->setSettings({.precomputedMVP = true, .instanceDrawing = true});
+        drawableModel->setSettings({.precomputedMVP = true});
     }
     _background = std::move(_modelsController.createSceneNodeById("background"));
 
@@ -132,10 +132,6 @@ bool vax::engine::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetH
 }
 
 void vax::engine::DrawableScene::draw(const DrawContext& drawContext) { _sceneGraph->draw(drawContext); }
-
-void vax::engine::DrawableScene::drawSelected(const DrawContext& drawContext) {
-    _sceneGraph->drawSelected(drawContext);
-}
 
 void vax::engine::DrawableScene::drawBackground(const DrawContext& drawContext) {
     if (!_background)
