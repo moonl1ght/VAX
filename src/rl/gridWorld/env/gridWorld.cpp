@@ -98,6 +98,7 @@ GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
             descriptor.instancesCount += 1;
             descriptor.isIdentifiable = true;
             if (blockType == BlockType::FINISH || blockType == BlockType::START) {
+                descriptor.selectedInstanceIndexes.push_back(instanceIndex);
             }
         }
         ++flatIndex;

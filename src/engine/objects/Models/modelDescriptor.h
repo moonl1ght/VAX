@@ -21,6 +21,8 @@ struct ModelDescriptor {
     PrimitiveDescriptor primitiveDescriptor;
     uint32_t instancesCount = 1;
     bool isIdentifiable = true;
+    std::vector<uint32_t> selectedInstanceIndexes = {};
+
     ModelExtension getModelExtension() const;
     const std::string_view getMainPath() const;
 };

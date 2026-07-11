@@ -29,6 +29,9 @@ bool GwSceneGraph::load(
     _envNodes.reserve(descriptor.drawableDescriptors.size());
     for (const auto& drawableDescriptor : descriptor.drawableDescriptors) {
         auto node = modelsController.createSceneNodeById(drawableDescriptor.id, drawableDescriptor.transforms);
+        for (auto& selectedInstanceIndex : drawableDescriptor.selectedInstanceIndexes) {
+            node->selectInstance(selectedInstanceIndex);
+        }
         if (!node.has_value()) {
             _logger.error("Failed to load model: {}", drawableDescriptor.id);
             continue;

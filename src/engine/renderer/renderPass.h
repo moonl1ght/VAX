@@ -31,7 +31,8 @@ class RenderPass final {
 
     explicit RenderPass(vax::vk::Device& device, std::string_view name, VkRenderPassBeginInfo renderPassInfo) noexcept
         : _device(device)
-        , _renderPassInfo(renderPassInfo) {};
+        , _renderPassInfo(renderPassInfo)
+        , _name(name) {};
 
     RenderPass(const RenderPass& other) = delete;
     RenderPass& operator=(const RenderPass& other) = delete;
@@ -49,36 +50,18 @@ class RenderPass final {
                 .pObjectName = _name.data(),
             };
             vax::vk::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
+
+            VkDebugUtilsLabelEXT label{
+                .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
+                .pLabelName = _name.data(),
+            };
+            vax::vk::pfnCmdBeginDebugUtilsLabelEXT(commandBuffer, &label);
         }
         vkCmdBeginRenderPass(commandBuffer, &_renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        if (!_name.empty()) {
-            VkDebugUtilsObjectNameInfoEXT nameInfo{
-                .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
-                .objectType = VK_OBJECT_TYPE_RENDER_PASS,
-                .objectHandle = reinterpret_cast<size_t>(_renderPassInfo.renderPass),
-                .pObjectName = _name.data(),
-            };
-            vax::vk::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
-        }
         work();
-        if (!_name.empty()) {
-            VkDebugUtilsObjectNameInfoEXT nameInfo{
-                .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
-                .objectType = VK_OBJECT_TYPE_RENDER_PASS,
-                .objectHandle = reinterpret_cast<size_t>(_renderPassInfo.renderPass),
-                .pObjectName = _name.data(),
-            };
-            vax::vk::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
-        }
         vkCmdEndRenderPass(commandBuffer);
         if (!_name.empty()) {
-            VkDebugUtilsObjectNameInfoEXT nameInfo{
-                .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
-                .objectType = VK_OBJECT_TYPE_RENDER_PASS,
-                .objectHandle = reinterpret_cast<size_t>(_renderPassInfo.renderPass),
-                .pObjectName = _name.data(),
-            };
-            vax::vk::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
+            vax::vk::pfnCmdEndDebugUtilsLabelEXT(commandBuffer);
         }
     }
 

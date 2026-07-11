@@ -23,11 +23,21 @@ constexpr int MAX_DRAWABLE_INSTANCES = 2000;
 namespace vax::vk {
 
 inline PFN_vkSetDebugUtilsObjectNameEXT pfnSetDebugUtilsObjectNameEXT = nullptr;
+inline PFN_vkCmdBeginDebugUtilsLabelEXT pfnCmdBeginDebugUtilsLabelEXT = nullptr;
+inline PFN_vkCmdEndDebugUtilsLabelEXT pfnCmdEndDebugUtilsLabelEXT = nullptr;
 
 inline void setPfnSetDebugUtilsObjectNameEXT(VkInstance instance) {
     if (pfnSetDebugUtilsObjectNameEXT == nullptr) {
         pfnSetDebugUtilsObjectNameEXT =
             (PFN_vkSetDebugUtilsObjectNameEXT)vkGetInstanceProcAddr(instance, "vkSetDebugUtilsObjectNameEXT");
+    }
+    if (pfnCmdBeginDebugUtilsLabelEXT == nullptr) {
+        pfnCmdBeginDebugUtilsLabelEXT =
+            (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(instance, "vkCmdBeginDebugUtilsLabelEXT");
+    }
+    if (pfnCmdEndDebugUtilsLabelEXT == nullptr) {
+        pfnCmdEndDebugUtilsLabelEXT =
+            (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(instance, "vkCmdEndDebugUtilsLabelEXT");
     }
 }
 

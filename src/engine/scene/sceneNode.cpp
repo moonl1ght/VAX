@@ -11,15 +11,17 @@ void SceneNode::draw(const DrawContext& drawContext) {
     size_t drawingRangeIndex = 0;
     for (size_t i = 0; i < _instancesCount; ++i) {
         TransformMatrixHandle worldHandle;
-        auto& transformInfo = _drawableModelTransformInfos[i];
+        auto& instanceInfo = _instanceInfos[i];
         worldHandle.updateModelMatrix(
-            transformInfo._parentTransformMatrices.getModelMatrix() * transformInfo._transformHandle.getModelMatrix()
+            instanceInfo._parentTransformMatrices.getModelMatrix() * instanceInfo._transformHandle.getModelMatrix()
         );
+        bool isSelected = instanceInfo.isSelected || _isSelected;
+
         InstanceData instanceData = {
             .model = worldHandle.getModelMatrix(),
             .normalMatrix = worldHandle.getNormalMatrix(),
             .flags = static_cast<uint32_t>(
-                _isSelected ? InstanceFlags::IsInstanceSelected : InstanceFlags::InstanceFlagsNone
+                isSelected ? InstanceFlags::IsInstanceSelected : InstanceFlags::InstanceFlagsNone
             ),
             .instanceId = _nodeId == NO_ID ? NO_ID : static_cast<uint32_t>(_nodeId + i),
         };
@@ -38,19 +40,19 @@ void SceneNode::draw(const DrawContext& drawContext) {
         }
 
         for (auto& child : _children) {
-            if (transformInfo._isChildrenTransformDirty) {
+            if (instanceInfo.isChildrenTransformDirty) {
                 const size_t chunkSize = child._instancesCount / _instancesCount;
                 for (size_t j = 0; j < chunkSize; ++j) {
-                    auto& childTransformInfo = child._drawableModelTransformInfos[i * chunkSize + j];
+                    auto& childTransformInfo = child._instanceInfos[i * chunkSize + j];
                     childTransformInfo._parentTransformMatrices.updateModelMatrix(
                         worldHandle.getModelMatrix() *
                         childTransformInfo._originalParentRelativeTransform.getModelMatrix()
                     );
-                    childTransformInfo._isChildrenTransformDirty = true;
+                    childTransformInfo.isChildrenTransformDirty = true;
                 }
             }
         }
-        _drawableModelTransformInfos[i]._isChildrenTransformDirty = false;
+        _instanceInfos[i].isChildrenTransformDirty = false;
     }
 
     for (size_t i = 0; i < _drawableModels.size(); ++i) {
@@ -72,7 +74,7 @@ void SceneNode::draw(const DrawContext& drawContext) {
 void SceneNode::insertChild(SceneNode&& child) {
     _children.push_back(std::move(child));
     for (size_t i = 0; i < _instancesCount; ++i) {
-        _drawableModelTransformInfos[i]._isChildrenTransformDirty = true;
+        _instanceInfos[i].isChildrenTransformDirty = true;
     }
 }
 
@@ -113,4 +115,8 @@ void SceneNode::setIsSelected(bool isSelected, bool propagate) {
             child.setIsSelected(isSelected, true);
         }
     }
+}
+
+void SceneNode::selectInstance(uint32_t instanceIndex) {
+    _instanceInfos[instanceIndex].isSelected = true;
 }
