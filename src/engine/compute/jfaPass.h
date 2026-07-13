@@ -23,7 +23,7 @@ class JFAPass final {
     JFAPass(JFAPass&& other) noexcept = default;
     JFAPass& operator=(JFAPass&& other) noexcept = default;
 
-    void setup(const std::vector<vax::vk::Texture>& maskTextures);
+    void setup(const std::vector<vax::vk::Texture>& maskTextures, const vax::vk::Texture& depthTexture);
 
     void cleanup();
 

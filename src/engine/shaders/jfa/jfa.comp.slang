@@ -21,8 +21,7 @@ void compMain(uint3 dtid : SV_DispatchThreadID)
     if (pixelCoords.x >= width || pixelCoords.y >= height)
         return;
 
-    uint maxUint = 60000;
-    uint2 bestSeed = uint2(maxUint, maxUint);
+    uint2 bestSeed = uint2(MAX_UINT, MAX_UINT);
     float minDistance = float.maxValue;
 
     for (int y = -1; y <= 1; ++y)
@@ -36,10 +35,10 @@ void compMain(uint3 dtid : SV_DispatchThreadID)
             {
                 uint2 seed = inputCoords[neighborCoords];
 
-                if (seed.x != maxUint && seed.y != maxUint)
+                if (seed.x != MAX_UINT && seed.y != MAX_UINT)
                 {
                     float2 diff = float2(pixelCoords) - float2(seed);
-                    
+
                     float distanceSqr = diff.x * diff.x + diff.y * diff.y;
 
                     if (distanceSqr < minDistance)

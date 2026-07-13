@@ -35,7 +35,7 @@ void Renderer::setup() {
     _jfaPass = std::make_optional<JFAPass>(
         *_vkEngine.get().device, *_vkEngine.get().descriptorSetManager, _vkEngine.get().allocator
     );
-    _jfaPass->setup(_mainRenderDestination->maskTextures());
+    _jfaPass->setup(_mainRenderDestination->maskTextures(), _mainRenderDestination->depthTexture());
 }
 
 void Renderer::prepare(DrawableScene* scene) {
@@ -75,17 +75,12 @@ void Renderer::prepare(DrawableScene* scene) {
             _logger.error("Failed to get post process descriptor set writer!");
             return;
         }
-        finalBlendDescriptorSetHandler->writeTexture(
-            _mainRenderDestination->textures()[i], 0, 0, true
-        );
+        finalBlendDescriptorSetHandler->writeTexture(_mainRenderDestination->textures()[i], 0, 0, true);
+        finalBlendDescriptorSetHandler->writeTexture(_mainRenderDestination->maskTextures()[i], 1, 0, false);
         finalBlendDescriptorSetHandler->update();
-        inputMaskDescriptorSetHandler0->writeTexture(
-            _jfaPass->outputATextures()[i], 0, 0, false
-        );
+        inputMaskDescriptorSetHandler0->writeTexture(_jfaPass->outputATextures()[i], 0, 0, false);
         inputMaskDescriptorSetHandler0->update();
-        inputMaskDescriptorSetHandler1->writeTexture(
-            _jfaPass->outputBTextures()[i], 0, 0, false
-        );
+        inputMaskDescriptorSetHandler1->writeTexture(_jfaPass->outputBTextures()[i], 0, 0, false);
         inputMaskDescriptorSetHandler1->update();
     }
 }

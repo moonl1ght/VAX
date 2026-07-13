@@ -19,9 +19,19 @@ void JFAPass::cleanup() {
     }
 }
 
-void JFAPass::setup(const std::vector<vax::vk::Texture>& maskTextures) {
+void JFAPass::setup(const std::vector<vax::vk::Texture>& maskTextures, const vax::vk::Texture& depthTexture) {
     if (maskTextures.size() != vax::vk::MAX_FRAMES_IN_FLIGHT) {
         _logger.error("Mask textures are empty!");
+        return;
+    }
+
+    DescriptorSetLayoutBuilder jfaInitDescriptorSetLayoutBuilder(_device, "jfa_init");
+    jfaInitDescriptorSetLayoutBuilder.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 1);
+    jfaInitDescriptorSetLayoutBuilder.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 1);
+    jfaInitDescriptorSetLayoutBuilder.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 1);
+    auto jfaInitLayout = jfaInitDescriptorSetLayoutBuilder.build(DescriptorSetLayout::SetType::OTHER);
+    if (!jfaInitLayout) {
+        _logger.error("Failed to create init JFA descriptor set layout!");
         return;
     }
 
@@ -34,19 +44,26 @@ void JFAPass::setup(const std::vector<vax::vk::Texture>& maskTextures) {
         return;
     }
 
+    _descriptorSetManager.get().addDescriptorSetLayout("jfa_init", std::move(*jfaInitLayout));
     _descriptorSetManager.get().addDescriptorSetLayout("jfa", std::move(*layout));
+
+    auto initDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("jfa_init");
+    if (!initDescriptorSetLayout) {
+        _logger.error("Failed to get init JFA descriptor set layout!");
+        return;
+    }
 
     auto descriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("jfa");
     if (!descriptorSetLayout) {
         _logger.error("Failed to get init JFA descriptor set layout!");
         return;
     }
-    VkDescriptorSetLayout layouts[] = {descriptorSetLayout->getVkDescriptorSetLayout()};
+    VkDescriptorSetLayout initLayouts[] = {initDescriptorSetLayout->getVkDescriptorSetLayout()};
 
     VkPipelineLayoutCreateInfo initPipelineLayoutInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .setLayoutCount = 1,
-        .pSetLayouts = layouts,
+        .pSetLayouts = initLayouts,
         .pushConstantRangeCount = 0,
         .pPushConstantRanges = nullptr,
     };
@@ -73,6 +90,8 @@ void JFAPass::setup(const std::vector<vax::vk::Texture>& maskTextures) {
         .size = sizeof(JFAPushConstants),
     };
 
+    VkDescriptorSetLayout layouts[] = {descriptorSetLayout->getVkDescriptorSetLayout()};
+
     VkPipelineLayoutCreateInfo jfaPipelineLayoutInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .setLayoutCount = 1,
@@ -98,7 +117,7 @@ void JFAPass::setup(const std::vector<vax::vk::Texture>& maskTextures) {
     auto textureFactory = TextureFactory(_device.get(), _allocator);
     for (int i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
         auto initDescriptorSetHandler = _descriptorSetManager.get().getDescriptorSetHandler(
-            i, DescriptorSetManager::PoolType::PROCESSING, "init_jfa", "jfa"
+            i, DescriptorSetManager::PoolType::PROCESSING, "init_jfa", "jfa_init"
         );
         auto jfaDescriptorSetHandler0 = _descriptorSetManager.get().getDescriptorSetHandler(
             i, DescriptorSetManager::PoolType::PROCESSING, "jfa_set0", "jfa"
@@ -112,6 +131,7 @@ void JFAPass::setup(const std::vector<vax::vk::Texture>& maskTextures) {
         }
 
         initDescriptorSetHandler->writeTexture(maskTextures[i], 0);
+        initDescriptorSetHandler->writeTexture(depthTexture, 1);
 
         auto inputTextureSize = maskTextures[i].size();
         auto textureA = textureFactory.makeTextureDetached(
@@ -130,7 +150,7 @@ void JFAPass::setup(const std::vector<vax::vk::Texture>& maskTextures) {
         }
         textureA->loadImageView(VK_IMAGE_VIEW_TYPE_2D, 1, 1);
         _jfaTexturesA.push_back(std::move(*textureA));
-        initDescriptorSetHandler->writeTexture(_jfaTexturesA[i], 1);
+        initDescriptorSetHandler->writeTexture(_jfaTexturesA[i], 2);
         jfaDescriptorSetHandler0->writeTexture(_jfaTexturesA[i], 0);
         jfaDescriptorSetHandler1->writeTexture(_jfaTexturesA[i], 1);
 
@@ -192,7 +212,7 @@ void JFAPass::execute(
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, _initPipeline->vkPipeline);
 
     auto descriptorSetHandler = _descriptorSetManager.get().getDescriptorSetHandler(
-        currentFrame, DescriptorSetManager::PoolType::PROCESSING, "init_jfa", "jfa"
+        currentFrame, DescriptorSetManager::PoolType::PROCESSING, "init_jfa", "jfa_init"
     );
     if (!descriptorSetHandler) {
         _logger.error("Failed to get init JFA descriptor set handler!");
@@ -328,10 +348,6 @@ void JFAPass::execute(
     _isFinalImageA = isTextureAInput;
 }
 
-const std::vector<vax::vk::Texture>& JFAPass::outputATextures() const {
-    return _jfaTexturesA;
-}
+const std::vector<vax::vk::Texture>& JFAPass::outputATextures() const { return _jfaTexturesA; }
 
-const std::vector<vax::vk::Texture>& JFAPass::outputBTextures() const {
-    return _jfaTexturesB;
-}
+const std::vector<vax::vk::Texture>& JFAPass::outputBTextures() const { return _jfaTexturesB; }

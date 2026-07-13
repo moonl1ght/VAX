@@ -17,4 +17,6 @@ struct JFAPushConstants {
     uint step;
 };
 
+static constexpr uint MAX_UINT = 60000;
+
 #endif
