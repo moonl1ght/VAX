@@ -273,7 +273,7 @@ bool Renderer::_updateGlobalDescriptorSet(
 bool Renderer::_drawGizmo(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene) {
     VkClearAttachment clearAttachment{
         .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
-        .clearValue = {.depthStencil = {1.0f, 0}},
+        .clearValue = {.depthStencil = {0.0f, 0}},
     };
 
     auto xOffset = static_cast<float>(_vkEngine.get().swapchain->swapchainExtent.width - 256);

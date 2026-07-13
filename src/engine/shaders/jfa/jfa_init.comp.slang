@@ -42,16 +42,16 @@ void compMain(uint3 dtid : SV_DispatchThreadID)
                 uint neighborId = inputMask.Load(int3(neighborCoords, 0));
                 float neighborDepth = inputDepth.Load(int3(neighborCoords, 0));
 
-                if (neighborId != objectId) {
-                    if (neighborId == 0 || currentDepth == 0) {
-                        isEdge = true;
-                        break;
-                    } else {
-                        isEdge = currentDepth <= neighborDepth;
-                    }
-                }
+                // if (neighborId != objectId) {
+                //     if (neighborId == 0 || currentDepth == 0) {
+                //         isEdge = true;
+                //         break;
+                //     } else {
+                //         isEdge = currentDepth <= neighborDepth;
+                //     }
+                // }
 
-                // isEdge = currentDepth <= neighborDepth && neighborId != objectId;
+                isEdge = currentDepth < neighborDepth && neighborId != objectId;
 
                 // isEdge = isEdge && (neighborId == 0 || currentDepth == 0);
 

@@ -61,7 +61,7 @@ bool PipelineManager::_createBackgroundPipeline(const RenderPassDescriptor& rend
         [](GraphicsPipelineBuilder& pipelineBuilder) {
             pipelineBuilder.setDepthStencilState({
                 .depthWriteEnable = false,
-                .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
+                .depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL,
             });
             auto bindingDescription = Vertex::getBindingDescription();
             auto attributeDescriptions = Vertex::getAttributeDescriptions();
@@ -89,7 +89,7 @@ bool PipelineManager::_createFinalBlendPipeline(const RenderPassDescriptor& rend
             pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
             pipelineBuilder.setDepthStencilState({
                 .depthWriteEnable = false,
-                .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
+                .depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL,
             });
         }
     );

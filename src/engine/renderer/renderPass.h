@@ -17,7 +17,7 @@ class RenderPass final {
     ) noexcept
         : _device(device) {
         _clearValues.assign(colorAttachmentCount, VkClearValue{.color = {{0.0f, 0.0f, 0.0f, 0.0f}}});
-        _clearValues.push_back(VkClearValue{.depthStencil = {1.0f, 0}});
+        _clearValues.push_back(VkClearValue{.depthStencil = {0.0f, 0}});
         _name = name;
         _renderPassInfo = {
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,

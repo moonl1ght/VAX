@@ -84,12 +84,12 @@ void Camera::_updateProjectionMatrix() {
     switch (_projection) {
     case Projection::perspective:
         _savedProjectionMatrix = glm::perspective(
-            _fov, static_cast<float>(_whAspectRatio), static_cast<float>(_nearPlane), static_cast<float>(_farPlane)
+            _fov, static_cast<float>(_whAspectRatio), static_cast<float>(_farPlane), static_cast<float>(_nearPlane)
         );
         break;
     case Projection::orthographic:
         _savedProjectionMatrix = glm::ortho(
-            -_viewSize * _whAspectRatio, _viewSize * _whAspectRatio, -_viewSize, _viewSize, _nearPlane, _farPlane
+            -_viewSize * _whAspectRatio, _viewSize * _whAspectRatio, -_viewSize, _viewSize, _farPlane, _nearPlane
         );
         break;
     }

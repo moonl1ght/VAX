@@ -3,13 +3,14 @@
 #include "device.h"
 #include "luna.h"
 #include "pipeline.h"
+#include <vulkan/vulkan_core.h>
 
 namespace vax::vk {
 
 struct DepthStencilState {
     bool depthTestEnable = true;
     bool depthWriteEnable = true;
-    VkCompareOp depthCompareOp = VK_COMPARE_OP_LESS;
+    VkCompareOp depthCompareOp = VK_COMPARE_OP_GREATER;
     bool depthBoundsTestEnable = false;
     bool stencilTestEnable = false;
 };
