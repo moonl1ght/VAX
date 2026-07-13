@@ -32,6 +32,10 @@ class RenderDestination final {
 
     const std::vector<Texture>& textures() const { return _textures; }
 
+    const Texture& depthTexture() const { return *_depthTexture; }
+
+    const std::vector<Texture>& maskTextures() const { return _maskTextures; }
+
   private:
     std::reference_wrapper<const Device> _device;
     std::vector<Texture> _textures;

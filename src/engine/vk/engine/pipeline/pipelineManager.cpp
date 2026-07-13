@@ -146,12 +146,13 @@ bool vax::vk::PipelineManager::_createBackgroundPipelineLayout(vax::vk::Pipeline
 bool vax::vk::PipelineManager::_createFinalBlendPipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) {
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     auto name = vax::vk::Pipeline::pipelineLayoutNameToString(pipelineLayoutName);
-    auto finalBlendDescriptorSetLayout =
-        _descriptorSetManager.get().getDescriptorSetLayout(DescriptorSetLayout::SetType::FINAL_BLEND);
-    if (!finalBlendDescriptorSetLayout) {
+    auto finalBlendDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("final_blend");
+    auto finalBlendSampledDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("final_blend_sampled");  
+    if (!finalBlendDescriptorSetLayout || !finalBlendSampledDescriptorSetLayout) {
         _logger.error("Failed to get final blend descriptor set layout!");
         return false;
     }
+    pipelineBuilder.addDescriptorSetLayout(finalBlendSampledDescriptorSetLayout->getVkDescriptorSetLayout());
     pipelineBuilder.addDescriptorSetLayout(finalBlendDescriptorSetLayout->getVkDescriptorSetLayout());
     auto pipelineLayout = pipelineBuilder.buildPipelineLayout(name);
     if (!pipelineLayout) {

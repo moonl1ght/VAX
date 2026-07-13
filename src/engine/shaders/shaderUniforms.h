@@ -21,10 +21,6 @@ typedef float4 vec4;
 
 #endif
 
-enum FinalBlendBindingIndices {
-    FINAL_BLEND_TEXTURE_INDEX = 0,
-};
-
 enum MainSetIndices {
     GLOBAL_SET_INDEX = 0,
     PER_FRAME_SET_INDEX = 1,

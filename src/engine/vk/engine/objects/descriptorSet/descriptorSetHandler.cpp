@@ -111,8 +111,8 @@ void DescriptorSetHandler::clear() {
     _imageInfosArray.clear();
 }
 
-void DescriptorSetHandler::bind(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t setIndex) {
-    vkCmdBindDescriptorSets(
-        commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, setIndex, 1, &_descriptorSet, 0, nullptr
-    );
+void DescriptorSetHandler::bind(
+    VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t setIndex, VkPipelineBindPoint bindPoint
+) {
+    vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, setIndex, 1, &_descriptorSet, 0, nullptr);
 }

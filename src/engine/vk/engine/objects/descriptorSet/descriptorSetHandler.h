@@ -47,7 +47,12 @@ struct DescriptorSetHandler {
 
     void clear();
 
-    void bind(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t setIndex);
+    void bind(
+        VkCommandBuffer commandBuffer,
+        VkPipelineLayout pipelineLayout,
+        uint32_t setIndex,
+        VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS
+    );
 
     uint32_t id() const { return _id; }
 

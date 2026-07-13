@@ -1,11 +1,10 @@
 #include "descriptorSetManager.h"
 #include "descriptorSetLayoutBuilder.h"
 #include "vkUtils.h"
+#include <vulkan/vulkan_core.h>
 
 using namespace vax::vk;
 using namespace vax;
-
-#define FINAL_BLEND_TEXTURE_COUNT static_cast<uint32_t>(2)
 
 void DescriptorSetManager::cleanup() {
     vkDestroyDescriptorPool(_device.get().vkDevice, _descriptorPool, nullptr);
@@ -59,7 +58,29 @@ bool DescriptorSetManager::_createDescriptorSetPools() {
         return false;
     }
 
-    uint32_t numberOfCombinedImages = 2;
+    uint32_t numberOfProcessingImages = 6;
+
+    uint32_t maxProcessingImages = static_cast<uint32_t>(_maxFramesInFlight) * numberOfProcessingImages;
+    std::vector<VkDescriptorPoolSize> processingDescriptorPoolSizes = {
+        {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, maxProcessingImages},
+    };
+
+    VkDescriptorPoolCreateInfo processingDescriptorPoolInfo{
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
+        .maxSets = maxProcessingImages,
+        .poolSizeCount = static_cast<uint32_t>(processingDescriptorPoolSizes.size()),
+        .pPoolSizes = processingDescriptorPoolSizes.data(),
+    };
+
+    if (!VK_CHECK(vkCreateDescriptorPool(
+            _device.get().vkDevice, &processingDescriptorPoolInfo, nullptr, &_processingDescriptorPool
+        ))) {
+        _logger.error("Failed to create processing descriptor pool!");
+        return false;
+    }
+
+    uint32_t numberOfCombinedImages = 3;
     uint32_t maxCombinedImageSamplers = static_cast<uint32_t>(_maxFramesInFlight) * numberOfCombinedImages;
     std::vector<VkDescriptorPoolSize> finalBlendDescriptorPoolSizes = {
         {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxCombinedImageSamplers},
@@ -88,8 +109,6 @@ const DescriptorSetLayout* DescriptorSetManager::getDescriptorSetLayout(Descript
         return &_globalDescriptorSetLayout.value();
     } else if (setType == DescriptorSetLayout::SetType::PER_FRAME) {
         return &_perFrameDescriptorSetLayout.value();
-    } else if (setType == DescriptorSetLayout::SetType::FINAL_BLEND) {
-        return &_finalBlendDescriptorSetLayout.value();
     }
     return nullptr;
 }
@@ -147,18 +166,44 @@ DescriptorSetManager::getDescriptorSetHandler(uint32_t frameIndex, DescriptorSet
             _maxFramesInFlight,
             frameIndex
         );
-    case DescriptorSetLayout::SetType::FINAL_BLEND:
+    default:
+        _logger.error("Invalid descriptor set type!");
+        return std::nullopt;
+    }
+}
+
+std::optional<DescriptorSetHandler> DescriptorSetManager::getDescriptorSetHandler(
+    uint32_t frameIndex, PoolType poolType, std::string name, std::string layoutName
+) {
+    auto& sets = _descriptorSets[name];
+    auto descriptorSetLayout = _descriptorSetLayouts.find(layoutName);
+    if (descriptorSetLayout == _descriptorSetLayouts.end()) {
+        _logger.error("Descriptor set layout not found!");
+        return std::nullopt;
+    }
+    switch (poolType) {
+    case PoolType::PROCESSING:
         return createOrGetDescriptorSet(
             _device.get(),
-            2,
-            _finalBlendDescriptorSets,
-            _finalBlendDescriptorSetLayout.value(),
+            0,
+            sets,
+            descriptorSetLayout->second,
+            _processingDescriptorPool,
+            _maxFramesInFlight,
+            frameIndex
+        );
+    case PoolType::FINAL_BLEND:
+        return createOrGetDescriptorSet(
+            _device.get(),
+            0,
+            sets,
+            descriptorSetLayout->second,
             _finalBlendDescriptorPool,
             _maxFramesInFlight,
             frameIndex
         );
     default:
-        _logger.error("Invalid descriptor set type!");
+        _logger.error("Invalid pool type!");
         return std::nullopt;
     }
 }
@@ -213,18 +258,44 @@ bool DescriptorSetManager::_createDescriptorSetLayouts() {
     _globalDescriptorSetLayout = std::move(globalDescriptorSetLayout.value());
     _perFrameDescriptorSetLayout = std::move(perFrameDescriptorSetLayout.value());
 
-    DescriptorSetLayoutBuilder finalBlendBuilder(_device.get(), "final_blend_descriptor_set_layout");
-    finalBlendBuilder.addBinding(
-        FinalBlendBindingIndices::FINAL_BLEND_TEXTURE_INDEX,
+    DescriptorSetLayoutBuilder finalBlendSampledBuilder(_device.get(), "final_blend_sampled_descriptor_set_layout");
+    finalBlendSampledBuilder.addBinding(
+        0,
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
-        FINAL_BLEND_TEXTURE_COUNT
+        1
     );
-    auto finalBlendDescriptorSetLayout = finalBlendBuilder.build(DescriptorSetLayout::SetType::FINAL_BLEND);
-    if (!finalBlendDescriptorSetLayout) {
+    auto finalBlendSampledDescriptorSetLayout = finalBlendSampledBuilder.build(DescriptorSetLayout::SetType::OTHER);
+    if (!finalBlendSampledDescriptorSetLayout) {
         _logger.error("Failed to create final blend descriptor set layout!");
         return false;
     }
-    _finalBlendDescriptorSetLayout = std::move(finalBlendDescriptorSetLayout.value());
+    _descriptorSetLayouts.insert({"final_blend_sampled", std::move(finalBlendSampledDescriptorSetLayout.value())});
+
+    DescriptorSetLayoutBuilder finalBlendStorageBuilder(_device.get(), "final_blend_descriptor_set_layout");
+    finalBlendStorageBuilder.addBinding(
+        0,
+        VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+        VK_SHADER_STAGE_FRAGMENT_BIT,
+        1
+    );
+    auto finalBlendStorageDescriptorSetLayout = finalBlendStorageBuilder.build(DescriptorSetLayout::SetType::OTHER);
+    if (!finalBlendStorageDescriptorSetLayout) {
+        _logger.error("Failed to create final blend descriptor set layout!");
+        return false;
+    }
+    _descriptorSetLayouts.insert({"final_blend", std::move(finalBlendStorageDescriptorSetLayout.value())});
     return true;
+}
+
+void DescriptorSetManager::addDescriptorSetLayout(std::string name, DescriptorSetLayout&& layout) {
+    _descriptorSetLayouts.insert({name, std::move(layout)});
+}
+
+const DescriptorSetLayout* DescriptorSetManager::getDescriptorSetLayout(std::string name) const {
+    auto it = _descriptorSetLayouts.find(name);
+    if (it == _descriptorSetLayouts.end()) {
+        return nullptr;
+    }
+    return &it->second;
 }

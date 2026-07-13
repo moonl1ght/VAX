@@ -12,7 +12,6 @@ void SSBOManager::cleanup() {
 bool SSBOManager::setup(uint32_t maxInstances) {
     _maxInstances = maxInstances;
     for (uint32_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
-        std::cout << "Allocating instance buffer for frame " << i << " with size " << sizeof(InstanceData) << std::endl;
         auto allocation = vk::Buffer::allocate(
             _device.get(),
             "ssbo_instance_buffer",

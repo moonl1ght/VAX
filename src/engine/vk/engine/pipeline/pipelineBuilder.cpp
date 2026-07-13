@@ -4,7 +4,7 @@ using namespace vax::vk;
 
 // MARK: - ComputePipelineBuilder
 
-std::optional<vax::vk::Pipeline> ComputePipelineBuilder::build(vax::vk::PipelineName pipelineName) {
+std::optional<vax::vk::Pipeline> ComputePipelineBuilder::build(std::string name) {
     if (_shaderStageInfo.stage != VK_SHADER_STAGE_COMPUTE_BIT) {
         _logger.error("Compute pipeline requires compute shader stage!");
         return std::nullopt;
@@ -27,9 +27,8 @@ std::optional<vax::vk::Pipeline> ComputePipelineBuilder::build(vax::vk::Pipeline
     }
 
     _isPipelineLayoutTransferred = true;
-    std::string pipelineNameString = vax::vk::Pipeline::pipelineNameToString(pipelineName);
     return vax::vk::Pipeline(
-        _device.get(), pipelineNameString, vax::vk::PipelineType::COMPUTE, _pipelineLayout, pipeline
+        _device.get(), name, vax::vk::PipelineType::COMPUTE, _pipelineLayout, pipeline
     );
 }
 

@@ -42,7 +42,7 @@ class ComputePipelineBuilder final {
         }
     };
 
-    std::optional<vax::vk::Pipeline> build(vax::vk::PipelineName pipelineName);
+    std::optional<vax::vk::Pipeline> build(std::string name);
 
     bool setPipelineLayout(VkPipelineLayoutCreateInfo pipelineLayoutInfo);
 

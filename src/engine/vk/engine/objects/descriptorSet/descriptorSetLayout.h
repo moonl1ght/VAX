@@ -10,7 +10,7 @@ class DescriptorSetLayout final {
     enum class SetType {
         GLOBAL = 0,
         PER_FRAME = 1,
-        FINAL_BLEND = 2,
+        OTHER = 2,
     };
 
     explicit DescriptorSetLayout(

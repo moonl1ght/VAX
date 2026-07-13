@@ -7,6 +7,7 @@
 #include "renderDestinationBuilder.h"
 #include "renderPass.h"
 #include "renderPassDescriptorBuilder.h"
+#include "textureFactory.h"
 #include "vkEngine.h"
 
 using namespace vax::engine;
@@ -30,6 +31,11 @@ void Renderer::setup() {
     _createRenderDestinations();
     _uiEngine.get().setup(_swapchainRenderPassDescriptor->getVkRenderPass());
     _vkEngine.get().pipelineManager->setup(*_mainRenderPassDescriptor, *_swapchainRenderPassDescriptor);
+
+    _jfaPass = std::make_optional<JFAPass>(
+        *_vkEngine.get().device, *_vkEngine.get().descriptorSetManager, _vkEngine.get().allocator
+    );
+    _jfaPass->setup(_mainRenderDestination->maskTextures());
 }
 
 void Renderer::prepare(DrawableScene* scene) {
@@ -56,16 +62,31 @@ void Renderer::prepare(DrawableScene* scene) {
         scene->writeFrameDescriptorSet(*frameDescriptorSetHandler);
         frameDescriptorSetHandler->update();
         auto finalBlendDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            i, vax::vk::DescriptorSetLayout::SetType::FINAL_BLEND
+            i, vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND, "final_blend", "final_blend_sampled"
         );
-        if (!finalBlendDescriptorSetHandler.has_value()) {
+        auto inputMaskDescriptorSetHandler0 = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+            i, vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND, "fb_input_mask_0", "final_blend"
+        );
+        auto inputMaskDescriptorSetHandler1 = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+            i, vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND, "fb_input_mask_1", "final_blend"
+        );
+        if (!finalBlendDescriptorSetHandler.has_value() || !inputMaskDescriptorSetHandler0.has_value() ||
+            !inputMaskDescriptorSetHandler1.has_value()) {
             _logger.error("Failed to get post process descriptor set writer!");
             return;
         }
         finalBlendDescriptorSetHandler->writeTexture(
-            _mainRenderDestination->textures()[i], FinalBlendBindingIndices::FINAL_BLEND_TEXTURE_INDEX, 0, true
+            _mainRenderDestination->textures()[i], 0, 0, true
         );
         finalBlendDescriptorSetHandler->update();
+        inputMaskDescriptorSetHandler0->writeTexture(
+            _jfaPass->outputATextures()[i], 0, 0, false
+        );
+        inputMaskDescriptorSetHandler0->update();
+        inputMaskDescriptorSetHandler1->writeTexture(
+            _jfaPass->outputBTextures()[i], 0, 0, false
+        );
+        inputMaskDescriptorSetHandler1->update();
     }
 }
 
@@ -221,6 +242,7 @@ bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::engine::DrawableSc
     }
 
     _mainPass(pipelineLayout, commandBuffer, scene, imageIndex);
+    _jfaPass->execute(commandBuffer, _mainRenderDestination->maskTextures()[_currentFrame], _currentFrame);
     _finalBlendPass(commandBuffer, scene, imageIndex);
     return true;
 }
@@ -387,13 +409,18 @@ void Renderer::_finalBlendPass(VkCommandBuffer commandBuffer, vax::engine::Drawa
             return;
         }
         auto finalBlendDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            _currentFrame, vax::vk::DescriptorSetLayout::SetType::FINAL_BLEND
+            _currentFrame, vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND, "final_blend", "final_blend_sampled"
         );
-        if (!finalBlendDescriptorSetHandler.has_value()) {
+        auto maskDescriptorSetName = _jfaPass->isFinalImageA() ? "fb_input_mask_0" : "fb_input_mask_1";
+        auto maskDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+            _currentFrame, vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND, maskDescriptorSetName, "final_blend"
+        );
+        if (!finalBlendDescriptorSetHandler.has_value() || !maskDescriptorSetHandler.has_value()) {
             _logger.error("Failed to get default descriptor set writer!");
             return;
         }
         finalBlendDescriptorSetHandler->bind(commandBuffer, pipelineLayout, 0);
+        maskDescriptorSetHandler->bind(commandBuffer, pipelineLayout, 1);
         auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::FINAL_BLEND);
         if (!pipeline) {
             _logger.error("Failed to get final blend pipeline!");

@@ -8,6 +8,7 @@
 #include "renderPassDescriptor.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
+#include "jfaPass.h"
 
 namespace vax::engine {
 class Renderer final {
@@ -38,6 +39,8 @@ class Renderer final {
 
     std::optional<vax::vk::RenderDestination> _mainRenderDestination;
     std::optional<vax::vk::RenderDestination> _swapchainRenderDestination;
+
+    std::optional<vax::engine::JFAPass> _jfaPass;
 
     uint32_t _currentFrame = 0;
 
