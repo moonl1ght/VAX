@@ -15,8 +15,9 @@ vax::engine::ModelDescriptor GWAgent::getDrawableDescriptor() const {
     return {
         .path = RES_PATH("assets/models/rover/rover.urdf"),
         .id = "rover",
-        .modelType = vax::engine::ModelDescriptor::ModelType::MODEL,
         .transforms = {transform},
+        .selectedInstanceInfos = {},
+        .modelType = vax::engine::ModelDescriptor::ModelType::MODEL,
         .instancesCount = 1,
         .isIdentifiable = true,
     };

@@ -14,14 +14,19 @@ struct ModelDescriptor {
         Color color = ColorPalette::White;
     };
 
+    struct SelectedInstanceInfo {
+        uint32_t instanceIndex;
+        Color color = ColorPalette::Clear;
+    };
+
+    PrimitiveDescriptor primitiveDescriptor;
     std::string path;
     std::string id;
-    ModelType modelType;
     std::vector<vax::math::Transform> transforms;
-    PrimitiveDescriptor primitiveDescriptor;
-    uint32_t instancesCount = 1;
-    bool isIdentifiable = true;
-    std::vector<uint32_t> selectedInstanceIndexes = {};
+    std::vector<SelectedInstanceInfo> selectedInstanceInfos;
+    ModelType modelType;
+    uint32_t instancesCount;
+    bool isIdentifiable;
 
     ModelExtension getModelExtension() const;
     const std::string_view getMainPath() const;

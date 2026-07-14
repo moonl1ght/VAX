@@ -1,17 +1,16 @@
 #include "gridWorld.h"
+#include "colorPalette.h"
 #include "fileSystem.h"
 #include "inputController.h"
 #include "nlohmann/json.hpp"
 #include "randomGenerator.h"
 #include "tensorOp.h"
 #include "transform.h"
-#include "colorPalette.h"
 
 using namespace vax;
 using namespace vax::math;
 using namespace vax::rl;
 using namespace vax::core;
-
 
 glm::vec4 getBlockColor(GridWorld::BlockType blockType) {
     switch (blockType) {
@@ -85,11 +84,26 @@ GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
             transform.position.y = 0.5f;
         }
         if (descriptors.find(blockTypeString) == descriptors.end()) {
+            std::vector<engine::ModelDescriptor::SelectedInstanceInfo> selectedInstanceInfos;
+            if (blockType == BlockType::START) {
+                selectedInstanceInfos.push_back(
+                    engine::ModelDescriptor::SelectedInstanceInfo{0, engine::ColorPalette::Blue}
+                );
+            }
+            if (blockType == BlockType::FINISH) {
+                selectedInstanceInfos.push_back(
+                    engine::ModelDescriptor::SelectedInstanceInfo{0, engine::ColorPalette::Green}
+                );
+            }
             descriptors[blockTypeString] = engine::ModelDescriptor{
+                .primitiveDescriptor = engine::ModelDescriptor::PrimitiveDescriptor(),
                 .path = blockTypeString,
                 .id = blockTypeString,
-                .modelType = engine::ModelDescriptor::ModelType::MODEL,
                 .transforms = {transform},
+                .selectedInstanceInfos = selectedInstanceInfos,
+                .modelType = engine::ModelDescriptor::ModelType::MODEL,
+                .instancesCount = 1,
+                .isIdentifiable = true,
             };
         } else {
             auto& descriptor = descriptors[blockTypeString];
@@ -98,7 +112,11 @@ GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
             descriptor.instancesCount += 1;
             descriptor.isIdentifiable = true;
             if (blockType == BlockType::FINISH || blockType == BlockType::START) {
-                descriptor.selectedInstanceIndexes.push_back(instanceIndex);
+                auto color =
+                    (blockType == BlockType::FINISH) ? engine::ColorPalette::Green : engine::ColorPalette::Blue;
+                descriptor.selectedInstanceInfos.push_back(
+                    engine::ModelDescriptor::SelectedInstanceInfo{instanceIndex, color}
+                );
             }
         }
         ++flatIndex;

@@ -31,9 +31,9 @@ bool GwSceneGraph::load(
     _envNodes.reserve(descriptor.drawableDescriptors.size());
     for (const auto& drawableDescriptor : descriptor.drawableDescriptors) {
         auto node = modelsController.createSceneNodeById(drawableDescriptor.id, drawableDescriptor.transforms);
-        for (auto& selectedInstanceIndex : drawableDescriptor.selectedInstanceIndexes) {
-            node->selectInstance(selectedInstanceIndex);
-            node->setSelectionColor(selectedInstanceIndex, ColorPalette::Green);
+        for (auto& selectedInstanceInfo : drawableDescriptor.selectedInstanceInfos) {
+            node->selectInstance(selectedInstanceInfo.instanceIndex);
+            node->setSelectionColor(selectedInstanceInfo.instanceIndex, selectedInstanceInfo.color);
         }
         if (!node.has_value()) {
             _logger.error("Failed to load model: {}", drawableDescriptor.id);
