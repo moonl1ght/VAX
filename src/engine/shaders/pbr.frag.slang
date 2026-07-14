@@ -113,6 +113,6 @@ FragmentOutput fragMain(uniform DrawPushConstants pushConstants, FragmentInput i
     }
     uint isInstanceSelected = (instance.flags & InstanceFlags::IsInstanceSelected) != 0u;
     uint isNoId = instance.instanceId == NO_ID;
-    uint finalId = instance.instanceId * isInstanceSelected * (1u - isNoId);
+    uint finalId = instanceIndex * isInstanceSelected * (1u - isNoId);
     return FragmentOutput(finalColor, finalId);
 }

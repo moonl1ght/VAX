@@ -1,5 +1,7 @@
 #include "jfa/jfa.h"
 import layoutAndBindings;
+import uniforms;
+import sharedUtils;
 
 [vk::binding(0, 0)]
 Sampler2D inputTexture;
@@ -7,8 +9,14 @@ Sampler2D inputTexture;
 [vk::binding(1, 0)]
 Texture2D<uint> inputMask;
 
+[vk::binding(2, 0)]
+Texture2D<float> inputDepth;
+
 [vk::binding(0, 1)]
 Texture2D<uint2> inputJFATexture;
+
+[vk::binding(1, 2)]
+StructuredBuffer<InstanceData> instancesFinalBlend;
 
 [shader("fragment")]
 float4 fragMain(float2 uv: TEXCOORD0) : SV_Target {
@@ -27,17 +35,23 @@ float4 fragMain(float2 uv: TEXCOORD0) : SV_Target {
     uint2 pixelCoords = uint2(uv * float2(width, height));
     uint2 closestEdgePixel = inputJFATexture[pixelCoords];
 
-    if (closestEdgePixel.x != MAX_UINT)
-    {
+    if (closestEdgePixel.x != MAX_UINT) {
         float dist = distance(float2(pixelCoords), float2(closestEdgePixel));
 
         float outlineWidth = 3.0f;
-        float3 outlineColor = float3(1.0f, 0.0f, 0.0f);
+        uint currentObjId = inputMask[pixelCoords];
         if (dist > 0.0f && dist <= outlineWidth) {
 
-            uint currentObjId = inputMask[pixelCoords];
+            float currentDepth = inputDepth.Load(int3(pixelCoords, 0));\
+            float edgeDepth = inputDepth.Load(int3(closestEdgePixel, 0));
+
+            // if (currentDepth >= edgeDepth + 0.0001f) {
+            //     return lerp(float4(gradient, 1.0f), sceneColor, sceneColor.a);
+            // }
+
             uint edgeObjId = inputMask[closestEdgePixel];
-            
+            float4 outlineColor = unpackRGBA(instancesFinalBlend[edgeObjId].packedColor);
+
             bool drawOutline = false;
 
             if (currentObjId != edgeObjId) {
@@ -46,8 +60,8 @@ float4 fragMain(float2 uv: TEXCOORD0) : SV_Target {
 
             if (drawOutline) {
                 float edgeAlpha = smoothstep(outlineWidth, 0, dist);
-                float finalAlpha = 0.9f * edgeAlpha;
-                return float4(lerp(sceneColor.rgb, outlineColor, finalAlpha), sceneColor.a);
+                float finalAlpha = outlineColor.a * edgeAlpha;
+                return float4(lerp(sceneColor.rgb, outlineColor.rgb, finalAlpha), sceneColor.a);
             }
         }
     }

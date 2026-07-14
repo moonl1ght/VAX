@@ -1,4 +1,5 @@
 #include "gwSceneGraph.h"
+#include "colorPalette.h"
 #include "gridWorldDescriptor.h"
 #include "modelDescriptor.h"
 
@@ -16,6 +17,7 @@ bool GwSceneGraph::load(
         return false;
     }
     agentNode->setIsSelected(true);
+    agentNode->setNodeSelectionColor(ColorPalette::Clear);
     _agentNode = std::make_unique<vax::engine::SceneNode>(std::move(agentNode.value()));
     _roverModelProxy = std::make_unique<vax::rl::RoverModelProxy>();
     _roverModelProxy->linkModelNode(_agentNode);
@@ -31,6 +33,7 @@ bool GwSceneGraph::load(
         auto node = modelsController.createSceneNodeById(drawableDescriptor.id, drawableDescriptor.transforms);
         for (auto& selectedInstanceIndex : drawableDescriptor.selectedInstanceIndexes) {
             node->selectInstance(selectedInstanceIndex);
+            node->setSelectionColor(selectedInstanceIndex, ColorPalette::Green);
         }
         if (!node.has_value()) {
             _logger.error("Failed to load model: {}", drawableDescriptor.id);

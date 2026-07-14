@@ -81,7 +81,7 @@ bool DescriptorSetManager::_createDescriptorSetPools() {
     }
 
     uint32_t numberOfCombinedImages = 1;
-    uint32_t numberOfStorageImages = 3;
+    uint32_t numberOfStorageImages = 4;
     uint32_t maxCombinedImageSamplers = static_cast<uint32_t>(_maxFramesInFlight) * numberOfCombinedImages;
     uint32_t maxStorageImages = static_cast<uint32_t>(_maxFramesInFlight) * numberOfStorageImages;
     std::vector<VkDescriptorPoolSize> finalBlendDescriptorPoolSizes = {
@@ -264,6 +264,7 @@ bool DescriptorSetManager::_createDescriptorSetLayouts() {
     DescriptorSetLayoutBuilder finalBlendSampledBuilder(_device.get(), "final_blend_sampled_descriptor_set_layout");
     finalBlendSampledBuilder.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
     finalBlendSampledBuilder.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+    finalBlendSampledBuilder.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
     auto finalBlendSampledDescriptorSetLayout = finalBlendSampledBuilder.build(DescriptorSetLayout::SetType::OTHER);
     if (!finalBlendSampledDescriptorSetLayout) {
         _logger.error("Failed to create final blend descriptor set layout!");

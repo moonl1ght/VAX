@@ -51,7 +51,7 @@ void compMain(uint3 dtid : SV_DispatchThreadID)
                     }
                 }
 
-                // isEdge = currentDepth >= neighborDepth && neighborId != objectId;
+                // isEdge = neighborId != objectId;
 
                 // isEdge = isEdge && (neighborId == 0 || currentDepth == 0);
 
@@ -60,7 +60,7 @@ void compMain(uint3 dtid : SV_DispatchThreadID)
                 }
             } else {
                 isEdge = false;
-                break; // 777 672  -> 764 669
+                break;
             }
         }
     }

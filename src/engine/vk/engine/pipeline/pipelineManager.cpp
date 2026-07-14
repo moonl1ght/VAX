@@ -147,13 +147,17 @@ bool vax::vk::PipelineManager::_createFinalBlendPipelineLayout(vax::vk::Pipeline
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     auto name = vax::vk::Pipeline::pipelineLayoutNameToString(pipelineLayoutName);
     auto finalBlendDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("final_blend");
-    auto finalBlendSampledDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("final_blend_sampled");  
-    if (!finalBlendDescriptorSetLayout || !finalBlendSampledDescriptorSetLayout) {
+    auto finalBlendSampledDescriptorSetLayout =
+        _descriptorSetManager.get().getDescriptorSetLayout("final_blend_sampled");
+    auto perFrameDescriptorSetLayout =
+        _descriptorSetManager.get().getDescriptorSetLayout(DescriptorSetLayout::SetType::PER_FRAME);
+    if (!finalBlendDescriptorSetLayout || !finalBlendSampledDescriptorSetLayout || !perFrameDescriptorSetLayout) {
         _logger.error("Failed to get final blend descriptor set layout!");
         return false;
     }
     pipelineBuilder.addDescriptorSetLayout(finalBlendSampledDescriptorSetLayout->getVkDescriptorSetLayout());
     pipelineBuilder.addDescriptorSetLayout(finalBlendDescriptorSetLayout->getVkDescriptorSetLayout());
+    pipelineBuilder.addDescriptorSetLayout(perFrameDescriptorSetLayout->getVkDescriptorSetLayout());
     auto pipelineLayout = pipelineBuilder.buildPipelineLayout(name);
     if (!pipelineLayout) {
         _logger.error("Failed to create final blend pipeline layout!");

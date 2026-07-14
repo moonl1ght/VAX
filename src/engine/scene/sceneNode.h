@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
+#include <colorPalette.h>
 
 namespace vax::engine {
 class ModelLoader;
@@ -27,6 +28,7 @@ class SceneNode final {
         vax::math::Transform _originalParentRelativeTransform;
         vax::math::TransformMatrixHandle _parentTransformMatrices;
         vax::math::TransformHandle _transformHandle;
+        uint32_t selectionPackedColor = 0;
         bool isChildrenTransformDirty = false;
         bool isSelected = false;
     };
@@ -153,7 +155,11 @@ class SceneNode final {
 
     void setIsSelected(bool isSelected, bool propagate = true);
 
+    void setNodeSelectionColor(Color color, bool propagate = true);
+
     void selectInstance(uint32_t instanceIndex);
+
+    void setSelectionColor(uint32_t instanceIndex, Color color);
 
   private:
     std::reference_wrapper<vax::vk::SSBOManager> _ssboManager;

@@ -103,9 +103,10 @@ struct UniformBufferObject { // total size: 160 bytes
 struct InstanceData { // total size: 144 bytes
     mat4 model; // 64 bytes
     mat4 normalMatrix; // 64 bytes
+    uint32_t packedColor; // 4 bytes
     uint32_t flags; // 4 bytes
     uint32_t instanceId; // 4 bytes
-    uint32_t padding[2]; // 8 bytes
+    uint32_t padding; // 4 bytes
 };
 
 struct DrawPushConstants {

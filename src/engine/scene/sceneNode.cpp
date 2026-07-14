@@ -1,4 +1,5 @@
 #include "sceneNode.h"
+#include "shaderSharedUtils.h"
 #include "shaderUniforms.h"
 #include <glm/ext/matrix_float4x4.hpp>
 
@@ -20,6 +21,7 @@ void SceneNode::draw(const DrawContext& drawContext) {
         InstanceData instanceData = {
             .model = worldHandle.getModelMatrix(),
             .normalMatrix = worldHandle.getNormalMatrix(),
+            .packedColor = instanceInfo.selectionPackedColor,
             .flags = static_cast<uint32_t>(
                 isSelected ? InstanceFlags::IsInstanceSelected : InstanceFlags::InstanceFlagsNone
             ),
@@ -117,6 +119,19 @@ void SceneNode::setIsSelected(bool isSelected, bool propagate) {
     }
 }
 
-void SceneNode::selectInstance(uint32_t instanceIndex) {
-    _instanceInfos[instanceIndex].isSelected = true;
+void SceneNode::selectInstance(uint32_t instanceIndex) { _instanceInfos[instanceIndex].isSelected = true; }
+
+void SceneNode::setSelectionColor(uint32_t instanceIndex, Color color) {
+    _instanceInfos[instanceIndex].selectionPackedColor = packRGBA(color);
+}
+
+void SceneNode::setNodeSelectionColor(Color color, bool propagate) {
+    for (size_t i = 0; i < _instancesCount; ++i) {
+        _instanceInfos[i].selectionPackedColor = packRGBA(color);
+    }
+    if (propagate) {
+        for (auto& child : _children) {
+            child.setNodeSelectionColor(color, true);
+        }
+    }
 }
