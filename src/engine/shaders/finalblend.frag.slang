@@ -31,7 +31,7 @@ float4 fragMain(float2 uv: TEXCOORD0) : SV_Target {
     {
         float dist = distance(float2(pixelCoords), float2(closestEdgePixel));
 
-        float outlineWidth = 10.0f;
+        float outlineWidth = 3.0f;
         float3 outlineColor = float3(1.0f, 0.0f, 0.0f);
         if (dist > 0.0f && dist <= outlineWidth) {
 
@@ -45,9 +45,9 @@ float4 fragMain(float2 uv: TEXCOORD0) : SV_Target {
             }
 
             if (drawOutline) {
-                float edgeAlpha = smoothstep(outlineWidth, outlineWidth - 1.0f, dist);
-                float finalAlpha = 1.0f * edgeAlpha;
-                return float4(lerp(sceneColor.rgb, outlineColor, edgeAlpha), sceneColor.a);
+                float edgeAlpha = smoothstep(outlineWidth, 0, dist);
+                float finalAlpha = 0.9f * edgeAlpha;
+                return float4(lerp(sceneColor.rgb, outlineColor, finalAlpha), sceneColor.a);
             }
             // float edgeAlpha = smoothstep(outlineWidth, outlineWidth - 1.0f, dist);
             
