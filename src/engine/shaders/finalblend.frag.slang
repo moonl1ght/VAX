@@ -49,16 +49,8 @@ float4 fragMain(float2 uv: TEXCOORD0) : SV_Target {
                 float finalAlpha = 0.9f * edgeAlpha;
                 return float4(lerp(sceneColor.rgb, outlineColor, finalAlpha), sceneColor.a);
             }
-            // float edgeAlpha = smoothstep(outlineWidth, outlineWidth - 1.0f, dist);
-            
-            // float finalAlpha = 1.0f * edgeAlpha;
-
-            // // float edgeAlpha = smoothstep(outlineWidth, outlineWidth - 1.0f, dist);
-            // return float4(lerp(sceneColor.rgb, outlineColor, edgeAlpha), sceneColor.a);
         }
     }
 
     return lerp(float4(gradient, 1.0f), sceneColor, sceneColor.a);
-
-    // return float4(finalColor, 1.0f);
 }

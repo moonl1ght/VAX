@@ -47,7 +47,7 @@ void compMain(uint3 dtid : SV_DispatchThreadID)
                         isEdge = true;
                         break;
                     } else {
-                        isEdge = currentDepth <= neighborDepth;
+                        isEdge = currentDepth >= neighborDepth;
                     }
                 }
 

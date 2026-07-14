@@ -114,11 +114,7 @@ std::optional<vax::vk::Pipeline> GraphicsPipelineBuilder::build(std::string name
         .polygonMode = VK_POLYGON_MODE_FILL,
         .cullMode = VK_CULL_MODE_BACK_BIT,
         .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
-        .depthBiasEnable = VK_TRUE,
-        .depthBiasConstantFactor = 1.0f,
-        .depthBiasClamp = 0.0f,
-        .depthBiasSlopeFactor = 10.5f,
-        .lineWidth = 1.0f,
+        .depthBiasEnable = VK_FALSE,
     };
     VkPipelineMultisampleStateCreateInfo multisampling{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
