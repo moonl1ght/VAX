@@ -25,5 +25,6 @@ class MenuView final {
   private:
     std::reference_wrapper<UIEngine> _uiEngine;
     std::optional<Action> _pendingAction;
+    bool _showTrainingStatus = false;
 };
 } // namespace vax::ui

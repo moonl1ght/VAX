@@ -5,6 +5,8 @@
 #include "gridWorld.h"
 #include "inputController.h"
 #include "vkEngine.h"
+#include "threadRunner.h"
+#include "gwTrainingManager.h"
 
 namespace vax::ui {
 class RoverView final {
@@ -28,5 +30,18 @@ class RoverView final {
 
     std::unique_ptr<vax::engine::DrawableScene> _drawableScene;
     std::unique_ptr<vax::rl::GridWorld> _gridWorld;
+    std::unique_ptr<vax::rl::GWTrainingManager> _trainingManager;
+    vax::core::ThreadRunner _mainThreadRunner;
+    std::string _trainingStatus = "Training not started";
+    bool _showTrainingStatus = false;
+    bool _isDemoLoaded = false;
+
+    void _startTraining();
+
+    void _toggleDemo();
+
+    void _reinitGrid();
+
+    void _startDemo();
 };
 } // namespace vax::ui

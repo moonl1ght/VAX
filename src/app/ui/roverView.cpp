@@ -9,7 +9,30 @@ using namespace vax;
 
 void RoverView::updateImGui() {
     _uiEngine.get().updateUiStart();
-    ImGui::Begin("Rover");
+    ImGui::Begin("Rover demo");
+    ImGui::SetWindowFontScale(1.5f);
+    if (_isDemoLoaded) {
+        ImGui::Text("Demo loaded");
+        if (ImGui::Button("Start demo", ImVec2(-1, 55))) {
+            _startDemo();
+        }
+        if (ImGui::Button("Back", ImVec2(-1, 55))) {
+            _toggleDemo();
+        }
+    } else {
+        if (ImGui::Button("Load demo", ImVec2(-1, 55))) {
+            _toggleDemo();
+        }
+        if (ImGui::Button("Reinit grid", ImVec2(-1, 55))) {
+            _reinitGrid();
+        }
+        if (ImGui::Button("Train", ImVec2(-1, 55))) {
+            _startTraining();
+        }
+        if (_showTrainingStatus) {
+            ImGui::Text("%s", _trainingStatus.c_str());
+        }
+    }
     ImGui::End();
     _uiEngine.get().updateUiEnd();
 }
@@ -30,3 +53,11 @@ void RoverView::load(Engine& engine, InputController& inputController) {
     inputController.addObserver(_drawableScene.get());
     inputController.addObserver(_gridWorld.get());
 }
+
+void RoverView::_startTraining() { _showTrainingStatus = true; }
+
+void RoverView::_toggleDemo() { _isDemoLoaded = !_isDemoLoaded; }
+
+void RoverView::_reinitGrid() {}
+
+void RoverView::_startDemo() {}

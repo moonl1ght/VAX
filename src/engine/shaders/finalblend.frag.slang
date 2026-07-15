@@ -27,7 +27,6 @@ float4 fragMain(float2 uv: TEXCOORD0) : SV_Target {
 
     uv.y = 1.0f - uv.y;
     float4 sceneColor = inputTexture.Sample(uv);
-    float3 finalColor = gradient;
 
     uint width, height;
     inputJFATexture.GetDimensions(width, height);
@@ -35,19 +34,20 @@ float4 fragMain(float2 uv: TEXCOORD0) : SV_Target {
     uint2 pixelCoords = uint2(uv * float2(width, height));
     uint2 closestEdgePixel = inputJFATexture[pixelCoords];
 
+    float4 finalColor = sceneColor;
     if (closestEdgePixel.x != MAX_UINT) {
         float dist = distance(float2(pixelCoords), float2(closestEdgePixel));
 
-        float outlineWidth = 3.0f;
+        float outlineWidth = 5.0f;
         uint currentObjId = inputMask[pixelCoords];
         if (dist > 0.0f && dist <= outlineWidth) {
 
             float currentDepth = inputDepth.Load(int3(pixelCoords, 0));\
             float edgeDepth = inputDepth.Load(int3(closestEdgePixel, 0));
 
-            // if (currentDepth >= edgeDepth + 0.0001f) {
-            //     return lerp(float4(gradient, 1.0f), sceneColor, sceneColor.a);
-            // }
+            if (currentDepth >= edgeDepth + 0.001f) {
+                return lerp(float4(gradient, 1.0f), sceneColor, sceneColor.a);
+            }
 
             uint edgeObjId = inputMask[closestEdgePixel];
             float4 outlineColor = unpackRGBA(instancesFinalBlend[edgeObjId].packedColor);
@@ -61,10 +61,10 @@ float4 fragMain(float2 uv: TEXCOORD0) : SV_Target {
             if (drawOutline) {
                 float edgeAlpha = smoothstep(outlineWidth, 0, dist);
                 float finalAlpha = outlineColor.a * edgeAlpha;
-                return float4(lerp(sceneColor.rgb, outlineColor.rgb, finalAlpha), sceneColor.a);
+                finalColor = float4(lerp(sceneColor.rgb, outlineColor.rgb, finalAlpha), sceneColor.a);
             }
         }
     }
 
-    return lerp(float4(gradient, 1.0f), sceneColor, sceneColor.a);
+    return lerp(float4(gradient, 1.0f), finalColor, sceneColor.a);
 }
