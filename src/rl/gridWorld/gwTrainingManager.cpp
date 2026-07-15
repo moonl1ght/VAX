@@ -63,5 +63,4 @@ void GWTrainingManager::_saveTrainingData() {
     outFile.close();
 
     _gridWorld->save(_trainDirectory);
-    _gridWorld->load(_trainDirectory);
 }

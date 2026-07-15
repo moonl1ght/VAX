@@ -37,6 +37,8 @@ class GridWorld final : public vax::InputController::Observer,
     GridWorld(GridWorld&& other) noexcept = delete;
     GridWorld& operator=(GridWorld&& other) noexcept = delete;
 
+    void reinitWorld();
+
     void createRandomGrid();
 
     void save(const std::string& folderPath);
@@ -73,6 +75,10 @@ class GridWorld final : public vax::InputController::Observer,
 
     void setFsLogger(std::shared_ptr<vax::FsLogger> fsLogger);
 
+    void startDemo(std::function<void()> onDone);
+
+    void changeAgentStartPosition();
+
   private:
     vax::Logger _logger = vax::Logger("GridWorld");
     vax::rl::QLearningConfig _qlConfig;
@@ -84,5 +90,8 @@ class GridWorld final : public vax::InputController::Observer,
     std::string blockTypeToPath(BlockType blockType) const;
     GwSceneGraph* _sceneGraph;
     vax::rl::EvalMode _evalMode = vax::rl::EvalMode::EVALUATION;
+
+    void _updateAgentPosition();
+    void _updateGridInstancesHighlight();
 };
 } // namespace vax::rl

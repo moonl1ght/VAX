@@ -35,6 +35,7 @@ class RoverView final {
     std::string _trainingStatus = "Training not started";
     bool _showTrainingStatus = false;
     bool _isDemoLoaded = false;
+    bool _isDemoRunning = false;
 
     void _startTraining();
 
@@ -43,5 +44,7 @@ class RoverView final {
     void _reinitGrid();
 
     void _startDemo();
+
+    void _changeStartPosition();
 };
 } // namespace vax::ui

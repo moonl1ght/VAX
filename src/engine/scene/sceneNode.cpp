@@ -135,3 +135,11 @@ void SceneNode::setNodeSelectionColor(Color color, bool propagate) {
         }
     }
 }
+
+void SceneNode::unselectInstance(uint32_t instanceIndex) { _instanceInfos[instanceIndex].isSelected = false; }
+
+void SceneNode::unselectAllInstances() {
+    for (size_t i = 0; i < _instancesCount; ++i) {
+        _instanceInfos[i].isSelected = false;
+    }
+}

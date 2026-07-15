@@ -66,6 +66,10 @@ void GwSceneGraph::update(const engine::FrameTime& frameTime) {
         }
         if (isCompleted) {
             _animations = std::nullopt;
+            if (_onAllAnimationsCompleted.has_value()) {
+                _onAllAnimationsCompleted.value()();
+                _onAllAnimationsCompleted = std::nullopt;
+            }
         }
     }
 }
@@ -75,7 +79,15 @@ bool GwSceneGraph::isMovingAgent() const { return _animations.has_value(); }
 void GwSceneGraph::moveAgentTo(Position2DFloat position, AgentOrientation orientation, bool withAnimation) {
     if (_agentNode) {
         if (withAnimation) {
-            _animations = std::make_optional(vax::AnimationGroup(vax::AnimationGroup::Mode::SERIAL));
+            auto startRotation = _agentNode->getTransform().getRotationInDegrees().y;
+            if (!_animations.has_value()) {
+                _animations = std::make_optional(vax::AnimationGroup(vax::AnimationGroup::Mode::SERIAL));
+            } else {
+                if (auto metadata = _agentNode->getMetadata("latest_rotation_end_value");
+                    metadata.has_value() && std::holds_alternative<float>(*metadata)) {
+                    startRotation = std::get<float>(*metadata);
+                }
+            }
             auto previousPositionX = std::get<float>(_agentNode->getMetadata("position.x").value_or(position.x));
             auto previousPositionY = std::get<float>(_agentNode->getMetadata("position.y").value_or(position.y));
             auto orientationValue = static_cast<int>(orientation);
@@ -84,11 +96,11 @@ void GwSceneGraph::moveAgentTo(Position2DFloat position, AgentOrientation orient
                 metadata.has_value() && std::holds_alternative<int>(*metadata)) {
                 previousOrientation = std::get<int>(*metadata);
             }
-            auto startRotation = _agentNode->getTransform().getRotationInDegrees().y;
             auto orientationDelta = orientationValue - previousOrientation;
             if (orientationDelta != 0) {
                 orientationDelta = orientationDelta == 3 ? -1 : orientationDelta == -3 ? 1 : orientationDelta;
                 float rotation = startRotation + orientationDelta * 90.0f;
+                _agentNode->setMetadata("latest_rotation_end_value", rotation);
                 auto animation = vax::ValueAnimation(1.0f, startRotation, rotation);
                 animation.addAnimationHandler([&](float value) {
                     _agentNode->updateTransform([&](TransformHandle& transformHandle) {
@@ -152,4 +164,25 @@ void GwSceneGraph::moveAgentTo(Position2DFloat position, AgentOrientation orient
     } else {
         _logger.warning("Agent node not loaded!");
     }
+}
+
+void GwSceneGraph::resetInstancesHighlight(std::string instanceId) {
+    for (auto& node : _envNodes) {
+        if (node.name() == instanceId) {
+            node.unselectAllInstances();
+        }
+    }
+}
+
+void GwSceneGraph::highlightInstance(std::string instanceId, uint32_t instanceIndex, vax::engine::Color color) {
+    for (auto& node : _envNodes) {
+        if (node.name() == instanceId) {
+            node.selectInstance(instanceIndex);
+            node.setSelectionColor(instanceIndex, color);
+        }
+    }
+}
+
+void GwSceneGraph::setOnAllAnimationsCompleted(std::function<void()> onAllAnimationsCompleted) {
+    _onAllAnimationsCompleted = onAllAnimationsCompleted;
 }

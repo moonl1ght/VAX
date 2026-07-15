@@ -1,4 +1,5 @@
 #include "roverView.h"
+#include "fileSystem.h"
 #include "imgui.h"
 #include "qlConfig.h"
 
@@ -12,12 +13,19 @@ void RoverView::updateImGui() {
     ImGui::Begin("Rover demo");
     ImGui::SetWindowFontScale(1.5f);
     if (_isDemoLoaded) {
-        ImGui::Text("Demo loaded");
-        if (ImGui::Button("Start demo", ImVec2(-1, 55))) {
-            _startDemo();
-        }
-        if (ImGui::Button("Back", ImVec2(-1, 55))) {
-            _toggleDemo();
+        if (_isDemoRunning) {
+            ImGui::Text("Demo running");
+        } else {
+            ImGui::Text("Demo loaded");
+            if (ImGui::Button("Start demo", ImVec2(-1, 55))) {
+                _startDemo();
+            }
+            if (ImGui::Button("Change start position", ImVec2(-1, 55))) {
+                _changeStartPosition();
+            }
+            if (ImGui::Button("Back", ImVec2(-1, 55))) {
+                _toggleDemo();
+            }
         }
     } else {
         if (ImGui::Button("Load demo", ImVec2(-1, 55))) {
@@ -56,8 +64,25 @@ void RoverView::load(Engine& engine, InputController& inputController) {
 
 void RoverView::_startTraining() { _showTrainingStatus = true; }
 
-void RoverView::_toggleDemo() { _isDemoLoaded = !_isDemoLoaded; }
+void RoverView::_toggleDemo() {
+    if (_isDemoLoaded) {
+        _isDemoLoaded = false;
+        return;
+    }
+    auto trainPath = RELATIVE_PATH("output/qlearning/");
+    _isDemoLoaded = !_isDemoLoaded;
+    auto latestFolder = vax::fs::getLatestFolder(trainPath);
+    if (latestFolder.has_value()) {
+        _gridWorld->load(latestFolder.value());
+        _isDemoLoaded = true;
+    }
+}
 
-void RoverView::_reinitGrid() {}
+void RoverView::_reinitGrid() { _gridWorld->reinitWorld(); }
 
-void RoverView::_startDemo() {}
+void RoverView::_startDemo() {
+    _isDemoRunning = true;
+    _gridWorld->startDemo([this]() { _isDemoRunning = false; });
+}
+
+void RoverView::_changeStartPosition() { _gridWorld->changeAgentStartPosition(); }

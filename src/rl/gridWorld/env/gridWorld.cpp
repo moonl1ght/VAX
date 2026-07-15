@@ -23,6 +23,12 @@ glm::vec4 getBlockColor(GridWorld::BlockType blockType) {
     }
 }
 
+void GridWorld::reinitWorld() {
+    createRandomGrid();
+    _updateAgentPosition();
+    _updateGridInstancesHighlight();
+}
+
 void GridWorld::createRandomGrid() {
     int gridDimX = 6;
     int gridDimY = 6;
@@ -64,10 +70,7 @@ void GridWorld::createRandomGrid() {
 
 void GridWorld::linkSceneGraph(GwSceneGraph* sceneGraph) {
     _sceneGraph = sceneGraph;
-    auto position = _agent.getPosition();
-    auto flatIndex = _grid.flatIndex({position.x, position.y});
-    auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex({position.x, position.y})];
-    _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation(), false);
+    _updateAgentPosition();
 }
 
 GridWorldDrawableDescriptor GridWorld::getDrawableDescriptor() const {
@@ -278,10 +281,71 @@ bool GridWorld::load(const std::string& folderPath) {
     infoFile.close();
     std::array<int, 2> agentStartPosition = info["agentStartPosition"].get<std::array<int, 2>>();
     _agent.setStartPosition(agentStartPosition[0], agentStartPosition[1]);
+    _grid = std::move(grid.value());
+    _updateAgentPosition();
+    _updateGridInstancesHighlight();
     return true;
 }
 
 void GridWorld::setFsLogger(std::shared_ptr<vax::FsLogger> fsLogger) {
     _logger.setFsLogger(fsLogger);
     _agent.setFsLogger(fsLogger);
+}
+
+void GridWorld::_updateAgentPosition() {
+    auto position = _agent.getPosition();
+    auto flatIndex = _grid.flatIndex({position.x, position.y});
+    auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex({position.x, position.y})];
+    _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation(), false);
+}
+
+void GridWorld::_updateGridInstancesHighlight() {
+    auto blockTypeString = blockTypeToPath(BlockType::FLOOR);
+    _sceneGraph->resetInstancesHighlight(blockTypeString);
+    uint32_t instanceIndex = 0;
+    for (auto& block : _grid) {
+        auto blockType = static_cast<BlockType>(block);
+        auto blockTypeString = blockTypeToPath(blockType);
+        if (blockType == BlockType::FLOOR || blockType == BlockType::START || blockType == BlockType::FINISH) {
+            if (blockType == BlockType::START) {
+                _sceneGraph->highlightInstance(blockTypeString, instanceIndex, engine::ColorPalette::Blue);
+            } else if (blockType == BlockType::FINISH) {
+                _sceneGraph->highlightInstance(blockTypeString, instanceIndex, engine::ColorPalette::Green);
+            }
+            ++instanceIndex;
+        }
+    }
+}
+
+void GridWorld::startDemo(std::function<void()> onDone) {
+    _sceneGraph->setOnAllAnimationsCompleted(onDone);
+    while (true) {
+        auto state = _agent.getPosition();
+        auto action = _agent.chooseAction(state);
+        auto stepResult = stepImpl(action);
+        if (stepResult.done) {
+            break;
+        }
+    }
+}
+
+void GridWorld::changeAgentStartPosition() {
+    _grid.set({_agent.getStartPosition().x, _agent.getStartPosition().y}, static_cast<float>(BlockType::FLOOR));
+    while (true) {
+        auto newPositionIndex = core::RandomGenerator::getInstance().uniformInt(0, _grid.totalSize() - 1);
+        auto gridIndices = _grid.indices(newPositionIndex);
+        auto blockValue = _grid.get(gridIndices);
+        if (!blockValue.has_value()) {
+            continue;
+        }
+        auto blockType = static_cast<BlockType>(blockValue.value());
+        if (blockType == BlockType::FLOOR || blockType == BlockType::START) {
+            auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex(gridIndices)];
+            _agent.setStartPosition(gridIndices[0], gridIndices[1]);
+            _grid.set(gridIndices, static_cast<float>(BlockType::START));
+            _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation(), false);
+            break;
+        }
+    }
+    _updateGridInstancesHighlight();
 }

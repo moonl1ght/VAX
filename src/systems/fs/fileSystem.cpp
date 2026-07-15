@@ -1,7 +1,6 @@
 #include "fileSystem.h"
 
-using namespace vax::fs;
-
+namespace vax::fs {
 std::optional<std::filesystem::path> getLatestFolder(const std::filesystem::path& parent_dir) {
     namespace fs = std::filesystem;
     fs::path latest_folder;
@@ -26,3 +25,4 @@ std::optional<std::filesystem::path> getLatestFolder(const std::filesystem::path
 
     return latest_folder;
 }
+} // namespace vax::fs

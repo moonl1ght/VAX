@@ -37,11 +37,18 @@ class GwSceneGraph final {
 
     bool isMovingAgent() const;
 
+    void resetInstancesHighlight(std::string instanceId);
+
+    void highlightInstance(std::string instanceId, uint32_t instanceIndex, vax::engine::Color color);
+
+    void setOnAllAnimationsCompleted(std::function<void()> onAllAnimationsCompleted);
+
   private:
     vax::Logger _logger = vax::Logger("GwSceneGraph");
     std::vector<vax::engine::SceneNode> _envNodes;
     std::shared_ptr<vax::engine::SceneNode> _agentNode;
     std::unique_ptr<vax::rl::RoverModelProxy> _roverModelProxy;
     std::optional<vax::AnimationGroup> _animations;
+    std::optional<std::function<void()>> _onAllAnimationsCompleted;
 };
 } // namespace vax::rl

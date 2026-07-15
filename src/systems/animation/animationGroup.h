@@ -30,8 +30,10 @@ class AnimationGroup final : public Animation<AnimationGroup> {
         switch (_mode) {
         case Mode::SERIAL:
             isCompleted = _playSerial(frameTime);
+            break;
         case Mode::PARALLEL:
             isCompleted = _playParallel(frameTime);
+            break;
         }
         if (isCompleted && _callback.has_value()) {
             (*_callback)();

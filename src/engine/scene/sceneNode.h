@@ -161,6 +161,10 @@ class SceneNode final {
 
     void setSelectionColor(uint32_t instanceIndex, Color color);
 
+    void unselectInstance(uint32_t instanceIndex);
+
+    void unselectAllInstances();
+
   private:
     std::reference_wrapper<vax::vk::SSBOManager> _ssboManager;
 

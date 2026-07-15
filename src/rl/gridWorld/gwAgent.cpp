@@ -27,6 +27,7 @@ void GWAgent::allowAction(MoveAction action) {
     _oldPosition = _position;
     _position = getNewPosition(action);
     if (_evalMode == vax::rl::EvalMode::EVALUATION) {
+        _updateOrientation(action);
         _gridWorld->agentMoved();
     }
 }
@@ -82,11 +83,13 @@ const Position2DInt& GWAgent::getPosition() const { return _position; }
 const Position2DInt& GWAgent::getOldPosition() const { return _oldPosition; }
 
 MoveAction GWAgent::chooseActionImpl(const State& state) {
-    core::RandomGenerator& generator = core::RandomGenerator::getInstance();
-    if (generator.uniformFloat() < _qlConfig.epsilon) {
-        auto action = static_cast<MoveAction>(generator.uniformInt(0, numMoveActions - 1));
-        _logger.info("Chosen random action: ", moveActionToString(action));
-        return action;
+    if (_evalMode == vax::rl::EvalMode::TRAINING) {
+        core::RandomGenerator& generator = core::RandomGenerator::getInstance();
+        if (generator.uniformFloat() < _qlConfig.epsilon) {
+            auto action = static_cast<MoveAction>(generator.uniformInt(0, numMoveActions - 1));
+            _logger.info("Chosen random action: ", moveActionToString(action));
+            return action;
+        }
     }
     auto flatIndex = _gridWorld->getGrid().flatIndex({state.x, state.y});
     auto indices = TensorOp::maxOverLastDim(_qTable, {flatIndex});
