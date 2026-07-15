@@ -83,7 +83,7 @@ const Position2DInt& GWAgent::getPosition() const { return _position; }
 const Position2DInt& GWAgent::getOldPosition() const { return _oldPosition; }
 
 MoveAction GWAgent::chooseActionImpl(const State& state) {
-    if (_evalMode == vax::rl::EvalMode::TRAINING) {
+    if (_evalMode == vax::rl::EvalMode::TRAINING || _allowRandomActionsDuringEval) {
         core::RandomGenerator& generator = core::RandomGenerator::getInstance();
         if (generator.uniformFloat() < _qlConfig.epsilon) {
             auto action = static_cast<MoveAction>(generator.uniformInt(0, numMoveActions - 1));
@@ -98,7 +98,9 @@ MoveAction GWAgent::chooseActionImpl(const State& state) {
         return MoveAction::NORTH;
     }
     auto action = static_cast<MoveAction>(indices[1]);
-    _logger.info("Chosen best action: ", moveActionToString(action));
+    if (_evalMode == vax::rl::EvalMode::TRAINING) {
+        _logger.info("Chosen best action: ", moveActionToString(action));
+    }
     return action;
 }
 

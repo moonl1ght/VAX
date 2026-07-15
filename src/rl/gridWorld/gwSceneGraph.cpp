@@ -76,7 +76,9 @@ void GwSceneGraph::update(const engine::FrameTime& frameTime) {
 
 bool GwSceneGraph::isMovingAgent() const { return _animations.has_value(); }
 
-void GwSceneGraph::moveAgentTo(Position2DFloat position, AgentOrientation orientation, bool withAnimation) {
+void GwSceneGraph::moveAgentTo(
+    Position2DFloat position, AgentOrientation orientation, bool withAnimation, float moveSpeed, float rotationSpeed
+) {
     if (_agentNode) {
         if (withAnimation) {
             auto startRotation = _agentNode->getTransform().getRotationInDegrees().y;
@@ -101,7 +103,7 @@ void GwSceneGraph::moveAgentTo(Position2DFloat position, AgentOrientation orient
                 orientationDelta = orientationDelta == 3 ? -1 : orientationDelta == -3 ? 1 : orientationDelta;
                 float rotation = startRotation + orientationDelta * 90.0f;
                 _agentNode->setMetadata("latest_rotation_end_value", rotation);
-                auto animation = vax::ValueAnimation(1.0f, startRotation, rotation);
+                auto animation = vax::ValueAnimation(rotationSpeed, startRotation, rotation);
                 animation.addAnimationHandler([&](float value) {
                     _agentNode->updateTransform([&](TransformHandle& transformHandle) {
                         transformHandle.updateTransform([&](Transform& transform) {
@@ -122,7 +124,7 @@ void GwSceneGraph::moveAgentTo(Position2DFloat position, AgentOrientation orient
                 startPosition = previousPositionY;
                 endPosition = position.y;
             }
-            auto moveAnimation = vax::ValueAnimation(2.0f, startPosition, endPosition);
+            auto moveAnimation = vax::ValueAnimation(moveSpeed, startPosition, endPosition);
             moveAnimation.addAnimationHandler([=, this](float value) {
                 _agentNode->updateTransform([=](TransformHandle& transformHandle) {
                     transformHandle.updateTransform([=](Transform& transform) {

@@ -29,6 +29,22 @@ void GridWorld::reinitWorld() {
     _updateGridInstancesHighlight();
 }
 
+void GridWorld::setInitialGrid(vax::math::Tensor&& grid) {
+    _grid = std::move(grid);
+    for (int i = 0; i < _grid.totalSize(); ++i) {
+        std::vector<int> indices = _grid.indices(i);
+        auto blockValue = _grid.get(indices);
+        if (!blockValue.has_value()) {
+            _logger.error("Block value is not set");
+            continue;
+        }
+        auto blockType = static_cast<BlockType>(blockValue.value());
+        if (blockType == BlockType::START) {
+            _agent.setStartPosition(indices[0], indices[1]);
+        }
+    }
+}
+
 void GridWorld::createRandomGrid() {
     int gridDimX = 6;
     int gridDimY = 6;
@@ -190,7 +206,7 @@ void GridWorld::agentMoved() {
     }
     auto newPosition = std::vector<int>({_agent.getPosition().x, _agent.getPosition().y});
     auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex(newPosition)];
-    _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation(), true);
+    _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation(), true, _moveSpeed, _rotationSpeed);
 }
 
 const Tensor& GridWorld::getGrid() const { return _grid; }
@@ -201,10 +217,14 @@ State GridWorld::resetImpl() {
 }
 
 StepResult GridWorld::stepImpl(MoveAction action) {
-    _logger.info("Step: ", moveActionToString(action));
+    if (_evalMode == vax::rl::EvalMode::TRAINING) {
+        _logger.info("Step: ", moveActionToString(action));
+    }
     auto nextPossiblePosition = _agent.getNewPosition(action);
     if (canMoveAgent(nextPossiblePosition)) {
-        _logger.info("Moving to: ", nextPossiblePosition.x, ", ", nextPossiblePosition.y);
+        if (_evalMode == vax::rl::EvalMode::TRAINING) {
+            _logger.info("Moving to: ", nextPossiblePosition.x, ", ", nextPossiblePosition.y);
+        }
         _agent.allowAction(action);
         auto blockValue = _grid.get({nextPossiblePosition.x, nextPossiblePosition.y});
         if (!blockValue.has_value()) {
@@ -222,7 +242,9 @@ StepResult GridWorld::stepImpl(MoveAction action) {
         }
         return {.reward = -1.0, .done = false, .finishedWithError = false};
     }
-    _logger.info("Cannot move to: ", nextPossiblePosition.x, ", ", nextPossiblePosition.y);
+    if (_evalMode == vax::rl::EvalMode::TRAINING) {
+        _logger.info("Cannot move to: ", nextPossiblePosition.x, ", ", nextPossiblePosition.y);
+    }
     return {.reward = -100.0, .done = false, .finishedWithError = false};
 }
 
@@ -295,8 +317,10 @@ void GridWorld::setFsLogger(std::shared_ptr<vax::FsLogger> fsLogger) {
 void GridWorld::_updateAgentPosition() {
     auto position = _agent.getPosition();
     auto flatIndex = _grid.flatIndex({position.x, position.y});
-    auto sceneGraphPosition = _sceneGraphPositions[_grid.flatIndex({position.x, position.y})];
-    _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation(), false);
+    auto sceneGraphPosition = _sceneGraphPositions[flatIndex];
+    if (_sceneGraph != nullptr) {
+        _sceneGraph->moveAgentTo(sceneGraphPosition, _agent.getOrientation(), false);
+    }
 }
 
 void GridWorld::_updateGridInstancesHighlight() {
@@ -319,10 +343,18 @@ void GridWorld::_updateGridInstancesHighlight() {
 
 void GridWorld::startDemo(std::function<void()> onDone) {
     _sceneGraph->setOnAllAnimationsCompleted(onDone);
+    int iteration = 0;
     while (true) {
         auto state = _agent.getPosition();
         auto action = _agent.chooseAction(state);
         auto stepResult = stepImpl(action);
+        if (iteration > 10) {
+            _agent.toggleAllowRandomActionsDuringEval();
+            _logger.warning("Toggle allow random actions during eval");
+            iteration = 0;
+        } else {
+            ++iteration;
+        }
         if (stepResult.done) {
             break;
         }

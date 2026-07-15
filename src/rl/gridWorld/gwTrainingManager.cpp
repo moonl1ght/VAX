@@ -3,6 +3,7 @@
 #include "timeManager.h"
 #include "nlohmann/json.hpp"
 #include <filesystem>
+#include "tensorOp.h"
 
 using namespace vax;
 using namespace vax::rl;
@@ -14,6 +15,10 @@ GWTrainingManager::GWTrainingManager() {
     _fsLogger = std::make_shared<vax::FsLogger>(_trainDirectory + "/training.log");
     _logger.setFsLogger(_fsLogger);
     _logger.setMode(vax::Logger::Mode::FILE);
+}
+
+void GWTrainingManager::setInititialGrid(const vax::math::Tensor& grid) {
+    _initialGrid = std::make_optional(vax::math::TensorOp::copy(grid));
 }
 
 void GWTrainingManager::startTraining(ThreadRunner& threadRunner, std::function<TrainingCallback> callback) {
@@ -35,6 +40,10 @@ void GWTrainingManager::_setupTraining(ThreadRunner& threadRunner, std::function
     _gridWorld->setFsLogger(_fsLogger);
     _gridWorld->setEvalModeImpl(vax::rl::EvalMode::TRAINING);
     _gridWorld->createRandomGrid();
+    if (_initialGrid.has_value()) {
+        _gridWorld->setInitialGrid(std::move(_initialGrid.value()));
+        _initialGrid = std::nullopt;
+    }
     _trainingEngine->setFsLogger(_fsLogger);
 }
 

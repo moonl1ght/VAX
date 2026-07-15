@@ -33,7 +33,13 @@ class GwSceneGraph final {
 
     void update(const vax::engine::FrameTime& frameTime);
 
-    void moveAgentTo(vax::math::Position2DFloat position, vax::rl::AgentOrientation orientation, bool withAnimation);
+    void moveAgentTo(
+        vax::math::Position2DFloat position,
+        vax::rl::AgentOrientation orientation,
+        bool withAnimation,
+        float moveSpeed = 2.0f,
+        float rotationSpeed = 1.0f
+    );
 
     bool isMovingAgent() const;
 

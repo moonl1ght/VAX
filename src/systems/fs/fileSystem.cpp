@@ -8,7 +8,7 @@ std::optional<std::filesystem::path> getLatestFolder(const std::filesystem::path
     bool found = false;
 
     if (!fs::exists(parent_dir) || !fs::is_directory(parent_dir)) {
-        return "";
+        return std::nullopt;
     }
 
     for (const auto& entry : fs::directory_iterator(parent_dir)) {
@@ -21,6 +21,10 @@ std::optional<std::filesystem::path> getLatestFolder(const std::filesystem::path
                 found = true;
             }
         }
+    }
+
+    if (!found) {
+        return std::nullopt;
     }
 
     return latest_folder;

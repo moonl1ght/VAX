@@ -9,6 +9,7 @@ using namespace vax::vk;
 using namespace vax;
 
 void RoverView::updateImGui() {
+     _mainThreadRunner.processThreadQueue();
     _uiEngine.get().updateUiStart();
     ImGui::Begin("Rover demo");
     ImGui::SetWindowFontScale(1.5f);
@@ -28,17 +29,22 @@ void RoverView::updateImGui() {
             }
         }
     } else {
-        if (ImGui::Button("Load demo", ImVec2(-1, 55))) {
-            _toggleDemo();
-        }
-        if (ImGui::Button("Reinit grid", ImVec2(-1, 55))) {
-            _reinitGrid();
-        }
-        if (ImGui::Button("Train", ImVec2(-1, 55))) {
-            _startTraining();
-        }
-        if (_showTrainingStatus) {
+        if (_isTrainingRunning) {
+            ImGui::Text("Training running");
             ImGui::Text("%s", _trainingStatus.c_str());
+        } else {
+            if (ImGui::Button("Load demo", ImVec2(-1, 55))) {
+                _toggleDemo();
+            }
+            if (ImGui::Button("Reinit grid", ImVec2(-1, 55))) {
+                _reinitGrid();
+            }
+            if (ImGui::Button("Train", ImVec2(-1, 55))) {
+                _startTraining();
+            }
+            if (_isTrainingCompleted) {
+                ImGui::Text("Training completed");
+            }
         }
     }
     ImGui::End();
@@ -62,7 +68,19 @@ void RoverView::load(Engine& engine, InputController& inputController) {
     inputController.addObserver(_gridWorld.get());
 }
 
-void RoverView::_startTraining() { _showTrainingStatus = true; }
+void RoverView::_startTraining() {
+    _isTrainingRunning = true;
+    _trainingManager = std::make_unique<vax::rl::GWTrainingManager>();
+    _trainingManager->setInititialGrid(_gridWorld->getGrid());
+    _trainingManager->startTraining(_mainThreadRunner, [this](TrainingStatus trainingStatus) {
+        _trainingStatus = trainingStatus.message;
+        if (trainingStatus.isCompleted) {
+            _trainingManager.reset();
+            _isTrainingRunning = false;
+            _isTrainingCompleted = true;
+        }
+    });
+}
 
 void RoverView::_toggleDemo() {
     if (_isDemoLoaded) {
@@ -70,7 +88,6 @@ void RoverView::_toggleDemo() {
         return;
     }
     auto trainPath = RELATIVE_PATH("output/qlearning/");
-    _isDemoLoaded = !_isDemoLoaded;
     auto latestFolder = vax::fs::getLatestFolder(trainPath);
     if (latestFolder.has_value()) {
         _gridWorld->load(latestFolder.value());

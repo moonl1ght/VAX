@@ -79,6 +79,8 @@ class GridWorld final : public vax::InputController::Observer,
 
     void changeAgentStartPosition();
 
+    void setInitialGrid(vax::math::Tensor&& grid);
+
   private:
     vax::Logger _logger = vax::Logger("GridWorld");
     vax::rl::QLearningConfig _qlConfig;
@@ -86,6 +88,8 @@ class GridWorld final : public vax::InputController::Observer,
     vax::math::Tensor _grid;
     vax::rl::GWAgent _agent = vax::rl::GWAgent(_qlConfig);
     std::vector<vax::math::Position2DFloat> _sceneGraphPositions;
+    float _moveSpeed = 1.0f;
+    float _rotationSpeed = 0.5f;
 
     std::string blockTypeToPath(BlockType blockType) const;
     GwSceneGraph* _sceneGraph;

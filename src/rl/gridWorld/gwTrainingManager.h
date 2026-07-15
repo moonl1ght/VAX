@@ -26,6 +26,8 @@ class GWTrainingManager final {
 
     void startTraining(vax::core::ThreadRunner& threadRunner, std::function<TrainingCallback> callback);
 
+    void setInititialGrid(const vax::math::Tensor& grid);
+
   private:
     std::shared_ptr<vax::FsLogger> _fsLogger;
     vax::Logger _logger = vax::Logger("GWTrainingManager");
@@ -33,6 +35,7 @@ class GWTrainingManager final {
     std::unique_ptr<vax::rl::GridWorld> _gridWorld;
     vax::rl::QLearningConfig _qlConfig;
     std::string _trainDirectory;
+    std::optional<vax::math::Tensor> _initialGrid;
 
     std::jthread _trainingThread;
     std::mutex _trainingMutex;

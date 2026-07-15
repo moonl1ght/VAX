@@ -73,6 +73,8 @@ class GWAgent final : public vax::rl::Agent<GWAgent, State, MoveAction> {
 
     AgentOrientation getOrientation() const { return _orientation; }
 
+    void toggleAllowRandomActionsDuringEval() { _allowRandomActionsDuringEval = !_allowRandomActionsDuringEval; }
+
   private:
     vax::Logger _logger = vax::Logger("GWAgent");
     vax::rl::QLearningConfig _qlConfig;
@@ -82,6 +84,7 @@ class GWAgent final : public vax::rl::Agent<GWAgent, State, MoveAction> {
     vax::rl::GridWorld* _gridWorld = nullptr;
     vax::rl::EvalMode _evalMode = vax::rl::EvalMode::EVALUATION;
     AgentOrientation _orientation = AgentOrientation::NORTH;
+    bool _allowRandomActionsDuringEval = false;
 
     vax::math::Tensor _qTable;
 

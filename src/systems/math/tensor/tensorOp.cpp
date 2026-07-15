@@ -115,3 +115,13 @@ std::vector<int> TensorOp::maxOverLastDim(const Tensor& tensor, std::vector<int>
     }
     return result;
 }
+
+Tensor TensorOp::copy(const Tensor& tensor) {
+    Tensor result = Tensor();
+    result._shape = tensor.shape();
+    result._strides = tensor.strides();
+    result._totalSize = tensor.totalSize();
+    cudaMallocHost((void**)&result._data, result._totalSize * sizeof(float));;
+    std::copy(tensor.begin(), tensor.end(), result.begin());
+    return result;
+}

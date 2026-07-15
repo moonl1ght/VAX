@@ -33,9 +33,10 @@ class RoverView final {
     std::unique_ptr<vax::rl::GWTrainingManager> _trainingManager;
     vax::core::ThreadRunner _mainThreadRunner;
     std::string _trainingStatus = "Training not started";
-    bool _showTrainingStatus = false;
+    bool _isTrainingRunning = false;
     bool _isDemoLoaded = false;
     bool _isDemoRunning = false;
+    bool _isTrainingCompleted = false;
 
     void _startTraining();
 
