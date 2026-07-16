@@ -35,6 +35,8 @@ class JFAPass final {
 
     bool isFinalImageA() const { return _isFinalImageA; }
 
+    void writeTextures(const std::vector<vax::vk::Texture>& maskTextures, const vax::vk::Texture& depthTexture);
+
   private:
     vax::Logger _logger = vax::Logger("JFAPass");
     std::reference_wrapper<const vax::vk::Device> _device;

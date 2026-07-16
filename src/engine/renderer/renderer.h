@@ -57,6 +57,7 @@ class Renderer final {
 
     void _resize();
     void _createRenderDestinations();
+    void _writeFinalBlendDescriptorSets();
 
     void _mainPass(
         VkPipelineLayout pipelineLayout,

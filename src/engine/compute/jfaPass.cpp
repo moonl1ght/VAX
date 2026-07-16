@@ -114,6 +114,12 @@ void JFAPass::setup(const std::vector<vax::vk::Texture>& maskTextures, const vax
     }
     vkDestroyShaderModule(_device.get().vkDevice, jfaShaderModule.value(), nullptr);
 
+    writeTextures(maskTextures, depthTexture);
+}
+
+void JFAPass::writeTextures(const std::vector<vax::vk::Texture>& maskTextures, const vax::vk::Texture& depthTexture) {
+    _jfaTexturesA.clear();
+    _jfaTexturesB.clear();
     auto textureFactory = TextureFactory(_device.get(), _allocator);
     for (int i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
         auto initDescriptorSetHandler = _descriptorSetManager.get().getDescriptorSetHandler(

@@ -61,6 +61,12 @@ void Renderer::prepare(DrawableScene* scene) {
         }
         scene->writeFrameDescriptorSet(*frameDescriptorSetHandler);
         frameDescriptorSetHandler->update();
+    }
+    _writeFinalBlendDescriptorSets();
+}
+
+void Renderer::_writeFinalBlendDescriptorSets() {
+    for (uint32_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
         auto finalBlendDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
             i, vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND, "final_blend", "final_blend_sampled"
         );
@@ -317,7 +323,11 @@ bool Renderer::_drawGizmo(VkCommandBuffer commandBuffer, vax::engine::DrawableSc
     return true;
 }
 
-void Renderer::_resize() { _createRenderDestinations(); }
+void Renderer::_resize() {
+    _createRenderDestinations();
+    _jfaPass->writeTextures(_mainRenderDestination->maskTextures(), _mainRenderDestination->depthTexture());
+    _writeFinalBlendDescriptorSets();
+}
 
 void Renderer::_createRenderDestinations() {
     _mainRenderDestination = RenderDestinationBuilder(*_vkEngine.get().device, _vkEngine.get().allocator)
