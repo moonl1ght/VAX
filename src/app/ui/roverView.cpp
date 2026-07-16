@@ -9,7 +9,7 @@ using namespace vax::vk;
 using namespace vax;
 
 void RoverView::updateImGui() {
-     _mainThreadRunner.processThreadQueue();
+    _mainThreadRunner.processThreadQueue();
     _uiEngine.get().updateUiStart();
     ImGui::Begin("Rover demo");
     ImGui::SetWindowFontScale(1.5f);
@@ -41,6 +41,11 @@ void RoverView::updateImGui() {
             }
             if (ImGui::Button("Train", ImVec2(-1, 55))) {
                 _startTraining();
+            }
+            if (!_isRoverCameraShown) {
+                if (ImGui::Button("Show rover camera", ImVec2(-1, 55))) {
+                    _showRoverCamera();
+                }
             }
             if (_isTrainingCompleted) {
                 ImGui::Text("Training completed");
@@ -103,3 +108,16 @@ void RoverView::_startDemo() {
 }
 
 void RoverView::_changeStartPosition() { _gridWorld->changeAgentStartPosition(); }
+
+void RoverView::_showRoverCamera() {
+    if (_windowController.get().isSecondaryWindowSetup()) {
+        _windowController.get().getSecondaryWindow()->show();
+    } else {
+        _windowController.get().setupSecondaryWindow(vax::math::SizeUI{640, 480}, "Rover camera");
+        _windowController.get().getSecondaryWindow()->load(true);
+    }
+    _windowController.get().getSecondaryWindow()->setWindowWillHideCallback([this]() {
+        _isRoverCameraShown = false;
+    });
+    _isRoverCameraShown = true;
+}

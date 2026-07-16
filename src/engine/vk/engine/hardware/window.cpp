@@ -3,17 +3,17 @@
 using namespace vax::vk;
 using namespace vax;
 
-bool vax::vk::Window::load() {
-    if (!SDL_Vulkan_LoadLibrary(NULL)) {
-        _logger.error("Failed to load Vulkan library: {}", SDL_GetError());
-        return false;
-    }
+bool vax::vk::Window::load(bool visible) {
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
-    window = SDL_CreateWindow("Luna", width, height, window_flags);
+    if (!visible) {
+        window_flags |= SDL_WINDOW_HIDDEN;
+    }
+    window = SDL_CreateWindow(_name.c_str(), width, height, window_flags);
     if (window == nullptr) {
         _logger.error("Failed to create window");
         return false;
     }
+    _visible = visible;
     return true;
 }
 
@@ -47,3 +47,51 @@ void vax::vk::Window::destroy() {
     destroyWindow();
     destroySurface();
 }
+
+void vax::vk::Window::show() {
+    if (window != nullptr) {
+        if (_windowWillShowCallback) {
+            _windowWillShowCallback();
+        }
+        SDL_ShowWindow(window);
+        _visible = true;
+        if (_windowDidShowCallback) {
+            _windowDidShowCallback();
+        }
+    }
+}
+
+void vax::vk::Window::hide() {
+    if (window != nullptr) {
+        if (_windowWillHideCallback) {
+            _windowWillHideCallback();
+        }
+        SDL_HideWindow(window);
+        _visible = false;
+        if (_windowDidHideCallback) {
+            _windowDidHideCallback();
+        }
+    }
+}
+
+
+void vax::vk::Window::bringToFront() {
+    if (window != nullptr) {
+        SDL_RaiseWindow(window);
+    }
+}
+
+void vax::vk::Window::setWindowName(const std::string& name) {
+    _name = name;
+    if (window != nullptr) {
+        SDL_SetWindowTitle(window, _name.c_str());
+    }
+}
+
+void vax::vk::Window::setWindowWillHideCallback(std::function<void()> callback) { _windowWillHideCallback = callback; }
+
+void vax::vk::Window::setWindowWillShowCallback(std::function<void()> callback) { _windowWillShowCallback = callback; }
+
+void vax::vk::Window::setWindowDidHideCallback(std::function<void()> callback) { _windowDidHideCallback = callback; }
+
+void vax::vk::Window::setWindowDidShowCallback(std::function<void()> callback) { _windowDidShowCallback = callback; }

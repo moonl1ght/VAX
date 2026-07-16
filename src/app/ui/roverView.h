@@ -1,18 +1,20 @@
 #pragma once
 
-#include "uiEngine.h"
 #include "drawableScene.h"
 #include "gridWorld.h"
-#include "inputController.h"
-#include "vkEngine.h"
-#include "threadRunner.h"
 #include "gwTrainingManager.h"
+#include "inputController.h"
+#include "threadRunner.h"
+#include "uiEngine.h"
+#include "vkEngine.h"
+#include "windowController.h"
 
 namespace vax::ui {
 class RoverView final {
   public:
-    RoverView(UIEngine& uiEngine)
-        : _uiEngine(uiEngine) {}
+    RoverView(UIEngine& uiEngine, vax::WindowController& windowController)
+        : _uiEngine(uiEngine)
+        , _windowController(windowController) {}
     ~RoverView() = default;
 
     RoverView(const RoverView& other) = delete;
@@ -27,6 +29,7 @@ class RoverView final {
 
   private:
     std::reference_wrapper<UIEngine> _uiEngine;
+    std::reference_wrapper<vax::WindowController> _windowController;
 
     std::unique_ptr<vax::engine::DrawableScene> _drawableScene;
     std::unique_ptr<vax::rl::GridWorld> _gridWorld;
@@ -37,6 +40,7 @@ class RoverView final {
     bool _isDemoLoaded = false;
     bool _isDemoRunning = false;
     bool _isTrainingCompleted = false;
+    bool _isRoverCameraShown = false;
 
     void _startTraining();
 
@@ -47,5 +51,7 @@ class RoverView final {
     void _startDemo();
 
     void _changeStartPosition();
+
+    void _showRoverCamera();
 };
 } // namespace vax::ui

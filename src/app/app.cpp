@@ -2,6 +2,7 @@
 #include "notificationCenter.h"
 #include "profiler.h"
 #include "renderdoc.h"
+#include <SDL3/SDL_events.h>
 
 using namespace vax;
 
@@ -19,18 +20,23 @@ bool App::run() {
 }
 
 bool App::_setup() {
-    RenderDoc::init();
-    vax::NotificationCenter::getInstance().setup();
-    _window = std::make_unique<vk::Window>();
-    if (!_window->load()) {
+    if (!SDL_Vulkan_LoadLibrary(NULL)) {
+        _logger.error("Failed to load Vulkan library: {}", SDL_GetError());
         return false;
     }
-    _engine = std::make_unique<vk::Engine>(*_window);
+    RenderDoc::init();
+    vax::NotificationCenter::getInstance().setup();
+    _windowController = std::make_unique<WindowController>();
+    _windowController->setupPrimaryWindow(vax::math::SizeUI{1920, 1080});
+    if (!_windowController->getPrimaryWindow()->load(true)) {
+        return false;
+    }
+    _engine = std::make_unique<vk::Engine>(*_windowController->getPrimaryWindow());
     _engine->setup();
 
-    _uiEngine = std::make_unique<ui::UIEngine>(*_engine, *_window);
+    _uiEngine = std::make_unique<ui::UIEngine>(*_engine, *_windowController->getPrimaryWindow());
     _menuView = std::make_unique<ui::MenuView>(*_uiEngine);
-    _roverView = std::make_unique<ui::RoverView>(*_uiEngine);
+    _roverView = std::make_unique<ui::RoverView>(*_uiEngine, *_windowController);
     _trainingView = std::make_unique<ui::TrainingView>(*_uiEngine);
 
     _renderer = std::make_unique<engine::Renderer>(*_engine, *_uiEngine);
@@ -52,25 +58,46 @@ void App::_cleanup() {
 
     _engine->cleanup();
 
-    _window->destroyWindow();
+    _windowController->getPrimaryWindow()->destroyWindow();
+    if (_windowController->isSecondaryWindowSetup()) {
+        _windowController->getSecondaryWindow()->destroyWindow();
+    }
     SDL_Quit();
     _logger.info("Cleanup complete!");
 }
 
 void App::_mainLoop() {
-    if (_window->window == nullptr) {
+    if (!_windowController->isPrimaryWindowSetup()) {
         throw std::runtime_error("Window not initialized");
     }
     static bool running = true;
     int i = 0;
+    SDL_WindowID primaryWindowID = _windowController->getPrimaryWindow()->getWindowID();
+
     while (running) {
         SDL_Event event;
+        auto processEvent = [&](SDL_Event& event) {
+            _inputController.handleEvent(event);
+            _uiEngine->processEvents(event);
+            if (event.type == SDL_EVENT_QUIT) {
+                running = false;
+                return false;
+            } else if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
+                if (event.window.windowID == primaryWindowID) {
+                    running = false;
+                    return false;
+                } else if (_windowController->isSecondaryWindowSetup()) {
+                    if (event.window.windowID == _windowController->getSecondaryWindow()->getWindowID()) {
+                        _windowController->getSecondaryWindow()->hide();
+                        return true;
+                    }
+                }
+            }
+            return true;
+        };
         if (_appMode == AppMode::Demo) {
             while (SDL_PollEvent(&event)) {
-                _inputController.handleEvent(event);
-                _uiEngine->processEvents(event);
-                if (event.type == SDL_EVENT_QUIT) {
-                    running = false;
+                if (!processEvent(event)) {
                     break;
                 }
             }
@@ -79,12 +106,7 @@ void App::_mainLoop() {
             _loopContinuousUpdate();
         } else if (SDL_WaitEvent(&event)) {
             do {
-                _inputController.handleEvent(event);
-                _uiEngine->processEvents(event);
-                if (event.type == SDL_EVENT_QUIT) {
-                    running = false;
-                    break;
-                }
+                processEvent(event);
             } while (SDL_PollEvent(&event));
             _loopByEventUpdate();
         }
