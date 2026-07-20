@@ -15,15 +15,17 @@ using namespace vax;
 using namespace vax::vk;
 
 void Renderer::setup() {
-    _mainRenderPassDescriptor = RenderPassDescriptorBuilder(*_vkEngine.get().device)
-                                    .buildMainOffscreen(_vkEngine.get().swapchain->swapchainImageFormat, false);
+    _mainRenderPassDescriptor =
+        RenderPassDescriptorBuilder(*_vkEngine.get().device)
+            .buildMainOffscreen(_vkEngine.get().getWindow().getSwapchain()->swapchainImageFormat, false);
     if (!_mainRenderPassDescriptor.has_value()) {
         _logger.error("Failed to create render pass descriptor!");
         return;
     }
 
-    _swapchainRenderPassDescriptor = RenderPassDescriptorBuilder(*_vkEngine.get().device)
-                                         .buildMainSwapchain(_vkEngine.get().swapchain->swapchainImageFormat);
+    _swapchainRenderPassDescriptor =
+        RenderPassDescriptorBuilder(*_vkEngine.get().device)
+            .buildMainSwapchain(_vkEngine.get().getWindow().getSwapchain()->swapchainImageFormat);
     if (!_swapchainRenderPassDescriptor.has_value()) {
         _logger.error("Failed to create swapchain render pass descriptor!");
         return;
@@ -109,7 +111,7 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(
         _vkEngine.get().device->vkDevice,
-        _vkEngine.get().swapchain->swapchain,
+        _vkEngine.get().getWindow().getSwapchain()->swapchain,
         UINT64_MAX,
         _vkEngine.get().syncObjectsManager->getImageAvailableSemaphores()[_currentFrame],
         VK_NULL_HANDLE,
@@ -165,7 +167,7 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
         return false;
     }
 
-    VkSwapchainKHR swapChains[] = {_vkEngine.get().swapchain->swapchain};
+    VkSwapchainKHR swapChains[] = {_vkEngine.get().getWindow().getSwapchain()->swapchain};
     VkPresentInfoKHR presentInfo{
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .waitSemaphoreCount = 1,
@@ -227,7 +229,7 @@ void Renderer::_drawUi(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
         "draw_ui_render_pass",
         _swapchainRenderPassDescriptor->getVkRenderPass(),
         _swapchainRenderDestination->framebuffers[imageIndex],
-        _vkEngine.get().swapchain->swapchainExtent
+        _vkEngine.get().getWindow().getSwapchain()->swapchainExtent
     );
     renderPass.pass(commandBuffer, [&]() { _uiEngine.get().render(commandBuffer); });
 }
@@ -252,15 +254,15 @@ bool Renderer::_drawScene(VkCommandBuffer commandBuffer, vax::engine::DrawableSc
 void Renderer::_setViewportAndScissor(VkCommandBuffer commandBuffer) {
     VkViewport viewport{
         .x = 0.0f,
-        .y = static_cast<float>(_vkEngine.get().swapchain->swapchainExtent.height),
-        .width = static_cast<float>(_vkEngine.get().swapchain->swapchainExtent.width),
-        .height = -static_cast<float>(_vkEngine.get().swapchain->swapchainExtent.height),
+        .y = static_cast<float>(_vkEngine.get().getWindow().getSwapchain()->swapchainExtent.height),
+        .width = static_cast<float>(_vkEngine.get().getWindow().getSwapchain()->swapchainExtent.width),
+        .height = -static_cast<float>(_vkEngine.get().getWindow().getSwapchain()->swapchainExtent.height),
         .minDepth = 0.0f,
         .maxDepth = 1.0f
     };
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-    VkRect2D scissor{.offset = {0, 0}, .extent = _vkEngine.get().swapchain->swapchainExtent};
+    VkRect2D scissor{.offset = {0, 0}, .extent = _vkEngine.get().getWindow().getSwapchain()->swapchainExtent};
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
@@ -283,7 +285,7 @@ bool Renderer::_drawGizmo(VkCommandBuffer commandBuffer, vax::engine::DrawableSc
         .clearValue = {.depthStencil = {0.0f, 0}},
     };
 
-    auto xOffset = static_cast<float>(_vkEngine.get().swapchain->swapchainExtent.width - 256);
+    auto xOffset = static_cast<float>(_vkEngine.get().getWindow().getSwapchain()->swapchainExtent.width - 256);
     VkClearRect clearRect{
         .rect = {.offset = {static_cast<int32_t>(xOffset), 0}, .extent = {256, 256}},
         .baseArrayLayer = 0,
@@ -334,7 +336,7 @@ void Renderer::_createRenderDestinations() {
                                  .buildMainOffscreen(
                                      *_vkEngine.get().commandManager,
                                      _vkEngine.get().queueManager->graphicsQueue,
-                                     _vkEngine.get().swapchain->swapchainExtent,
+                                     _vkEngine.get().getWindow().getSwapchain()->swapchainExtent,
                                      *_mainRenderPassDescriptor
                                  );
     if (!_mainRenderDestination.has_value()) {
@@ -345,7 +347,7 @@ void Renderer::_createRenderDestinations() {
                                       .buildMainSwapchain(
                                           *_vkEngine.get().commandManager,
                                           _vkEngine.get().queueManager->graphicsQueue,
-                                          *_vkEngine.get().swapchain,
+                                          *_vkEngine.get().getWindow().getSwapchain(),
                                           *_swapchainRenderPassDescriptor
                                       );
     if (!_swapchainRenderDestination.has_value()) {
@@ -365,7 +367,7 @@ void Renderer::_mainPass(
         "main_render_pass",
         _mainRenderPassDescriptor->getVkRenderPass(),
         _mainRenderDestination->framebuffers[_currentFrame],
-        _vkEngine.get().swapchain->swapchainExtent,
+        _vkEngine.get().getWindow().getSwapchain()->swapchainExtent,
         _mainRenderPassDescriptor->colorAttachmentCount
     );
     renderPass.pass(commandBuffer, [&]() {
@@ -405,7 +407,7 @@ void Renderer::_finalBlendPass(VkCommandBuffer commandBuffer, vax::engine::Drawa
         "swapchain_render_pass",
         _swapchainRenderPassDescriptor->getVkRenderPass(),
         _swapchainRenderDestination->framebuffers[imageIndex],
-        _vkEngine.get().swapchain->swapchainExtent
+        _vkEngine.get().getWindow().getSwapchain()->swapchainExtent
     );
     renderPass.pass(commandBuffer, [&]() {
         auto pipelineLayout =

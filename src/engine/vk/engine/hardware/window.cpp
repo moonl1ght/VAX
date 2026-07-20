@@ -95,3 +95,18 @@ void vax::vk::Window::setWindowWillShowCallback(std::function<void()> callback) 
 void vax::vk::Window::setWindowDidHideCallback(std::function<void()> callback) { _windowDidHideCallback = callback; }
 
 void vax::vk::Window::setWindowDidShowCallback(std::function<void()> callback) { _windowDidShowCallback = callback; }
+
+void vax::vk::Window::createSwapchain(const vax::vk::Device& device) {
+    _swapchain = std::make_unique<vax::vk::Swapchain>(device, surface, vax::math::SizeUI{width, height});
+    if (!_swapchain->setup()) {
+        _logger.error("Failed to create swapchain!");
+        return;
+    }
+}
+
+void vax::vk::Window::cleanupSwapchain() {
+    if (_swapchain != nullptr) {
+        _swapchain->cleanup();
+        _swapchain = nullptr;
+    }
+}

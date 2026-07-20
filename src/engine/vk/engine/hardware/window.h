@@ -1,7 +1,8 @@
 #pragma once
 
 #include "luna.h"
-
+#include "device.h"
+#include "swapchain.h"
 #include <functional>
 
 namespace vax::vk {
@@ -27,6 +28,10 @@ class Window final {
     void destroyWindow();
     void destroy();
 
+    void createSwapchain(const vax::vk::Device& device);
+
+    void cleanupSwapchain();
+
     void show();
     void bringToFront();
     void hide();
@@ -43,14 +48,19 @@ class Window final {
 
     void setWindowName(const std::string& name);
 
+    const vax::vk::Swapchain* getSwapchain() const { return _swapchain.get(); }
+
+    vax::vk::Swapchain* getSwapchain() { return _swapchain.get(); }
+
   private:
     VkInstance _instance = VK_NULL_HANDLE;
     vax::Logger _logger = vax::Logger("Window");
     std::string _name = "Luna";
-    bool _visible = false;
+    std::unique_ptr<vax::vk::Swapchain> _swapchain;
     std::function<void()> _windowWillHideCallback;
     std::function<void()> _windowWillShowCallback;
     std::function<void()> _windowDidHideCallback;
     std::function<void()> _windowDidShowCallback;
+    bool _visible = false;
 };
 }; // namespace vax::vk

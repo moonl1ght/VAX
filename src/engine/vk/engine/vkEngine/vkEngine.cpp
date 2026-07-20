@@ -90,10 +90,8 @@ bool vax::vk::Engine::setup() {
         return false;
     deletionQueue.push_function([&]() { syncObjectsManager->cleanup(); });
 
-    swapchain = std::make_unique<Swapchain>(_window.get(), *device);
-    if (!swapchain->setup())
-        return false;
-    deletionQueue.push_function([&]() { swapchain->cleanup(); });
+    _window.get().createSwapchain(*device);
+    deletionQueue.push_function([&]() { _window.get().cleanupSwapchain(); });
 
     descriptorSetManager = std::make_unique<DescriptorSetManager>(*device, MAX_FRAMES_IN_FLIGHT);
     if (!descriptorSetManager->setup())
@@ -129,7 +127,7 @@ void vax::vk::Engine::resize() {
     }
     vkDeviceWaitIdle(device->vkDevice);
 
-    swapchain->recreate();
+    _window.get().getSwapchain()->recreate();
 }
 
 bool vax::vk::Engine::setupDebugMessenger() {

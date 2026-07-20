@@ -2,8 +2,8 @@
 
 #include "device.h"
 #include "luna.h"
+#include "size.h"
 #include "vkUtils.h"
-#include "window.h"
 
 namespace vax::vk {
 class Swapchain final {
@@ -14,8 +14,9 @@ class Swapchain final {
     VkFormat swapchainImageFormat = VK_FORMAT_UNDEFINED;
     VkExtent2D swapchainExtent = {0, 0};
 
-    explicit Swapchain(const vax::vk::Window& window, const vax::vk::Device& device)
-        : _window(window)
+    explicit Swapchain(const vax::vk::Device& device, VkSurfaceKHR surface, vax::math::SizeUI size)
+        : _surface(surface)
+        , _size(size)
         , _device(device) {};
 
     Swapchain(const Swapchain& other) = delete;
@@ -29,15 +30,16 @@ class Swapchain final {
 
   private:
     vax::Logger _logger = vax::Logger("Swapchain");
+    vax::math::SizeUI _size;
 
-    std::reference_wrapper<const vax::vk::Window> _window;
     std::reference_wrapper<const vax::vk::Device> _device;
+    VkSurfaceKHR _surface = VK_NULL_HANDLE;
 
     bool createSwapchain();
     bool createImageViews();
 
-    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+    VkSurfaceFormatKHR _chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+    VkPresentModeKHR _chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+    VkExtent2D _chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 };
 } // namespace vax::vk

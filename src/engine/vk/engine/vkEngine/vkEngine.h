@@ -7,7 +7,6 @@
 #include "luna.h"
 #include "pipelineManager.h"
 #include "queueManager.h"
-#include "swapchain.h"
 #include "syncObjectsManager.h"
 #include "vkUtils.h"
 #include "window.h"
@@ -38,7 +37,6 @@ class Engine final {
     VmaAllocator allocator = VK_NULL_HANDLE;
 
     std::unique_ptr<vax::vk::QueueManager> queueManager;
-    std::unique_ptr<vax::vk::Swapchain> swapchain;
     std::unique_ptr<vax::vk::DescriptorSetManager> descriptorSetManager;
     std::unique_ptr<vax::vk::PipelineManager> pipelineManager;
     std::unique_ptr<vax::vk::CommandManager> commandManager;
@@ -57,6 +55,10 @@ class Engine final {
     bool setup();
     void cleanup();
     void resize();
+
+    const vax::vk::Window& getWindow() const { return _window.get(); }
+
+    vax::vk::Window& getWindow() { return _window.get(); }
 
   private:
     vax::Logger _logger = vax::Logger("Engine");

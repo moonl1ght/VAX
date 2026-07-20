@@ -1,6 +1,5 @@
 #include "swapchain.h"
 #include "imageUtils.h"
-#include "queueManager.h"
 
 using namespace vax::vk;
 
@@ -30,7 +29,7 @@ bool Swapchain::recreate() {
     return true;
 }
 
-VkSurfaceFormatKHR Swapchain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+VkSurfaceFormatKHR Swapchain::_chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
     for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
             availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -40,18 +39,15 @@ VkSurfaceFormatKHR Swapchain::chooseSwapSurfaceFormat(const std::vector<VkSurfac
     return availableFormats[0];
 }
 
-VkPresentModeKHR Swapchain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+VkPresentModeKHR Swapchain::_chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D Swapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+VkExtent2D Swapchain::_chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
     } else {
-        int width, height;
-        SDL_GetWindowSizeInPixels(_window.get().window, &width, &height);
-
-        VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+        VkExtent2D actualExtent = {static_cast<uint32_t>(_size.width), static_cast<uint32_t>(_size.height)};
 
         actualExtent.width =
             std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
@@ -64,30 +60,34 @@ VkExtent2D Swapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilit
 
 bool Swapchain::createSwapchain() {
     SwapChainSupportDetails swapChainSupport =
-        querySwapChainSupport(_device.get().vkPhysicalDevice, _window.get().surface);
+        querySwapChainSupport(_device.get().vkPhysicalDevice, _surface);
 
-    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-    VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-    VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
+    VkSurfaceFormatKHR surfaceFormat = _chooseSwapSurfaceFormat(swapChainSupport.formats);
+    VkPresentModeKHR presentMode = _chooseSwapPresentMode(swapChainSupport.presentModes);
+    VkExtent2D extent = _chooseSwapExtent(swapChainSupport.capabilities);
 
     uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
     if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
         imageCount = swapChainSupport.capabilities.maxImageCount;
     }
 
-    VkSwapchainCreateInfoKHR createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = _window.get().surface;
+    VkSwapchainCreateInfoKHR createInfo {
+        .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+        .surface = _surface,
+        .minImageCount = imageCount,
+        .imageFormat = surfaceFormat.format,
+        .imageColorSpace = surfaceFormat.colorSpace,
+        .imageExtent = extent,
+        .imageArrayLayers = 1,
+        .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+        .preTransform = swapChainSupport.capabilities.currentTransform,
+        .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+        .presentMode = presentMode,
+        .clipped = VK_TRUE,
+        .oldSwapchain = VK_NULL_HANDLE,
+    };
 
-    createInfo.minImageCount = imageCount;
-    createInfo.imageFormat = surfaceFormat.format;
-    createInfo.imageColorSpace = surfaceFormat.colorSpace;
-    createInfo.imageExtent = extent;
-    createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
-    QueueFamilyIndices indices = findQueueFamilies(_device.get().vkPhysicalDevice, _window.get().surface);
+    QueueFamilyIndices indices = findQueueFamilies(_device.get().vkPhysicalDevice, _surface);
     if (!indices.isComplete()) {
         _logger.error("Queue family indices are not complete!");
         return false;
@@ -104,13 +104,6 @@ bool Swapchain::createSwapchain() {
         createInfo.queueFamilyIndexCount = 0;
         createInfo.pQueueFamilyIndices = nullptr;
     }
-
-    createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    createInfo.presentMode = presentMode;
-    createInfo.clipped = VK_TRUE;
-
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
 
     if (!VK_CHECK(vkCreateSwapchainKHR(_device.get().vkDevice, &createInfo, nullptr, &swapchain))) {
         _logger.error("Failed to create swap chain!");
