@@ -54,11 +54,11 @@ bool vax::vk::Engine::setup() {
     if (!setupDebugMessenger())
         return false;
 
-    _window.get().createSurface(instance);
-    deletionQueue.push_function([&]() { _window.get().destroySurface(); });
+    _windowController.get().getPrimaryWindow()->createSurface(instance);
+    deletionQueue.push_function([&]() { _windowController.get().getPrimaryWindow()->destroySurface(); });
 
     device = std::make_unique<Device>();
-    if (!device->load(instance, _window.get().surface, enableValidationLayers)) {
+    if (!device->load(instance, _windowController.get().getPrimaryWindow()->surface, enableValidationLayers)) {
         return false;
     }
 
@@ -90,8 +90,8 @@ bool vax::vk::Engine::setup() {
         return false;
     deletionQueue.push_function([&]() { syncObjectsManager->cleanup(); });
 
-    _window.get().createSwapchain(*device);
-    deletionQueue.push_function([&]() { _window.get().cleanupSwapchain(); });
+    _windowController.get().getPrimaryWindow()->createSwapchain(*device);
+    deletionQueue.push_function([&]() { _windowController.get().getPrimaryWindow()->cleanupSwapchain(); });
 
     descriptorSetManager = std::make_unique<DescriptorSetManager>(*device, MAX_FRAMES_IN_FLIGHT);
     if (!descriptorSetManager->setup())
@@ -120,14 +120,14 @@ void vax::vk::Engine::cleanup() {
 void vax::vk::Engine::resize() {
     _logger.info("Resizing engine...");
     int width = 0, height = 0;
-    SDL_GetWindowSizeInPixels(_window.get().window, &width, &height);
+    SDL_GetWindowSizeInPixels(_windowController.get().getPrimaryWindow()->window, &width, &height);
     while (width == 0 || height == 0) {
-        SDL_GetWindowSizeInPixels(_window.get().window, &width, &height);
+        SDL_GetWindowSizeInPixels(_windowController.get().getPrimaryWindow()->window, &width, &height);
         SDL_Delay(100);
     }
     vkDeviceWaitIdle(device->vkDevice);
 
-    _window.get().getSwapchain()->recreate();
+    _windowController.get().getPrimaryWindow()->getSwapchain()->recreate();
 }
 
 bool vax::vk::Engine::setupDebugMessenger() {

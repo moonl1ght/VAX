@@ -3,12 +3,12 @@
 #include "buffer.h"
 #include "drawableScene.h"
 #include "frameTime.h"
+#include "jfaPass.h"
 #include "luna.h"
 #include "renderDestination.h"
 #include "renderPassDescriptor.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
-#include "jfaPass.h"
 
 namespace vax::engine {
 class Renderer final {
@@ -38,17 +38,29 @@ class Renderer final {
     std::optional<vax::vk::RenderPassDescriptor> _swapchainRenderPassDescriptor;
 
     std::optional<vax::vk::RenderDestination> _mainRenderDestination;
+    std::optional<vax::vk::RenderDestination> _roverCameraRenderDestination;
     std::optional<vax::vk::RenderDestination> _swapchainRenderDestination;
 
     std::optional<vax::engine::JFAPass> _jfaPass;
 
     uint32_t _currentFrame = 0;
 
-    bool _updateCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, vax::engine::DrawableScene* scene);
-    bool _drawScene(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex);
+    bool _updateCommandBuffer(
+        VkCommandBuffer commandBuffer,
+        uint32_t imageIndex,
+        uint32_t roverCameraImageIndex,
+        vax::engine::DrawableScene* scene
+    );
+    bool _drawScene(
+        VkCommandBuffer commandBuffer,
+        vax::engine::DrawableScene* scene,
+        uint32_t imageIndex,
+        uint32_t roverCameraImageIndex
+    );
     void _drawUi(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
     void _setViewportAndScissor(VkCommandBuffer commandBuffer);
+    void _setViewportAndScissor(VkCommandBuffer commandBuffer, VkExtent2D extent);
     bool _updateGlobalDescriptorSet(
         VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, VkPipelineLayout pipelineLayout
     );
@@ -65,6 +77,14 @@ class Renderer final {
         vax::engine::DrawableScene* scene,
         uint32_t imageIndex
     );
+    void _roverCameraPass(
+        VkPipelineLayout pipelineLayout,
+        VkCommandBuffer commandBuffer,
+        vax::engine::DrawableScene* scene,
+        uint32_t imageIndex
+    );
     void _finalBlendPass(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex);
+
+    bool _createRoverCameraRenderDestination();
 };
 } // namespace vax::engine

@@ -3,10 +3,13 @@
 using namespace vax::vk;
 using namespace vax;
 
-bool vax::vk::Window::load(bool visible) {
-    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
+bool vax::vk::Window::load(bool visible, bool resizable) {
+    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN);
     if (!visible) {
         window_flags |= SDL_WINDOW_HIDDEN;
+    }
+    if (resizable) {
+        window_flags |= SDL_WINDOW_RESIZABLE;
     }
     window = SDL_CreateWindow(_name.c_str(), width, height, window_flags);
     if (window == nullptr) {

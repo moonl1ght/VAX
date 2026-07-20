@@ -28,10 +28,10 @@ bool App::_setup() {
     vax::NotificationCenter::getInstance().setup();
     _windowController = std::make_unique<WindowController>();
     _windowController->setupPrimaryWindow(vax::math::SizeUI{1920, 1080});
-    if (!_windowController->getPrimaryWindow()->load(true)) {
+    if (!_windowController->getPrimaryWindow()->load(true, true)) {
         return false;
     }
-    _engine = std::make_unique<vk::Engine>(*_windowController->getPrimaryWindow());
+    _engine = std::make_unique<vk::Engine>(*_windowController);
     _engine->setup();
 
     _uiEngine = std::make_unique<ui::UIEngine>(*_engine, *_windowController->getPrimaryWindow());

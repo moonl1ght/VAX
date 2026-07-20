@@ -15,7 +15,7 @@ class RoverView final {
     RoverView(UIEngine& uiEngine, vax::WindowController& windowController)
         : _uiEngine(uiEngine)
         , _windowController(windowController) {}
-    ~RoverView() = default;
+    ~RoverView();
 
     RoverView(const RoverView& other) = delete;
     RoverView& operator=(const RoverView& other) = delete;

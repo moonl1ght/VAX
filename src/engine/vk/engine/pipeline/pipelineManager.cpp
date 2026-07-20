@@ -26,6 +26,10 @@ bool PipelineManager::setup(
         _logger.error("Failed to create PBR pipeline!");
         return false;
     }
+    if (!_createRoverCameraPipeline(postProcessRenderPassDescriptor)) {
+        _logger.error("Failed to create rover camera pipeline!");
+        return false;
+    }
     if (!_createBasePipeline(renderPassDescriptor)) {
         _logger.error("Failed to create base pipeline!");
         return false;
@@ -101,6 +105,24 @@ bool PipelineManager::_createPBRPipeline(const RenderPassDescriptor& renderPassD
         SRC_PATH("engine/shaders/out/base.vert.spv"),
         SRC_PATH("engine/shaders/out/pbr.frag.spv"),
         PipelineName::PBR,
+        PipelineLayoutName::BASE,
+        [](GraphicsPipelineBuilder& pipelineBuilder) {
+            auto bindingDescription = Vertex::getBindingDescription();
+            auto attributeDescriptions = Vertex::getAttributeDescriptions();
+            auto attributeDescriptionsVector = std::vector<VkVertexInputAttributeDescription>(
+                attributeDescriptions.begin(), attributeDescriptions.end()
+            );
+            pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
+        }
+    );
+}
+
+bool PipelineManager::_createRoverCameraPipeline(const RenderPassDescriptor& renderPassDescriptor) {
+    return _createPipeline(
+        renderPassDescriptor,
+        SRC_PATH("engine/shaders/out/base.vert.spv"),
+        SRC_PATH("engine/shaders/out/pbr.frag.spv"),
+        PipelineName::ROVER_CAMERA,
         PipelineLayoutName::BASE,
         [](GraphicsPipelineBuilder& pipelineBuilder) {
             auto bindingDescription = Vertex::getBindingDescription();

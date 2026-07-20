@@ -6,7 +6,7 @@
 namespace vax::vk {
 enum class PipelineLayoutName : uint32_t { BACKGROUND = 0, BASE = 1, FINAL_BLEND = 2 };
 
-enum class PipelineName : uint32_t { BACKGROUND = 0, PBR = 1, BASE = 2, FINAL_BLEND = 3 };
+enum class PipelineName : uint32_t { BACKGROUND = 0, PBR = 1, BASE = 2, FINAL_BLEND = 3, ROVER_CAMERA = 4 };
 
 enum class PipelineType { RENDER, COMPUTE, UNKNOWN };
 

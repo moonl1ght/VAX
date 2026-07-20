@@ -8,6 +8,8 @@ bool vax::vk::SyncObjectsManager::setup() {
     _logger.info("Creating synchronization objects...");
     _imageAvailableSemaphores.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
     _renderFinishedSemaphores.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
+    _roverCameraImageAvailableSemaphores.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
+    _roverCameraRenderFinishedSemaphores.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
     _inFlightFences.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -27,6 +29,16 @@ bool vax::vk::SyncObjectsManager::setup() {
             )) {
             return false;
         }
+        if (!VK_CHECK(vkCreateSemaphore(
+                _device.get().vkDevice, &semaphoreInfo, nullptr, &_roverCameraImageAvailableSemaphores[i]
+            ))) {
+            return false;
+        }
+        if (!VK_CHECK(vkCreateSemaphore(
+                _device.get().vkDevice, &semaphoreInfo, nullptr, &_roverCameraRenderFinishedSemaphores[i]
+            ))) {
+            return false;
+        }
         if (!VK_CHECK(vkCreateFence(_device.get().vkDevice, &fenceInfo, nullptr, &_inFlightFences[i]))) {
             return false;
         }
@@ -39,10 +51,13 @@ bool vax::vk::SyncObjectsManager::cleanup() {
     for (size_t i = 0; i < _imageAvailableSemaphores.size(); ++i) {
         vkDestroySemaphore(_device.get().vkDevice, _imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(_device.get().vkDevice, _renderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(_device.get().vkDevice, _roverCameraImageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(_device.get().vkDevice, _roverCameraRenderFinishedSemaphores[i], nullptr);
         vkDestroyFence(_device.get().vkDevice, _inFlightFences[i], nullptr);
     }
     _imageAvailableSemaphores.clear();
     _renderFinishedSemaphores.clear();
+    _roverCameraImageAvailableSemaphores.clear();
     _inFlightFences.clear();
     return true;
 }

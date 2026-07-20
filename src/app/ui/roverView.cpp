@@ -8,6 +8,13 @@ using namespace vax::rl;
 using namespace vax::vk;
 using namespace vax;
 
+RoverView::~RoverView() {
+    if (_windowController.get().isSecondaryWindowSetup()) {
+        _windowController.get().getSecondaryWindow()->cleanupSwapchain();
+        _windowController.get().getSecondaryWindow()->destroySurface();
+    }
+}
+
 void RoverView::updateImGui() {
     _mainThreadRunner.processThreadQueue();
     _uiEngine.get().updateUiStart();
@@ -114,10 +121,14 @@ void RoverView::_showRoverCamera() {
         _windowController.get().getSecondaryWindow()->show();
     } else {
         _windowController.get().setupSecondaryWindow(vax::math::SizeUI{640, 480}, "Rover camera");
-        _windowController.get().getSecondaryWindow()->load(true);
+        _windowController.get().getSecondaryWindow()->load(true, false);
+        _windowController.get().getSecondaryWindow()->createSurface(_uiEngine.get().engine().instance);
+        _windowController.get().getSecondaryWindow()->createSwapchain(*_uiEngine.get().engine().device);
     }
     _windowController.get().getSecondaryWindow()->setWindowWillHideCallback([this]() {
         _isRoverCameraShown = false;
+        _drawableScene->setShouldDrawSecondaryWindow(false);
     });
+    _drawableScene->setShouldDrawSecondaryWindow(true);
     _isRoverCameraShown = true;
 }

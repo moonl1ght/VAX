@@ -8,8 +8,8 @@
 #include "pipelineManager.h"
 #include "queueManager.h"
 #include "syncObjectsManager.h"
-#include "vkUtils.h"
 #include "window.h"
+#include "windowController.h"
 
 namespace vax::vk {
 class Device;
@@ -42,8 +42,8 @@ class Engine final {
     std::unique_ptr<vax::vk::CommandManager> commandManager;
     std::unique_ptr<vax::vk::SyncObjectsManager> syncObjectsManager;
 
-    explicit Engine(vax::vk::Window& window)
-        : _window(window) {};
+    explicit Engine(vax::WindowController& windowController)
+        : _windowController(windowController) {};
 
     ~Engine() {};
 
@@ -56,14 +56,14 @@ class Engine final {
     void cleanup();
     void resize();
 
-    const vax::vk::Window& getWindow() const { return _window.get(); }
+    vax::WindowController& getWindowController() { return _windowController.get(); }
 
-    vax::vk::Window& getWindow() { return _window.get(); }
+    const vax::WindowController& getWindowController() const { return _windowController.get(); }
 
   private:
     vax::Logger _logger = vax::Logger("Engine");
 
-    std::reference_wrapper<vax::vk::Window> _window;
+    std::reference_wrapper<vax::WindowController> _windowController;
 
     bool setupDebugMessenger();
     VkResult createAllocator();

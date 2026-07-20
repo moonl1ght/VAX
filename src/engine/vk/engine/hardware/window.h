@@ -22,7 +22,7 @@ class Window final {
     Window& operator=(const Window& other) = delete;
     Window& operator=(Window&& other) = delete;
 
-    bool load(bool visible);
+    bool load(bool visible, bool resizable);
     bool createSurface(VkInstance instance);
     void destroySurface();
     void destroyWindow();

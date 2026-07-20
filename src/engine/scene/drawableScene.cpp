@@ -24,7 +24,7 @@ void DrawableScene::update(engine::SceneUpdateContext sceneUpdateContext) {
 }
 
 void vax::engine::DrawableScene::resize() {
-    auto swapchainExtent = _vkEngine.get().getWindow().getSwapchain()->swapchainExtent;
+    auto swapchainExtent = _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchainExtent;
     _mainCamera.setViewPortSize(vax::math::SizeUI(swapchainExtent));
 }
 

@@ -5,6 +5,7 @@
 #include "drawContext.h"
 #include "drawableModel.h"
 #include "environmentMap.h"
+#include "frameTime.h"
 #include "gwSceneGraph.h"
 #include "inputController.h"
 #include "luna.h"
@@ -18,7 +19,6 @@
 #include "shaderUniforms.h"
 #include "textureLoader.h"
 #include "vkEngine.h"
-#include "frameTime.h"
 
 namespace vax::rl {
 struct GridWorldDrawableDescriptor;
@@ -91,6 +91,12 @@ class DrawableScene final : public vax::InputController::Observer {
 
     vax::rl::GwSceneGraph* sceneGraph() const { return _sceneGraph.get(); }
 
+    bool shouldDrawSecondaryWindow() const { return _shouldDrawSecondaryWindow; }
+
+    void setShouldDrawSecondaryWindow(bool shouldDrawSecondaryWindow) {
+        _shouldDrawSecondaryWindow = shouldDrawSecondaryWindow;
+    }
+
   private:
     vax::Logger _logger = vax::Logger("DrawableScene");
     std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
@@ -110,6 +116,8 @@ class DrawableScene final : public vax::InputController::Observer {
 
     vax::engine::RenderCallContext _renderCallContext;
     vax::engine::SceneUpdateContext _sceneUpdateContext;
+
+    bool _shouldDrawSecondaryWindow = false;
 
     void _loadEnvironmentMap(VkQueue submitQueue);
     void _drawSceneNode(vax::engine::SceneNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);

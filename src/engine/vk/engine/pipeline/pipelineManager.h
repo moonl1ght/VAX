@@ -49,6 +49,7 @@ class PipelineManager final {
     bool _createFinalBlendPipelineLayout(PipelineLayoutName pipelineLayoutName);
 
     bool _createPBRPipeline(const RenderPassDescriptor& renderPassDescriptor);
+    bool _createRoverCameraPipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createBackgroundPipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createBasePipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createFinalBlendPipeline(const RenderPassDescriptor& renderPassDescriptor);

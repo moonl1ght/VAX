@@ -29,6 +29,10 @@ class UIEngine final {
     void cleanup();
     void processEvents(SDL_Event& event);
 
+    vax::vk::Engine& engine() { return _vkEngine.get(); }
+
+    const vax::vk::Engine& engine() const { return _vkEngine.get(); }
+
   private:
     ImDrawData* _imguiDrawData = nullptr;
     VkDescriptorPool _imguiDescriptorPool = VK_NULL_HANDLE;

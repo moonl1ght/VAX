@@ -13,12 +13,20 @@ class SyncObjectsManager {
     bool cleanup();
 
     const std::vector<VkSemaphore>& getImageAvailableSemaphores() const { return _imageAvailableSemaphores; }
+    const std::vector<VkSemaphore>& getRoverCameraImageAvailableSemaphores() const {
+        return _roverCameraImageAvailableSemaphores;
+    }
     const std::vector<VkSemaphore>& getRenderFinishedSemaphores() const { return _renderFinishedSemaphores; }
+    const std::vector<VkSemaphore>& getRoverCameraRenderFinishedSemaphores() const {
+        return _roverCameraRenderFinishedSemaphores;
+    }
     const std::vector<VkFence>& getInFlightFences() const { return _inFlightFences; }
 
   private:
     std::vector<VkSemaphore> _imageAvailableSemaphores;
+    std::vector<VkSemaphore> _roverCameraImageAvailableSemaphores;
     std::vector<VkSemaphore> _renderFinishedSemaphores;
+    std::vector<VkSemaphore> _roverCameraRenderFinishedSemaphores;
     std::vector<VkFence> _inFlightFences;
 
     vax::Logger _logger = vax::Logger("SyncObjectsManager");
