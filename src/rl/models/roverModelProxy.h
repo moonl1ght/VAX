@@ -1,6 +1,7 @@
 #pragma once
 
 #include "logger.h"
+#include "node.h"
 #include "sceneNode.h"
 #include "frameTime.h"
 
@@ -18,11 +19,11 @@ class RoverModelProxy final {
 
   private:
     vax::Logger _logger = vax::Logger("RoverModelProxy");
-    std::shared_ptr<vax::engine::SceneNode> _modelNode;
-    vax::engine::SceneNode* _rightFrontWheel;
-    vax::engine::SceneNode* _leftFrontWheel;
-    vax::engine::SceneNode* _rightRearWheel;
-    vax::engine::SceneNode* _leftRearWheel;
+    std::shared_ptr<vax::engine::Node> _modelNode;
+    vax::engine::Node* _rightFrontWheel;
+    vax::engine::Node* _leftFrontWheel;
+    vax::engine::Node* _rightRearWheel;
+    vax::engine::Node* _leftRearWheel;
     float _wheelSpinAngle = 0.0f;
 };
 } // namespace vax::rl

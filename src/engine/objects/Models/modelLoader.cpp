@@ -363,7 +363,7 @@ SceneNode processURDFLink(
 
     for (const auto& child : link->child_links) {
         auto childNode = processURDFLink(mainPath, resourceManager, child, loadModel, nodeTransform);
-        node.insertChild(std::move(childNode));
+        node.insertChild(std::make_unique<SceneNode>(std::move(childNode)));
     }
 
     return node;

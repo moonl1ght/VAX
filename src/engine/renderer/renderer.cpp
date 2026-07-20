@@ -558,7 +558,6 @@ void Renderer::_roverCameraPass(
         };
         scene->draw(drawContext);
     });
-    // Restore the primary viewport for the passes that follow.
     _setViewportAndScissor(commandBuffer);
 }
 

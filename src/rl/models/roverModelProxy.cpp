@@ -18,7 +18,7 @@ void RoverModelProxy::linkModelNode(std::shared_ptr<vax::engine::SceneNode>& mod
 }
 
 void RoverModelProxy::update(const vax::engine::FrameTime& frameTime) {
-    auto spinWheel = [&](vax::engine::SceneNode* wheel) {
+    auto spinWheel = [&](vax::engine::Node* wheel) {
         if (!wheel)
             return;
         wheel->updateTransform([&](math::TransformHandle& transformHandle) {
