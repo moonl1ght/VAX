@@ -1,4 +1,5 @@
 #include "drawableScene.h"
+#include "camera.h"
 #include "gridWorldDescriptor.h"
 #include "swapchain.h"
 
@@ -14,6 +15,12 @@ void DrawableScene::prepareForDraw(engine::RenderCallContext renderCallContext) 
     } else {
         _logger.error("Failed to get mapped memory!");
     }
+
+    if (auto mappedMemory = _roverCameraUniformBuffers[renderCallContext.currentFrame]->mappedMemory()) {
+        memcpy(mappedMemory.value(), &_roverCameraUbo, sizeof(_roverCameraUbo));
+    } else {
+        _logger.error("Failed to get mapped memory!");
+    }
 }
 
 void DrawableScene::update(engine::SceneUpdateContext sceneUpdateContext) {
@@ -21,6 +28,9 @@ void DrawableScene::update(engine::SceneUpdateContext sceneUpdateContext) {
     _ubo = _mainCamera.getUniformBufferObject();
     _ubo.environmentMapIndex = 0;
     _sceneGraph->update(sceneUpdateContext.frameTime);
+
+    auto& roverCamera = _sceneGraph->roverCamera();
+    _roverCameraUbo = roverCamera.getUniformBufferObject();
 }
 
 void vax::engine::DrawableScene::resize() {
@@ -46,6 +56,16 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
                               .value();
         allocation.second->map();
         _sceneUniformBuffers.push_back(allocation.second);
+        auto roverCameraAllocation = bufferManager
+                                         .allocateBuffer(
+                                             "rover_camera_uniform_buffer",
+                                             bufferSize,
+                                             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                                         )
+                                         .value();
+        roverCameraAllocation.second->map();
+        _roverCameraUniformBuffers.push_back(roverCameraAllocation.second);
     }
     std::vector<vax::engine::ModelDescriptor> modelDescriptors = {
         {
@@ -115,7 +135,9 @@ bool vax::engine::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSet
     return true;
 }
 
-bool vax::engine::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler) {
+bool vax::engine::DrawableScene::writeFrameDescriptorSet(
+    vax::vk::DescriptorSetHandler& descriptorHandler, vax::vk::DescriptorSetHandler& roverCameraDescriptorHandler
+) {
     descriptorHandler.writeBuffer(
         *_sceneUniformBuffers[_renderCallContext.currentFrame],
         FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
@@ -123,6 +145,19 @@ bool vax::engine::DrawableScene::writeFrameDescriptorSet(vax::vk::DescriptorSetH
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     );
     descriptorHandler.writeBuffer(
+        _resourceManager.ssboManager().instanceBuffer(_renderCallContext.currentFrame),
+        FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX,
+        0,
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+    );
+
+    roverCameraDescriptorHandler.writeBuffer(
+        *_roverCameraUniformBuffers[_renderCallContext.currentFrame],
+        FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
+        0,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+    );
+    roverCameraDescriptorHandler.writeBuffer(
         _resourceManager.ssboManager().instanceBuffer(_renderCallContext.currentFrame),
         FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX,
         0,

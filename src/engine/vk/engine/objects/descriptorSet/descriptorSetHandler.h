@@ -13,10 +13,9 @@ class Sampler;
 namespace vax::vk {
 struct DescriptorSetHandler {
   public:
-    explicit DescriptorSetHandler(const vax::vk::Device& device, VkDescriptorSet descriptorSet, uint32_t id)
+    explicit DescriptorSetHandler(const vax::vk::Device& device, VkDescriptorSet descriptorSet)
         : _device(device)
-        , _descriptorSet(descriptorSet)
-        , _id(id) {
+        , _descriptorSet(descriptorSet) {
         _writes.reserve(100);
     }
 
@@ -54,12 +53,9 @@ struct DescriptorSetHandler {
         VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS
     );
 
-    uint32_t id() const { return _id; }
-
   private:
     vax::Logger _logger = vax::Logger("DescriptorSetWriter");
     std::reference_wrapper<const vax::vk::Device> _device;
-    uint32_t _id;
     VkDescriptorSet _descriptorSet;
     std::vector<VkWriteDescriptorSet> _writes;
     std::deque<VkDescriptorBufferInfo> _bufferInfos;

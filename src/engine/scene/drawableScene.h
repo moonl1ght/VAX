@@ -75,7 +75,9 @@ class DrawableScene final : public vax::InputController::Observer {
 
     bool writeGlobalDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler);
 
-    bool writeFrameDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler);
+    bool writeFrameDescriptorSet(
+        vax::vk::DescriptorSetHandler& descriptorHandler, vax::vk::DescriptorSetHandler& roverCameraDescriptorHandler
+    );
 
     void draw(const vax::engine::DrawContext& drawContext);
 

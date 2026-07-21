@@ -18,11 +18,10 @@ bool GwSceneGraph::load(
     }
     agentNode->setIsSelected(true);
     agentNode->setNodeSelectionColor(ColorPalette::Clear);
-    _agentNode = std::make_unique<vax::engine::SceneNode>(std::move(agentNode.value()));
-    _roverModelProxy = std::make_unique<vax::rl::RoverModelProxy>();
-    _roverModelProxy->linkModelNode(_agentNode);
+    _gwAgentNode =
+        std::make_unique<vax::rl::GWAgentNode>(std::make_unique<vax::engine::SceneNode>(std::move(agentNode.value())));
 
-    _agentNode->updateTransform([&](TransformHandle& transformHandle) {
+    _gwAgentNode->agentNode().updateTransform([&](TransformHandle& transformHandle) {
         transformHandle.updateTransform([&](Transform& transform) {
             transform.updateRotationInDegrees({-90.0f, 0.0f, 0.0f});
         });
@@ -46,8 +45,8 @@ bool GwSceneGraph::load(
 }
 
 void GwSceneGraph::draw(const DrawContext& drawContext) {
-    if (_agentNode) {
-        _agentNode->draw(drawContext);
+    if (_gwAgentNode) {
+        _gwAgentNode->agentNode().draw(drawContext);
     } else {
         _logger.warning("Agent node not loaded!");
     }
@@ -59,8 +58,8 @@ void GwSceneGraph::draw(const DrawContext& drawContext) {
 void GwSceneGraph::update(const engine::FrameTime& frameTime) {
     if (_animations.has_value()) {
         auto isCompleted = _animations->update(frameTime);
-        if (_roverModelProxy) {
-            _roverModelProxy->update(frameTime);
+        if (_gwAgentNode) {
+            _gwAgentNode->update(frameTime);
         } else {
             _logger.warning("Rover model proxy not loaded!");
         }
@@ -79,22 +78,24 @@ bool GwSceneGraph::isMovingAgent() const { return _animations.has_value(); }
 void GwSceneGraph::moveAgentTo(
     Position2DFloat position, AgentOrientation orientation, bool withAnimation, float moveSpeed, float rotationSpeed
 ) {
-    if (_agentNode) {
+    if (_gwAgentNode) {
         if (withAnimation) {
-            auto startRotation = _agentNode->getTransform().getRotationInDegrees().y;
+            auto startRotation = _gwAgentNode->agentNode().getTransform().getRotationInDegrees().y;
             if (!_animations.has_value()) {
                 _animations = std::make_optional(vax::AnimationGroup(vax::AnimationGroup::Mode::SERIAL));
             } else {
-                if (auto metadata = _agentNode->getMetadata("latest_rotation_end_value");
+                if (auto metadata = _gwAgentNode->agentNode().getMetadata("latest_rotation_end_value");
                     metadata.has_value() && std::holds_alternative<float>(*metadata)) {
                     startRotation = std::get<float>(*metadata);
                 }
             }
-            auto previousPositionX = std::get<float>(_agentNode->getMetadata("position.x").value_or(position.x));
-            auto previousPositionY = std::get<float>(_agentNode->getMetadata("position.y").value_or(position.y));
+            auto previousPositionX =
+                std::get<float>(_gwAgentNode->agentNode().getMetadata("position.x").value_or(position.x));
+            auto previousPositionY =
+                std::get<float>(_gwAgentNode->agentNode().getMetadata("position.y").value_or(position.y));
             auto orientationValue = static_cast<int>(orientation);
             auto previousOrientation = orientationValue;
-            if (auto metadata = _agentNode->getMetadata("orientation");
+            if (auto metadata = _gwAgentNode->agentNode().getMetadata("orientation");
                 metadata.has_value() && std::holds_alternative<int>(*metadata)) {
                 previousOrientation = std::get<int>(*metadata);
             }
@@ -102,10 +103,10 @@ void GwSceneGraph::moveAgentTo(
             if (orientationDelta != 0) {
                 orientationDelta = orientationDelta == 3 ? -1 : orientationDelta == -3 ? 1 : orientationDelta;
                 float rotation = startRotation + orientationDelta * 90.0f;
-                _agentNode->setMetadata("latest_rotation_end_value", rotation);
+                _gwAgentNode->agentNode().setMetadata("latest_rotation_end_value", rotation);
                 auto animation = vax::ValueAnimation(rotationSpeed, startRotation, rotation);
                 animation.addAnimationHandler([&](float value) {
-                    _agentNode->updateTransform([&](TransformHandle& transformHandle) {
+                    _gwAgentNode->agentNode().updateTransform([&](TransformHandle& transformHandle) {
                         transformHandle.updateTransform([&](Transform& transform) {
                             transform.updateRotationInDegrees({-90.0f, value, 0.0f});
                         });
@@ -126,7 +127,7 @@ void GwSceneGraph::moveAgentTo(
             }
             auto moveAnimation = vax::ValueAnimation(moveSpeed, startPosition, endPosition);
             moveAnimation.addAnimationHandler([=, this](float value) {
-                _agentNode->updateTransform([=](TransformHandle& transformHandle) {
+                _gwAgentNode->agentNode().updateTransform([=](TransformHandle& transformHandle) {
                     transformHandle.updateTransform([=](Transform& transform) {
                         if (isX) {
                             transform.position = {value, 0.0f, position.y};
@@ -153,16 +154,16 @@ void GwSceneGraph::moveAgentTo(
                 rotation = 180.0f;
                 break;
             }
-            _agentNode->updateTransform([&](TransformHandle& transformHandle) {
+            _gwAgentNode->agentNode().updateTransform([&](TransformHandle& transformHandle) {
                 transformHandle.updateTransform([&](Transform& transform) {
                     transform.position = {position.x, 0.0f, position.y};
                     transform.updateRotationInDegrees({-90.0f, rotation, 0.0f});
                 });
             });
         }
-        _agentNode->setMetadata("orientation", static_cast<int>(orientation));
-        _agentNode->setMetadata("position.x", position.x);
-        _agentNode->setMetadata("position.y", position.y);
+        _gwAgentNode->agentNode().setMetadata("orientation", static_cast<int>(orientation));
+        _gwAgentNode->agentNode().setMetadata("position.x", position.x);
+        _gwAgentNode->agentNode().setMetadata("position.y", position.y);
     } else {
         _logger.warning("Agent node not loaded!");
     }

@@ -11,7 +11,6 @@ namespace vax::engine {
 
 enum class NodeType {
     SCENE,
-    CAMERA,
 };
 
 class Node {

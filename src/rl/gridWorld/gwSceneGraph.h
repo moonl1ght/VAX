@@ -1,7 +1,6 @@
 #pragma once
 
 #include "animationGroup.h"
-#include "commandBuffer.h"
 #include "drawContext.h"
 #include "frameTime.h"
 #include "gridWorldDescriptor.h"
@@ -9,10 +8,10 @@
 #include "logger.h"
 #include "modelLoader.h"
 #include "modelsController.h"
-#include "roverModelProxy.h"
+#include "gwAgentNode.h"
 #include "sceneNode.h"
 #include "vaxMath.h"
-#include <memory>
+#include "camera.h"
 
 namespace vax::rl {
 // TODO: move to generic scene graph
@@ -49,11 +48,18 @@ class GwSceneGraph final {
 
     void setOnAllAnimationsCompleted(std::function<void()> onAllAnimationsCompleted);
 
+    const vax::engine::Camera& roverCamera() const {
+        return _gwAgentNode->camera();
+    }
+
+    vax::engine::Camera& roverCamera() {
+        return _gwAgentNode->camera();
+    }
+
   private:
     vax::Logger _logger = vax::Logger("GwSceneGraph");
     std::vector<vax::engine::SceneNode> _envNodes;
-    std::shared_ptr<vax::engine::SceneNode> _agentNode;
-    std::unique_ptr<vax::rl::RoverModelProxy> _roverModelProxy;
+    std::unique_ptr<vax::rl::GWAgentNode> _gwAgentNode;
     std::optional<vax::AnimationGroup> _animations;
     std::optional<std::function<void()>> _onAllAnimationsCompleted;
 };

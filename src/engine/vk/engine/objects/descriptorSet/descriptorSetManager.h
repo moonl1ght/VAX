@@ -13,14 +13,12 @@ class DescriptorSetManager {
         GLOBAL = 0,
         PROCESSING = 1,
         FINAL_BLEND = 2,
+        PER_FRAME = 3,
     };
 
     explicit DescriptorSetManager(const vax::vk::Device& device, const int32_t maxFramesInFlight)
         : _device(device)
-        , _maxFramesInFlight(maxFramesInFlight) {
-        _globalDescriptorSets.reserve(_maxFramesInFlight);
-        _perFrameDescriptorSets.reserve(_maxFramesInFlight);
-    };
+        , _maxFramesInFlight(maxFramesInFlight) {};
 
     ~DescriptorSetManager() {};
 
@@ -34,12 +32,7 @@ class DescriptorSetManager {
     void cleanup();
 
     std::optional<DescriptorSetHandler>
-    getDescriptorSetHandler(uint32_t frameIndex, DescriptorSetLayout::SetType setType);
-
-    std::optional<DescriptorSetHandler>
     getDescriptorSetHandler(uint32_t frameIndex, PoolType poolType, std::string name, std::string layoutName);
-
-    const DescriptorSetLayout* getDescriptorSetLayout(DescriptorSetLayout::SetType setType) const;
 
     const DescriptorSetLayout* getDescriptorSetLayout(std::string name) const;
 
@@ -50,17 +43,12 @@ class DescriptorSetManager {
     std::reference_wrapper<const vax::vk::Device> _device;
     const int32_t _maxFramesInFlight;
 
-    std::optional<DescriptorSetLayout> _globalDescriptorSetLayout = std::nullopt;
-    std::optional<DescriptorSetLayout> _perFrameDescriptorSetLayout = std::nullopt;
     std::unordered_map<std::string, DescriptorSetLayout> _descriptorSetLayouts;
+    std::unordered_map<std::string, std::vector<VkDescriptorSet>> _descriptorSets;
 
     VkDescriptorPool _descriptorPool = VK_NULL_HANDLE;
     VkDescriptorPool _processingDescriptorPool = VK_NULL_HANDLE;
     VkDescriptorPool _finalBlendDescriptorPool = VK_NULL_HANDLE;
-
-    std::vector<VkDescriptorSet> _globalDescriptorSets;
-    std::vector<VkDescriptorSet> _perFrameDescriptorSets;
-    std::unordered_map<std::string, std::vector<VkDescriptorSet>> _descriptorSets;
 
     bool _createDescriptorSetLayouts();
     bool _createDescriptorSetPools();

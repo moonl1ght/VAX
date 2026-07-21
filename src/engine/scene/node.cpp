@@ -12,6 +12,7 @@ void Node::draw(const DrawContext& drawContext) {
         auto scene = static_cast<SceneNode*>(this);
         scene->resetDrawingRangeIndex();
     }
+    // TODO: Fix cache miss when updating instance data
     for (size_t i = 0; i < _instancesCount; ++i) {
         TransformMatrixHandle worldHandle;
         auto& instanceInfo = _instanceInfos[i];
@@ -60,8 +61,6 @@ void Node::draw(const DrawContext& drawContext) {
         auto scene = static_cast<SceneNode*>(this);
         scene->drawModels(drawContext);
     } break;
-    case NodeType::CAMERA:
-        break;
     }
     for (auto& child : _children) {
         child->draw(drawContext);
