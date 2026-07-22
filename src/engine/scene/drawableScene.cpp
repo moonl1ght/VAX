@@ -31,6 +31,7 @@ void DrawableScene::update(engine::SceneUpdateContext sceneUpdateContext) {
 
     auto& roverCamera = _sceneGraph->roverCamera();
     _roverCameraUbo = roverCamera.getUniformBufferObject();
+    _roverCameraUbo.environmentMapIndex = 0;
 }
 
 void vax::engine::DrawableScene::resize() {

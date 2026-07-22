@@ -47,5 +47,6 @@ class App final {
     void _loopContinuousUpdate();
     void _updateTimestamp();
     void _checkActions();
+    void _printGpuInfo() const;
 };
 } // namespace vax

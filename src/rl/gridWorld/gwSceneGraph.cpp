@@ -106,6 +106,11 @@ void GwSceneGraph::moveAgentTo(
                 _gwAgentNode->agentNode().setMetadata("latest_rotation_end_value", rotation);
                 auto animation = vax::ValueAnimation(rotationSpeed, startRotation, rotation);
                 animation.addAnimationHandler([&](float value) {
+                    std::cout << "rotation: " << value << std::endl;
+                    auto xValue = -cos(value * M_PI / 180.0f);
+                    auto zValue = sin(value * M_PI / 180.0f);
+                    _gwAgentNode->camera().setDirection({xValue, 0.0f, zValue});
+                    std::cout << "zValue: " << zValue << ", xValue: " << xValue << std::endl;
                     _gwAgentNode->agentNode().updateTransform([&](TransformHandle& transformHandle) {
                         transformHandle.updateTransform([&](Transform& transform) {
                             transform.updateRotationInDegrees({-90.0f, value, 0.0f});
@@ -127,6 +132,11 @@ void GwSceneGraph::moveAgentTo(
             }
             auto moveAnimation = vax::ValueAnimation(moveSpeed, startPosition, endPosition);
             moveAnimation.addAnimationHandler([=, this](float value) {
+                if (isX) {
+                    _gwAgentNode->camera().setPosition({value, 0.5f, position.y});
+                } else {
+                    _gwAgentNode->camera().setPosition({position.x, 0.5f, value});
+                }
                 _gwAgentNode->agentNode().updateTransform([=](TransformHandle& transformHandle) {
                     transformHandle.updateTransform([=](Transform& transform) {
                         if (isX) {
@@ -140,20 +150,27 @@ void GwSceneGraph::moveAgentTo(
             _animations->pushAnimation(std::move(moveAnimation));
         } else {
             float rotation = 0.0f;
+            glm::vec3 direction = {0.0f, 0.0f, 0.0f};
             switch (orientation) {
             case AgentOrientation::NORTH:
                 rotation = 90.0f;
+                direction = {0.0f, 0.0f, 1.0f};
                 break;
             case AgentOrientation::SOUTH:
                 rotation = 270.0f;
+                direction = {0.0f, 0.0f, -1.0f};
                 break;
             case AgentOrientation::EAST:
                 rotation = 0.0f;
+                direction = {-1.0f, 0.0f, 0.0f};
                 break;
             case AgentOrientation::WEST:
                 rotation = 180.0f;
+                direction = {1.0f, 0.0f, 0.0f};
                 break;
             }
+            _gwAgentNode->camera().setDirection(direction);
+            _gwAgentNode->camera().setPosition({position.x, 0.5f, position.y});
             _gwAgentNode->agentNode().updateTransform([&](TransformHandle& transformHandle) {
                 transformHandle.updateTransform([&](Transform& transform) {
                     transform.position = {position.x, 0.0f, position.y};
