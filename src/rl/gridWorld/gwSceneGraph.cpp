@@ -106,11 +106,9 @@ void GwSceneGraph::moveAgentTo(
                 _gwAgentNode->agentNode().setMetadata("latest_rotation_end_value", rotation);
                 auto animation = vax::ValueAnimation(rotationSpeed, startRotation, rotation);
                 animation.addAnimationHandler([&](float value) {
-                    std::cout << "rotation: " << value << std::endl;
                     auto xValue = -cos(value * M_PI / 180.0f);
                     auto zValue = sin(value * M_PI / 180.0f);
                     _gwAgentNode->camera().setDirection({xValue, 0.0f, zValue});
-                    std::cout << "zValue: " << zValue << ", xValue: " << xValue << std::endl;
                     _gwAgentNode->agentNode().updateTransform([&](TransformHandle& transformHandle) {
                         transformHandle.updateTransform([&](Transform& transform) {
                             transform.updateRotationInDegrees({-90.0f, value, 0.0f});

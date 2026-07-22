@@ -22,11 +22,15 @@ bool PipelineManager::setup(
         _logger.error("Failed to create final blend pipeline layout!");
         return false;
     }
+    if (!_createRoverCameraFBPipelineLayout(PipelineLayoutName::ROVER_CAMERA_FB)) {
+        _logger.error("Failed to create rover camera FB pipeline layout!");
+        return false;
+    }
     if (!_createPBRPipeline(renderPassDescriptor)) {
         _logger.error("Failed to create PBR pipeline!");
         return false;
     }
-    if (!_createRoverCameraPipeline(postProcessRenderPassDescriptor)) {
+    if (!_createRoverCameraPipeline(renderPassDescriptor)) {
         _logger.error("Failed to create rover camera pipeline!");
         return false;
     }
@@ -40,6 +44,10 @@ bool PipelineManager::setup(
     }
     if (!_createFinalBlendPipeline(postProcessRenderPassDescriptor)) {
         _logger.error("Failed to create final blend pipeline!");
+        return false;
+    }
+    if (!_createRoverCameraFBPipeline(postProcessRenderPassDescriptor)) {
+        _logger.error("Failed to create rover camera FB pipeline!");
         return false;
     }
     return true;
@@ -84,6 +92,28 @@ bool PipelineManager::_createFinalBlendPipeline(const RenderPassDescriptor& rend
         SRC_PATH("engine/shaders/out/finalblend.frag.spv"),
         PipelineName::FINAL_BLEND,
         PipelineLayoutName::FINAL_BLEND,
+        [](GraphicsPipelineBuilder& pipelineBuilder) {
+            auto bindingDescription = Vertex::getBindingDescription();
+            auto attributeDescriptions = Vertex::getAttributeDescriptions();
+            auto attributeDescriptionsVector = std::vector<VkVertexInputAttributeDescription>(
+                attributeDescriptions.begin(), attributeDescriptions.end()
+            );
+            pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
+            pipelineBuilder.setDepthStencilState({
+                .depthWriteEnable = false,
+                .depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL,
+            });
+        }
+    );
+}
+
+bool PipelineManager::_createRoverCameraFBPipeline(const RenderPassDescriptor& renderPassDescriptor) {
+    return _createPipeline(
+        renderPassDescriptor,
+        SRC_PATH("engine/shaders/out/background.vert.spv"),
+        SRC_PATH("engine/shaders/out/finalblend.cam.frag.spv"),
+        PipelineName::ROVER_CAMERA_FB,
+        PipelineLayoutName::ROVER_CAMERA_FB,
         [](GraphicsPipelineBuilder& pipelineBuilder) {
             auto bindingDescription = Vertex::getBindingDescription();
             auto attributeDescriptions = Vertex::getAttributeDescriptions();
@@ -171,8 +201,7 @@ bool vax::vk::PipelineManager::_createFinalBlendPipelineLayout(vax::vk::Pipeline
     auto finalBlendDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("final_blend");
     auto finalBlendSampledDescriptorSetLayout =
         _descriptorSetManager.get().getDescriptorSetLayout("final_blend_sampled");
-    auto perFrameDescriptorSetLayout =
-        _descriptorSetManager.get().getDescriptorSetLayout("per_frame");
+    auto perFrameDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("per_frame");
     if (!finalBlendDescriptorSetLayout || !finalBlendSampledDescriptorSetLayout || !perFrameDescriptorSetLayout) {
         _logger.error("Failed to get final blend descriptor set layout!");
         return false;
@@ -189,18 +218,35 @@ bool vax::vk::PipelineManager::_createFinalBlendPipelineLayout(vax::vk::Pipeline
     return true;
 }
 
+bool vax::vk::PipelineManager::_createRoverCameraFBPipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) {
+    auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
+    auto name = vax::vk::Pipeline::pipelineLayoutNameToString(pipelineLayoutName);
+    auto finalBlendCamSampledDescriptorSetLayout =
+        _descriptorSetManager.get().getDescriptorSetLayout("final_blend_cam_sampled");
+    if (!finalBlendCamSampledDescriptorSetLayout) {
+        _logger.error("Failed to get final blend descriptor set layout!");
+        return false;
+    }
+    pipelineBuilder.addDescriptorSetLayout(finalBlendCamSampledDescriptorSetLayout->getVkDescriptorSetLayout());
+    auto pipelineLayout = pipelineBuilder.buildPipelineLayout(name);
+    if (!pipelineLayout) {
+        _logger.error("Failed to create final blend pipeline layout!");
+        return false;
+    }
+    _pipelineLayouts.emplace(name, pipelineLayout);
+    return true;
+}
+
 bool vax::vk::PipelineManager::_createBasePipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) {
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     auto name = vax::vk::Pipeline::pipelineLayoutNameToString(pipelineLayoutName);
-    auto globalDescriptorSetLayout =
-        _descriptorSetManager.get().getDescriptorSetLayout("global");
+    auto globalDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("global");
     if (!globalDescriptorSetLayout) {
         _logger.error("Failed to get global descriptor set layout!");
         return false;
     }
     pipelineBuilder.addDescriptorSetLayout(globalDescriptorSetLayout->getVkDescriptorSetLayout());
-    auto perFrameDescriptorSetLayout =
-        _descriptorSetManager.get().getDescriptorSetLayout("per_frame");
+    auto perFrameDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("per_frame");
     if (!perFrameDescriptorSetLayout) {
         _logger.error("Failed to get per frame descriptor set layout!");
         return false;

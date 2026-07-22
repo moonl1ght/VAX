@@ -4,9 +4,16 @@
 #include "luna.h"
 
 namespace vax::vk {
-enum class PipelineLayoutName : uint32_t { BACKGROUND = 0, BASE = 1, FINAL_BLEND = 2 };
+enum class PipelineLayoutName : uint32_t { BACKGROUND = 0, BASE = 1, FINAL_BLEND = 2, ROVER_CAMERA_FB = 3 };
 
-enum class PipelineName : uint32_t { BACKGROUND = 0, PBR = 1, BASE = 2, FINAL_BLEND = 3, ROVER_CAMERA = 4 };
+enum class PipelineName : uint32_t {
+    BACKGROUND = 0,
+    PBR = 1,
+    BASE = 2,
+    FINAL_BLEND = 3,
+    ROVER_CAMERA = 4,
+    ROVER_CAMERA_FB = 5
+};
 
 enum class PipelineType { RENDER, COMPUTE, UNKNOWN };
 
@@ -22,6 +29,10 @@ class Pipeline final {
             return "base_pipeline";
         case PipelineName::FINAL_BLEND:
             return "final_blend_pipeline";
+        case PipelineName::ROVER_CAMERA:
+            return "rover_camera_pipeline";
+        case PipelineName::ROVER_CAMERA_FB:
+            return "rover_camera_fb_pipeline";
         default:
             return "unknown_pipeline";
         }

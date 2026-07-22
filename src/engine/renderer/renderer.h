@@ -40,6 +40,7 @@ class Renderer final {
     std::optional<vax::vk::RenderDestination> _mainRenderDestination;
     std::optional<vax::vk::RenderDestination> _roverCameraRenderDestination;
     std::optional<vax::vk::RenderDestination> _swapchainRenderDestination;
+    std::optional<vax::vk::RenderDestination> _roverCameraFBRenderDestination;
 
     std::optional<vax::engine::JFAPass> _jfaPass;
 
@@ -59,7 +60,7 @@ class Renderer final {
     );
     void _drawUi(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
-    void _setViewportAndScissor(VkCommandBuffer commandBuffer);
+    void _setMainViewportAndScissor(VkCommandBuffer commandBuffer);
     void _setViewportAndScissor(VkCommandBuffer commandBuffer, VkExtent2D extent);
     bool _updateGlobalDescriptorSet(
         VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, VkPipelineLayout pipelineLayout
@@ -84,6 +85,7 @@ class Renderer final {
         uint32_t imageIndex
     );
     void _finalBlendPass(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex);
+    void _roverCameraFBPass(VkCommandBuffer commandBuffer, vax::engine::DrawableScene* scene, uint32_t imageIndex);
 
     bool _createRoverCameraRenderDestination();
 };

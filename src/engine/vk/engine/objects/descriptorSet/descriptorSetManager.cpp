@@ -76,7 +76,7 @@ bool DescriptorSetManager::_createDescriptorSetPools() {
         return false;
     }
 
-    uint32_t numberOfCombinedImages = 1;
+    uint32_t numberOfCombinedImages = 2;
     uint32_t numberOfStorageImages = 4;
     uint32_t maxCombinedImageSamplers = static_cast<uint32_t>(_maxFramesInFlight) * numberOfCombinedImages;
     uint32_t maxStorageImages = static_cast<uint32_t>(_maxFramesInFlight) * numberOfStorageImages;
@@ -88,7 +88,7 @@ bool DescriptorSetManager::_createDescriptorSetPools() {
     VkDescriptorPoolCreateInfo finalBlendDescriptorPoolInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
-        .maxSets = 3 * MAX_FRAMES_IN_FLIGHT,
+        .maxSets = 4 * MAX_FRAMES_IN_FLIGHT,
         .poolSizeCount = static_cast<uint32_t>(finalBlendDescriptorPoolSizes.size()),
         .pPoolSizes = finalBlendDescriptorPoolSizes.data(),
     };
@@ -132,8 +132,16 @@ std::optional<DescriptorSetHandler> createOrGetDescriptorSet(
 }
 
 std::optional<DescriptorSetHandler> DescriptorSetManager::getDescriptorSetHandler(
-    uint32_t frameIndex, PoolType poolType, std::string name, std::string layoutName
+    uint32_t frameIndex, PoolType poolType, std::string name, std::string layoutName, bool autoCreate
 ) {
+    if (!autoCreate) {
+        auto descriptorSets = _descriptorSets.find(name);
+        if (descriptorSets == _descriptorSets.end()) {
+            _logger.error("Descriptor set not found!");
+            return std::nullopt;
+        }
+        return std::make_optional<DescriptorSetHandler>(_device.get(), descriptorSets->second[frameIndex]);
+    }
     auto& sets = _descriptorSets[name];
     auto descriptorSetLayout = _descriptorSetLayouts.find(layoutName);
     if (descriptorSetLayout == _descriptorSetLayouts.end()) {
@@ -229,6 +237,21 @@ bool DescriptorSetManager::_createDescriptorSetLayouts() {
         return false;
     }
     _descriptorSetLayouts.insert({"final_blend_sampled", std::move(finalBlendSampledDescriptorSetLayout.value())});
+
+    DescriptorSetLayoutBuilder finalBlendCamSampledBuilder(
+        _device.get(), "final_blend_cam_sampled_descriptor_set_layout"
+    );
+    finalBlendCamSampledBuilder.addBinding(
+        0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1
+    );
+    auto finalBlendCamSampledDescriptorSetLayout =
+        finalBlendCamSampledBuilder.build(DescriptorSetLayout::SetType::OTHER);
+    finalBlendCamSampledBuilder.clear();
+    if (!finalBlendCamSampledDescriptorSetLayout) {
+        _logger.error("Failed to create final blend descriptor set layout!");
+        return false;
+    }
+    _descriptorSetLayouts.insert({"final_blend_cam_sampled", std::move(finalBlendCamSampledDescriptorSetLayout.value())});
 
     DescriptorSetLayoutBuilder finalBlendStorageBuilder(_device.get(), "final_blend_descriptor_set_layout");
     finalBlendStorageBuilder.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT, 1);

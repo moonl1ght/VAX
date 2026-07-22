@@ -20,9 +20,9 @@ class Camera final {
         glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f),
         vax::math::Radian fov = vax::math::radians_from_degrees(60),
-        double nearPlane = 0.1,
-        double farPlane = 100,
-        double viewSize = 1
+        float nearPlane = 0.1,
+        float farPlane = 100,
+        float viewSize = 1
     )
         : _viewPortSize(viewPortSize)
         , _projection(projection)
@@ -59,11 +59,11 @@ class Camera final {
 
     void setFov(vax::math::Radian fov);
 
-    void setNearPlane(double nearPlane);
+    void setNearPlane(float nearPlane);
 
-    void setFarPlane(double farPlane);
+    void setFarPlane(float farPlane);
 
-    void setViewSize(double viewSize);
+    void setViewSize(float viewSize);
 
     void setRotationSpeed(float rotationSpeed);
 
@@ -93,10 +93,10 @@ class Camera final {
     glm::vec3 _position;
     glm::vec3 _target;
     vax::math::Radian _fov;
-    double _whAspectRatio;
-    double _nearPlane;
-    double _farPlane;
-    double _viewSize;
+    float _whAspectRatio;
+    float _nearPlane;
+    float _farPlane;
+    float _viewSize;
     float _rotationSpeed = 0.002f;
 
     glm::quat _orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);

@@ -123,13 +123,13 @@ void JFAPass::writeTextures(const std::vector<vax::vk::Texture>& maskTextures, c
     auto textureFactory = TextureFactory(_device.get(), _allocator);
     for (int i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
         auto initDescriptorSetHandler = _descriptorSetManager.get().getDescriptorSetHandler(
-            i, DescriptorSetManager::PoolType::PROCESSING, "init_jfa", "jfa_init"
+            i, DescriptorSetManager::PoolType::PROCESSING, "init_jfa", "jfa_init", true
         );
         auto jfaDescriptorSetHandler0 = _descriptorSetManager.get().getDescriptorSetHandler(
-            i, DescriptorSetManager::PoolType::PROCESSING, "jfa_set0", "jfa"
+            i, DescriptorSetManager::PoolType::PROCESSING, "jfa_set0", "jfa", true
         );
         auto jfaDescriptorSetHandler1 = _descriptorSetManager.get().getDescriptorSetHandler(
-            i, DescriptorSetManager::PoolType::PROCESSING, "jfa_set1", "jfa"
+            i, DescriptorSetManager::PoolType::PROCESSING, "jfa_set1", "jfa", true
         );
         if (!initDescriptorSetHandler || !jfaDescriptorSetHandler0 || !jfaDescriptorSetHandler1) {
             _logger.error("Failed to get JFA descriptor set handlers!");
@@ -218,7 +218,7 @@ void JFAPass::execute(
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, _initPipeline->vkPipeline);
 
     auto descriptorSetHandler = _descriptorSetManager.get().getDescriptorSetHandler(
-        currentFrame, DescriptorSetManager::PoolType::PROCESSING, "init_jfa", "jfa_init"
+        currentFrame, DescriptorSetManager::PoolType::PROCESSING, "init_jfa", "jfa_init", false
     );
     if (!descriptorSetHandler) {
         _logger.error("Failed to get init JFA descriptor set handler!");
@@ -285,7 +285,7 @@ void JFAPass::execute(
 
         std::string setName = isTextureAInput ? "jfa_set0" : "jfa_set1";
         auto jfaDescriptorSetHandler = _descriptorSetManager.get().getDescriptorSetHandler(
-            currentFrame, DescriptorSetManager::PoolType::PROCESSING, setName, "jfa"
+            currentFrame, DescriptorSetManager::PoolType::PROCESSING, setName, "jfa", false
         );
 
         if (!jfaDescriptorSetHandler) {

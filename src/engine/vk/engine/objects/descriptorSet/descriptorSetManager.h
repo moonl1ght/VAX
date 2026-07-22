@@ -31,8 +31,9 @@ class DescriptorSetManager {
 
     void cleanup();
 
-    std::optional<DescriptorSetHandler>
-    getDescriptorSetHandler(uint32_t frameIndex, PoolType poolType, std::string name, std::string layoutName);
+    std::optional<DescriptorSetHandler> getDescriptorSetHandler(
+        uint32_t frameIndex, PoolType poolType, std::string name, std::string layoutName, bool autoCreate
+    );
 
     const DescriptorSetLayout* getDescriptorSetLayout(std::string name) const;
 

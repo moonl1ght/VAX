@@ -23,17 +23,17 @@ struct Size_t {
         : width(static_cast<T>(extent.width))
         , height(static_cast<T>(extent.height)) {}
 
-    double whRatio() const noexcept {
+    float whRatio() const noexcept {
         if (height == 0) {
             return 0;
         }
-        return static_cast<double>(width) / static_cast<double>(height);
+        return static_cast<float>(width) / static_cast<float>(height);
     }
-    double hwRatio() const noexcept {
+    float hwRatio() const noexcept {
         if (width == 0) {
             return 0;
         }
-        return static_cast<double>(height) / static_cast<double>(width);
+        return static_cast<float>(height) / static_cast<float>(width);
     }
 
     VkExtent2D toExtent2D() const noexcept {

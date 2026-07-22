@@ -60,17 +60,17 @@ void Camera::setFov(vax::math::Radian fov) {
     _isProjectionDirty = true;
 }
 
-void Camera::setNearPlane(double nearPlane) {
+void Camera::setNearPlane(float nearPlane) {
     _nearPlane = nearPlane;
     _isProjectionDirty = true;
 }
 
-void Camera::setFarPlane(double farPlane) {
+void Camera::setFarPlane(float farPlane) {
     _farPlane = farPlane;
     _isProjectionDirty = true;
 }
 
-void Camera::setViewSize(double viewSize) {
+void Camera::setViewSize(float viewSize) {
     _viewSize = viewSize;
     if (_projection == Projection::orthographic) {
         _isProjectionDirty = true;
