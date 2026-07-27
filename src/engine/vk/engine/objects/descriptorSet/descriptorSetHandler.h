@@ -50,7 +50,9 @@ struct DescriptorSetHandler {
         VkCommandBuffer commandBuffer,
         VkPipelineLayout pipelineLayout,
         uint32_t setIndex,
-        VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS
+        VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        uint32_t dynamicOffsetCount = 0,
+        const uint32_t* pDynamicOffsets = nullptr
     );
 
   private:

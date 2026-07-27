@@ -28,7 +28,8 @@ enum MainSetIndices {
 
 enum FrameBindingIndices {
     FRAME_UNIFORM_BUFFER_INDEX = 0,
-    FRAME_INSTANCE_BUFFER_INDEX = 1,
+    FRAME_LIGHT_BUFFER_INDEX = 1,
+    FRAME_INSTANCE_BUFFER_INDEX = 2,
 };
 
 enum GlobalBindingIndices {
@@ -36,6 +37,7 @@ enum GlobalBindingIndices {
     GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX = 1,
     GLOBAL_SAMPLER_INDEX = 2,
     GLOBAL_TEXTURE_INDEX = 3,
+    GLOBAL_SHADOW_TEXTURE_INDEX = 4,
 };
 
 enum VertexInputIndicesPUV {
@@ -60,18 +62,26 @@ enum VertexInputIndicesNoTangent {
     VERTEX_INPUT_UV_2_INDEX_NT = 4
 };
 
-enum { MAX_TEXTURES = 500, MAX_SAMPLERS = 4 };
+enum {
+    MAX_TEXTURES = 500,
+    MAX_CUBE_MAP_TEXTURES = 10,
+    MAX_SHADOW_TEXTURES = 100,
+    MAX_SAMPLERS = 4,
+    MAX_GLOBAL_SAMPLERS = MAX_SAMPLERS,
+    MAX_UBO_LIGHTS = 16
+};
 static constexpr uint32_t NO_TEXTURE_FLAG = 0xFFFFFFFF;
 static constexpr uint32_t NO_MATERIAL_INDEX = 0xFFFFFFFF;
 static constexpr uint32_t NO_ENVIRONMENT_MAP_INDEX = 0xFFFFFFFF;
 static constexpr uint32_t NO_SAMPLER_INDEX = 0xFFFFFFFF;
+static constexpr uint32_t NO_SHADOW_MAP_INDEX = 0xFFFFFFFF;
 static constexpr uint32_t NO_ID = 0xFFFFFFFF;
 
 enum ObjectFlags {
     NoFlags = 0,
-    IsWireframe = 1 << 0,      // 0001
-    NoTangent = 1 << 1,        // 0010
-    PrecomputedMVP = 1 << 2,   // 0100
+    IsWireframe = 1 << 0,    // 0001
+    NoTangent = 1 << 1,      // 0010
+    PrecomputedMVP = 1 << 2, // 0100
 };
 
 enum InstanceFlags {
@@ -92,21 +102,37 @@ struct EnvironmentMapData {
     uint32_t padding[2];
 };
 
-struct UniformBufferObject { // total size: 160 bytes
-    mat4 view; // 64 bytes
-    mat4 proj; // 64 bytes
-    vec4 cameraPosition; // 16 bytes
+struct UniformBufferObject {                                 // total size: 160 bytes
+    mat4 view;                                               // 64 bytes
+    mat4 proj;                                               // 64 bytes
+    vec4 cameraPosition;                                     // 16 bytes
     uint32_t environmentMapIndex = NO_ENVIRONMENT_MAP_INDEX; // 4 bytes
-    vec3 padding; // 12 bytes
+    vec3 padding;                                            // 12 bytes
 };
 
-struct InstanceData { // total size: 144 bytes
-    mat4 model; // 64 bytes
-    mat4 normalMatrix; // 64 bytes
+struct LightData {                  // total size: 112 bytes
+    mat4 lightSpaceMatrix;          // 64 bytes
+    vec4 position;                  // 16 bytes
+    vec4 color;                     // 16 bytes
+    uint32_t shadowMapIndex;        // 4 bytes
+    uint32_t shadowMapSamplerIndex; // 4 bytes
+    float radius;                   // 4 bytes
+    float padding;                  // 4 bytes
+};
+
+struct LightUBO { // total size: 112 * MAX_UBO_LIGHTS bytes = 1792 bytes + 16 bytes = 1808 bytes
+    LightData lights[MAX_UBO_LIGHTS];
+    uint32_t lightCount; // 4 bytes
+    uint32_t padding[3]; // 12 bytes
+};
+
+struct InstanceData {     // total size: 144 bytes
+    mat4 model;           // 64 bytes
+    mat4 normalMatrix;    // 64 bytes
     uint32_t packedColor; // 4 bytes
-    uint32_t flags; // 4 bytes
-    uint32_t instanceId; // 4 bytes
-    uint32_t padding; // 4 bytes
+    uint32_t flags;       // 4 bytes
+    uint32_t instanceId;  // 4 bytes
+    uint32_t padding;     // 4 bytes
 };
 
 struct DrawPushConstants {

@@ -11,13 +11,31 @@ using namespace vax::rl;
 void DrawableScene::prepareForDraw(engine::RenderCallContext renderCallContext) {
     _renderCallContext = renderCallContext;
     if (auto mappedMemory = _sceneUniformBuffers[renderCallContext.currentFrame]->mappedMemory()) {
-        memcpy(mappedMemory.value(), &_ubo, sizeof(_ubo));
+        uint8_t* mappedPtr = static_cast<uint8_t*>(mappedMemory.value());
+        memcpy(mappedPtr + (0 * _passUboStride), &_ubo, sizeof(_ubo));
+        memcpy(mappedPtr + (1 * _passUboStride), &_sunLightUbo, sizeof(_sunLightUbo));
     } else {
         _logger.error("Failed to get mapped memory!");
     }
 
     if (auto mappedMemory = _roverCameraUniformBuffers[renderCallContext.currentFrame]->mappedMemory()) {
         memcpy(mappedMemory.value(), &_roverCameraUbo, sizeof(_roverCameraUbo));
+    } else {
+        _logger.error("Failed to get mapped memory!");
+    }
+
+    auto lightMappedMemory = _lightsUniformBuffer[renderCallContext.currentFrame]->mappedMemory();
+    if (lightMappedMemory.has_value()) {
+        auto lightData = static_cast<LightUBO*>(lightMappedMemory.value());
+        lightData->lightCount = 1;
+        auto sunLightUbo = _sunLight.lightUBOIndex();
+        lightData->lights[sunLightUbo].lightSpaceMatrix =
+            _sunLight.camera().viewMatrix() * _sunLight.camera().projectionMatrix();
+        lightData->lights[sunLightUbo].position = glm::vec4(_sunLight.camera().position(), 1.0f);
+        lightData->lights[sunLightUbo].color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+        lightData->lights[sunLightUbo].shadowMapIndex = 0;
+        lightData->lights[sunLightUbo].radius = 10.0f;
+        lightData->lights[sunLightUbo].shadowMapSamplerIndex = 0;
     } else {
         _logger.error("Failed to get mapped memory!");
     }
@@ -32,25 +50,34 @@ void DrawableScene::update(engine::SceneUpdateContext sceneUpdateContext) {
     auto& roverCamera = _sceneGraph->roverCamera();
     _roverCameraUbo = roverCamera.getUniformBufferObject();
     _roverCameraUbo.environmentMapIndex = 0;
+    _sunLightUbo = _sunLight.camera().getUniformBufferObject();
+    _sunLightUbo.environmentMapIndex = 0;
 }
 
 void vax::engine::DrawableScene::resize() {
     auto swapchainExtent = _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchainExtent;
     _mainCamera.setViewPortSize(vax::math::SizeUI(swapchainExtent));
+    _sunLight.camera().setViewPortSize(vax::math::SizeUI(swapchainExtent));
 }
 
 void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue) {
+    VkDeviceSize minAlignment =
+        _vkEngine.get().device->getPhysicalDeviceProperties().limits.minUniformBufferOffsetAlignment;
+    _passUboStride = (sizeof(UniformBufferObject) + minAlignment - 1) & ~(minAlignment - 1);
     _resourceManager.setup(_modelsController.maxDrawableInstances());
     _sceneGraph = std::make_unique<GwSceneGraph>();
     _loadEnvironmentMap(submitQueue);
+    uint32_t lightCount = 1;
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
     _sceneUniformBuffers.reserve(vax::vk::MAX_FRAMES_IN_FLIGHT);
+    _roverCameraUniformBuffers.reserve(vax::vk::MAX_FRAMES_IN_FLIGHT);
+    _lightsUniformBuffer.reserve(vax::vk::MAX_FRAMES_IN_FLIGHT);
     for (size_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
         auto& bufferManager = _resourceManager.bufferManager();
         auto allocation = bufferManager
                               .allocateBuffer(
                                   "frame_uniform_buffer",
-                                  bufferSize,
+                                  _passUboStride * (lightCount + 1),
                                   VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
                               )
@@ -67,6 +94,16 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
                                          .value();
         roverCameraAllocation.second->map();
         _roverCameraUniformBuffers.push_back(roverCameraAllocation.second);
+        auto lightAllocation = bufferManager
+                                   .allocateBuffer(
+                                       "light_uniform_buffer",
+                                       sizeof(LightUBO),
+                                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                                   )
+                                   .value();
+        lightAllocation.second->map();
+        _lightsUniformBuffer.push_back(lightAllocation.second);
     }
     std::vector<vax::engine::ModelDescriptor> modelDescriptors = {
         {
@@ -100,6 +137,15 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
     commandBuffer.end();
     commandBuffer.submitAndWait(submitQueue);
     _modelLoader.cleanupStaged();
+
+    auto sunCamera = Camera();
+    sunCamera.setPosition(glm::vec3(1.0f, 10.0f, 6.0f));
+    auto swapchainExtent = _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchainExtent;
+    sunCamera.setViewPortSize(vax::math::SizeUI(swapchainExtent));
+    sunCamera.setProjection(Camera::Projection::orthographic);
+    sunCamera.setViewSize(20.0f);
+    _sunLight = Light(sunCamera);
+    _sunLight.setLightUBOIndex(0);
 
     auto cameraPos = glm::vec3(1.0f, 5.0f, -3.0f);
     _mainCamera.setPosition(cameraPos);
@@ -143,6 +189,12 @@ bool vax::engine::DrawableScene::writeFrameDescriptorSet(
         *_sceneUniformBuffers[_renderCallContext.currentFrame],
         FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
         0,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
+    );
+    descriptorHandler.writeBuffer(
+        *_lightsUniformBuffer[_renderCallContext.currentFrame],
+        FrameBindingIndices::FRAME_LIGHT_BUFFER_INDEX,
+        0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     );
     descriptorHandler.writeBuffer(
@@ -155,6 +207,12 @@ bool vax::engine::DrawableScene::writeFrameDescriptorSet(
     roverCameraDescriptorHandler.writeBuffer(
         *_roverCameraUniformBuffers[_renderCallContext.currentFrame],
         FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
+        0,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
+    );
+    roverCameraDescriptorHandler.writeBuffer(
+        *_lightsUniformBuffer[_renderCallContext.currentFrame],
+        FrameBindingIndices::FRAME_LIGHT_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     );

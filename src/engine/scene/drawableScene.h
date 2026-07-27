@@ -19,6 +19,7 @@
 #include "shaderUniforms.h"
 #include "textureLoader.h"
 #include "vkEngine.h"
+#include "light.h"
 
 namespace vax::rl {
 struct GridWorldDrawableDescriptor;
@@ -99,10 +100,13 @@ class DrawableScene final : public vax::InputController::Observer {
         _shouldDrawSecondaryWindow = shouldDrawSecondaryWindow;
     }
 
+    uint32_t passUboStride() const { return _passUboStride; }
+
   private:
     vax::Logger _logger = vax::Logger("DrawableScene");
     std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
     std::vector<vax::vk::Buffer*> _roverCameraUniformBuffers;
+    std::vector<vax::vk::Buffer*> _lightsUniformBuffer;
     std::reference_wrapper<vax::vk::Engine> _vkEngine;
     vax::engine::ModelsController _modelsController;
     vax::vk::ResourceManager _resourceManager;
@@ -111,7 +115,9 @@ class DrawableScene final : public vax::InputController::Observer {
     vax::engine::PrimitivesBuilder _primitivesBuilder;
     vax::engine::Camera _mainCamera;
     vax::engine::Camera _gizmoCamera;
+    vax::engine::Light _sunLight;
     UniformBufferObject _ubo;
+    UniformBufferObject _sunLightUbo;
     UniformBufferObject _roverCameraUbo;
     std::unique_ptr<vax::rl::GwSceneGraph> _sceneGraph;
     std::optional<vax::engine::SceneNode> _background;
@@ -121,6 +127,7 @@ class DrawableScene final : public vax::InputController::Observer {
     vax::engine::RenderCallContext _renderCallContext;
     vax::engine::SceneUpdateContext _sceneUpdateContext;
 
+    uint32_t _passUboStride = 0;
     bool _shouldDrawSecondaryWindow = false;
 
     void _loadEnvironmentMap(VkQueue submitQueue);

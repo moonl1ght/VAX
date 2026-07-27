@@ -59,7 +59,9 @@ class Renderer final : public BaseRenderer {
     bool _drawGizmo(vax::vk::CommandBuffer& commandBuffer, vax::engine::DrawableScene* scene);
 
     void _resize();
+
     void _createRenderDestinations();
+
     void _writeFinalBlendDescriptorSets();
 
     void _mainPass(RenderPassInfo& renderPassInfo);

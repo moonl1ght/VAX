@@ -15,7 +15,7 @@ Texture2D<float> inputDepth;
 [vk::binding(0, 1)]
 Texture2D<uint2> inputJFATexture;
 
-[vk::binding(1, 2)]
+[vk::binding(FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX, 2)]
 StructuredBuffer<InstanceData> instancesFinalBlend;
 
 [shader("fragment")]
@@ -42,7 +42,7 @@ float4 fragMain(float2 uv: TEXCOORD0) : SV_Target {
         uint currentObjId = inputMask[pixelCoords];
         if (dist > 0.0f && dist <= outlineWidth) {
 
-            float currentDepth = inputDepth.Load(int3(pixelCoords, 0));\
+            float currentDepth = inputDepth.Load(int3(pixelCoords, 0));
             float edgeDepth = inputDepth.Load(int3(closestEdgePixel, 0));
 
             if (currentDepth >= edgeDepth + 0.001f) {

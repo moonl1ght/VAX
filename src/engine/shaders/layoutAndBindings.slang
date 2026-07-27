@@ -3,6 +3,9 @@ import uniforms;
 [vk::binding(FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX, MainSetIndices::PER_FRAME_SET_INDEX)]
 ConstantBuffer<UniformBufferObject> ubo;
 
+[vk::binding(FrameBindingIndices::FRAME_LIGHT_BUFFER_INDEX, MainSetIndices::PER_FRAME_SET_INDEX)]
+ConstantBuffer<LightUBO> lights;
+
 [vk::binding(FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX, MainSetIndices::PER_FRAME_SET_INDEX)]
 StructuredBuffer<InstanceData> instances;
 
@@ -19,7 +22,10 @@ SamplerState globalSamplers[MAX_SAMPLERS];
 Texture2D globalTextures[MAX_TEXTURES];
 
 [vk::binding(GlobalBindingIndices::GLOBAL_TEXTURE_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
-TextureCube globalCubeTextures[MAX_TEXTURES];
+TextureCube globalCubeTextures[MAX_CUBE_MAP_TEXTURES];
+
+[vk::binding(GlobalBindingIndices::GLOBAL_SHADOW_TEXTURE_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
+Texture2D globalShadowTextures[MAX_SHADOW_TEXTURES];
 
 struct VertexInput {
     [vk::location(VertexInputIndices::VERTEX_INPUT_POSITION_INDEX)]

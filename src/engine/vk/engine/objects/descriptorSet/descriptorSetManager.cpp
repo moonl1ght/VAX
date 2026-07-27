@@ -17,6 +17,7 @@ bool DescriptorSetManager::setup() {
 
 bool DescriptorSetManager::_createDescriptorSetPools() {
     uint32_t uniformBufferCount = 2;
+    uint32_t dynamicUniformBufferCount = 2;
     uint32_t ssboBufferCount = 2;
     uint32_t materialBufferCount = 1;
     uint32_t environmentMapCount = 1;
@@ -24,6 +25,7 @@ bool DescriptorSetManager::_createDescriptorSetPools() {
     uint32_t textureCount = vax::vk::MAX_GLOBAL_TEXTURES;
     // auto samplersImageLimit = _device.get().getPhysicalDeviceProperties().limits.maxPerStageDescriptorSamplers;
     uint32_t maxUniformBuffers = static_cast<uint32_t>(_maxFramesInFlight) * uniformBufferCount;
+    uint32_t maxDynamicUniformBuffers = static_cast<uint32_t>(_maxFramesInFlight) * dynamicUniformBufferCount;
     uint32_t maxEnvironmentMaps = static_cast<uint32_t>(_maxFramesInFlight) * environmentMapCount;
     uint32_t maxMaterials = static_cast<uint32_t>(_maxFramesInFlight) * materialBufferCount;
     uint32_t maxTextures = static_cast<uint32_t>(_maxFramesInFlight) * textureCount;
@@ -34,6 +36,7 @@ bool DescriptorSetManager::_createDescriptorSetPools() {
 
     std::vector<VkDescriptorPoolSize> poolSizes = {
         {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBuffers},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, maxDynamicUniformBuffers},
         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, totalStorageBuffers},
         {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, maxTextures},
         {VK_DESCRIPTOR_TYPE_SAMPLER, maxSamplers},
@@ -195,7 +198,13 @@ bool DescriptorSetManager::_createDescriptorSetLayouts() {
         GlobalBindingIndices::GLOBAL_TEXTURE_INDEX,
         VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
         VK_SHADER_STAGE_FRAGMENT_BIT,
-        vax::vk::MAX_GLOBAL_TEXTURES
+        MAX_TEXTURES + MAX_CUBE_MAP_TEXTURES
+    );
+    globalBuilder.addBinding(
+        GlobalBindingIndices::GLOBAL_SHADOW_TEXTURE_INDEX,
+        VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+        VK_SHADER_STAGE_FRAGMENT_BIT,
+        MAX_SHADOW_TEXTURES
     );
     auto globalDescriptorSetLayout = globalBuilder.build(DescriptorSetLayout::SetType::GLOBAL);
     globalBuilder.clear();
@@ -208,8 +217,14 @@ bool DescriptorSetManager::_createDescriptorSetLayouts() {
     DescriptorSetLayoutBuilder perFrameBuilder(_device.get(), "per_frame_descriptor_set_layout");
     perFrameBuilder.addBinding(
         FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        1
+    );
+    perFrameBuilder.addBinding(
+        FrameBindingIndices::FRAME_LIGHT_BUFFER_INDEX,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        VK_SHADER_STAGE_FRAGMENT_BIT,
         1
     );
     perFrameBuilder.addBinding(

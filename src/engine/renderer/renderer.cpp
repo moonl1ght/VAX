@@ -63,6 +63,10 @@ void Renderer::prepare(DrawableScene* scene) {
             return;
         }
         scene->writeGlobalDescriptorSet(*globalDescriptorSetHandler);
+        auto& shadowSunRenderDestination = _renderDestinations.at("shadow_sun");
+        globalDescriptorSetHandler->writeTexture(
+            shadowSunRenderDestination.depthTexture(), GlobalBindingIndices::GLOBAL_SHADOW_TEXTURE_INDEX
+        );
         globalDescriptorSetHandler->update();
         auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
             i, vax::vk::DescriptorSetManager::PoolType::PER_FRAME, "per_frame", "per_frame", true
@@ -405,11 +409,11 @@ bool Renderer::_drawScene(
         .scene = scene,
         .imageIndex = imageIndex
     };
-    _mainPass(renderPassInfo);
     renderPassInfo.renderPassDescriptor = &shadowSunRenderPassDescriptor;
     _shadowSunPass(renderPassInfo);
+    renderPassInfo.renderPassDescriptor = &mainRenderPassDescriptor;
+    _mainPass(renderPassInfo);
     if (scene->shouldDrawSecondaryWindow() && _renderDestinations.contains("rover_camera_main")) {
-        renderPassInfo.renderPassDescriptor = &mainRenderPassDescriptor;
         renderPassInfo.imageIndex = roverCameraImageIndex;
         _roverCameraPass(renderPassInfo);
         renderPassInfo.renderPassDescriptor = &swapchainRenderPassDescriptor;
@@ -520,10 +524,14 @@ void Renderer::_mainPass(RenderPassInfo& renderPassInfo) {
             _logger.error("Failed to get default descriptor set writer!");
             return;
         }
+        uint32_t offset = 0;
         frameDescriptorSetHandler->bind(
             renderPassInfo.commandBuffer->vkCommandBuffer,
             renderPassInfo.pipelineLayout,
-            MainSetIndices::PER_FRAME_SET_INDEX
+            MainSetIndices::PER_FRAME_SET_INDEX,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            1,
+            &offset
         );
 
         auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::PBR);
@@ -591,7 +599,15 @@ void Renderer::_finalBlendPass(RenderPassInfo& renderPassInfo) {
         }
         finalBlendDescriptorSetHandler->bind(renderPassInfo.commandBuffer->vkCommandBuffer, pipelineLayout, 0);
         maskDescriptorSetHandler->bind(renderPassInfo.commandBuffer->vkCommandBuffer, pipelineLayout, 1);
-        perFrameDescriptorSetHandler->bind(renderPassInfo.commandBuffer->vkCommandBuffer, pipelineLayout, 2);
+        uint32_t offset = 0;
+        perFrameDescriptorSetHandler->bind(
+            renderPassInfo.commandBuffer->vkCommandBuffer,
+            pipelineLayout,
+            2,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            1,
+            &offset
+        );
         auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::FINAL_BLEND);
         if (!pipeline)
             return;
@@ -684,10 +700,14 @@ void Renderer::_roverCameraPass(RenderPassInfo& renderPassInfo) {
             _logger.error("Failed to get rover camera descriptor set writer!");
             return;
         }
+        uint32_t offset = 0;
         frameDescriptorSetHandler->bind(
             renderPassInfo.commandBuffer->vkCommandBuffer,
             renderPassInfo.pipelineLayout,
-            MainSetIndices::PER_FRAME_SET_INDEX
+            MainSetIndices::PER_FRAME_SET_INDEX,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            1,
+            &offset
         );
 
         auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::ROVER_CAMERA);
@@ -724,10 +744,14 @@ void Renderer::_shadowSunPass(RenderPassInfo& renderPassInfo) {
             _logger.error("Failed to get default descriptor set writer!");
             return;
         }
+        uint32_t offset = static_cast<uint32_t>(1 * renderPassInfo.scene->passUboStride());
         frameDescriptorSetHandler->bind(
             renderPassInfo.commandBuffer->vkCommandBuffer,
             renderPassInfo.pipelineLayout,
-            MainSetIndices::PER_FRAME_SET_INDEX
+            MainSetIndices::PER_FRAME_SET_INDEX,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            1,
+            &offset
         );
 
         auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::SHADOW);

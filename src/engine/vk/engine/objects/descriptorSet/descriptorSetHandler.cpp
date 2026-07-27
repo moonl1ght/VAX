@@ -112,7 +112,14 @@ void DescriptorSetHandler::clear() {
 }
 
 void DescriptorSetHandler::bind(
-    VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t setIndex, VkPipelineBindPoint bindPoint
+    VkCommandBuffer commandBuffer,
+    VkPipelineLayout pipelineLayout,
+    uint32_t setIndex,
+    VkPipelineBindPoint bindPoint,
+    uint32_t dynamicOffsetCount,
+    const uint32_t* pDynamicOffsets
 ) {
-    vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, setIndex, 1, &_descriptorSet, 0, nullptr);
+    vkCmdBindDescriptorSets(
+        commandBuffer, bindPoint, pipelineLayout, setIndex, 1, &_descriptorSet, dynamicOffsetCount, pDynamicOffsets
+    );
 }
