@@ -2,13 +2,11 @@
 
 #include "commandBuffer.h"
 #include "device.h"
-#include "luna.h"
+#include <vector>
 
 namespace vax::vk {
 class CommandManager final {
   public:
-    VkCommandPool commandPool = VK_NULL_HANDLE;
-    std::vector<VkCommandBuffer> commandBuffers;
 
     explicit CommandManager(const vax::vk::Device& device)
         : _device(device) {};
@@ -24,11 +22,15 @@ class CommandManager final {
 
     vax::vk::CommandBuffer createSingleTimeCommandBuffer();
 
+    CommandBuffer& getCommandBuffer(uint32_t index);
+
   private:
     vax::Logger _logger = vax::Logger("CommandManager");
     std::reference_wrapper<const vax::vk::Device> _device;
+    VkCommandPool _commandPool = VK_NULL_HANDLE;
+    std::vector<CommandBuffer> _commandBuffers;
 
-    bool createCommandPool();
-    bool createCommandBuffer();
+    bool _createCommandPool();
+    bool _createCommandBuffer();
 };
 } // namespace vax::vk

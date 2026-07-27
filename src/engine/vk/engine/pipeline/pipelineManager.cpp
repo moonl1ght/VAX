@@ -3,12 +3,15 @@
 #include "shaderModuleBuilder.h"
 #include "shaderUniforms.h"
 #include "vkEngine.h"
+#include <optional>
 
 using namespace vax::vk;
 using namespace vax;
 
 bool PipelineManager::setup(
-    const RenderPassDescriptor& renderPassDescriptor, const RenderPassDescriptor& postProcessRenderPassDescriptor
+    const RenderPassDescriptor& renderPassDescriptor,
+    const RenderPassDescriptor& postProcessRenderPassDescriptor,
+    const RenderPassDescriptor& shadowRenderPassDescriptor
 ) {
     if (!_createBackgroundPipelineLayout(PipelineLayoutName::BACKGROUND)) {
         _logger.error("Failed to create background pipeline layout!");
@@ -50,6 +53,10 @@ bool PipelineManager::setup(
         _logger.error("Failed to create rover camera FB pipeline!");
         return false;
     }
+    if (!_createShadowPipeline(shadowRenderPassDescriptor)) {
+        _logger.error("Failed to create shadow pipeline!");
+        return false;
+    }
     return true;
 }
 
@@ -75,6 +82,24 @@ bool PipelineManager::_createBackgroundPipeline(const RenderPassDescriptor& rend
                 .depthWriteEnable = false,
                 .depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL,
             });
+            auto bindingDescription = Vertex::getBindingDescription();
+            auto attributeDescriptions = Vertex::getAttributeDescriptions();
+            auto attributeDescriptionsVector = std::vector<VkVertexInputAttributeDescription>(
+                attributeDescriptions.begin(), attributeDescriptions.end()
+            );
+            pipelineBuilder.addVertexInputInfo(bindingDescription, attributeDescriptionsVector);
+        }
+    );
+}
+
+bool PipelineManager::_createShadowPipeline(const RenderPassDescriptor& renderPassDescriptor) {
+    return _createPipeline(
+        renderPassDescriptor,
+        SRC_PATH("engine/shaders/out/base.vert.spv"),
+        "",
+        PipelineName::SHADOW,
+        PipelineLayoutName::BASE,
+        [](GraphicsPipelineBuilder& pipelineBuilder) {
             auto bindingDescription = Vertex::getBindingDescription();
             auto attributeDescriptions = Vertex::getAttributeDescriptions();
             auto attributeDescriptionsVector = std::vector<VkVertexInputAttributeDescription>(
@@ -284,19 +309,35 @@ bool PipelineManager::_createPipeline(
     PipelineLayoutName pipelineLayoutName,
     std::function<void(GraphicsPipelineBuilder&)> builder
 ) {
-    auto vertShaderModule = _shaderModuleBuilder.build(vertShaderPath);
+    bool hasFragShader = !fragShaderPath.empty();
+    bool hasVertShader = !vertShaderPath.empty();
+    std::optional<VkShaderModule> vertShaderModule = std::nullopt;
+    if (hasVertShader) {
+        vertShaderModule = _shaderModuleBuilder.build(vertShaderPath);
+        if (!vertShaderModule) {
+            _logger.error("Failed to build vertex shader module!");
+            return false;
+        }
+    }
 
-    auto fragShaderModule = _shaderModuleBuilder.build(fragShaderPath);
-    if (!vertShaderModule || !fragShaderModule) {
-        _logger.error("Failed to build shader module!");
-        return false;
+    std::optional<VkShaderModule> fragShaderModule = std::nullopt;
+    if (hasFragShader) {
+        fragShaderModule = _shaderModuleBuilder.build(fragShaderPath);
+        if (!fragShaderModule) {
+            _logger.error("Failed to build fragment shader module!");
+            return false;
+        }
     }
 
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     pipelineBuilder.setRenderPass(renderPassDescriptor.getVkRenderPass());
     pipelineBuilder.setColorAttachmentCount(renderPassDescriptor.colorAttachmentCount);
-    pipelineBuilder.addShaderStage(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule.value(), "main");
-    pipelineBuilder.addShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule.value(), "main");
+    if (hasVertShader) {
+        pipelineBuilder.addShaderStage(VK_SHADER_STAGE_VERTEX_BIT, vertShaderModule.value(), "main");
+    }
+    if (hasFragShader) {
+        pipelineBuilder.addShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, fragShaderModule.value(), "main");
+    }
     builder(pipelineBuilder);
     auto name = vax::vk::Pipeline::pipelineNameToString(pipelineName);
     auto pipelineLayoutNameString = vax::vk::Pipeline::pipelineLayoutNameToString(pipelineLayoutName);
@@ -311,7 +352,11 @@ bool PipelineManager::_createPipeline(
         return false;
     }
     _pipelines.emplace(name, std::move(*pipeline));
-    vkDestroyShaderModule(_device.get().vkDevice, fragShaderModule.value(), nullptr);
-    vkDestroyShaderModule(_device.get().vkDevice, vertShaderModule.value(), nullptr);
+    if (hasFragShader) {
+        vkDestroyShaderModule(_device.get().vkDevice, fragShaderModule.value(), nullptr);
+    }
+    if (hasVertShader) {
+        vkDestroyShaderModule(_device.get().vkDevice, vertShaderModule.value(), nullptr);
+    }
     return true;
 }

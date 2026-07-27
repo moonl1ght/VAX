@@ -28,6 +28,13 @@ class RenderDestinationBuilder {
         RenderPassDescriptor& renderPassDescriptor
     ) const noexcept;
 
+    std::optional<RenderDestination> buildShadowSunOffscreen(
+        CommandManager& commandManager,
+        VkQueue submitQueue,
+        VkExtent2D extent,
+        RenderPassDescriptor& renderPassDescriptor
+    ) const noexcept;
+
   private:
     vax::Logger _logger = vax::Logger("RenderDestinationBuilder");
     std::reference_wrapper<const Device> _device;

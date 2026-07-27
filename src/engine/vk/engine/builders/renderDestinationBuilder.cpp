@@ -157,3 +157,56 @@ std::optional<RenderDestination> RenderDestinationBuilder::buildMainSwapchain(
         std::move(swapchainFramebuffers)
     );
 }
+
+std::optional<RenderDestination> RenderDestinationBuilder::buildShadowSunOffscreen(
+    CommandManager& commandManager, VkQueue submitQueue, VkExtent2D extent, RenderPassDescriptor& renderPassDescriptor
+) const noexcept {
+    _logger.info("Building shadow sun offscreen render destination...");
+    VkFormat depthFormat = renderPassDescriptor.depthFormat;
+    auto depthTexture =
+        TextureFactory(_device.get(), _allocator).makeDepthTextureDetached(depthFormat, math::SizeUI(extent));
+
+    if (!depthTexture.has_value()) {
+        return std::nullopt;
+    }
+
+    auto textureTaskScheduler = TextureTaskScheduler(_device.get(), commandManager);
+    textureTaskScheduler.transitionTextureLayoutAndSubmit(
+        submitQueue,
+        *depthTexture,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_ASPECT_DEPTH_BIT
+    );
+
+    depthTexture->loadImageView(VK_IMAGE_VIEW_TYPE_2D, 1, 1);
+
+    std::vector<VkFramebuffer> framebuffers;
+    framebuffers.resize(MAX_FRAMES_IN_FLIGHT);
+
+    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+        auto depthAttachmentRef = depthTexture->imageView();
+
+        VkFramebufferCreateInfo framebufferInfo{
+            .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+            .renderPass = renderPassDescriptor.getVkRenderPass(),
+            .attachmentCount = 1,
+            .pAttachments = &depthAttachmentRef,
+            .width = extent.width,
+            .height = extent.height,
+            .layers = 1,
+        };
+        if (!VK_CHECK(vkCreateFramebuffer(_device.get().vkDevice, &framebufferInfo, nullptr, &framebuffers[i]))) {
+            _logger.error("Failed to create offscreen framebuffer!");
+            return std::nullopt;
+        }
+    }
+
+    return std::make_optional<RenderDestination>(
+        _device.get(),
+        std::make_unique<Texture>(std::move(*depthTexture)),
+        std::vector<Texture>{},
+        std::vector<Texture>{},
+        std::move(framebuffers)
+    );
+}

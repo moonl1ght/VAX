@@ -12,7 +12,8 @@ enum class PipelineName : uint32_t {
     BASE = 2,
     FINAL_BLEND = 3,
     ROVER_CAMERA = 4,
-    ROVER_CAMERA_FB = 5
+    ROVER_CAMERA_FB = 5,
+    SHADOW = 6,
 };
 
 enum class PipelineType { RENDER, COMPUTE, UNKNOWN };

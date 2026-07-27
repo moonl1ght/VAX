@@ -29,7 +29,9 @@ class PipelineManager final {
     PipelineManager& operator=(PipelineManager&& other) = delete;
 
     bool setup(
-        const RenderPassDescriptor& renderPassDescriptor, const RenderPassDescriptor& postProcessRenderPassDescriptor
+        const RenderPassDescriptor& renderPassDescriptor,
+        const RenderPassDescriptor& postProcessRenderPassDescriptor,
+        const RenderPassDescriptor& shadowRenderPassDescriptor
     );
 
     const Pipeline* getPipeline(PipelineName pipelineName) const;
@@ -55,6 +57,7 @@ class PipelineManager final {
     bool _createBackgroundPipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createBasePipeline(const RenderPassDescriptor& renderPassDescriptor);
     bool _createFinalBlendPipeline(const RenderPassDescriptor& renderPassDescriptor);
+    bool _createShadowPipeline(const RenderPassDescriptor& renderPassDescriptor);
 
     bool _createPipeline(
         const RenderPassDescriptor& renderPassDescriptor,

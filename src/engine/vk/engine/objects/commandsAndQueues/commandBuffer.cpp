@@ -4,22 +4,29 @@
 using namespace vax::vk;
 
 bool vax::vk::CommandBuffer::begin() {
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    VkCommandBufferBeginInfo beginInfo {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+    };
     auto result = VK_CHECK(vkBeginCommandBuffer(vkCommandBuffer, &beginInfo));
-    if (result == VK_SUCCESS) {
+    if (result) {
         _isBegun = true;
+        return true;
+    } else {
+        _logger.error("Failed to begin command buffer!");
+        return false;
     }
-    return result;
 }
 
 bool vax::vk::CommandBuffer::end() {
     auto result = VK_CHECK(vkEndCommandBuffer(vkCommandBuffer));
-    if (result == VK_SUCCESS) {
+    if (result) {
         _isBegun = false;
+        return true;
+    } else {
+        _logger.error("Failed to end command buffer!");
+        return false;
     }
-    return result == VK_SUCCESS;
 }
 
 void vax::vk::CommandBuffer::submitAndWait(VkQueue queue) {
@@ -30,4 +37,15 @@ void vax::vk::CommandBuffer::submitAndWait(VkQueue queue) {
     };
     vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(queue);
+}
+
+void vax::vk::CommandBuffer::reset() { vkResetCommandBuffer(vkCommandBuffer, 0); }
+
+bool vax::vk::CommandBuffer::bindPipeline(const Pipeline* pipeline, VkPipelineBindPoint bindPoint) {
+    if (pipeline == nullptr) {
+        _logger.error("Failed to bind pipeline!");
+        return false;
+    }
+    vkCmdBindPipeline(vkCommandBuffer, bindPoint, pipeline->vkPipeline);
+    return true;
 }
