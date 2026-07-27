@@ -35,6 +35,13 @@ void Texture::loadImageView(VkImageViewType viewType, uint32_t layerCount, uint3
 
 bool vax::vk::Texture::isValid() const { return _image != VK_NULL_HANDLE && _allocation != VK_NULL_HANDLE; }
 
+namespace {
+VkImageLayout sampledImageLayoutFor(VkImageAspectFlags aspectMask) {
+    return (aspectMask & VK_IMAGE_ASPECT_DEPTH_BIT) ? VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL
+                                                    : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+}
+} // namespace
+
 std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfoNoSampler() const {
     if (_imageView == VK_NULL_HANDLE) {
         _logger.error("Image view is not set");
@@ -43,7 +50,7 @@ std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfoNoSampler() con
     return std::make_optional(
         VkDescriptorImageInfo{
         .imageView = _imageView,
-        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        .imageLayout = sampledImageLayoutFor(_aspectMask),
         }
     );
 }
@@ -57,7 +64,7 @@ std::optional<VkDescriptorImageInfo> Texture::descriptorImageInfoWithSampler() c
         VkDescriptorImageInfo{
         .sampler = _sampler.value().vkSampler,
         .imageView = _imageView,
-        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        .imageLayout = sampledImageLayoutFor(_aspectMask),
         }
     );
 }

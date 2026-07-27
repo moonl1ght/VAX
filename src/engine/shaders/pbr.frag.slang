@@ -95,23 +95,21 @@ FragmentOutput fragMain(uniform DrawPushConstants pushConstants, FragmentInput i
 
     float3 specularColor = getIBLRadianceContributionGGX(environmentMaps[ubo.environmentMapIndex], pbrProperties, 1.0);
     float3 diffuseColor = getIBLRadianceLambertian(environmentMaps[ubo.environmentMapIndex], pbrProperties, 1.0);
-    float3 color = diffuseColor + specularColor;
+    float3 ambientColor = diffuseColor + specularColor;
 
-    // --- Direct Sun Lighting + Shadow Calculation ---
     LightData sunLight = lights.lights[0];
-    
-    // Direction vector pointing TOWARDS the sun
-    float3 lightDirection = normalize(-sunLight.position.xyz); 
 
-    // Calculate shadow factor (1.0 = Lit, 0.0 = In Shadow)
+    float3 lightDirection = normalize(-sunLight.position.xyz);
+
     float shadowFactor = calculateSunShadow(input.worldPosition, finalNormal, lightDirection, sunLight);
 
-    float3 lightPos = float3(0, 0, -10);
-    // color += calculatePBRLightContribution(pbrProperties, normalize(lightPos - input.worldPosition), float3(1.0f));
     float3 directLight = calculatePBRLightContribution(
         pbrProperties, normalize(sunLight.position.xyz - input.worldPosition), sunLight.color.rgb
     );
-    color += directLight * shadowFactor;
+
+    float ambientShadow = lerp(0.6f, 0.9f, shadowFactor);
+    float directShadow = lerp(0.2f, 0.3f, shadowFactor);
+    float3 color = ambientColor * ambientShadow + directLight * directShadow;
 
     color = color * (ao.r < 0.01f ? 1.0f : ao.r);
     color = emissive.rgb + color;
@@ -129,5 +127,6 @@ FragmentOutput fragMain(uniform DrawPushConstants pushConstants, FragmentInput i
     uint isInstanceSelected = (instance.flags & InstanceFlags::IsInstanceSelected) != 0u;
     uint isNoId = instance.instanceId == NO_ID;
     uint finalId = instanceIndex * isInstanceSelected * (1u - isNoId);
+    float4 shadowColor = float4(0, shadowFactor, shadowFactor, 1.0f);
     return FragmentOutput(finalColor, finalId);
 }

@@ -30,9 +30,9 @@ void DrawableScene::prepareForDraw(engine::RenderCallContext renderCallContext) 
         lightData->lightCount = 1;
         auto sunLightUbo = _sunLight.lightUBOIndex();
         lightData->lights[sunLightUbo].lightSpaceMatrix =
-            _sunLight.camera().viewMatrix() * _sunLight.camera().projectionMatrix();
+            _sunLight.camera().projectionMatrix() * _sunLight.camera().viewMatrix();
         lightData->lights[sunLightUbo].position = glm::vec4(_sunLight.camera().position(), 1.0f);
-        lightData->lights[sunLightUbo].color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+        lightData->lights[sunLightUbo].color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         lightData->lights[sunLightUbo].shadowMapIndex = 0;
         lightData->lights[sunLightUbo].radius = 10.0f;
         lightData->lights[sunLightUbo].shadowMapSamplerIndex = 0;
@@ -139,11 +139,11 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
     _modelLoader.cleanupStaged();
 
     auto sunCamera = Camera();
-    sunCamera.setPosition(glm::vec3(1.0f, 10.0f, 6.0f));
+    sunCamera.setPosition(glm::vec3(1.0f, 5.0f, 3.0f));
     auto swapchainExtent = _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchainExtent;
     sunCamera.setViewPortSize(vax::math::SizeUI(swapchainExtent));
     sunCamera.setProjection(Camera::Projection::orthographic);
-    sunCamera.setViewSize(20.0f);
+    sunCamera.setViewSize(10.0f);
     _sunLight = Light(sunCamera);
     _sunLight.setLightUBOIndex(0);
 
