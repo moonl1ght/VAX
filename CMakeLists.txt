@@ -2,12 +2,16 @@ cmake_minimum_required(VERSION 3.18.0)
 
 set(CUDA_PATH /usr/local/cuda-13.2)
 set(CMAKE_CUDA_COMPILER ${CUDA_PATH}/bin/nvcc)
+set(CUDA_ARCH sm_120)
 
 project(Luna VERSION 0.1.0 LANGUAGES C CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CUDA_STANDARD 17)
-set(CMAKE_CUDA_ARCHITECTURES 90)
+set(CMAKE_CUDA_STANDARD 20)
+
+string(REGEX REPLACE "^sm_" "" CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH})
+
+set(CUDA_FLAGS -g -G -O0)
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_LIST_DIR}/build/)
 
 find_package(Vulkan REQUIRED FATAL_ERROR)
@@ -74,6 +78,7 @@ file(GLOB_RECURSE all_SRCS
     "${PROJECT_SOURCE_DIR}/src/*.h"
     "${PROJECT_SOURCE_DIR}/src/*.c"
     "${PROJECT_SOURCE_DIR}/src/*.cu"
+    "${PROJECT_SOURCE_DIR}/src/*.cuh"
     "${PROJECT_SOURCE_DIR}/src/*.spv"
 )
 
@@ -138,7 +143,8 @@ add_custom_target(
 
 macro(HEADER_DIRECTORIES return_list)
     file(GLOB_RECURSE new_list "${PROJECT_SOURCE_DIR}/src/*.hpp"
-        "${PROJECT_SOURCE_DIR}/src/*.h")
+        "${PROJECT_SOURCE_DIR}/src/*.h"
+        "${PROJECT_SOURCE_DIR}/src/*.cuh")
     set(dir_list "")
 
     foreach(file_path ${new_list})
@@ -160,9 +166,18 @@ set(IMGUI_BACKEND_SRCS
 add_executable(Luna main.cpp ${all_SRCS} ${IMGUI_BACKEND_SRCS})
 target_include_directories(Luna PUBLIC ${header_list})
 target_include_directories(Luna PRIVATE ${CUDA_PATH}/include)
+if(EXISTS ${CUDA_PATH}/include/cccl)
+    target_include_directories(Luna PRIVATE ${CUDA_PATH}/include/cccl)
+endif()
 set_target_properties(Luna PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 add_dependencies(Luna Shaders)
 target_compile_options(Luna PRIVATE -mavx2)
+
+set(all_CUH ${all_SRCS})
+list(FILTER all_CUH INCLUDE REGEX "\\.cuh$")
+set_source_files_properties(${all_CUH} PROPERTIES HEADER_FILE_ONLY TRUE)
+
+target_compile_options(Luna PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:${CUDA_FLAGS}>)
 
 if(WIN32)
     add_custom_command(TARGET Luna POST_BUILD

@@ -15,5 +15,9 @@ class TensorOp final {
 };
 
 class TensorOpGpu final {
+  public:
+    static bool add(Tensor& A, const Tensor& B);
+
+    static bool add(const Tensor& A, const Tensor& B, Tensor& C);
 };
 } // namespace vax::math
