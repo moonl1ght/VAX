@@ -225,7 +225,7 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
             _vkEngine.get().device->vkDevice,
             _vkEngine.get().getWindowController().getWindow(1)->getSwapchain()->swapchain,
             UINT64_MAX,
-            _vkEngine.get().syncObjectsManager->getImageAvailableSemaphores("rover_camera")[_currentFrame],
+            _vkEngine.get().syncObjectsManager->getImageAvailableSemaphores("secondary")[_currentFrame],
             VK_NULL_HANDLE,
             &roverCameraImageIndex
         );
