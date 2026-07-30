@@ -15,7 +15,7 @@ using namespace vax;
 using namespace vax::vk;
 
 void Renderer::setup() {
-    auto swapchain = _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain();
+    auto swapchain = _getSwapchain(0);
     auto renderPassDescriptorBuilder = RenderPassDescriptorBuilder(*_vkEngine.get().device);
     auto mainRenderPassDescriptor =
         renderPassDescriptorBuilder.buildMainOffscreen(swapchain->swapchainImageFormat, false);
@@ -96,7 +96,7 @@ bool Renderer::_createRoverCameraRenderDestination() {
     auto roverCameraRenderDestination = renderDestinationBuilder.buildMainOffscreen(
         *_vkEngine.get().commandManager,
         _vkEngine.get().queueManager->graphicsQueue,
-        _vkEngine.get().getWindowController().getSecondaryWindow()->getSwapchain()->swapchainExtent,
+        _getSwapchain(1)->swapchainExtent,
         mainRenderPassDescriptor
     );
     if (!roverCameraRenderDestination.has_value()) {
@@ -106,7 +106,7 @@ bool Renderer::_createRoverCameraRenderDestination() {
     auto roverCameraFBRenderDestination = renderDestinationBuilder.buildMainSwapchain(
         *_vkEngine.get().commandManager,
         _vkEngine.get().queueManager->graphicsQueue,
-        *_vkEngine.get().getWindowController().getSecondaryWindow()->getSwapchain(),
+        *_getSwapchain(1),
         swapchainRenderPassDescriptor
     );
     if (!roverCameraFBRenderDestination.has_value()) {
@@ -133,7 +133,7 @@ void Renderer::_createRenderDestinations() {
     auto mainRenderDestination = renderDestinationBuilder.buildMainOffscreen(
         *_vkEngine.get().commandManager,
         _vkEngine.get().queueManager->graphicsQueue,
-        _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchainExtent,
+        _getSwapchain(0)->swapchainExtent,
         mainRenderPassDescriptor
     );
     if (!mainRenderDestination.has_value()) {
@@ -144,7 +144,7 @@ void Renderer::_createRenderDestinations() {
     auto swapchainRenderDestination = renderDestinationBuilder.buildMainSwapchain(
         *_vkEngine.get().commandManager,
         _vkEngine.get().queueManager->graphicsQueue,
-        *_vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain(),
+        *_getSwapchain(0),
         swapchainRenderPassDescriptor
     );
     if (!swapchainRenderDestination.has_value()) {
@@ -156,7 +156,7 @@ void Renderer::_createRenderDestinations() {
     auto shadowSunRenderDestination = renderDestinationBuilder.buildShadowSunOffscreen(
         *_vkEngine.get().commandManager,
         _vkEngine.get().queueManager->graphicsQueue,
-        _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchainExtent,
+        _getSwapchain(0)->swapchainExtent,
         shadowSunRenderPassDescriptor
     );
     if (!shadowSunRenderDestination.has_value()) {
@@ -204,20 +204,14 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
         scene->prepareForDraw(engine::RenderCallContext{.currentFrame = _currentFrame});
     }
 
-    vkWaitForFences(
-        _vkEngine.get().device->vkDevice,
-        1,
-        &_vkEngine.get().syncObjectsManager->getInFlightFences()[_currentFrame],
-        VK_TRUE,
-        UINT64_MAX
-    );
+    _waitForFence();
 
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(
         _vkEngine.get().device->vkDevice,
-        _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchain,
+        _vkEngine.get().getWindowController().getWindow(0)->getSwapchain()->swapchain,
         UINT64_MAX,
-        _vkEngine.get().syncObjectsManager->getImageAvailableSemaphores()[_currentFrame],
+        _vkEngine.get().syncObjectsManager->getImageAvailableSemaphores("main")[_currentFrame],
         VK_NULL_HANDLE,
         &imageIndex
     );
@@ -229,9 +223,9 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
     if (drawSecondaryWindow) {
         VkResult roverCameraResult = vkAcquireNextImageKHR(
             _vkEngine.get().device->vkDevice,
-            _vkEngine.get().getWindowController().getSecondaryWindow()->getSwapchain()->swapchain,
+            _vkEngine.get().getWindowController().getWindow(1)->getSwapchain()->swapchain,
             UINT64_MAX,
-            _vkEngine.get().syncObjectsManager->getRoverCameraImageAvailableSemaphores()[_currentFrame],
+            _vkEngine.get().syncObjectsManager->getImageAvailableSemaphores("rover_camera")[_currentFrame],
             VK_NULL_HANDLE,
             &roverCameraImageIndex
         );
@@ -248,9 +242,6 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
         if (scene != nullptr) {
             scene->resize();
         }
-        return false;
-    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        _logger.error("Failed to acquire swap chain image!");
         return false;
     }
 
@@ -274,18 +265,18 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
     }
 
     std::vector<VkSemaphore> waitSemaphores;
-    waitSemaphores.push_back(_vkEngine.get().syncObjectsManager->getImageAvailableSemaphores()[_currentFrame]);
+    waitSemaphores.push_back(_vkEngine.get().syncObjectsManager->getImageAvailableSemaphores("main")[_currentFrame]);
     if (drawSecondaryWindow) {
         waitSemaphores.push_back(
-            _vkEngine.get().syncObjectsManager->getRoverCameraImageAvailableSemaphores()[_currentFrame]
+            _vkEngine.get().syncObjectsManager->getImageAvailableSemaphores("secondary")[_currentFrame]
         );
     }
     std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
     std::vector<VkSemaphore> signalSemaphores;
-    signalSemaphores.push_back(_vkEngine.get().syncObjectsManager->getRenderFinishedSemaphores()[_currentFrame]);
+    signalSemaphores.push_back(_vkEngine.get().syncObjectsManager->getRenderFinishedSemaphores("main")[_currentFrame]);
     if (drawSecondaryWindow) {
         signalSemaphores.push_back(
-            _vkEngine.get().syncObjectsManager->getRoverCameraRenderFinishedSemaphores()[_currentFrame]
+            _vkEngine.get().syncObjectsManager->getRenderFinishedSemaphores("secondary")[_currentFrame]
         );
     }
     VkSubmitInfo submitInfo{
@@ -310,11 +301,11 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
     }
 
     std::vector<VkSwapchainKHR> swapChains;
-    swapChains.push_back(_vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchain);
+    swapChains.push_back(_getSwapchain(0)->swapchain);
     std::vector<uint32_t> imageIndices;
     imageIndices.push_back(imageIndex);
     if (drawSecondaryWindow) {
-        swapChains.push_back(_vkEngine.get().getWindowController().getSecondaryWindow()->getSwapchain()->swapchain);
+        swapChains.push_back(_getSwapchain(1)->swapchain);
         imageIndices.push_back(roverCameraImageIndex);
     }
     VkPresentInfoKHR presentInfo{
@@ -351,7 +342,7 @@ bool Renderer::_updateCommandBuffer(
     if (!commandBuffer.begin())
         return false;
 
-    setViewportAndScissor(commandBuffer, _getSwapchain()->swapchainExtent);
+    _setViewportAndScissor(commandBuffer, _getSwapchain(0)->swapchainExtent);
 
     if (scene != nullptr) {
         _drawScene(commandBuffer, scene, imageIndex, roverCameraImageIndex);
@@ -371,7 +362,7 @@ void Renderer::_drawUi(CommandBuffer& commandBuffer, uint32_t imageIndex) {
     }
     auto& swapchainRenderPassDescriptor = _renderPassDescriptors.at("swapchain");
     auto& swapchainRenderDestination = _renderDestinations.at("swapchain");
-    auto swapchain = _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain();
+    auto swapchain = _getSwapchain(0);
     RenderPass renderPass(
         *_vkEngine.get().device,
         "draw_ui_render_pass",
@@ -420,7 +411,7 @@ bool Renderer::_drawScene(
         renderPassInfo.imageIndex = roverCameraImageIndex;
         _roverCameraFBPass(renderPassInfo);
     }
-    setViewportAndScissor(commandBuffer, _getSwapchain()->swapchainExtent);
+    _setViewportAndScissor(commandBuffer, _getSwapchain(0)->swapchainExtent);
     _jfaPass->execute(
         commandBuffer.vkCommandBuffer, mainRenderDestination.maskTextures()[_currentFrame], _currentFrame
     );
@@ -448,9 +439,7 @@ bool Renderer::_drawGizmo(CommandBuffer& commandBuffer, vax::engine::DrawableSce
         .clearValue = {.depthStencil = {0.0f, 0}},
     };
 
-    auto xOffset = static_cast<float>(
-        _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchainExtent.width - 256
-    );
+    auto xOffset = static_cast<float>(_getSwapchain(0)->swapchainExtent.width - 256);
 
     VkClearRect clearRect{
         .rect = {.offset = {static_cast<int32_t>(xOffset), 0}, .extent = {256, 256}},
@@ -512,7 +501,7 @@ void Renderer::_mainPass(RenderPassInfo& renderPassInfo) {
         "main_render_pass",
         renderPassInfo.renderPassDescriptor->getVkRenderPass(),
         mainRenderDestination.framebuffers[_currentFrame],
-        _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchainExtent,
+        _getSwapchain(0)->swapchainExtent,
         renderPassInfo.renderPassDescriptor->colorAttachmentCount
     );
     renderPass.pass(renderPassInfo.commandBuffer->vkCommandBuffer, [&]() {
@@ -559,13 +548,13 @@ void Renderer::_finalBlendPass(RenderPassInfo& renderPassInfo) {
         return;
     }
     auto& swapchainRenderDestination = _renderDestinations.at("swapchain");
-    setViewportAndScissor(*renderPassInfo.commandBuffer, _getSwapchain()->swapchainExtent);
+    _setViewportAndScissor(*renderPassInfo.commandBuffer, _getSwapchain(0)->swapchainExtent);
     RenderPass renderPass(
         *_vkEngine.get().device,
         "swapchain_render_pass",
         renderPassInfo.renderPassDescriptor->getVkRenderPass(),
         swapchainRenderDestination.framebuffers[renderPassInfo.imageIndex],
-        _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchainExtent
+        _getSwapchain(0)->swapchainExtent
     );
     renderPass.pass(renderPassInfo.commandBuffer->vkCommandBuffer, [&]() {
         auto pipelineLayout =
@@ -631,8 +620,8 @@ void Renderer::_roverCameraFBPass(RenderPassInfo& renderPassInfo) {
         return;
     }
     auto& roverCameraFBRenderDestination = _renderDestinations.at("rover_camera_swapchain");
-    auto extent = _vkEngine.get().getWindowController().getSecondaryWindow()->getSwapchain()->swapchainExtent;
-    setViewportAndScissor(*renderPassInfo.commandBuffer, extent);
+    auto extent = _getSwapchain(1)->swapchainExtent;
+    _setViewportAndScissor(*renderPassInfo.commandBuffer, extent);
     RenderPass renderPass(
         *_vkEngine.get().device,
         "rover_camera_fb_render_pass",
@@ -680,8 +669,7 @@ void Renderer::_roverCameraPass(RenderPassInfo& renderPassInfo) {
         return;
     }
     auto& roverCameraRenderDestination = _renderDestinations.at("rover_camera_main");
-    auto roverCameraExtent =
-        _vkEngine.get().getWindowController().getSecondaryWindow()->getSwapchain()->swapchainExtent;
+    auto roverCameraExtent = _getSwapchain(1)->swapchainExtent;
     RenderPass renderPass(
         *_vkEngine.get().device,
         "rover_camera_render_pass",
@@ -690,7 +678,7 @@ void Renderer::_roverCameraPass(RenderPassInfo& renderPassInfo) {
         roverCameraExtent,
         renderPassInfo.renderPassDescriptor->colorAttachmentCount
     );
-    setViewportAndScissor(*renderPassInfo.commandBuffer, roverCameraExtent);
+    _setViewportAndScissor(*renderPassInfo.commandBuffer, roverCameraExtent);
     renderPass.pass(renderPassInfo.commandBuffer->vkCommandBuffer, [&]() {
         auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
             _currentFrame, vax::vk::DescriptorSetManager::PoolType::PER_FRAME, "rover_camera", "per_frame", false
@@ -725,14 +713,14 @@ void Renderer::_roverCameraPass(RenderPassInfo& renderPassInfo) {
 }
 
 void Renderer::_shadowSunPass(RenderPassInfo& renderPassInfo) {
-    setViewportAndScissor(*renderPassInfo.commandBuffer, _getSwapchain()->swapchainExtent);
+    _setViewportAndScissor(*renderPassInfo.commandBuffer, _getSwapchain(0)->swapchainExtent);
     auto& renderDestination = _renderDestinations.at("shadow_sun");
     RenderPass renderPass(
         *_vkEngine.get().device,
         "shadow_sun_render_pass",
         renderPassInfo.renderPassDescriptor->getVkRenderPass(),
         renderDestination.framebuffers[_currentFrame],
-        _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchainExtent,
+        _getSwapchain(0)->swapchainExtent,
         renderPassInfo.renderPassDescriptor->colorAttachmentCount
     );
     renderPass.pass(renderPassInfo.commandBuffer->vkCommandBuffer, [&]() {

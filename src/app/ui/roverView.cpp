@@ -9,9 +9,9 @@ using namespace vax::vk;
 using namespace vax;
 
 RoverView::~RoverView() {
-    if (_windowController.get().isSecondaryWindowSetup()) {
-        _windowController.get().getSecondaryWindow()->cleanupSwapchain();
-        _windowController.get().getSecondaryWindow()->destroySurface();
+    if (_windowController.get().getWindow(1) != nullptr) {
+        _windowController.get().getWindow(1)->cleanupSwapchain();
+        _windowController.get().getWindow(1)->destroySurface();
     }
 }
 
@@ -117,15 +117,15 @@ void RoverView::_startDemo() {
 void RoverView::_changeStartPosition() { _gridWorld->changeAgentStartPosition(); }
 
 void RoverView::_showRoverCamera() {
-    if (_windowController.get().isSecondaryWindowSetup()) {
-        _windowController.get().getSecondaryWindow()->show();
+    if (_windowController.get().getWindow(1) != nullptr) {
+        _windowController.get().getWindow(1)->show();
     } else {
-        _windowController.get().setupSecondaryWindow(vax::math::SizeUI{640, 480}, "Rover camera");
-        _windowController.get().getSecondaryWindow()->load(true, false);
-        _windowController.get().getSecondaryWindow()->createSurface(_uiEngine.get().engine().instance);
-        _windowController.get().getSecondaryWindow()->createSwapchain(*_uiEngine.get().engine().device);
+        _windowController.get().setupWindow(1, vax::math::SizeUI{640, 480}, "Rover camera");
+        _windowController.get().getWindow(1)->load(true, false);
+        _windowController.get().getWindow(1)->createSurface(_uiEngine.get().engine().instance);
+        _windowController.get().getWindow(1)->createSwapchain(*_uiEngine.get().engine().device);
     }
-    _windowController.get().getSecondaryWindow()->setWindowWillHideCallback([this]() {
+    _windowController.get().getWindow(1)->setWindowWillHideCallback([this]() {
         _isRoverCameraShown = false;
         _drawableScene->setShouldDrawSecondaryWindow(false);
     });

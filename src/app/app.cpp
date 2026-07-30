@@ -6,7 +6,9 @@
 #include <SDL3/SDL_events.h>
 #include <cmath>
 #include <cuda_runtime.h>
+
 #include "cudaEnv.h"
+#include "physicsEngine.h"
 
 using namespace vax;
 
@@ -24,7 +26,8 @@ bool App::run() {
 }
 
 bool App::_setup() {
-    _testCuda();
+    // _testCuda();
+    _testPhysics();
     if (!SDL_Vulkan_LoadLibrary(NULL)) {
         _logger.error("Failed to load Vulkan library: {}", SDL_GetError());
         return false;
@@ -32,17 +35,19 @@ bool App::_setup() {
     RenderDoc::init();
     vax::NotificationCenter::getInstance().setup();
     _windowController = std::make_unique<WindowController>();
-    _windowController->setupPrimaryWindow(vax::math::SizeUI{1920, 1080});
-    if (!_windowController->getPrimaryWindow()->load(true, true)) {
+    _windowController->setupWindow(0, vax::math::SizeUI{1920, 1080}, "Luna");
+    if (!_windowController->getWindow(0)->load(true, true)) {
         return false;
     }
     _engine = std::make_unique<vk::Engine>(*_windowController);
     _engine->setup();
 
-    _uiEngine = std::make_unique<ui::UIEngine>(*_engine, *_windowController->getPrimaryWindow());
+    _uiEngine = std::make_unique<ui::UIEngine>(*_engine, *_windowController->getWindow(0));
     _menuView = std::make_unique<ui::MenuView>(*_uiEngine);
     _roverView = std::make_unique<ui::RoverView>(*_uiEngine, *_windowController);
     _trainingView = std::make_unique<ui::TrainingView>(*_uiEngine);
+    _physicsDemoMenuView = std::make_unique<ui::PhysicsDemoMenuView>(*_uiEngine);
+    _physicsDemoView = std::make_unique<ui::PhysicsDemoView>(*_uiEngine, *_windowController);
 
     _renderer = std::make_unique<engine::Renderer>(*_engine, *_uiEngine);
     _renderer->setup();
@@ -63,21 +68,18 @@ void App::_cleanup() {
 
     _engine->cleanup();
 
-    _windowController->getPrimaryWindow()->destroyWindow();
-    if (_windowController->isSecondaryWindowSetup()) {
-        _windowController->getSecondaryWindow()->destroyWindow();
-    }
+    _windowController->destroyAllWindows();
     SDL_Quit();
     _logger.info("Cleanup complete!");
 }
 
 void App::_mainLoop() {
-    if (!_windowController->isPrimaryWindowSetup()) {
+    if (_windowController->getWindow(0) == nullptr) {
         throw std::runtime_error("Window not initialized");
     }
     static bool running = true;
     int i = 0;
-    SDL_WindowID primaryWindowID = _windowController->getPrimaryWindow()->getWindowID();
+    SDL_WindowID primaryWindowID = _windowController->getWindow(0)->getWindowID();
 
     while (running) {
         SDL_Event event;
@@ -91,9 +93,9 @@ void App::_mainLoop() {
                 if (event.window.windowID == primaryWindowID) {
                     running = false;
                     return false;
-                } else if (_windowController->isSecondaryWindowSetup()) {
-                    if (event.window.windowID == _windowController->getSecondaryWindow()->getWindowID()) {
-                        _windowController->getSecondaryWindow()->hide();
+                } else if (_windowController->getWindow(1) != nullptr) {
+                    if (event.window.windowID == _windowController->getWindow(1)->getWindowID()) {
+                        _windowController->getWindow(1)->hide();
                         return true;
                     }
                 }
@@ -137,8 +139,12 @@ void App::_loopByEventUpdate() {
     ZoneScoped;
 
     _uiEngine->updateUiStart();
-    _menuView->updateImGui();
-    _trainingView->updateImGui();
+    if (_appMode == AppMode::Menu || _appMode == AppMode::Training) {
+        _menuView->updateImGui();
+        _trainingView->updateImGui();
+    } else if (_appMode == AppMode::PhysicsDemoMenu) {
+        _physicsDemoMenuView->updateImGui();
+    }
     _uiEngine->updateUiEnd();
 
     _checkActions();
@@ -180,17 +186,30 @@ void App::_loopContinuousUpdate() {
 
 void App::_checkActions() {
     auto menuViewAction = _menuView->popPendingAction();
+    auto physicsDemoMenuAction = _physicsDemoMenuView->popPendingAction();
 
     if (menuViewAction) {
         switch (menuViewAction.value()) {
-        case ui::MenuView::Action::SHOW_ROVER_DEMO:
+        case ui::MenuView::Action::SHOW_ROVER_DEMO: {
             _appMode = AppMode::Demo;
             _roverView->load(*_engine.get(), _inputController);
-            break;
-        case ui::MenuView::Action::TRAIN_Q_LEARNING:
+        } break;
+        case ui::MenuView::Action::TRAIN_Q_LEARNING: {
             _trainingView->startTraining();
             _appMode = AppMode::Training;
-            break;
+        } break;
+        case ui::MenuView::Action::SHOW_PHYSICS_ENGINE_DEMO: {
+            _appMode = AppMode::PhysicsDemoMenu;
+        } break;
+        }
+    } else if (physicsDemoMenuAction) {
+        switch (physicsDemoMenuAction.value()) {
+        case ui::PhysicsDemoMenuView::Action::SHOW_SIMPLE_DEMO: {
+            _appMode = AppMode::PhysicsDemo;
+        } break;
+        case ui::PhysicsDemoMenuView::Action::GO_TO_MAIN_MENU: {
+            _appMode = AppMode::Menu;
+        } break;
         }
     }
 }
@@ -233,4 +252,9 @@ void App::_testCuda() const {
         return;
     }
     verify("in-place add", A);
+}
+
+void App::_testPhysics() const {
+    vax::physics::PhysicsEngine physicsEngine;
+    physicsEngine.test();
 }

@@ -30,7 +30,7 @@ void UIEngine::setup(VkRenderPass renderPass) {
     init_info.RenderPass = renderPass;
     init_info.MinImageCount = 2;
     init_info.ImageCount = static_cast<uint32_t>(
-        _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain()->swapchainImages.size()
+        _vkEngine.get().getWindowController().getWindow(0)->getSwapchain()->swapchainImages.size()
     );
     init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     ImGui_ImplVulkan_Init(&init_info);

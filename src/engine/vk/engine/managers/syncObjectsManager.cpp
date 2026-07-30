@@ -6,11 +6,11 @@ using namespace vax::vk;
 
 bool vax::vk::SyncObjectsManager::setup() {
     _logger.info("Creating synchronization objects...");
-    _imageAvailableSemaphores.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
-    _renderFinishedSemaphores.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
-    _roverCameraImageAvailableSemaphores.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
-    _roverCameraRenderFinishedSemaphores.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
-    _inFlightFences.resize(vax::vk::MAX_FRAMES_IN_FLIGHT);
+    _imageAvailableSemaphores["main"] = std::vector<VkSemaphore>(vax::vk::MAX_FRAMES_IN_FLIGHT);
+    _renderFinishedSemaphores["main"] = std::vector<VkSemaphore>(vax::vk::MAX_FRAMES_IN_FLIGHT);
+    _imageAvailableSemaphores["secondary"] = std::vector<VkSemaphore>(vax::vk::MAX_FRAMES_IN_FLIGHT);
+    _renderFinishedSemaphores["secondary"] = std::vector<VkSemaphore>(vax::vk::MAX_FRAMES_IN_FLIGHT);
+    _inFlightFences = std::vector<VkFence>(vax::vk::MAX_FRAMES_IN_FLIGHT);
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -19,23 +19,23 @@ bool vax::vk::SyncObjectsManager::setup() {
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (size_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
-        if (!VK_CHECK(
-                vkCreateSemaphore(_device.get().vkDevice, &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i])
-            )) {
-            return false;
-        }
-        if (!VK_CHECK(
-                vkCreateSemaphore(_device.get().vkDevice, &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i])
-            )) {
-            return false;
-        }
         if (!VK_CHECK(vkCreateSemaphore(
-                _device.get().vkDevice, &semaphoreInfo, nullptr, &_roverCameraImageAvailableSemaphores[i]
+                _device.get().vkDevice, &semaphoreInfo, nullptr, &_imageAvailableSemaphores["main"][i]
             ))) {
             return false;
         }
         if (!VK_CHECK(vkCreateSemaphore(
-                _device.get().vkDevice, &semaphoreInfo, nullptr, &_roverCameraRenderFinishedSemaphores[i]
+                _device.get().vkDevice, &semaphoreInfo, nullptr, &_renderFinishedSemaphores["main"][i]
+            ))) {
+            return false;
+        }
+        if (!VK_CHECK(vkCreateSemaphore(
+                _device.get().vkDevice, &semaphoreInfo, nullptr, &_imageAvailableSemaphores["secondary"][i]
+            ))) {
+            return false;
+        }
+        if (!VK_CHECK(vkCreateSemaphore(
+                _device.get().vkDevice, &semaphoreInfo, nullptr, &_renderFinishedSemaphores["secondary"][i]
             ))) {
             return false;
         }
@@ -49,15 +49,14 @@ bool vax::vk::SyncObjectsManager::setup() {
 
 bool vax::vk::SyncObjectsManager::cleanup() {
     for (size_t i = 0; i < _imageAvailableSemaphores.size(); ++i) {
-        vkDestroySemaphore(_device.get().vkDevice, _imageAvailableSemaphores[i], nullptr);
-        vkDestroySemaphore(_device.get().vkDevice, _renderFinishedSemaphores[i], nullptr);
-        vkDestroySemaphore(_device.get().vkDevice, _roverCameraImageAvailableSemaphores[i], nullptr);
-        vkDestroySemaphore(_device.get().vkDevice, _roverCameraRenderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(_device.get().vkDevice, _imageAvailableSemaphores["main"][i], nullptr);
+        vkDestroySemaphore(_device.get().vkDevice, _renderFinishedSemaphores["main"][i], nullptr);
+        vkDestroySemaphore(_device.get().vkDevice, _imageAvailableSemaphores["secondary"][i], nullptr);
+        vkDestroySemaphore(_device.get().vkDevice, _renderFinishedSemaphores["secondary"][i], nullptr);
         vkDestroyFence(_device.get().vkDevice, _inFlightFences[i], nullptr);
     }
     _imageAvailableSemaphores.clear();
     _renderFinishedSemaphores.clear();
-    _roverCameraImageAvailableSemaphores.clear();
     _inFlightFences.clear();
     return true;
 }

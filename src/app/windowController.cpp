@@ -3,19 +3,33 @@
 using namespace vax;
 using namespace vax::vk;
 
-void WindowController::setupPrimaryWindow(vax::math::SizeUI size) {
-    if (_primaryWindow != nullptr) {
-        _logger.error("Primary window already setup");
+void WindowController::setupWindow(uint32_t index, vax::math::SizeUI size, const std::string& name) {
+    if (index >= maxWindows) {
+        _logger.error("Invalid window index");
         return;
     }
-    _primaryWindow = std::make_unique<vax::vk::Window>(size.width, size.height);
+    if (_windows[index] != nullptr) {
+        _logger.error("Window already setup");
+        return;
+    }
+    _windows[index] = std::make_unique<vax::vk::Window>(size.width, size.height);
+    _windows[index]->setWindowName(name);
 }
 
-void WindowController::setupSecondaryWindow(vax::math::SizeUI size, const std::string& name) {
-    if (_secondaryWindow != nullptr) {
-        _logger.error("Secondary window already setup");
+void WindowController::destroyWindow(uint32_t index) {
+    if (index >= maxWindows) {
+        _logger.error("Invalid window index");
         return;
     }
-    _secondaryWindow = std::make_unique<vax::vk::Window>(size.width, size.height);
-    _secondaryWindow->setWindowName(name);
+    if (_windows[index] == nullptr) {
+        _logger.error("Window not setup");
+        return;
+    }
+    _windows[index]->destroyWindow();
+}
+
+void WindowController::destroyAllWindows() {
+    for (uint32_t i = 0; i < maxWindows; ++i) {
+        destroyWindow(i);
+    }
 }

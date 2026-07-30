@@ -8,6 +8,7 @@ class MenuView final {
     enum class Action {
         SHOW_ROVER_DEMO,
         TRAIN_Q_LEARNING,
+        SHOW_PHYSICS_ENGINE_DEMO,
     };
 
     MenuView(UIEngine& uiEngine)

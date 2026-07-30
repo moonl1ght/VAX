@@ -1,9 +1,9 @@
-#include "menuView.h"
+#include "physicsDemoMenu.h"
 #include "imgui.h"
 
 using namespace vax::ui;
 
-void MenuView::updateImGui() {
+void PhysicsDemoMenuView::updateImGui() {
     ImGuiIO& io = ImGui::GetIO();
     ImGui::SetNextWindowPos(
         ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f)
@@ -16,16 +16,12 @@ void MenuView::updateImGui() {
     );
     ImGui::SetWindowFontScale(2.0f);
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
-    if (ImGui::Button("Show Rover Demo", ImVec2(-1, 55))) {
-        _pendingAction = Action::SHOW_ROVER_DEMO;
+    if (ImGui::Button("Show Simple Demo", ImVec2(-1, 55))) {
+        _pendingAction = Action::SHOW_SIMPLE_DEMO;
     }
     ImGui::Spacing();
-    if (ImGui::Button("Train Q Learning", ImVec2(-1, 55))) {
-        _pendingAction = Action::TRAIN_Q_LEARNING;
-    }
-    ImGui::Spacing();
-    if (ImGui::Button("Physics Engine Demo", ImVec2(-1, 55))) {
-        _pendingAction = Action::SHOW_PHYSICS_ENGINE_DEMO;
+    if (ImGui::Button("Back", ImVec2(-1, 55))) {
+        _pendingAction = Action::GO_TO_MAIN_MENU;
     }
     ImGui::End();
 }

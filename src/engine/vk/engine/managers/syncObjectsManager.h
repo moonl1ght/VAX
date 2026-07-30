@@ -2,6 +2,7 @@
 
 #include "device.h"
 #include "luna.h"
+#include <unordered_map>
 
 namespace vax::vk {
 class SyncObjectsManager {
@@ -10,23 +11,22 @@ class SyncObjectsManager {
         : _device(device) {};
 
     bool setup();
+
     bool cleanup();
 
-    const std::vector<VkSemaphore>& getImageAvailableSemaphores() const { return _imageAvailableSemaphores; }
-    const std::vector<VkSemaphore>& getRoverCameraImageAvailableSemaphores() const {
-        return _roverCameraImageAvailableSemaphores;
+    const std::vector<VkSemaphore>& getImageAvailableSemaphores(const std::string& name) const {
+        return _imageAvailableSemaphores.at(name);
     }
-    const std::vector<VkSemaphore>& getRenderFinishedSemaphores() const { return _renderFinishedSemaphores; }
-    const std::vector<VkSemaphore>& getRoverCameraRenderFinishedSemaphores() const {
-        return _roverCameraRenderFinishedSemaphores;
+
+    const std::vector<VkSemaphore>& getRenderFinishedSemaphores(const std::string& name) const {
+        return _renderFinishedSemaphores.at(name);
     }
+
     const std::vector<VkFence>& getInFlightFences() const { return _inFlightFences; }
 
   private:
-    std::vector<VkSemaphore> _imageAvailableSemaphores;
-    std::vector<VkSemaphore> _roverCameraImageAvailableSemaphores;
-    std::vector<VkSemaphore> _renderFinishedSemaphores;
-    std::vector<VkSemaphore> _roverCameraRenderFinishedSemaphores;
+    std::unordered_map<std::string, std::vector<VkSemaphore>> _imageAvailableSemaphores;
+    std::unordered_map<std::string, std::vector<VkSemaphore>> _renderFinishedSemaphores;
     std::vector<VkFence> _inFlightFences;
 
     vax::Logger _logger = vax::Logger("SyncObjectsManager");

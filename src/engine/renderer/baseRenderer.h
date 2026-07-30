@@ -21,9 +21,12 @@ class BaseRenderer {
     BaseRenderer(BaseRenderer&& other) noexcept = delete;
     BaseRenderer& operator=(BaseRenderer&& other) noexcept = delete;
 
-    void setViewportAndScissor(vax::vk::CommandBuffer& commandBuffer, VkExtent2D extent);
-
   protected:
+    struct SwapchainResult {
+        uint32_t imageIndex;
+        bool shouldRecreateSwapchain;
+        bool hasError;
+    };
     vax::Logger _logger = vax::Logger("BaseRenderer");
 
     std::reference_wrapper<vax::vk::Engine> _vkEngine;
@@ -34,8 +37,12 @@ class BaseRenderer {
 
     uint32_t _currentFrame = 0;
 
-    vax::vk::Swapchain* _getSwapchain() {
-        return _vkEngine.get().getWindowController().getPrimaryWindow()->getSwapchain();
-    };
+    void _setViewportAndScissor(vax::vk::CommandBuffer& commandBuffer, VkExtent2D extent);
+
+    void _waitForFence();
+
+    SwapchainResult _acquireSwapchainImage(size_t windowIndex, std::string semaphoreName);
+
+    vax::vk::Swapchain* _getSwapchain(size_t index);
 };
 } // namespace vax::engine

@@ -2,6 +2,25 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Luna (CUDA)",
+            "type": "cuda-gdb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Luna",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "debuggerPath": "/usr/local/cuda-13.2/bin/cuda-gdb",
+            "environment": [
+                {
+                    "name": "CUDA_DEBUGGER_SOFTWARE_PREEMPTION",
+                    "value": "1"
+                }
+            ],
+            "breakOnLaunch": false,
+            "onAPIError": "stop",
+            "preLaunchTask": "CMake: build"
+        },
+        {
             "name": "Luna (RenderDoc)",
             "type": "cppdbg",
             "request": "launch",

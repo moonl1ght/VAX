@@ -3,11 +3,12 @@
 #include "logger.h"
 #include "size.h"
 #include "window.h"
-#include "size.h"
 
 namespace vax {
 class WindowController final {
   public:
+    static constexpr uint32_t maxWindows = 2;
+
     WindowController() = default;
     ~WindowController() = default;
 
@@ -16,26 +17,19 @@ class WindowController final {
     WindowController(WindowController&&) = delete;
     WindowController& operator=(WindowController&&) = delete;
 
-    void setupPrimaryWindow(vax::math::SizeUI size);
+    void setupWindow(uint32_t index, vax::math::SizeUI size, const std::string& name);
 
-    void setupSecondaryWindow(vax::math::SizeUI size, const std::string& name);
+    const vax::vk::Window* getWindow(uint32_t index) const { return _windows[index].get(); }
 
-    const vax::vk::Window* getPrimaryWindow() const { return _primaryWindow.get(); }
+    vax::vk::Window* getWindow(uint32_t index) { return _windows[index].get(); }
 
-    vax::vk::Window* getPrimaryWindow() { return _primaryWindow.get(); }
+    void destroyWindow(uint32_t index);
 
-    const vax::vk::Window* getSecondaryWindow() const { return _secondaryWindow.get(); }
-
-    vax::vk::Window* getSecondaryWindow() { return _secondaryWindow.get(); }
-
-    bool isPrimaryWindowSetup() const { return _primaryWindow != nullptr; }
-
-    bool isSecondaryWindowSetup() const { return _secondaryWindow != nullptr; }
+    void destroyAllWindows();
 
   private:
     Logger _logger = Logger("WindowController");
 
-    std::unique_ptr<vax::vk::Window> _primaryWindow;
-    std::unique_ptr<vax::vk::Window> _secondaryWindow;
+    std::array<std::unique_ptr<vax::vk::Window>, maxWindows> _windows;
 };
-}
+} // namespace vax

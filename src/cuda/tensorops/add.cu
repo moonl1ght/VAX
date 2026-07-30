@@ -9,7 +9,7 @@ __global__ void add_kernel(
     int A_size, // number of elements in A should be equal to or larger than B_size as we are adding B to A
     int B_size
 ) {
-    // we don't use grid stride loop for simplicity
+    // TODO: use grid stride loop
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int b_idx = idx % B_size;
     if (idx < A_size && b_idx < B_size) {

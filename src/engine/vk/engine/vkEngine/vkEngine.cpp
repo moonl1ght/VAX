@@ -54,11 +54,11 @@ bool vax::vk::Engine::setup() {
     if (!setupDebugMessenger())
         return false;
 
-    _windowController.get().getPrimaryWindow()->createSurface(instance);
-    deletionQueue.push_function([&]() { _windowController.get().getPrimaryWindow()->destroySurface(); });
+    _windowController.get().getWindow(0)->createSurface(instance);
+    deletionQueue.push_function([&]() { _windowController.get().getWindow(0)->destroySurface(); });
 
     device = std::make_unique<Device>();
-    if (!device->load(instance, _windowController.get().getPrimaryWindow()->surface, enableValidationLayers)) {
+    if (!device->load(instance, _windowController.get().getWindow(0)->surface, enableValidationLayers)) {
         return false;
     }
 
@@ -90,8 +90,8 @@ bool vax::vk::Engine::setup() {
         return false;
     deletionQueue.push_function([&]() { syncObjectsManager->cleanup(); });
 
-    _windowController.get().getPrimaryWindow()->createSwapchain(*device);
-    deletionQueue.push_function([&]() { _windowController.get().getPrimaryWindow()->cleanupSwapchain(); });
+    _windowController.get().getWindow(0)->createSwapchain(*device);
+    deletionQueue.push_function([&]() { _windowController.get().getWindow(0)->cleanupSwapchain(); });
 
     descriptorSetManager = std::make_unique<DescriptorSetManager>(*device, MAX_FRAMES_IN_FLIGHT);
     if (!descriptorSetManager->setup())
@@ -120,14 +120,14 @@ void vax::vk::Engine::cleanup() {
 void vax::vk::Engine::resize() {
     _logger.info("Resizing engine...");
     int width = 0, height = 0;
-    SDL_GetWindowSizeInPixels(_windowController.get().getPrimaryWindow()->window, &width, &height);
+    SDL_GetWindowSizeInPixels(_windowController.get().getWindow(0)->window, &width, &height);
     while (width == 0 || height == 0) {
-        SDL_GetWindowSizeInPixels(_windowController.get().getPrimaryWindow()->window, &width, &height);
+        SDL_GetWindowSizeInPixels(_windowController.get().getWindow(0)->window, &width, &height);
         SDL_Delay(100);
     }
     vkDeviceWaitIdle(device->vkDevice);
 
-    _windowController.get().getPrimaryWindow()->getSwapchain()->recreate();
+    _windowController.get().getWindow(0)->getSwapchain()->recreate();
 }
 
 bool vax::vk::Engine::setupDebugMessenger() {

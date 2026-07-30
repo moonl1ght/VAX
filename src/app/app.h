@@ -9,12 +9,13 @@
 #include "trainingView.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
-#include "window.h"
 #include "frameTime.h"
 #include "windowController.h"
+#include "physicsDemoMenu.h"
+#include "physicsDemoView.h"
 
 namespace vax {
-enum class AppMode { Menu, Demo, Training };
+enum class AppMode { Menu, Demo, Training, PhysicsDemoMenu, PhysicsDemo };
 
 class App final {
   public:
@@ -39,6 +40,8 @@ class App final {
     std::unique_ptr<vax::ui::MenuView> _menuView;
     std::unique_ptr<vax::ui::RoverView> _roverView;
     std::unique_ptr<vax::ui::TrainingView> _trainingView;
+    std::unique_ptr<vax::ui::PhysicsDemoMenuView> _physicsDemoMenuView;
+    std::unique_ptr<vax::ui::PhysicsDemoView> _physicsDemoView;
 
     bool _setup();
     void _mainLoop();
@@ -48,5 +51,6 @@ class App final {
     void _updateTimestamp();
     void _checkActions();
     void _testCuda() const;
+    void _testPhysics() const;
 };
 } // namespace vax
