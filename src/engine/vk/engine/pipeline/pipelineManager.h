@@ -35,6 +35,7 @@ class PipelineManager final {
     );
 
     const Pipeline* getPipeline(PipelineName pipelineName) const;
+
     VkPipelineLayout getPipelineLayout(PipelineLayoutName pipelineLayoutName) const;
 
   private:

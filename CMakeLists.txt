@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18.0)
 
-set(CUDA_PATH /usr/local/cuda-13.2)
+set(CUDA_PATH /usr/local/cuda CACHE PATH "CUDA toolkit root")
 set(CMAKE_CUDA_COMPILER ${CUDA_PATH}/bin/nvcc)
 set(CUDA_ARCH sm_120)
 
