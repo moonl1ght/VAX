@@ -10,6 +10,7 @@
 #include "vkEngine.h"
 
 #include "shadowPass.h"
+#include "mainPass.h"
 
 namespace vax::engine {
 class Renderer final : public BaseRenderer {
@@ -43,6 +44,8 @@ class Renderer final : public BaseRenderer {
 
     std::optional<vax::engine::ShadowPass> _shadowPass;
 
+    std::optional<vax::engine::MainPass> _mainPass;
+
     bool _updateCommandBuffer(
         vax::vk::CommandBuffer& commandBuffer,
         uint32_t imageIndex,
@@ -59,15 +62,11 @@ class Renderer final : public BaseRenderer {
 
     bool _bindGlobalDescriptorSet(vax::vk::CommandBuffer& commandBuffer, VkPipelineLayout pipelineLayout);
 
-    bool _drawGizmo(vax::vk::CommandBuffer& commandBuffer, vax::engine::DrawableScene* scene);
-
     void _resize();
 
     void _createRenderDestinations();
 
     void _writeFinalBlendDescriptorSets();
-
-    void _mainPass(RenderPassInfo& renderPassInfo);
 
     void _roverCameraPass(RenderPassInfo& renderPassInfo);
 

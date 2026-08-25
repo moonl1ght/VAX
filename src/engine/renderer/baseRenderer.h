@@ -35,6 +35,8 @@ class BaseRenderer {
     std::unordered_map<std::string, vax::vk::RenderPassDescriptor> _renderPassDescriptors;
     std::unordered_map<std::string, vax::vk::RenderDestination> _renderDestinations;
 
+    std::vector<uint32_t> _outputImageIndices;
+
     uint32_t _currentFrame = 0;
 
     void _setViewportAndScissor(vax::vk::CommandBuffer& commandBuffer, VkExtent2D extent);

@@ -5,7 +5,6 @@
 #include "drawableScene.h"
 #include "renderDestination.h"
 #include "renderPassDescriptor.h"
-#include "logger.h"
 
 namespace vax::engine {
 class RenderPass_V2 {
@@ -16,6 +15,9 @@ class RenderPass_V2 {
         uint32_t imageIndex;
         uint32_t frameIndex;
     };
+
+    RenderPass_V2* nextPass = nullptr;
+    RenderPass_V2* prevPass = nullptr;
 
     RenderPass_V2(
         vax::vk::Device& device,
@@ -48,6 +50,14 @@ class RenderPass_V2 {
         _renderArea = renderArea;
     }
 
+    void setOutputImageIndex(uint32_t outputImageIndex) {
+        _outputImageIndex = outputImageIndex;
+    }
+
+    void setSwapchainExtent(VkExtent2D swapchainExtent) {
+        _swapchainExtent = swapchainExtent;
+    }
+
   protected:
     std::reference_wrapper<vax::vk::Device> _device;
     std::reference_wrapper<vax::vk::PipelineManager> _pipelineManager;
@@ -56,7 +66,9 @@ class RenderPass_V2 {
     std::reference_wrapper<vax::vk::RenderPassDescriptor> _renderDescriptor;
     std::string _debugName;
     std::vector<VkClearValue> _clearValues;
+    VkExtent2D _swapchainExtent = {0, 0};
     VkRect2D _renderArea{};
+    uint32_t _outputImageIndex = 0;
 
     template <typename Work> void _pass(RunPassInfo& runPassInfo, Work work) {
         VkRenderPassBeginInfo renderPassInfo{

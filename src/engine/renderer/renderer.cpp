@@ -57,6 +57,16 @@ void Renderer::setup() {
         _renderPassDescriptors.at("shadow_sun")
     );
     _shadowPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = _getSwapchain(0)->swapchainExtent});
+
+    _mainPass = std::make_optional<MainPass>(
+        *_vkEngine.get().device,
+        *_vkEngine.get().pipelineManager,
+        *_vkEngine.get().descriptorSetManager,
+        _renderDestinations.at("main"),
+        _renderPassDescriptors.at("main")
+    );
+    _mainPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = _getSwapchain(0)->swapchainExtent});
+    _mainPass->setSwapchainExtent(_getSwapchain(0)->swapchainExtent);
 }
 
 void Renderer::prepare(DrawableScene* scene) {
@@ -395,7 +405,6 @@ bool Renderer::_drawScene(
         return false;
     }
     auto& mainRenderPassDescriptor = _renderPassDescriptors.at("main");
-    auto& shadowSunRenderPassDescriptor = _renderPassDescriptors.at("shadow_sun");
     auto& mainRenderDestination = _renderDestinations.at("main");
     auto& swapchainRenderPassDescriptor = _renderPassDescriptors.at("swapchain");
     auto pipelineLayout = _vkEngine.get().pipelineManager->getPipelineLayout(vax::vk::PipelineLayoutName::BASE);
@@ -413,14 +422,13 @@ bool Renderer::_drawScene(
         .scene = scene,
         .imageIndex = imageIndex
     };
-    renderPassInfo.renderPassDescriptor = &shadowSunRenderPassDescriptor;
 
     RenderPass_V2::RunPassInfo runPassInfo{
         .commandBuffer = commandBuffer, .scene = scene, .imageIndex = imageIndex, .frameIndex = _currentFrame
     };
     _shadowPass->runPass(runPassInfo);
     renderPassInfo.renderPassDescriptor = &mainRenderPassDescriptor;
-    _mainPass(renderPassInfo);
+    _mainPass->runPass(runPassInfo);
     if (scene->shouldDrawSecondaryWindow() && _renderDestinations.contains("rover_camera_main")) {
         renderPassInfo.imageIndex = roverCameraImageIndex;
         _roverCameraPass(renderPassInfo);
@@ -450,52 +458,6 @@ bool Renderer::_bindGlobalDescriptorSet(CommandBuffer& commandBuffer, VkPipeline
     return true;
 }
 
-bool Renderer::_drawGizmo(CommandBuffer& commandBuffer, vax::engine::DrawableScene* scene) {
-    VkClearAttachment clearAttachment{
-        .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
-        .clearValue = {.depthStencil = {0.0f, 0}},
-    };
-
-    auto xOffset = static_cast<float>(_getSwapchain(0)->swapchainExtent.width - 256);
-
-    VkClearRect clearRect{
-        .rect = {.offset = {static_cast<int32_t>(xOffset), 0}, .extent = {256, 256}},
-        .baseArrayLayer = 0,
-        .layerCount = 1,
-    };
-
-    VkViewport viewport{
-        .x = xOffset,
-        .y = 256.0f,
-        .width = 256.0f,
-        .height = -256.0f,
-        .minDepth = 0.0f,
-        .maxDepth = 1.0f,
-    };
-
-    VkRect2D scissor{
-        .offset = {static_cast<int32_t>(xOffset), 0},
-        .extent = {256, 256},
-    };
-
-    vkCmdSetViewport(commandBuffer.vkCommandBuffer, 0, 1, &viewport);
-    vkCmdSetScissor(commandBuffer.vkCommandBuffer, 0, 1, &scissor);
-
-    vkCmdClearAttachments(commandBuffer.vkCommandBuffer, 1, &clearAttachment, 1, &clearRect);
-    auto gizmoPipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::BASE);
-    if (!gizmoPipeline)
-        return false;
-    if (!commandBuffer.bindPipeline(gizmoPipeline, VK_PIPELINE_BIND_POINT_GRAPHICS))
-        return false;
-    DrawContext drawContext{
-        .commandBuffer = commandBuffer.vkCommandBuffer,
-        .pipelineLayout = gizmoPipeline->vkPipelineLayout,
-        .currentFrame = _currentFrame,
-    };
-    scene->drawGizmo(drawContext);
-    return true;
-}
-
 void Renderer::_resize() {
     if (!_renderDestinations.contains("main")) {
         _logger.error("Main render destination not found!");
@@ -508,58 +470,6 @@ void Renderer::_resize() {
     }
     _jfaPass->writeTextures(mainRenderDestination.maskTextures(), mainRenderDestination.depthTexture());
     _writeFinalBlendDescriptorSets();
-}
-
-void Renderer::_mainPass(RenderPassInfo& renderPassInfo) {
-    if (!_renderDestinations.contains("main")) {
-        _logger.error("Main render destination not found!");
-        return;
-    }
-    auto& mainRenderDestination = _renderDestinations.at("main");
-    RenderPass renderPass(
-        *_vkEngine.get().device,
-        "main_render_pass",
-        renderPassInfo.renderPassDescriptor->getVkRenderPass(),
-        mainRenderDestination.framebuffers[_currentFrame],
-        _getSwapchain(0)->swapchainExtent,
-        renderPassInfo.renderPassDescriptor->colorAttachmentCount
-    );
-    renderPass.pass(renderPassInfo.commandBuffer->vkCommandBuffer, [&]() {
-        auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            _currentFrame, vax::vk::DescriptorSetManager::PoolType::PER_FRAME, "per_frame", "per_frame", false
-        );
-
-        if (!frameDescriptorSetHandler.has_value()) {
-            _logger.error("Failed to get default descriptor set writer!");
-            return;
-        }
-        uint32_t offset = 0;
-        frameDescriptorSetHandler->bind(
-            renderPassInfo.commandBuffer->vkCommandBuffer,
-            renderPassInfo.pipelineLayout,
-            MainSetIndices::PER_FRAME_SET_INDEX,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            1,
-            &offset
-        );
-
-        auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::PBR);
-        if (!pipeline) {
-            return;
-        }
-        if (!renderPassInfo.commandBuffer->bindPipeline(pipeline, VK_PIPELINE_BIND_POINT_GRAPHICS))
-            return;
-        DrawContext drawContext{
-            .commandBuffer = renderPassInfo.commandBuffer->vkCommandBuffer,
-            .pipelineLayout = pipeline->vkPipelineLayout,
-            .currentFrame = _currentFrame,
-        };
-        renderPassInfo.scene->draw(drawContext);
-
-        if (!_drawGizmo(*renderPassInfo.commandBuffer, renderPassInfo.scene)) {
-            _logger.error("Failed to draw gizmo!");
-        }
-    });
 }
 
 void Renderer::_finalBlendPass(RenderPassInfo& renderPassInfo) {
