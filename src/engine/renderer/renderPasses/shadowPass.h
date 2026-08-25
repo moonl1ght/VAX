@@ -9,15 +9,23 @@ class ShadowPass : public RenderPass_V2 {
         vax::vk::Device& device,
         vax::vk::PipelineManager& pipelineManager,
         vax::vk::DescriptorSetManager& descriptorSetManager,
-        std::shared_ptr<vax::vk::RenderDestination> destination,
-        std::shared_ptr<vax::vk::RenderPassDescriptor> renderDescriptor
+        vax::vk::RenderDestination& renderDestination,
+        vax::vk::RenderPassDescriptor& renderDescriptor
     )
-        : RenderPass_V2(device, pipelineManager, descriptorSetManager, "ShadowPass", destination, renderDescriptor) {};
+        : RenderPass_V2(
+              device, pipelineManager, descriptorSetManager, "ShadowPass", renderDestination, renderDescriptor
+          ) {};
 
-    ~ShadowPass() = default;
+    ShadowPass(const ShadowPass&) = delete;
+    ShadowPass(ShadowPass&&) = default;
+    ShadowPass& operator=(const ShadowPass&) = delete;
+    ShadowPass& operator=(ShadowPass&&) = default;
+
+    ~ShadowPass() override = default;
 
     void runPass(RunPassInfo& runPassInfo) override;
 
   private:
+    vax::Logger _logger = vax::Logger("ShadowPass");
 };
 } // namespace vax::engine

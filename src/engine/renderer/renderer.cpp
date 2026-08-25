@@ -48,6 +48,15 @@ void Renderer::setup() {
         *_vkEngine.get().device, *_vkEngine.get().descriptorSetManager, _vkEngine.get().allocator
     );
     _jfaPass->setup(mainRenderDestination.maskTextures(), mainRenderDestination.depthTexture());
+
+    _shadowPass = std::make_optional<ShadowPass>(
+        *_vkEngine.get().device,
+        *_vkEngine.get().pipelineManager,
+        *_vkEngine.get().descriptorSetManager,
+        _renderDestinations.at("shadow_sun"),
+        _renderPassDescriptors.at("shadow_sun")
+    );
+    _shadowPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = _getSwapchain(0)->swapchainExtent});
 }
 
 void Renderer::prepare(DrawableScene* scene) {
@@ -206,7 +215,7 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
 
     _waitForFence();
 
-    uint32_t imageIndex;
+    uint32_t imageIndex = 0;
     VkResult result = vkAcquireNextImageKHR(
         _vkEngine.get().device->vkDevice,
         _vkEngine.get().getWindowController().getWindow(0)->getSwapchain()->swapchain,
@@ -242,6 +251,10 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
         if (scene != nullptr) {
             scene->resize();
         }
+        return false;
+    }
+    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        _logger.error("Failed to acquire swap chain image!");
         return false;
     }
 
@@ -401,7 +414,11 @@ bool Renderer::_drawScene(
         .imageIndex = imageIndex
     };
     renderPassInfo.renderPassDescriptor = &shadowSunRenderPassDescriptor;
-    _shadowSunPass(renderPassInfo);
+
+    RenderPass_V2::RunPassInfo runPassInfo{
+        .commandBuffer = commandBuffer, .scene = scene, .imageIndex = imageIndex, .frameIndex = _currentFrame
+    };
+    _shadowPass->runPass(runPassInfo);
     renderPassInfo.renderPassDescriptor = &mainRenderPassDescriptor;
     _mainPass(renderPassInfo);
     if (scene->shouldDrawSecondaryWindow() && _renderDestinations.contains("rover_camera_main")) {
@@ -486,6 +503,9 @@ void Renderer::_resize() {
     }
     auto& mainRenderDestination = _renderDestinations.at("main");
     _createRenderDestinations();
+    if (_shadowPass.has_value()) {
+        _shadowPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = _getSwapchain(0)->swapchainExtent});
+    }
     _jfaPass->writeTextures(mainRenderDestination.maskTextures(), mainRenderDestination.depthTexture());
     _writeFinalBlendDescriptorSets();
 }
@@ -701,51 +721,6 @@ void Renderer::_roverCameraPass(RenderPassInfo& renderPassInfo) {
         auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::ROVER_CAMERA);
         if (!pipeline)
             return;
-        if (!renderPassInfo.commandBuffer->bindPipeline(pipeline, VK_PIPELINE_BIND_POINT_GRAPHICS))
-            return;
-        DrawContext drawContext{
-            .commandBuffer = renderPassInfo.commandBuffer->vkCommandBuffer,
-            .pipelineLayout = pipeline->vkPipelineLayout,
-            .currentFrame = _currentFrame,
-        };
-        renderPassInfo.scene->draw(drawContext);
-    });
-}
-
-void Renderer::_shadowSunPass(RenderPassInfo& renderPassInfo) {
-    _setViewportAndScissor(*renderPassInfo.commandBuffer, _getSwapchain(0)->swapchainExtent);
-    auto& renderDestination = _renderDestinations.at("shadow_sun");
-    RenderPass renderPass(
-        *_vkEngine.get().device,
-        "shadow_sun_render_pass",
-        renderPassInfo.renderPassDescriptor->getVkRenderPass(),
-        renderDestination.framebuffers[_currentFrame],
-        _getSwapchain(0)->swapchainExtent,
-        renderPassInfo.renderPassDescriptor->colorAttachmentCount
-    );
-    renderPass.pass(renderPassInfo.commandBuffer->vkCommandBuffer, [&]() {
-        auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            _currentFrame, vax::vk::DescriptorSetManager::PoolType::PER_FRAME, "per_frame", "per_frame", false
-        );
-
-        if (!frameDescriptorSetHandler.has_value()) {
-            _logger.error("Failed to get default descriptor set writer!");
-            return;
-        }
-        uint32_t offset = static_cast<uint32_t>(1 * renderPassInfo.scene->passUboStride());
-        frameDescriptorSetHandler->bind(
-            renderPassInfo.commandBuffer->vkCommandBuffer,
-            renderPassInfo.pipelineLayout,
-            MainSetIndices::PER_FRAME_SET_INDEX,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            1,
-            &offset
-        );
-
-        auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::SHADOW);
-        if (!pipeline) {
-            return;
-        }
         if (!renderPassInfo.commandBuffer->bindPipeline(pipeline, VK_PIPELINE_BIND_POINT_GRAPHICS))
             return;
         DrawContext drawContext{
