@@ -19,11 +19,11 @@ void Renderer::setup() {
     auto swapchain = _getSwapchain(0);
     auto renderPassDescriptorBuilder = RenderPassDescriptorBuilder(*_vkEngine.get().device);
     auto mainRenderPassDescriptor =
-        renderPassDescriptorBuilder.buildMainOffscreen(swapchain->swapchainImageFormat, false);
+        renderPassDescriptorBuilder.buildOffscreen(swapchain->swapchainImageFormat, false);
     auto shadowSunRenderPassDescriptor =
         renderPassDescriptorBuilder.buildShadowSun(swapchain->swapchainImageFormat, false);
     auto swapchainRenderPassDescriptor =
-        renderPassDescriptorBuilder.buildMainSwapchain(swapchain->swapchainImageFormat);
+        renderPassDescriptorBuilder.buildSwapchain(swapchain->swapchainImageFormat);
     if (!mainRenderPassDescriptor.has_value() || !shadowSunRenderPassDescriptor.has_value() ||
         !swapchainRenderPassDescriptor.has_value()) {
         _logger.error("Failed to create main render pass descriptor!");
@@ -50,24 +50,61 @@ void Renderer::setup() {
     );
     _jfaPass->setup(mainRenderDestination.maskTextures(), mainRenderDestination.depthTexture());
 
-    _shadowPass = std::make_optional<ShadowPass>(
+    _shadowPass = std::make_optional<RenderPass_V2>(
         *_vkEngine.get().device,
         *_vkEngine.get().pipelineManager,
         *_vkEngine.get().descriptorSetManager,
+        "ShadowPass",
         _renderDestinations.at("shadow_sun"),
         _renderPassDescriptors.at("shadow_sun")
     );
     _shadowPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = _getSwapchain(0)->swapchainExtent});
+    _shadowPass->setPipeline(vax::vk::PipelineName::SHADOW);
+    _shadowPass->setPipelineLayout(vax::vk::PipelineLayoutName::BASE);
+    _shadowPass->setDrawWork([this](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
+        runPassInfo.scene->draw(drawContext);
+    });
+    auto dynamicOffset =
+        static_cast<uint32_t>(_vkEngine.get().device->minUniformBufferOffsetAlignment<UniformBufferObject>());
+    _shadowPass->addInputDescriptorSet({
+        .poolType = vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
+        .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
+        .name = "per_frame",
+        .bindingInfo = {
+        .setIndex = MainSetIndices::PER_FRAME_SET_INDEX,
+        .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .dynamicOffsetCount = 1,
+        .dynamicOffsets = {dynamicOffset},
+        },
+    });
+    _shadowPass->setSwapchainExtent(_getSwapchain(0)->swapchainExtent);
 
-    _mainPass = std::make_optional<MainPass>(
+    _mainPass = std::make_optional<RenderPass_V2>(
         *_vkEngine.get().device,
         *_vkEngine.get().pipelineManager,
         *_vkEngine.get().descriptorSetManager,
+        "MainPass",
         _renderDestinations.at("main"),
         _renderPassDescriptors.at("main")
     );
+    _mainPass->addInputDescriptorSet({
+        .poolType = vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
+        .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
+        .name = "per_frame",
+        .bindingInfo = {
+        .setIndex = MainSetIndices::PER_FRAME_SET_INDEX,
+        .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .dynamicOffsetCount = 1,
+        .dynamicOffsets = {0},
+        },
+    });
     _mainPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = _getSwapchain(0)->swapchainExtent});
     _mainPass->setSwapchainExtent(_getSwapchain(0)->swapchainExtent);
+    _mainPass->setPipeline(vax::vk::PipelineName::PBR);
+    _mainPass->setPipelineLayout(vax::vk::PipelineLayoutName::BASE);
+    _mainPass->setDrawWork([this](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
+        runPassInfo.scene->draw(drawContext);
+    });
 }
 
 void Renderer::prepare(DrawableScene* scene) {

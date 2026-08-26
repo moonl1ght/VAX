@@ -23,6 +23,11 @@ class Device final {
 
     VkPhysicalDeviceProperties getPhysicalDeviceProperties() const;
 
+    template <typename T> size_t minUniformBufferOffsetAlignment() const {
+        VkDeviceSize minAlignment = getPhysicalDeviceProperties().limits.minUniformBufferOffsetAlignment;
+        return (sizeof(T) + minAlignment - 1) & ~(minAlignment - 1);
+    }
+
   private:
     vax::Logger _logger = vax::Logger("Device");
 

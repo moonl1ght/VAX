@@ -12,7 +12,7 @@ VkFormat findDepthFormat(VkPhysicalDevice physicalDevice) {
 }
 
 std::optional<vax::vk::RenderPassDescriptor>
-RenderPassDescriptorBuilder::buildMainSwapchain(VkFormat imageFormat) const noexcept {
+RenderPassDescriptorBuilder::buildSwapchain(VkFormat imageFormat) const noexcept {
     VkAttachmentDescription colorAttachment{
         .format = imageFormat,
         .samples = VK_SAMPLE_COUNT_1_BIT,
@@ -83,7 +83,7 @@ RenderPassDescriptorBuilder::buildMainSwapchain(VkFormat imageFormat) const noex
 }
 
 std::optional<vax::vk::RenderPassDescriptor>
-RenderPassDescriptorBuilder::buildMainOffscreen(VkFormat imageFormat, bool allowComputeUsage) const noexcept {
+RenderPassDescriptorBuilder::buildOffscreen(VkFormat imageFormat, bool allowComputeUsage) const noexcept {
     VkAttachmentDescription colorAttachment{
         .format = imageFormat,
         .samples = VK_SAMPLE_COUNT_1_BIT,

@@ -100,8 +100,6 @@ class DrawableScene final : public vax::InputController::Observer {
         _shouldDrawSecondaryWindow = shouldDrawSecondaryWindow;
     }
 
-    uint32_t passUboStride() const { return _passUboStride; }
-
   private:
     vax::Logger _logger = vax::Logger("DrawableScene");
     std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
@@ -127,7 +125,6 @@ class DrawableScene final : public vax::InputController::Observer {
     vax::engine::RenderCallContext _renderCallContext;
     vax::engine::SceneUpdateContext _sceneUpdateContext;
 
-    uint32_t _passUboStride = 0;
     bool _shouldDrawSecondaryWindow = false;
 
     void _loadEnvironmentMap(VkQueue submitQueue);

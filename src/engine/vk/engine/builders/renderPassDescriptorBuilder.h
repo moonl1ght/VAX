@@ -9,10 +9,10 @@ class RenderPassDescriptorBuilder {
     explicit RenderPassDescriptorBuilder(const vax::vk::Device& device)
         : _device(device) {};
 
-    std::optional<vax::vk::RenderPassDescriptor> buildMainSwapchain(VkFormat imageFormat) const noexcept;
+    std::optional<vax::vk::RenderPassDescriptor> buildSwapchain(VkFormat imageFormat) const noexcept;
 
     std::optional<vax::vk::RenderPassDescriptor>
-    buildMainOffscreen(VkFormat imageFormat, bool allowComputeUsage) const noexcept;
+    buildOffscreen(VkFormat imageFormat, bool allowComputeUsage) const noexcept;
 
     std::optional<vax::vk::RenderPassDescriptor>
     buildShadowSun(VkFormat imageFormat, bool allowComputeUsage) const noexcept;

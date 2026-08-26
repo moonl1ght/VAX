@@ -9,8 +9,7 @@
 #include "uiEngine.h"
 #include "vkEngine.h"
 
-#include "shadowPass.h"
-#include "mainPass.h"
+#include "renderPass_V2.h"
 
 namespace vax::engine {
 class Renderer final : public BaseRenderer {
@@ -42,9 +41,9 @@ class Renderer final : public BaseRenderer {
 
     std::optional<vax::engine::JFAPass> _jfaPass;
 
-    std::optional<vax::engine::ShadowPass> _shadowPass;
+    std::optional<vax::engine::RenderPass_V2> _shadowPass;
 
-    std::optional<vax::engine::MainPass> _mainPass;
+    std::optional<vax::engine::RenderPass_V2> _mainPass;
 
     std::optional<vax::engine::RenderPass_V2> _roverCameraFBPass;
 

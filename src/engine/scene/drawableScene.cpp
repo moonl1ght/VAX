@@ -12,8 +12,9 @@ void DrawableScene::prepareForDraw(engine::RenderCallContext renderCallContext) 
     _renderCallContext = renderCallContext;
     if (auto mappedMemory = _sceneUniformBuffers[renderCallContext.currentFrame]->mappedMemory()) {
         uint8_t* mappedPtr = static_cast<uint8_t*>(mappedMemory.value());
-        memcpy(mappedPtr + (0 * _passUboStride), &_ubo, sizeof(_ubo));
-        memcpy(mappedPtr + (1 * _passUboStride), &_sunLightUbo, sizeof(_sunLightUbo));
+        auto passUboStride = _vkEngine.get().device->minUniformBufferOffsetAlignment<UniformBufferObject>();
+        memcpy(mappedPtr + (0 * passUboStride), &_ubo, sizeof(_ubo));
+        memcpy(mappedPtr + (1 * passUboStride), &_sunLightUbo, sizeof(_sunLightUbo));
     } else {
         _logger.error("Failed to get mapped memory!");
     }
@@ -61,9 +62,6 @@ void vax::engine::DrawableScene::resize() {
 }
 
 void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& descriptor, VkQueue submitQueue) {
-    VkDeviceSize minAlignment =
-        _vkEngine.get().device->getPhysicalDeviceProperties().limits.minUniformBufferOffsetAlignment;
-    _passUboStride = (sizeof(UniformBufferObject) + minAlignment - 1) & ~(minAlignment - 1);
     _resourceManager.setup(_modelsController.maxDrawableInstances());
     _sceneGraph = std::make_unique<GwSceneGraph>();
     _loadEnvironmentMap(submitQueue);
@@ -74,10 +72,11 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
     _lightsUniformBuffer.reserve(vax::vk::MAX_FRAMES_IN_FLIGHT);
     for (size_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
         auto& bufferManager = _resourceManager.bufferManager();
+        auto passUboStride = _vkEngine.get().device->minUniformBufferOffsetAlignment<UniformBufferObject>();
         auto allocation = bufferManager
                               .allocateBuffer(
                                   "frame_uniform_buffer",
-                                  _passUboStride * (lightCount + 1),
+                                  passUboStride * (lightCount + 1),
                                   VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
                               )
