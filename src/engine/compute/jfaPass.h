@@ -3,16 +3,19 @@
 #include "pipeline.h"
 #include "texture.h"
 #include "textureManager.h"
+#include "renderPassNode.h"
 
 namespace vax::engine {
-class JFAPass final {
+class JFAPass final : public RenderPassNode {
   public:
     JFAPass(
+        std::string_view id,
         const vax::vk::Device& device,
         vax::vk::DescriptorSetManager& descriptorSetManager,
         VmaAllocator allocator
     )
-        : _device(device)
+        : RenderPassNode(id)
+        , _device(device)
         , _descriptorSetManager(descriptorSetManager)
         , _allocator(allocator) {};
 
@@ -36,6 +39,8 @@ class JFAPass final {
     bool isFinalImageA() const { return _isFinalImageA; }
 
     void writeTextures(const std::vector<vax::vk::Texture>& maskTextures, const vax::vk::Texture& depthTexture);
+
+    void runPass(RunPassInfo& runPassInfo);
 
   private:
     vax::Logger _logger = vax::Logger("JFAPass");

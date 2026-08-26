@@ -18,12 +18,10 @@ using namespace vax::vk;
 void Renderer::setup() {
     auto swapchain = _getSwapchain(0);
     auto renderPassDescriptorBuilder = RenderPassDescriptorBuilder(*_vkEngine.get().device);
-    auto mainRenderPassDescriptor =
-        renderPassDescriptorBuilder.buildOffscreen(swapchain->swapchainImageFormat, false);
+    auto mainRenderPassDescriptor = renderPassDescriptorBuilder.buildOffscreen(swapchain->swapchainImageFormat, false);
     auto shadowSunRenderPassDescriptor =
         renderPassDescriptorBuilder.buildShadowSun(swapchain->swapchainImageFormat, false);
-    auto swapchainRenderPassDescriptor =
-        renderPassDescriptorBuilder.buildSwapchain(swapchain->swapchainImageFormat);
+    auto swapchainRenderPassDescriptor = renderPassDescriptorBuilder.buildSwapchain(swapchain->swapchainImageFormat);
     if (!mainRenderPassDescriptor.has_value() || !shadowSunRenderPassDescriptor.has_value() ||
         !swapchainRenderPassDescriptor.has_value()) {
         _logger.error("Failed to create main render pass descriptor!");
@@ -46,11 +44,12 @@ void Renderer::setup() {
     }
     auto& mainRenderDestination = _renderDestinations.at("main");
     _jfaPass = std::make_optional<JFAPass>(
-        *_vkEngine.get().device, *_vkEngine.get().descriptorSetManager, _vkEngine.get().allocator
+        "jfa_pass", *_vkEngine.get().device, *_vkEngine.get().descriptorSetManager, _vkEngine.get().allocator
     );
     _jfaPass->setup(mainRenderDestination.maskTextures(), mainRenderDestination.depthTexture());
 
     _shadowPass = std::make_optional<RenderPass_V2>(
+        "shadow_pass",
         *_vkEngine.get().device,
         *_vkEngine.get().pipelineManager,
         *_vkEngine.get().descriptorSetManager,
@@ -80,6 +79,7 @@ void Renderer::setup() {
     _shadowPass->setSwapchainExtent(_getSwapchain(0)->swapchainExtent);
 
     _mainPass = std::make_optional<RenderPass_V2>(
+        "main_pass",
         *_vkEngine.get().device,
         *_vkEngine.get().pipelineManager,
         *_vkEngine.get().descriptorSetManager,
@@ -198,6 +198,7 @@ bool Renderer::_createRoverCameraRenderDestination() {
     _renderDestinations.emplace("rover_camera_swapchain", std::move(roverCameraFBRenderDestination.value()));
 
     _roverCameraFBPass = std::make_optional<RenderPass_V2>(
+        "rover_camera_fb_pass",
         *_vkEngine.get().device,
         *_vkEngine.get().pipelineManager,
         *_vkEngine.get().descriptorSetManager,
@@ -226,6 +227,7 @@ bool Renderer::_createRoverCameraRenderDestination() {
     });
 
     _roverCameraMainPass = std::make_optional<RenderPass_V2>(
+        "rover_camera_main_pass",
         *_vkEngine.get().device,
         *_vkEngine.get().pipelineManager,
         *_vkEngine.get().descriptorSetManager,

@@ -6,36 +6,13 @@
 #include "pipeline.h"
 #include "renderDestination.h"
 #include "renderPassDescriptor.h"
+#include "renderPassNode.h"
 
 namespace vax::engine {
-class RenderPass_V2 {
+class RenderPass_V2 : public RenderPassNode {
   public:
-    struct InputDescriptorSetInfo {
-        vax::vk::DescriptorSetManager::PoolType poolType;
-        vax::vk::DescriptorSetManager::SetLayoutName layoutName;
-        std::string name;
-
-        struct BindingInfo {
-            uint32_t setIndex;
-            VkPipelineBindPoint bindPoint;
-            uint32_t dynamicOffsetCount;
-            std::vector<uint32_t> dynamicOffsets;
-        };
-
-        BindingInfo bindingInfo;
-    };
-
-    struct RunPassInfo final {
-        vax::vk::CommandBuffer& commandBuffer;
-        vax::engine::DrawableScene* scene;
-        uint32_t imageIndex;
-        uint32_t frameIndex;
-    };
-
-    RenderPass_V2* nextPass = nullptr;
-    RenderPass_V2* prevPass = nullptr;
-
     RenderPass_V2(
+        std::string_view id,
         vax::vk::Device& device,
         vax::vk::PipelineManager& pipelineManager,
         vax::vk::DescriptorSetManager& descriptorSetManager,
@@ -43,7 +20,8 @@ class RenderPass_V2 {
         vax::vk::RenderDestination& renderDestination,
         vax::vk::RenderPassDescriptor& renderDescriptor
     )
-        : _device(device)
+        : RenderPassNode(id)
+        , _device(device)
         , _pipelineManager(pipelineManager)
         , _descriptorSetManager(descriptorSetManager)
         , _logger(vax::Logger(std::string(debugName)))

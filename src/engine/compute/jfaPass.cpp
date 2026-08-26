@@ -185,6 +185,9 @@ void JFAPass::writeTextures(const std::vector<vax::vk::Texture>& maskTextures, c
     }
 }
 
+void JFAPass::runPass(RunPassInfo& runPassInfo) {
+}
+
 void JFAPass::execute(
     const VkCommandBuffer& commandBuffer, const vax::vk::Texture& inputTexture, uint32_t currentFrame
 ) {

@@ -1,11 +1,33 @@
 #pragma once
 
-namespace Engine::engine {
+#include <unordered_map>
+
+#include "renderDestination.h"
+#include "renderPassDescriptor.h"
+
+namespace vax::engine {
 
 class RenderPassGraph {
   public:
-    RenderPassGraph();
-    ~RenderPassGraph();
+    RenderPassGraph(
+        std::unordered_map<std::string, vax::vk::RenderPassDescriptor>&& renderPassDescriptors,
+        std::unordered_map<std::string, vax::vk::RenderDestination>&& renderDestinations
+    )
+        : _renderPassDescriptors(std::move(renderPassDescriptors))
+        , _renderDestinations(std::move(renderDestinations)) {};
+
+    RenderPassGraph(const RenderPassGraph&) = delete;
+    RenderPassGraph(RenderPassGraph&&) = default;
+    RenderPassGraph& operator=(const RenderPassGraph&) = delete;
+    RenderPassGraph& operator=(RenderPassGraph&&) = default;
+
+    ~RenderPassGraph() = default;
+
+    void run();
+
+  private:
+    std::unordered_map<std::string, vax::vk::RenderPassDescriptor> _renderPassDescriptors;
+    std::unordered_map<std::string, vax::vk::RenderDestination> _renderDestinations;
 };
 
-} // namespace Engine::engine
+} // namespace vax::engine
