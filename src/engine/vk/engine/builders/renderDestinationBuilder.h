@@ -14,7 +14,7 @@ class RenderDestinationBuilder {
         : _device(device)
         , _allocator(allocator) {};
 
-    std::optional<RenderDestination> buildMainSwapchain(
+    std::optional<RenderDestination> buildSwapchain(
         CommandManager& commandManager,
         VkQueue submitQueue,
         Swapchain& swapchain,

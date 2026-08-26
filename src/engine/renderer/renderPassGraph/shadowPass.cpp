@@ -10,8 +10,12 @@ void ShadowPass::runPass(RunPassInfo& runPassInfo) {
         if (!pipeline) {
             return;
         }
-        auto frameDescriptorSetHandler = _descriptorSetManager.get().getDescriptorSetHandler(
-            runPassInfo.frameIndex, vax::vk::DescriptorSetManager::PoolType::PER_FRAME, "per_frame", "per_frame", false
+        auto frameDescriptorSetHandler = _descriptorSetManager.get().createDefaultDescriptorSetHandler(
+            runPassInfo.frameIndex,
+            vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
+            vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
+            "per_frame",
+            false
         );
 
         if (!frameDescriptorSetHandler.has_value()) {

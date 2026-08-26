@@ -7,6 +7,7 @@
 #include "renderDestinationBuilder.h"
 #include "renderPass.h"
 #include "renderPassDescriptorBuilder.h"
+#include "renderPass_V2.h"
 #include "textureFactory.h"
 #include "vkEngine.h"
 
@@ -74,8 +75,12 @@ void Renderer::prepare(DrawableScene* scene) {
         if (scene != nullptr) {
             scene->prepareForDraw(engine::RenderCallContext{.currentFrame = i});
         }
-        auto globalDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            i, vax::vk::DescriptorSetManager::PoolType::GLOBAL, "global", "global", true
+        auto globalDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
+            i,
+            vax::vk::DescriptorSetManager::PoolType::GLOBAL,
+            vax::vk::DescriptorSetManager::SetLayoutName::GLOBAL,
+            "global",
+            true
         );
         if (!globalDescriptorSetHandler.has_value()) {
             _logger.error("Failed to get global descriptor set writer!");
@@ -87,15 +92,23 @@ void Renderer::prepare(DrawableScene* scene) {
             shadowSunRenderDestination.depthTexture(), GlobalBindingIndices::GLOBAL_SHADOW_TEXTURE_INDEX
         );
         globalDescriptorSetHandler->update();
-        auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            i, vax::vk::DescriptorSetManager::PoolType::PER_FRAME, "per_frame", "per_frame", true
+        auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
+            i,
+            vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
+            vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
+            "per_frame",
+            true
         );
         if (!frameDescriptorSetHandler.has_value()) {
             _logger.error("Failed to get frame descriptor set writer!");
             return;
         }
-        auto roverCameraDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            i, vax::vk::DescriptorSetManager::PoolType::PER_FRAME, "rover_camera", "per_frame", true
+        auto roverCameraDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
+            i,
+            vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
+            vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
+            "rover_camera",
+            true
         );
         if (!roverCameraDescriptorSetHandler.has_value()) {
             _logger.error("Failed to get rover camera descriptor set writer!");
@@ -122,7 +135,7 @@ bool Renderer::_createRoverCameraRenderDestination() {
         _logger.error("Failed to create main render destination!");
         return false;
     }
-    auto roverCameraFBRenderDestination = renderDestinationBuilder.buildMainSwapchain(
+    auto roverCameraFBRenderDestination = renderDestinationBuilder.buildSwapchain(
         *_vkEngine.get().commandManager,
         _vkEngine.get().queueManager->graphicsQueue,
         *_getSwapchain(1),
@@ -132,15 +145,75 @@ bool Renderer::_createRoverCameraRenderDestination() {
         _logger.error("Failed to create rover camera swapchain render destination!");
         return false;
     }
-    for (uint32_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; i++) {
-        auto roverCameraFBDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            i, vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND, "rover_camera_fb", "final_blend_cam_sampled", true
-        );
+    for (uint32_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
+        auto roverCameraFBDescriptorSetHandler =
+            _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
+                i,
+                vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
+                vax::vk::DescriptorSetManager::SetLayoutName::FINAL_BLEND_SIMPLE,
+                "rover_camera_fb",
+                true
+            );
         roverCameraFBDescriptorSetHandler->writeTexture(roverCameraRenderDestination->textures()[i], 0, 0, true);
         roverCameraFBDescriptorSetHandler->update();
     }
     _renderDestinations.emplace("rover_camera_main", std::move(roverCameraRenderDestination.value()));
     _renderDestinations.emplace("rover_camera_swapchain", std::move(roverCameraFBRenderDestination.value()));
+
+    _roverCameraFBPass = std::make_optional<RenderPass_V2>(
+        *_vkEngine.get().device,
+        *_vkEngine.get().pipelineManager,
+        *_vkEngine.get().descriptorSetManager,
+        "RoverCameraFBPass",
+        _renderDestinations.at("rover_camera_swapchain"),
+        _renderPassDescriptors.at("swapchain")
+    );
+    _roverCameraFBPass->addInputDescriptorSet({
+        .poolType = vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
+        .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::FINAL_BLEND_SIMPLE,
+        .name = "rover_camera_fb",
+        .bindingInfo = {
+        .setIndex = 0,
+        .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .dynamicOffsetCount = 1,
+        .dynamicOffsets = {0},
+        },
+    });
+    _roverCameraFBPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = _getSwapchain(1)->swapchainExtent});
+    _roverCameraFBPass->setSwapchainExtent(_getSwapchain(1)->swapchainExtent);
+    _roverCameraFBPass->setPipeline(vax::vk::PipelineName::ROVER_CAMERA_FB);
+    _roverCameraFBPass->setPipelineLayout(vax::vk::PipelineLayoutName::ROVER_CAMERA_FB);
+    _roverCameraFBPass->setRenderToSwapchain(true);
+    _roverCameraFBPass->setDrawWork([this](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
+        runPassInfo.scene->drawBackground(drawContext);
+    });
+
+    _roverCameraMainPass = std::make_optional<RenderPass_V2>(
+        *_vkEngine.get().device,
+        *_vkEngine.get().pipelineManager,
+        *_vkEngine.get().descriptorSetManager,
+        "RoverCameraMainPass",
+        _renderDestinations.at("rover_camera_main"),
+        _renderPassDescriptors.at("main")
+    );
+    _roverCameraMainPass->addInputDescriptorSet({
+        .poolType = vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
+        .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
+        .name = "rover_camera",
+        .bindingInfo = {
+        .setIndex = MainSetIndices::PER_FRAME_SET_INDEX,
+        .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .dynamicOffsetCount = 1,
+        .dynamicOffsets = {0},
+        },
+    });
+    _roverCameraMainPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = _getSwapchain(1)->swapchainExtent});
+    _roverCameraMainPass->setSwapchainExtent(_getSwapchain(1)->swapchainExtent);
+    _roverCameraMainPass->setPipeline(vax::vk::PipelineName::ROVER_CAMERA);
+    _roverCameraMainPass->setPipelineLayout(vax::vk::PipelineLayoutName::BASE);
+    _roverCameraMainPass->setDrawWork([this](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
+        runPassInfo.scene->draw(drawContext);
+    });
     return true;
 }
 
@@ -160,7 +233,7 @@ void Renderer::_createRenderDestinations() {
         return;
     }
     _renderDestinations.emplace("main", std::move(mainRenderDestination.value()));
-    auto swapchainRenderDestination = renderDestinationBuilder.buildMainSwapchain(
+    auto swapchainRenderDestination = renderDestinationBuilder.buildSwapchain(
         *_vkEngine.get().commandManager,
         _vkEngine.get().queueManager->graphicsQueue,
         *_getSwapchain(0),
@@ -192,14 +265,26 @@ void Renderer::_writeFinalBlendDescriptorSets() {
     }
     auto& mainRenderDestination = _renderDestinations.at("main");
     for (uint32_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
-        auto finalBlendDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            i, vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND, "final_blend", "final_blend_sampled", true
+        auto finalBlendDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
+            i,
+            vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
+            vax::vk::DescriptorSetManager::SetLayoutName::FINAL_BLEND,
+            "final_blend",
+            true
         );
-        auto inputMaskDescriptorSetHandler0 = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            i, vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND, "fb_input_mask_0", "final_blend", true
+        auto inputMaskDescriptorSetHandler0 = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
+            i,
+            vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
+            vax::vk::DescriptorSetManager::SetLayoutName::SINGLE_STORAGE_IMAGE,
+            "fb_input_mask_0",
+            true
         );
-        auto inputMaskDescriptorSetHandler1 = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            i, vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND, "fb_input_mask_1", "final_blend", true
+        auto inputMaskDescriptorSetHandler1 = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
+            i,
+            vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
+            vax::vk::DescriptorSetManager::SetLayoutName::SINGLE_STORAGE_IMAGE,
+            "fb_input_mask_1",
+            true
         );
         if (!finalBlendDescriptorSetHandler.has_value() || !inputMaskDescriptorSetHandler0.has_value() ||
             !inputMaskDescriptorSetHandler1.has_value()) {
@@ -429,12 +514,16 @@ bool Renderer::_drawScene(
     _shadowPass->runPass(runPassInfo);
     renderPassInfo.renderPassDescriptor = &mainRenderPassDescriptor;
     _mainPass->runPass(runPassInfo);
-    if (scene->shouldDrawSecondaryWindow() && _renderDestinations.contains("rover_camera_main")) {
-        renderPassInfo.imageIndex = roverCameraImageIndex;
-        _roverCameraPass(renderPassInfo);
-        renderPassInfo.renderPassDescriptor = &swapchainRenderPassDescriptor;
-        renderPassInfo.imageIndex = roverCameraImageIndex;
-        _roverCameraFBPass(renderPassInfo);
+    if (scene->shouldDrawSecondaryWindow() && roverCameraImageIndex != UINT32_MAX &&
+        _renderDestinations.contains("rover_camera_main")) {
+        RenderPass_V2::RunPassInfo roverCameraRunPassInfo{
+            .commandBuffer = commandBuffer,
+            .scene = scene,
+            .imageIndex = roverCameraImageIndex,
+            .frameIndex = _currentFrame
+        };
+        _roverCameraMainPass->runPass(roverCameraRunPassInfo);
+        _roverCameraFBPass->runPass(roverCameraRunPassInfo);
     }
     _setViewportAndScissor(commandBuffer, _getSwapchain(0)->swapchainExtent);
     _jfaPass->execute(
@@ -447,8 +536,12 @@ bool Renderer::_drawScene(
 }
 
 bool Renderer::_bindGlobalDescriptorSet(CommandBuffer& commandBuffer, VkPipelineLayout pipelineLayout) {
-    auto globalDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-        _currentFrame, vax::vk::DescriptorSetManager::PoolType::GLOBAL, "global", "global", false
+    auto globalDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
+        _currentFrame,
+        vax::vk::DescriptorSetManager::PoolType::GLOBAL,
+        vax::vk::DescriptorSetManager::SetLayoutName::GLOBAL,
+        "global",
+        false
     );
     if (!globalDescriptorSetHandler.has_value()) {
         _logger.error("Failed to get global descriptor set writer!");
@@ -493,23 +586,27 @@ void Renderer::_finalBlendPass(RenderPassInfo& renderPassInfo) {
             _logger.error("Failed to get final blend pipeline layout!");
             return;
         }
-        auto finalBlendDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+        auto finalBlendDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
             _currentFrame,
             vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
+            vax::vk::DescriptorSetManager::SetLayoutName::FINAL_BLEND,
             "final_blend",
-            "final_blend_sampled",
             false
         );
         auto maskDescriptorSetName = _jfaPass->isFinalImageA() ? "fb_input_mask_0" : "fb_input_mask_1";
-        auto maskDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+        auto maskDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
             _currentFrame,
             vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
+            vax::vk::DescriptorSetManager::SetLayoutName::SINGLE_STORAGE_IMAGE,
             maskDescriptorSetName,
-            "final_blend",
             false
         );
-        auto perFrameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            _currentFrame, vax::vk::DescriptorSetManager::PoolType::PER_FRAME, "per_frame", "per_frame", false
+        auto perFrameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
+            _currentFrame,
+            vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
+            vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
+            "per_frame",
+            false
         );
         if (!finalBlendDescriptorSetHandler.has_value() || !maskDescriptorSetHandler.has_value() ||
             !perFrameDescriptorSetHandler.has_value()) {
@@ -541,103 +638,5 @@ void Renderer::_finalBlendPass(RenderPassInfo& renderPassInfo) {
         renderPassInfo.scene->drawBackground(drawContext);
 
         _uiEngine.get().render(renderPassInfo.commandBuffer->vkCommandBuffer);
-    });
-}
-
-void Renderer::_roverCameraFBPass(RenderPassInfo& renderPassInfo) {
-    if (!_renderDestinations.contains("rover_camera_swapchain")) {
-        _logger.error("Rover camera swapchain render destination not found!");
-        return;
-    }
-    auto& roverCameraFBRenderDestination = _renderDestinations.at("rover_camera_swapchain");
-    auto extent = _getSwapchain(1)->swapchainExtent;
-    _setViewportAndScissor(*renderPassInfo.commandBuffer, extent);
-    RenderPass renderPass(
-        *_vkEngine.get().device,
-        "rover_camera_fb_render_pass",
-        renderPassInfo.renderPassDescriptor->getVkRenderPass(),
-        roverCameraFBRenderDestination.framebuffers[renderPassInfo.imageIndex],
-        extent
-    );
-    renderPass.pass(renderPassInfo.commandBuffer->vkCommandBuffer, [&]() {
-        auto pipelineLayout =
-            _vkEngine.get().pipelineManager->getPipelineLayout(vax::vk::PipelineLayoutName::ROVER_CAMERA_FB);
-        if (!pipelineLayout) {
-            _logger.error("Failed to get final blend pipeline layout!");
-            return;
-        }
-        auto finalBlendDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            _currentFrame,
-            vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
-            "rover_camera_fb",
-            "final_blend_cam_sampled",
-            false
-        );
-        if (!finalBlendDescriptorSetHandler.has_value()) {
-            _logger.error("Failed to get rover camera FB descriptor set writer!");
-            return;
-        }
-        finalBlendDescriptorSetHandler->bind(renderPassInfo.commandBuffer->vkCommandBuffer, pipelineLayout, 0);
-        auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::ROVER_CAMERA_FB);
-        if (!pipeline)
-            return;
-        if (!renderPassInfo.commandBuffer->bindPipeline(pipeline, VK_PIPELINE_BIND_POINT_GRAPHICS))
-            return;
-
-        DrawContext drawContext{
-            .commandBuffer = renderPassInfo.commandBuffer->vkCommandBuffer,
-            .pipelineLayout = pipeline->vkPipelineLayout,
-            .currentFrame = _currentFrame,
-        };
-        renderPassInfo.scene->drawBackground(drawContext);
-    });
-}
-
-void Renderer::_roverCameraPass(RenderPassInfo& renderPassInfo) {
-    if (!_renderDestinations.contains("rover_camera_main")) {
-        _logger.error("Rover camera render destination not found!");
-        return;
-    }
-    auto& roverCameraRenderDestination = _renderDestinations.at("rover_camera_main");
-    auto roverCameraExtent = _getSwapchain(1)->swapchainExtent;
-    RenderPass renderPass(
-        *_vkEngine.get().device,
-        "rover_camera_render_pass",
-        renderPassInfo.renderPassDescriptor->getVkRenderPass(),
-        roverCameraRenderDestination.framebuffers[_currentFrame],
-        roverCameraExtent,
-        renderPassInfo.renderPassDescriptor->colorAttachmentCount
-    );
-    _setViewportAndScissor(*renderPassInfo.commandBuffer, roverCameraExtent);
-    renderPass.pass(renderPassInfo.commandBuffer->vkCommandBuffer, [&]() {
-        auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
-            _currentFrame, vax::vk::DescriptorSetManager::PoolType::PER_FRAME, "rover_camera", "per_frame", false
-        );
-
-        if (!frameDescriptorSetHandler.has_value()) {
-            _logger.error("Failed to get rover camera descriptor set writer!");
-            return;
-        }
-        uint32_t offset = 0;
-        frameDescriptorSetHandler->bind(
-            renderPassInfo.commandBuffer->vkCommandBuffer,
-            renderPassInfo.pipelineLayout,
-            MainSetIndices::PER_FRAME_SET_INDEX,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            1,
-            &offset
-        );
-
-        auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::ROVER_CAMERA);
-        if (!pipeline)
-            return;
-        if (!renderPassInfo.commandBuffer->bindPipeline(pipeline, VK_PIPELINE_BIND_POINT_GRAPHICS))
-            return;
-        DrawContext drawContext{
-            .commandBuffer = renderPassInfo.commandBuffer->vkCommandBuffer,
-            .pipelineLayout = pipeline->vkPipelineLayout,
-            .currentFrame = _currentFrame,
-        };
-        renderPassInfo.scene->draw(drawContext);
     });
 }

@@ -46,6 +46,10 @@ class Renderer final : public BaseRenderer {
 
     std::optional<vax::engine::MainPass> _mainPass;
 
+    std::optional<vax::engine::RenderPass_V2> _roverCameraFBPass;
+
+    std::optional<vax::engine::RenderPass_V2> _roverCameraMainPass;
+
     bool _updateCommandBuffer(
         vax::vk::CommandBuffer& commandBuffer,
         uint32_t imageIndex,
@@ -68,11 +72,7 @@ class Renderer final : public BaseRenderer {
 
     void _writeFinalBlendDescriptorSets();
 
-    void _roverCameraPass(RenderPassInfo& renderPassInfo);
-
     void _finalBlendPass(RenderPassInfo& renderPassInfo);
-
-    void _roverCameraFBPass(RenderPassInfo& renderPassInfo);
 
     bool _createRoverCameraRenderDestination();
 };

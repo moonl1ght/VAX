@@ -101,13 +101,13 @@ std::optional<RenderDestination> RenderDestinationBuilder::buildMainOffscreen(
     );
 }
 
-std::optional<RenderDestination> RenderDestinationBuilder::buildMainSwapchain(
+std::optional<RenderDestination> RenderDestinationBuilder::buildSwapchain(
     CommandManager& commandManager,
     VkQueue submitQueue,
     Swapchain& swapchain,
     RenderPassDescriptor& renderPassDescriptor
 ) const noexcept {
-    _logger.info("Building main swapchain render destination...");
+    _logger.info("Building swapchain render destination...");
     VkFormat depthFormat = renderPassDescriptor.depthFormat;
     auto depthTexture = TextureFactory(_device.get(), _allocator)
                             .makeDepthTextureDetached(depthFormat, math::SizeUI(swapchain.swapchainExtent));

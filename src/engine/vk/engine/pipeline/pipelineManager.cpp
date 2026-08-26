@@ -223,16 +223,19 @@ bool vax::vk::PipelineManager::_createBackgroundPipelineLayout(vax::vk::Pipeline
 bool vax::vk::PipelineManager::_createFinalBlendPipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) {
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     auto name = vax::vk::Pipeline::pipelineLayoutNameToString(pipelineLayoutName);
-    auto finalBlendDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("final_blend");
-    auto finalBlendSampledDescriptorSetLayout =
-        _descriptorSetManager.get().getDescriptorSetLayout("final_blend_sampled");
-    auto perFrameDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("per_frame");
-    if (!finalBlendDescriptorSetLayout || !finalBlendSampledDescriptorSetLayout || !perFrameDescriptorSetLayout) {
+    auto finalBlendDescriptorSetLayout =
+        _descriptorSetManager.get().getDefaultDescriptorSetLayout(DescriptorSetManager::SetLayoutName::FINAL_BLEND);
+    auto maskDescriptorSetLayout = _descriptorSetManager.get().getDefaultDescriptorSetLayout(
+        DescriptorSetManager::SetLayoutName::SINGLE_STORAGE_IMAGE
+    );
+    auto perFrameDescriptorSetLayout =
+        _descriptorSetManager.get().getDefaultDescriptorSetLayout(DescriptorSetManager::SetLayoutName::PER_FRAME);
+    if (!finalBlendDescriptorSetLayout || !maskDescriptorSetLayout || !perFrameDescriptorSetLayout) {
         _logger.error("Failed to get final blend descriptor set layout!");
         return false;
     }
-    pipelineBuilder.addDescriptorSetLayout(finalBlendSampledDescriptorSetLayout->getVkDescriptorSetLayout());
     pipelineBuilder.addDescriptorSetLayout(finalBlendDescriptorSetLayout->getVkDescriptorSetLayout());
+    pipelineBuilder.addDescriptorSetLayout(maskDescriptorSetLayout->getVkDescriptorSetLayout());
     pipelineBuilder.addDescriptorSetLayout(perFrameDescriptorSetLayout->getVkDescriptorSetLayout());
     auto pipelineLayout = pipelineBuilder.buildPipelineLayout(name);
     if (!pipelineLayout) {
@@ -246,16 +249,17 @@ bool vax::vk::PipelineManager::_createFinalBlendPipelineLayout(vax::vk::Pipeline
 bool vax::vk::PipelineManager::_createRoverCameraFBPipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) {
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     auto name = vax::vk::Pipeline::pipelineLayoutNameToString(pipelineLayoutName);
-    auto finalBlendCamSampledDescriptorSetLayout =
-        _descriptorSetManager.get().getDescriptorSetLayout("final_blend_cam_sampled");
+    auto finalBlendCamSampledDescriptorSetLayout = _descriptorSetManager.get().getDefaultDescriptorSetLayout(
+        DescriptorSetManager::SetLayoutName::FINAL_BLEND_SIMPLE
+    );
     if (!finalBlendCamSampledDescriptorSetLayout) {
-        _logger.error("Failed to get final blend descriptor set layout!");
+        _logger.error("Failed to get rover camera FB descriptor set layout!");
         return false;
     }
     pipelineBuilder.addDescriptorSetLayout(finalBlendCamSampledDescriptorSetLayout->getVkDescriptorSetLayout());
     auto pipelineLayout = pipelineBuilder.buildPipelineLayout(name);
     if (!pipelineLayout) {
-        _logger.error("Failed to create final blend pipeline layout!");
+        _logger.error("Failed to create rover camera FB pipeline layout!");
         return false;
     }
     _pipelineLayouts.emplace(name, pipelineLayout);
@@ -265,13 +269,15 @@ bool vax::vk::PipelineManager::_createRoverCameraFBPipelineLayout(vax::vk::Pipel
 bool vax::vk::PipelineManager::_createBasePipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) {
     auto pipelineBuilder = vax::vk::GraphicsPipelineBuilder(_device.get());
     auto name = vax::vk::Pipeline::pipelineLayoutNameToString(pipelineLayoutName);
-    auto globalDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("global");
+    auto globalDescriptorSetLayout =
+        _descriptorSetManager.get().getDefaultDescriptorSetLayout(DescriptorSetManager::SetLayoutName::GLOBAL);
     if (!globalDescriptorSetLayout) {
         _logger.error("Failed to get global descriptor set layout!");
         return false;
     }
     pipelineBuilder.addDescriptorSetLayout(globalDescriptorSetLayout->getVkDescriptorSetLayout());
-    auto perFrameDescriptorSetLayout = _descriptorSetManager.get().getDescriptorSetLayout("per_frame");
+    auto perFrameDescriptorSetLayout =
+        _descriptorSetManager.get().getDefaultDescriptorSetLayout(DescriptorSetManager::SetLayoutName::PER_FRAME);
     if (!perFrameDescriptorSetLayout) {
         _logger.error("Failed to get per frame descriptor set layout!");
         return false;

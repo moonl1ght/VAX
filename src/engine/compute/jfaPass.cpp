@@ -122,14 +122,14 @@ void JFAPass::writeTextures(const std::vector<vax::vk::Texture>& maskTextures, c
     _jfaTexturesB.clear();
     auto textureFactory = TextureFactory(_device.get(), _allocator);
     for (int i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
-        auto initDescriptorSetHandler = _descriptorSetManager.get().getDescriptorSetHandler(
-            i, DescriptorSetManager::PoolType::PROCESSING, "init_jfa", "jfa_init", true
+        auto initDescriptorSetHandler = _descriptorSetManager.get().createDescriptorSetHandler(
+            i, DescriptorSetManager::PoolType::PROCESSING, "jfa_init", "init_jfa", true
         );
-        auto jfaDescriptorSetHandler0 = _descriptorSetManager.get().getDescriptorSetHandler(
-            i, DescriptorSetManager::PoolType::PROCESSING, "jfa_set0", "jfa", true
+        auto jfaDescriptorSetHandler0 = _descriptorSetManager.get().createDescriptorSetHandler(
+            i, DescriptorSetManager::PoolType::PROCESSING, "jfa", "jfa_set0", true
         );
-        auto jfaDescriptorSetHandler1 = _descriptorSetManager.get().getDescriptorSetHandler(
-            i, DescriptorSetManager::PoolType::PROCESSING, "jfa_set1", "jfa", true
+        auto jfaDescriptorSetHandler1 = _descriptorSetManager.get().createDescriptorSetHandler(
+            i, DescriptorSetManager::PoolType::PROCESSING, "jfa", "jfa_set1", true
         );
         if (!initDescriptorSetHandler || !jfaDescriptorSetHandler0 || !jfaDescriptorSetHandler1) {
             _logger.error("Failed to get JFA descriptor set handlers!");
@@ -217,8 +217,8 @@ void JFAPass::execute(
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, _initPipeline->vkPipeline);
 
-    auto descriptorSetHandler = _descriptorSetManager.get().getDescriptorSetHandler(
-        currentFrame, DescriptorSetManager::PoolType::PROCESSING, "init_jfa", "jfa_init", false
+    auto descriptorSetHandler = _descriptorSetManager.get().createDescriptorSetHandler(
+        currentFrame, DescriptorSetManager::PoolType::PROCESSING, "jfa_init", "init_jfa", false
     );
     if (!descriptorSetHandler) {
         _logger.error("Failed to get init JFA descriptor set handler!");
@@ -284,8 +284,8 @@ void JFAPass::execute(
         );
 
         std::string setName = isTextureAInput ? "jfa_set0" : "jfa_set1";
-        auto jfaDescriptorSetHandler = _descriptorSetManager.get().getDescriptorSetHandler(
-            currentFrame, DescriptorSetManager::PoolType::PROCESSING, setName, "jfa", false
+        auto jfaDescriptorSetHandler = _descriptorSetManager.get().createDescriptorSetHandler(
+            currentFrame, DescriptorSetManager::PoolType::PROCESSING, "jfa", setName, false
         );
 
         if (!jfaDescriptorSetHandler) {

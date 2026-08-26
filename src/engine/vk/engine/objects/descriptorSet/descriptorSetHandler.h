@@ -11,6 +11,10 @@ class Sampler;
 } // namespace vax::vk
 
 namespace vax::vk {
+  /*
+  * DescriptorSetHandler is a lightweight wrapper around a VkDescriptorSet.
+  * Better not save this object, livetime should be limited to the scope of the function that creates it.
+  */
 struct DescriptorSetHandler {
   public:
     explicit DescriptorSetHandler(const vax::vk::Device& device, VkDescriptorSet descriptorSet)
