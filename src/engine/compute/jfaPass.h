@@ -44,7 +44,7 @@ class JFAPass final : public RenderPassNode {
         }
     }
 
-    void runPass(RunPassInfo& runPassInfo);
+    void runPass(RunPassInfo& runPassInfo) override;
 
   private:
     vax::Logger _logger = vax::Logger("JFAPass");

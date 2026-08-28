@@ -3,9 +3,6 @@
 using namespace vax::engine;
 
 void RenderPass_V2::runPass(RunPassInfo& runPassInfo) {
-    if (_prePassWork) {
-        _prePassWork(runPassInfo);
-    }
     _setViewportAndScissor(runPassInfo.commandBuffer, _renderArea.extent);
     _pass(runPassInfo, [&]() {
         auto pipeline = _pipelineManager.get().getPipeline(_pipelineName);
@@ -51,9 +48,6 @@ void RenderPass_V2::runPass(RunPassInfo& runPassInfo) {
             _drawWork(runPassInfo, drawContext);
         }
     });
-    if (_postPassWork) {
-        _postPassWork(runPassInfo);
-    }
 }
 
 void RenderPass_V2::_setViewportAndScissor(vax::vk::CommandBuffer& commandBuffer, VkExtent2D extent) {

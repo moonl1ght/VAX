@@ -1,4 +1,5 @@
 #include "rednerPassGraphFactory.h"
+#include "jfaPass.h"
 #include "renderDestinationBuilder.h"
 #include "renderPassDescriptorBuilder.h"
 #include "renderPass_V2.h"
@@ -113,7 +114,8 @@ void RenderPassGraphFactory::setupRenderDestinationsForRoverCamera(
 
 std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
     auto swapchain = _windowController.get().getWindow(0)->getSwapchain();
-    auto shadowPass = std::make_optional<RenderPass_V2>(
+
+    auto shadowPass = std::make_shared<RenderPass_V2>(
         "shadow_pass",
         _device.get(),
         _pipelineManager.get(),
@@ -142,7 +144,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
     });
     shadowPass->setSwapchainExtent(swapchain->swapchainExtent);
 
-    auto mainPass = std::make_optional<RenderPass_V2>(
+    auto mainPass = std::make_shared<RenderPass_V2>(
         "main_pass",
         _device.get(),
         _pipelineManager.get(),
@@ -170,7 +172,76 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
         runPassInfo.scene->draw(drawContext);
     });
 
-    auto renderPassGraph =
-        std::make_unique<RenderPassGraph>(_renderPassDescriptors, _renderDestinations);
+    auto jfaPass = std::make_shared<JFAPass>("jfa_pass", _device.get(), _descriptorSetManager.get(), _allocator);
+    jfaPass->setup(_renderDestinations.at("main"));
+
+    jfaPass->setPostPassWork([this](RenderPassNode* passNode, RenderPass_V2::RunPassInfo& runPassInfo) {
+        auto jfaPass = dynamic_cast<JFAPass*>(passNode);
+        if (!jfaPass) {
+            _logger.error("Failed to cast to JFAPass!");
+            return;
+        }
+        if (jfaPass->next) {
+            auto finalBlendPass = dynamic_cast<RenderPass_V2*>(jfaPass->next.get());
+            if (!finalBlendPass) {
+                _logger.error("Failed to cast to final blend pass!");
+                return;
+            }
+            auto descriptorSetInfo = finalBlendPass->getInputDescriptorSetAt(1);
+            descriptorSetInfo.name = jfaPass->outputDescriptorSetName();
+            finalBlendPass->updateInputDescriptorSetAt(1, descriptorSetInfo);
+        }
+    });
+
+    auto finalBlendPass = std::make_shared<RenderPass_V2>(
+        "final_blend_pass",
+        _device.get(),
+        _pipelineManager.get(),
+        _descriptorSetManager.get(),
+        "FinalBlendPass",
+        _renderDestinations.at("main"),
+        _renderPassDescriptors.at("main")
+    );
+    finalBlendPass->addInputDescriptorSet({
+        .poolType = vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
+        .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::FINAL_BLEND,
+        .name = "final_blend",
+        .bindingInfo = {
+        .setIndex = 0,
+        .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .dynamicOffsetCount = 1,
+        .dynamicOffsets = {0},
+        },
+    });
+    finalBlendPass->addInputDescriptorSet({
+        .poolType = vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
+        .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::SINGLE_STORAGE_IMAGE,
+        .name = jfaPass->outputDescriptorSetName(),
+        .bindingInfo = {
+        .setIndex = 1,
+        .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .dynamicOffsetCount = 1,
+        .dynamicOffsets = {0},
+        },
+    });
+    finalBlendPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = swapchain->swapchainExtent});
+    finalBlendPass->setSwapchainExtent(swapchain->swapchainExtent);
+    finalBlendPass->setPipeline(vax::vk::PipelineName::FINAL_BLEND);
+    finalBlendPass->setPipelineLayout(vax::vk::PipelineLayoutName::FINAL_BLEND);
+    finalBlendPass->setDrawWork([this](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
+        runPassInfo.scene->drawBackground(drawContext);
+    });
+
+    shadowPass->next = mainPass;
+
+    mainPass->prev = shadowPass;
+    mainPass->next = jfaPass;
+
+    jfaPass->prev = mainPass;
+    jfaPass->next = finalBlendPass;
+
+    finalBlendPass->prev = jfaPass;
+
+    auto renderPassGraph = std::make_unique<RenderPassGraph>(_renderPassDescriptors, _renderDestinations);
     return renderPassGraph;
 }

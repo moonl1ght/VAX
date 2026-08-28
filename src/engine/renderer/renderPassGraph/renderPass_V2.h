@@ -53,13 +53,21 @@ class RenderPass_V2 : public RenderPassNode {
         _inputDescriptorSetInfos.push_back(inputDescriptorSetInfo);
     }
 
+    void updateInputDescriptorSetAt(size_t index, InputDescriptorSetInfo inputDescriptorSetInfo) {
+        _inputDescriptorSetInfos[index] = inputDescriptorSetInfo;
+    }
+
+    const InputDescriptorSetInfo& getInputDescriptorSetAt(size_t index) const {
+        return _inputDescriptorSetInfos[index];
+    }
+
+    InputDescriptorSetInfo& getInputDescriptorSetAt(size_t index) {
+        return _inputDescriptorSetInfos[index];
+    }
+
     void setPipeline(vax::vk::PipelineName pipelineName) { _pipelineName = pipelineName; }
 
     void setPipelineLayout(vax::vk::PipelineLayoutName pipelineLayoutName) { _pipelineLayoutName = pipelineLayoutName; }
-
-    void setPrePassWork(std::function<void(RunPassInfo&)> prePassWork) { _prePassWork = prePassWork; }
-
-    void setPostPassWork(std::function<void(RunPassInfo&)> postPassWork) { _postPassWork = postPassWork; }
 
     void setDrawWork(std::function<void(RunPassInfo&, DrawContext&)> drawWork) { _drawWork = drawWork; }
 
@@ -75,10 +83,9 @@ class RenderPass_V2 : public RenderPassNode {
     std::weak_ptr<vax::vk::RenderPassDescriptor> _renderDescriptor;
 
     std::vector<InputDescriptorSetInfo> _inputDescriptorSetInfos;
+
     std::string _debugName;
     std::vector<VkClearValue> _clearValues;
-    std::function<void(RunPassInfo&)> _prePassWork;
-    std::function<void(RunPassInfo&)> _postPassWork;
     std::function<void(RunPassInfo&, DrawContext&)> _drawWork;
     VkExtent2D _swapchainExtent = {0, 0};
     VkRect2D _renderArea{};
