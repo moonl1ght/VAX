@@ -1,9 +1,9 @@
 #pragma once
 #include "descriptorSetManager.h"
 #include "pipeline.h"
-#include "texture.h"
-#include "textureManager.h"
+#include "renderDestination.h"
 #include "renderPassNode.h"
+#include "texture.h"
 
 namespace vax::engine {
 class JFAPass final : public RenderPassNode {
@@ -26,19 +26,23 @@ class JFAPass final : public RenderPassNode {
     JFAPass(JFAPass&& other) noexcept = default;
     JFAPass& operator=(JFAPass&& other) noexcept = default;
 
-    void setup(const std::vector<vax::vk::Texture>& maskTextures, const vax::vk::Texture& depthTexture);
+    void setup(std::weak_ptr<vax::vk::RenderDestination> inputRenderDestination);
+
+    void update(std::weak_ptr<vax::vk::RenderDestination> inputRenderDestination);
 
     void cleanup();
-
-    void execute(const VkCommandBuffer& commandBuffer, const vax::vk::Texture& inputTexture, uint32_t currentFrame);
 
     const std::vector<vax::vk::Texture>& outputATextures() const;
 
     const std::vector<vax::vk::Texture>& outputBTextures() const;
 
-    bool isFinalImageA() const { return _isFinalImageA; }
-
-    void writeTextures(const std::vector<vax::vk::Texture>& maskTextures, const vax::vk::Texture& depthTexture);
+    std::string outputDescriptorSetName() const {
+        if (_isFinalImageA) {
+            return "fb_input_mask_0";
+        } else {
+            return "fb_input_mask_1";
+        }
+    }
 
     void runPass(RunPassInfo& runPassInfo);
 
@@ -51,6 +55,9 @@ class JFAPass final : public RenderPassNode {
     std::optional<vax::vk::Pipeline> _jfaPipeline;
     std::vector<vax::vk::Texture> _jfaTexturesA;
     std::vector<vax::vk::Texture> _jfaTexturesB;
+    std::weak_ptr<vax::vk::RenderDestination> _inputRenderDestination;
     bool _isFinalImageA = true;
+
+    void _writeTextures(const std::vector<vax::vk::Texture>& maskTextures, const vax::vk::Texture& depthTexture);
 };
 } // namespace vax::engine

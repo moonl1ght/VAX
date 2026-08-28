@@ -28,7 +28,7 @@ class RenderDestination final {
     RenderDestination(RenderDestination&& other) = default;
     RenderDestination& operator=(RenderDestination&& other) = default;
 
-    ~RenderDestination() { destroy(); }
+    ~RenderDestination() { _destroy(); }
 
     const std::vector<Texture>& textures() const { return _textures; }
 
@@ -36,14 +36,12 @@ class RenderDestination final {
 
     const std::vector<Texture>& maskTextures() const { return _maskTextures; }
 
-    const Texture& depthTexture() { return *_depthTexture; }
-
   private:
     std::reference_wrapper<const Device> _device;
     std::vector<Texture> _textures;
     std::unique_ptr<Texture> _depthTexture;
     std::vector<Texture> _maskTextures;
 
-    void destroy();
+    void _destroy();
 };
 } // namespace vax::vk

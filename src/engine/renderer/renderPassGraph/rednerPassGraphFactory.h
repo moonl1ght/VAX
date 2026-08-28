@@ -50,7 +50,7 @@ class RenderPassGraphFactory final {
     std::reference_wrapper<vax::vk::PipelineManager> _pipelineManager;
     std::reference_wrapper<vax::vk::DescriptorSetManager> _descriptorSetManager;
 
-    std::unordered_map<std::string, vax::vk::RenderPassDescriptor> _renderPassDescriptors;
-    std::unordered_map<std::string, vax::vk::RenderDestination> _renderDestinations;
+    std::unordered_map<std::string, std::shared_ptr<vax::vk::RenderPassDescriptor>> _renderPassDescriptors;
+    std::unordered_map<std::string, std::shared_ptr<vax::vk::RenderDestination>> _renderDestinations;
 };
 } // namespace vax::engine

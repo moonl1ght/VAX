@@ -10,8 +10,8 @@ namespace vax::engine {
 class RenderPassGraph {
   public:
     RenderPassGraph(
-        std::unordered_map<std::string, vax::vk::RenderPassDescriptor>&& renderPassDescriptors,
-        std::unordered_map<std::string, vax::vk::RenderDestination>&& renderDestinations
+        std::unordered_map<std::string, std::shared_ptr<vax::vk::RenderPassDescriptor>> renderPassDescriptors,
+        std::unordered_map<std::string, std::shared_ptr<vax::vk::RenderDestination>> renderDestinations
     )
         : _renderPassDescriptors(std::move(renderPassDescriptors))
         , _renderDestinations(std::move(renderDestinations)) {};
@@ -26,8 +26,8 @@ class RenderPassGraph {
     void run();
 
   private:
-    std::unordered_map<std::string, vax::vk::RenderPassDescriptor> _renderPassDescriptors;
-    std::unordered_map<std::string, vax::vk::RenderDestination> _renderDestinations;
+    std::unordered_map<std::string, std::shared_ptr<vax::vk::RenderPassDescriptor>> _renderPassDescriptors;
+    std::unordered_map<std::string, std::shared_ptr<vax::vk::RenderDestination>> _renderDestinations;
 };
 
 } // namespace vax::engine

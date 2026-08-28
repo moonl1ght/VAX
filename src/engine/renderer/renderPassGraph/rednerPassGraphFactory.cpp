@@ -18,13 +18,20 @@ void RenderPassGraphFactory::setupRenderPassDescriptors(VkFormat imageFormat) {
         return;
     }
 
+    auto mainRenderPassDescriptorShared =
+        std::make_shared<vax::vk::RenderPassDescriptor>(std::move(mainRenderPassDescriptor.value()));
+    auto shadowSunRenderPassDescriptorShared =
+        std::make_shared<vax::vk::RenderPassDescriptor>(std::move(shadowSunRenderPassDescriptor.value()));
+    auto swapchainRenderPassDescriptorShared =
+        std::make_shared<vax::vk::RenderPassDescriptor>(std::move(swapchainRenderPassDescriptor.value()));
+
     _pipelineManager.get().setup(
-        *mainRenderPassDescriptor, *swapchainRenderPassDescriptor, *shadowSunRenderPassDescriptor
+        *mainRenderPassDescriptorShared, *swapchainRenderPassDescriptorShared, *shadowSunRenderPassDescriptorShared
     );
 
-    _renderPassDescriptors.emplace("main", std::move(mainRenderPassDescriptor.value()));
-    _renderPassDescriptors.emplace("shadow_sun", std::move(shadowSunRenderPassDescriptor.value()));
-    _renderPassDescriptors.emplace("swapchain", std::move(swapchainRenderPassDescriptor.value()));
+    _renderPassDescriptors.emplace("main", mainRenderPassDescriptorShared);
+    _renderPassDescriptors.emplace("shadow_sun", shadowSunRenderPassDescriptorShared);
+    _renderPassDescriptors.emplace("swapchain", swapchainRenderPassDescriptorShared);
 }
 
 void RenderPassGraphFactory::setupRenderDestinations(
@@ -36,7 +43,7 @@ void RenderPassGraphFactory::setupRenderDestinations(
 
     auto renderDestinationBuilder = RenderDestinationBuilder(_device.get(), _allocator);
     auto mainRenderDestination = renderDestinationBuilder.buildMainOffscreen(
-        commandManager, queueManager.graphicsQueue, swapchain.swapchainExtent, mainRenderPassDescriptor
+        commandManager, queueManager.graphicsQueue, swapchain.swapchainExtent, *mainRenderPassDescriptor
     );
     if (!mainRenderDestination.has_value()) {
         _logger.error("Failed to create main render destination!");
@@ -44,7 +51,7 @@ void RenderPassGraphFactory::setupRenderDestinations(
     }
 
     auto swapchainRenderDestination = renderDestinationBuilder.buildSwapchain(
-        commandManager, queueManager.graphicsQueue, swapchain, swapchainRenderPassDescriptor
+        commandManager, queueManager.graphicsQueue, swapchain, *swapchainRenderPassDescriptor
     );
     if (!swapchainRenderDestination.has_value()) {
         _logger.error("Failed to create swapchain render destination!");
@@ -52,16 +59,23 @@ void RenderPassGraphFactory::setupRenderDestinations(
     }
 
     auto shadowSunRenderDestination = renderDestinationBuilder.buildShadowSunOffscreen(
-        commandManager, queueManager.graphicsQueue, swapchain.swapchainExtent, shadowSunRenderPassDescriptor
+        commandManager, queueManager.graphicsQueue, swapchain.swapchainExtent, *shadowSunRenderPassDescriptor
     );
     if (!shadowSunRenderDestination.has_value()) {
         _logger.error("Failed to create shadow sun render destination!");
         return;
     }
 
-    _renderDestinations.emplace("main", std::move(mainRenderDestination.value()));
-    _renderDestinations.emplace("swapchain", std::move(swapchainRenderDestination.value()));
-    _renderDestinations.emplace("shadow_sun", std::move(shadowSunRenderDestination.value()));
+    auto mainRenderDestinationShared =
+        std::make_shared<vax::vk::RenderDestination>(std::move(mainRenderDestination.value()));
+    auto swapchainRenderDestinationShared =
+        std::make_shared<vax::vk::RenderDestination>(std::move(swapchainRenderDestination.value()));
+    auto shadowSunRenderDestinationShared =
+        std::make_shared<vax::vk::RenderDestination>(std::move(shadowSunRenderDestination.value()));
+
+    _renderDestinations.emplace("main", mainRenderDestinationShared);
+    _renderDestinations.emplace("swapchain", swapchainRenderDestinationShared);
+    _renderDestinations.emplace("shadow_sun", shadowSunRenderDestinationShared);
 }
 
 void RenderPassGraphFactory::setupRenderDestinationsForRoverCamera(
@@ -73,7 +87,7 @@ void RenderPassGraphFactory::setupRenderDestinationsForRoverCamera(
     auto renderDestinationBuilder = RenderDestinationBuilder(_device.get(), _allocator);
 
     auto roverCameraRenderDestination = renderDestinationBuilder.buildMainOffscreen(
-        commandManager, queueManager.graphicsQueue, swapchain.swapchainExtent, mainRenderPassDescriptor
+        commandManager, queueManager.graphicsQueue, swapchain.swapchainExtent, *mainRenderPassDescriptor
     );
     if (!roverCameraRenderDestination.has_value()) {
         _logger.error("Failed to create main render destination!");
@@ -81,15 +95,20 @@ void RenderPassGraphFactory::setupRenderDestinationsForRoverCamera(
     }
 
     auto roverCameraFBRenderDestination = renderDestinationBuilder.buildSwapchain(
-        commandManager, queueManager.graphicsQueue, swapchain, swapchainRenderPassDescriptor
+        commandManager, queueManager.graphicsQueue, swapchain, *swapchainRenderPassDescriptor
     );
     if (!roverCameraFBRenderDestination.has_value()) {
         _logger.error("Failed to create rover camera swapchain render destination!");
         return;
     }
 
-    _renderDestinations.emplace("rover_camera_main", std::move(roverCameraRenderDestination.value()));
-    _renderDestinations.emplace("rover_camera_swapchain", std::move(roverCameraFBRenderDestination.value()));
+    auto roverCameraRenderDestinationShared =
+        std::make_shared<vax::vk::RenderDestination>(std::move(roverCameraRenderDestination.value()));
+    auto roverCameraFBRenderDestinationShared =
+        std::make_shared<vax::vk::RenderDestination>(std::move(roverCameraFBRenderDestination.value()));
+
+    _renderDestinations.emplace("rover_camera_main", roverCameraRenderDestinationShared);
+    _renderDestinations.emplace("rover_camera_swapchain", roverCameraFBRenderDestinationShared);
 }
 
 std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
@@ -109,8 +128,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
     shadowPass->setDrawWork([this](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
         runPassInfo.scene->draw(drawContext);
     });
-    auto dynamicOffset =
-        static_cast<uint32_t>(_device.get().minUniformBufferOffsetAlignment<UniformBufferObject>());
+    auto dynamicOffset = static_cast<uint32_t>(_device.get().minUniformBufferOffsetAlignment<UniformBufferObject>());
     shadowPass->addInputDescriptorSet({
         .poolType = vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
         .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
@@ -153,6 +171,6 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
     });
 
     auto renderPassGraph =
-        std::make_unique<RenderPassGraph>(std::move(_renderPassDescriptors), std::move(_renderDestinations));
+        std::make_unique<RenderPassGraph>(_renderPassDescriptors, _renderDestinations);
     return renderPassGraph;
 }

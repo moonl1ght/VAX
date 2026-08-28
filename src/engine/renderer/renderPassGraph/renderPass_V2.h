@@ -17,8 +17,8 @@ class RenderPass_V2 : public RenderPassNode {
         vax::vk::PipelineManager& pipelineManager,
         vax::vk::DescriptorSetManager& descriptorSetManager,
         std::string_view debugName,
-        vax::vk::RenderDestination& renderDestination,
-        vax::vk::RenderPassDescriptor& renderDescriptor
+        std::weak_ptr<vax::vk::RenderDestination> renderDestination,
+        std::weak_ptr<vax::vk::RenderPassDescriptor> renderDescriptor
     )
         : RenderPassNode(id)
         , _device(device)
@@ -26,12 +26,14 @@ class RenderPass_V2 : public RenderPassNode {
         , _descriptorSetManager(descriptorSetManager)
         , _logger(vax::Logger(std::string(debugName)))
         , _debugName(debugName)
-        , _renderDestination(renderDestination)
-        , _renderDescriptor(renderDescriptor) {
-        _clearValues.assign(
-            _renderDescriptor.get().colorAttachmentCount, VkClearValue{.color = {{0.0f, 0.0f, 0.0f, 0.0f}}}
-        );
-        _clearValues.push_back(VkClearValue{.depthStencil = {0.0f, 0}});
+        , _renderDestination(std::move(renderDestination))
+        , _renderDescriptor(std::move(renderDescriptor)) {
+        if (auto renderDescriptorShared = _renderDescriptor.lock()) {
+            _clearValues.assign(
+                renderDescriptorShared->colorAttachmentCount, VkClearValue{.color = {{0.0f, 0.0f, 0.0f, 0.0f}}}
+            );
+            _clearValues.push_back(VkClearValue{.depthStencil = {0.0f, 0}});
+        }
     };
 
     RenderPass_V2(const RenderPass_V2&) = delete;
@@ -68,8 +70,10 @@ class RenderPass_V2 : public RenderPassNode {
     std::reference_wrapper<vax::vk::Device> _device;
     std::reference_wrapper<vax::vk::PipelineManager> _pipelineManager;
     std::reference_wrapper<vax::vk::DescriptorSetManager> _descriptorSetManager;
-    std::reference_wrapper<vax::vk::RenderDestination> _renderDestination;
-    std::reference_wrapper<vax::vk::RenderPassDescriptor> _renderDescriptor;
+
+    std::weak_ptr<vax::vk::RenderDestination> _renderDestination;
+    std::weak_ptr<vax::vk::RenderPassDescriptor> _renderDescriptor;
+
     std::vector<InputDescriptorSetInfo> _inputDescriptorSetInfos;
     std::string _debugName;
     std::vector<VkClearValue> _clearValues;
@@ -83,10 +87,20 @@ class RenderPass_V2 : public RenderPassNode {
     bool _renderToSwapchain = false;
 
     template <typename Work> void _pass(RunPassInfo& runPassInfo, Work work) {
-        auto& framebuffers = _renderDestination.get().framebuffers;
+        auto renderDestinationShared = _renderDestination.lock();
+        if (!renderDestinationShared) {
+            _logger.error("Render destination not found!");
+            return;
+        }
+        auto renderDescriptorShared = _renderDescriptor.lock();
+        if (!renderDescriptorShared) {
+            _logger.error("Render descriptor not found!");
+            return;
+        }
+        auto& framebuffers = renderDestinationShared->framebuffers;
         VkRenderPassBeginInfo renderPassInfo{
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-            .renderPass = _renderDescriptor.get().getVkRenderPass(),
+            .renderPass = renderDescriptorShared->getVkRenderPass(),
             .framebuffer = framebuffers[_renderToSwapchain ? runPassInfo.imageIndex : runPassInfo.frameIndex],
             .renderArea = _renderArea,
             .clearValueCount = static_cast<uint32_t>(_clearValues.size()),
@@ -96,7 +110,7 @@ class RenderPass_V2 : public RenderPassNode {
             VkDebugUtilsObjectNameInfoEXT nameInfo{
                 .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
                 .objectType = VK_OBJECT_TYPE_RENDER_PASS,
-                .objectHandle = reinterpret_cast<size_t>(_renderDescriptor.get().getVkRenderPass()),
+                .objectHandle = reinterpret_cast<size_t>(renderDescriptorShared->getVkRenderPass()),
                 .pObjectName = _debugName.data(),
             };
             vax::vk::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
