@@ -6,11 +6,9 @@
 #include "frameTime.h"
 #include "jfaPass.h"
 #include "renderPassDescriptor.h"
+#include "renderPassGraph.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
-
-#include "renderPass_V2.h"
-#include "renderPassGraph.h"
 
 namespace vax::engine {
 class Renderer final : public BaseRenderer {
@@ -42,15 +40,7 @@ class Renderer final : public BaseRenderer {
 
     std::unique_ptr<vax::engine::RenderPassGraph> _renderPassGraph;
 
-    // std::optional<vax::engine::JFAPass> _jfaPass;
-
-    // std::optional<vax::engine::RenderPass_V2> _shadowPass;
-
-    // std::optional<vax::engine::RenderPass_V2> _mainPass;
-
-    // std::optional<vax::engine::RenderPass_V2> _roverCameraFBPass;
-
-    // std::optional<vax::engine::RenderPass_V2> _roverCameraMainPass;
+    std::unique_ptr<vax::engine::RenderPassGraph> _uiPassGraph;
 
     bool _updateCommandBuffer(
         vax::vk::CommandBuffer& commandBuffer,
@@ -72,11 +62,7 @@ class Renderer final : public BaseRenderer {
 
     void _resize();
 
-    // void _createRenderDestinations();
-
     void _writeFinalBlendDescriptorSets();
-
-    // void _finalBlendPass(RenderPassInfo& renderPassInfo);
 
     bool _createRoverCameraRenderDestination();
 };

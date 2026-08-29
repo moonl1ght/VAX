@@ -45,6 +45,8 @@ class RenderPassGraphFactory final {
 
     std::unique_ptr<RenderPassGraph> buildRoverDemoGraph();
 
+    std::unique_ptr<RenderPassGraph> buildUiGraph();
+
   private:
     vax::Logger _logger = vax::Logger("rednerPassGraphFactory");
     VmaAllocator _allocator;

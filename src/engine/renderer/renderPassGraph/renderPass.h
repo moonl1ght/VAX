@@ -9,9 +9,9 @@
 #include "renderPassNode.h"
 
 namespace vax::engine {
-class RenderPass_V2 : public RenderPassNode {
+class RenderPass : public RenderPassNode {
   public:
-    RenderPass_V2(
+  RenderPass(
         std::string_view id,
         vax::vk::Device& device,
         vax::vk::PipelineManager& pipelineManager,
@@ -36,14 +36,14 @@ class RenderPass_V2 : public RenderPassNode {
         }
     };
 
-    RenderPass_V2(const RenderPass_V2&) = delete;
-    RenderPass_V2(RenderPass_V2&&) = default;
-    RenderPass_V2& operator=(const RenderPass_V2&) = delete;
-    RenderPass_V2& operator=(RenderPass_V2&&) = default;
+    RenderPass(const RenderPass&) = delete;
+    RenderPass(RenderPass&&) = default;
+    RenderPass& operator=(const RenderPass&) = delete;
+    RenderPass& operator=(RenderPass&&) = default;
 
-    virtual ~RenderPass_V2() = default;
+    virtual ~RenderPass() = default;
 
-    virtual void runPass(RunPassInfo& runPassInfo);
+    void runPass(RunPassInfo& runPassInfo) override;
 
     void setRenderArea(VkRect2D renderArea) { _renderArea = renderArea; }
 
@@ -61,9 +61,7 @@ class RenderPass_V2 : public RenderPassNode {
         return _inputDescriptorSetInfos[index];
     }
 
-    InputDescriptorSetInfo& getInputDescriptorSetAt(size_t index) {
-        return _inputDescriptorSetInfos[index];
-    }
+    InputDescriptorSetInfo& getInputDescriptorSetAt(size_t index) { return _inputDescriptorSetInfos[index]; }
 
     void setPipeline(vax::vk::PipelineName pipelineName) { _pipelineName = pipelineName; }
 
@@ -71,7 +69,13 @@ class RenderPass_V2 : public RenderPassNode {
 
     void setDrawWork(std::function<void(RunPassInfo&, DrawContext&)> drawWork) { _drawWork = drawWork; }
 
+    void setOutsideDrawWork(std::function<void(RunPassInfo&)> outsideDrawWork) {
+        _outsideDrawWork = outsideDrawWork;
+    }
+
     void setRenderToSwapchain(bool renderToSwapchain) { _renderToSwapchain = renderToSwapchain; }
+
+    void setOutsideRenderPass(bool outsideRenderPass) { _outsideRenderPass = outsideRenderPass; }
 
   protected:
     vax::Logger _logger;
@@ -87,11 +91,13 @@ class RenderPass_V2 : public RenderPassNode {
     std::string _debugName;
     std::vector<VkClearValue> _clearValues;
     std::function<void(RunPassInfo&, DrawContext&)> _drawWork;
+    std::function<void(RunPassInfo&)> _outsideDrawWork;
     VkExtent2D _swapchainExtent = {0, 0};
     VkRect2D _renderArea{};
     vax::vk::PipelineName _pipelineName = vax::vk::PipelineName::UNKNOWN;
     vax::vk::PipelineLayoutName _pipelineLayoutName = vax::vk::PipelineLayoutName::UNKNOWN;
     bool _renderToSwapchain = false;
+    bool _outsideRenderPass = false;
 
     template <typename Work> void _pass(RunPassInfo& runPassInfo, Work work) {
         auto renderDestinationShared = _renderDestination.lock();

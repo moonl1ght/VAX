@@ -4,10 +4,6 @@
 #include "imgui_impl_vulkan.h"
 #include "pipeline.h"
 #include "profiler.h"
-#include "renderDestinationBuilder.h"
-#include "renderPass.h"
-#include "renderPassDescriptorBuilder.h"
-#include "renderPass_V2.h"
 #include "textureFactory.h"
 #include "vkEngine.h"
 
@@ -130,13 +126,7 @@ void Renderer::setup() {
     );
     _renderPassGraph = renderPassGraphFactory.buildRoverDemoGraph();
 
-    // auto swapchainRenderPassDescriptor = _renderPassGraph->getRenderPassDescriptor("swapchain");
-    // auto shadowSunRenderPassDescriptor = _renderPassGraph->getRenderPassDescriptor("shadow_sun");
-    // auto mainRenderPassDescriptor = _renderPassGraph->getRenderPassDescriptor("main");
-    // _vkEngine.get().pipelineManager->setup(
-    //     *mainRenderPassDescriptor, *swapchainRenderPassDescriptor, *shadowSunRenderPassDescriptor
-    // );
-    // _uiEngine.get().setup(swapchainRenderPassDescriptor->getVkRenderPass());
+    _uiPassGraph = renderPassGraphFactory.buildUiGraph();
 }
 
 void Renderer::prepare(DrawableScene* scene) {
@@ -530,8 +520,6 @@ bool Renderer::_updateCommandBuffer(
     if (!commandBuffer.begin())
         return false;
 
-    _setViewportAndScissor(commandBuffer, _getSwapchain(0)->swapchainExtent);
-
     if (scene != nullptr) {
         _drawScene(commandBuffer, scene, imageIndex, roverCameraImageIndex);
     } else {
@@ -544,17 +532,14 @@ bool Renderer::_updateCommandBuffer(
 }
 
 void Renderer::_drawUi(CommandBuffer& commandBuffer, uint32_t imageIndex) {
-    auto swapchainRenderPassDescriptor = _renderPassGraph->getRenderPassDescriptor("swapchain");
-    auto swapchainRenderDestination = _renderPassGraph->getRenderDestination("swapchain");
-    auto swapchain = _getSwapchain(0);
-    RenderPass renderPass(
-        *_vkEngine.get().device,
-        "draw_ui_render_pass",
-        swapchainRenderPassDescriptor->getVkRenderPass(),
-        swapchainRenderDestination->framebuffers[imageIndex],
-        swapchain->swapchainExtent
-    );
-    renderPass.pass(commandBuffer.vkCommandBuffer, [&]() { _uiEngine.get().render(commandBuffer.vkCommandBuffer); });
+    RenderPassNode::RunPassInfo runPassInfo{
+        .commandBuffer = commandBuffer,
+        .scene = nullptr,
+        .imageIndex = imageIndex,
+        .frameIndex = _currentFrame,
+    };
+
+    _uiPassGraph->run(runPassInfo);
 }
 
 bool Renderer::_drawScene(
