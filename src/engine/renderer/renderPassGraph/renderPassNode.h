@@ -70,6 +70,8 @@ class RenderPassNode {
         _postPassWork = postPassWork;
     }
 
+    std::string id() const { return _id; }
+
   protected:
     std::function<void(RenderPassNode*, RunPassInfo&)> _prePassWork;
     std::function<void(RenderPassNode*, RunPassInfo&)> _postPassWork;

@@ -55,6 +55,7 @@ void UIEngine::updateUiEnd() {
     ImGui::Render();
     _imguiDrawData = ImGui::GetDrawData();
 }
+
 void UIEngine::render(VkCommandBuffer commandBuffer) {
     if (_imguiDrawData == nullptr) {
         return;

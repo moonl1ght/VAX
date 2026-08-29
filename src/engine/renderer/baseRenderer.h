@@ -2,7 +2,6 @@
 
 #include "commandBuffer.h"
 #include "logger.h"
-#include "renderDestination.h"
 #include "swapchain.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
@@ -31,9 +30,6 @@ class BaseRenderer {
 
     std::reference_wrapper<vax::vk::Engine> _vkEngine;
     std::reference_wrapper<vax::ui::UIEngine> _uiEngine;
-
-    std::unordered_map<std::string, std::shared_ptr<vax::vk::RenderPassDescriptor>> _renderPassDescriptors;
-    std::unordered_map<std::string, std::shared_ptr<vax::vk::RenderDestination>> _renderDestinations;
 
     std::vector<uint32_t> _outputImageIndices;
 

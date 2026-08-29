@@ -1,4 +1,4 @@
-#include "rednerPassGraphFactory.h"
+#include "renderPassGraphFactory.h"
 #include "jfaPass.h"
 #include "renderDestinationBuilder.h"
 #include "renderPassDescriptorBuilder.h"
@@ -29,6 +29,8 @@ void RenderPassGraphFactory::setupRenderPassDescriptors(VkFormat imageFormat) {
     _pipelineManager.get().setup(
         *mainRenderPassDescriptorShared, *swapchainRenderPassDescriptorShared, *shadowSunRenderPassDescriptorShared
     );
+
+    _uiEngine.get().setup(swapchainRenderPassDescriptorShared->getVkRenderPass());
 
     _renderPassDescriptors.emplace("main", mainRenderPassDescriptorShared);
     _renderPassDescriptors.emplace("shadow_sun", shadowSunRenderPassDescriptorShared);
@@ -127,7 +129,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
     shadowPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = swapchain->swapchainExtent});
     shadowPass->setPipeline(vax::vk::PipelineName::SHADOW);
     shadowPass->setPipelineLayout(vax::vk::PipelineLayoutName::BASE);
-    shadowPass->setDrawWork([this](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
+    shadowPass->setDrawWork([](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
         runPassInfo.scene->draw(drawContext);
     });
     auto dynamicOffset = static_cast<uint32_t>(_device.get().minUniformBufferOffsetAlignment<UniformBufferObject>());
@@ -168,23 +170,21 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
     mainPass->setSwapchainExtent(swapchain->swapchainExtent);
     mainPass->setPipeline(vax::vk::PipelineName::PBR);
     mainPass->setPipelineLayout(vax::vk::PipelineLayoutName::BASE);
-    mainPass->setDrawWork([this](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
+    mainPass->setDrawWork([](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
         runPassInfo.scene->draw(drawContext);
     });
 
     auto jfaPass = std::make_shared<JFAPass>("jfa_pass", _device.get(), _descriptorSetManager.get(), _allocator);
     jfaPass->setup(_renderDestinations.at("main"));
 
-    jfaPass->setPostPassWork([this](RenderPassNode* passNode, RenderPass_V2::RunPassInfo& runPassInfo) {
+    jfaPass->setPostPassWork([](RenderPassNode* passNode, RenderPass_V2::RunPassInfo& runPassInfo) {
         auto jfaPass = dynamic_cast<JFAPass*>(passNode);
         if (!jfaPass) {
-            _logger.error("Failed to cast to JFAPass!");
             return;
         }
         if (jfaPass->next) {
             auto finalBlendPass = dynamic_cast<RenderPass_V2*>(jfaPass->next.get());
             if (!finalBlendPass) {
-                _logger.error("Failed to cast to final blend pass!");
                 return;
             }
             auto descriptorSetInfo = finalBlendPass->getInputDescriptorSetAt(1);
@@ -199,8 +199,8 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
         _pipelineManager.get(),
         _descriptorSetManager.get(),
         "FinalBlendPass",
-        _renderDestinations.at("main"),
-        _renderPassDescriptors.at("main")
+        _renderDestinations.at("swapchain"),
+        _renderPassDescriptors.at("swapchain")
     );
     finalBlendPass->addInputDescriptorSet({
         .poolType = vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
@@ -224,12 +224,25 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
         .dynamicOffsets = {0},
         },
     });
+    finalBlendPass->addInputDescriptorSet({
+        .poolType = vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
+        .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
+        .name = "per_frame",
+        .bindingInfo = {
+        .setIndex = 2,
+        .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .dynamicOffsetCount = 1,
+        .dynamicOffsets = {0},
+        },
+    });    
+    finalBlendPass->setRenderToSwapchain(true);
     finalBlendPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = swapchain->swapchainExtent});
     finalBlendPass->setSwapchainExtent(swapchain->swapchainExtent);
     finalBlendPass->setPipeline(vax::vk::PipelineName::FINAL_BLEND);
     finalBlendPass->setPipelineLayout(vax::vk::PipelineLayoutName::FINAL_BLEND);
-    finalBlendPass->setDrawWork([this](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
+    finalBlendPass->setDrawWork([&uiEngine = _uiEngine.get()](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
         runPassInfo.scene->drawBackground(drawContext);
+        uiEngine.render(runPassInfo.commandBuffer.vkCommandBuffer);
     });
 
     shadowPass->next = mainPass;
@@ -242,6 +255,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
 
     finalBlendPass->prev = jfaPass;
 
-    auto renderPassGraph = std::make_unique<RenderPassGraph>(_renderPassDescriptors, _renderDestinations);
+    auto renderPassGraph =
+        std::make_unique<RenderPassGraph>(shadowPass, _renderPassDescriptors, _renderDestinations, _uiEngine.get());
     return renderPassGraph;
 }

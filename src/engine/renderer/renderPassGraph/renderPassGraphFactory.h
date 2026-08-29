@@ -10,6 +10,7 @@
 #include "renderDestination.h"
 #include "renderPassGraph.h"
 #include "windowController.h"
+#include "uiEngine.h"
 #include <unordered_map>
 
 namespace vax::engine {
@@ -20,13 +21,15 @@ class RenderPassGraphFactory final {
         vax::vk::Device& device,
         vax::vk::PipelineManager& pipelineManager,
         vax::vk::DescriptorSetManager& descriptorSetManager,
-        vax::WindowController& windowController
+        vax::WindowController& windowController,
+        vax::ui::UIEngine& uiEngine
     )
         : _allocator(allocator)
         , _device(device)
         , _pipelineManager(pipelineManager)
         , _descriptorSetManager(descriptorSetManager)
-        , _windowController(windowController) {};
+        , _windowController(windowController)
+        , _uiEngine(uiEngine) {};
 
     ~RenderPassGraphFactory() = default;
 
@@ -49,6 +52,7 @@ class RenderPassGraphFactory final {
     std::reference_wrapper<vax::WindowController> _windowController;
     std::reference_wrapper<vax::vk::PipelineManager> _pipelineManager;
     std::reference_wrapper<vax::vk::DescriptorSetManager> _descriptorSetManager;
+    std::reference_wrapper<vax::ui::UIEngine> _uiEngine;
 
     std::unordered_map<std::string, std::shared_ptr<vax::vk::RenderPassDescriptor>> _renderPassDescriptors;
     std::unordered_map<std::string, std::shared_ptr<vax::vk::RenderDestination>> _renderDestinations;

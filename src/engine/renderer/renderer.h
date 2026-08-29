@@ -10,6 +10,7 @@
 #include "vkEngine.h"
 
 #include "renderPass_V2.h"
+#include "renderPassGraph.h"
 
 namespace vax::engine {
 class Renderer final : public BaseRenderer {
@@ -39,15 +40,17 @@ class Renderer final : public BaseRenderer {
 
     vax::Logger _logger = vax::Logger("Renderer");
 
-    std::optional<vax::engine::JFAPass> _jfaPass;
+    std::unique_ptr<vax::engine::RenderPassGraph> _renderPassGraph;
 
-    std::optional<vax::engine::RenderPass_V2> _shadowPass;
+    // std::optional<vax::engine::JFAPass> _jfaPass;
 
-    std::optional<vax::engine::RenderPass_V2> _mainPass;
+    // std::optional<vax::engine::RenderPass_V2> _shadowPass;
 
-    std::optional<vax::engine::RenderPass_V2> _roverCameraFBPass;
+    // std::optional<vax::engine::RenderPass_V2> _mainPass;
 
-    std::optional<vax::engine::RenderPass_V2> _roverCameraMainPass;
+    // std::optional<vax::engine::RenderPass_V2> _roverCameraFBPass;
+
+    // std::optional<vax::engine::RenderPass_V2> _roverCameraMainPass;
 
     bool _updateCommandBuffer(
         vax::vk::CommandBuffer& commandBuffer,
@@ -55,23 +58,25 @@ class Renderer final : public BaseRenderer {
         uint32_t roverCameraImageIndex,
         vax::engine::DrawableScene* scene
     );
+
     bool _drawScene(
         vax::vk::CommandBuffer& commandBuffer,
         vax::engine::DrawableScene* scene,
         uint32_t imageIndex,
         uint32_t roverCameraImageIndex
     );
+
     void _drawUi(vax::vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
 
     bool _bindGlobalDescriptorSet(vax::vk::CommandBuffer& commandBuffer, VkPipelineLayout pipelineLayout);
 
     void _resize();
 
-    void _createRenderDestinations();
+    // void _createRenderDestinations();
 
     void _writeFinalBlendDescriptorSets();
 
-    void _finalBlendPass(RenderPassInfo& renderPassInfo);
+    // void _finalBlendPass(RenderPassInfo& renderPassInfo);
 
     bool _createRoverCameraRenderDestination();
 };
