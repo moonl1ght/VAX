@@ -17,9 +17,9 @@ std::shared_ptr<RenderPassNode> RenderPassGraph::findNode(const std::string& nam
     return nullptr;
 }
 
-void RenderPassGraph::toggleNode(const std::string& name) {
+void RenderPassGraph::setNodeEnabled(const std::string& name, bool enabled) {
     auto node = findNode(name);
     if (node) {
-        node->setEnabled(!node->isEnabled());
+        node->setEnabled(enabled);
     }
 }

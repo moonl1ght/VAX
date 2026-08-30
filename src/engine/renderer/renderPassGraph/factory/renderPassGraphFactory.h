@@ -5,12 +5,12 @@
 #include "device.h"
 #include "logger.h"
 #include "pipelineManager.h"
-#include "swapchain.h"
 #include "queueManager.h"
 #include "renderDestination.h"
 #include "renderPassGraph.h"
-#include "windowController.h"
+#include "swapchain.h"
 #include "uiEngine.h"
+#include "windowController.h"
 #include <unordered_map>
 
 namespace vax::engine {
@@ -40,12 +40,19 @@ class RenderPassGraphFactory final {
     );
 
     void setupRenderDestinationsForRoverCamera(
-      vax::vk::CommandManager& commandManager, vax::vk::QueueManager& queueManager, vax::vk::Swapchain& swapchain
-  );
+        vax::vk::CommandManager& commandManager, vax::vk::QueueManager& queueManager, vax::vk::Swapchain& swapchain
+    );
 
-    std::unique_ptr<RenderPassGraph> buildRoverDemoGraph();
+    std::unique_ptr<RenderPassGraph> buildRoverDemoGraph(bool withRoverCamera);
 
     std::unique_ptr<RenderPassGraph> buildUiGraph();
+
+    std::shared_ptr<vax::vk::RenderPassDescriptor> getRenderPassDescriptor(std::string name) const {
+      if(_renderPassDescriptors.contains(name)) {
+        return _renderPassDescriptors.at(name);
+      }
+      return nullptr;
+    }
 
   private:
     vax::Logger _logger = vax::Logger("rednerPassGraphFactory");

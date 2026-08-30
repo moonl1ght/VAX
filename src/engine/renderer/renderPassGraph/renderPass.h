@@ -6,8 +6,8 @@
 #include "renderDestination.h"
 #include "renderPassDescriptor.h"
 #include "renderPassNode.h"
-#include "vaxMath.h"
 #include "renderSubpass.h"
+#include "vaxMath.h"
 
 namespace vax::engine {
 class RenderPass : public RenderPassNode {
@@ -78,6 +78,8 @@ class RenderPass : public RenderPassNode {
 
     void addSubpass(std::unique_ptr<RenderSubpass> subpass) { _subpasses.push_back(std::move(subpass)); }
 
+    void setOutputImageIndex(size_t outputImageIndex) { _outputImageIndex = outputImageIndex; }
+
   protected:
     vax::Logger _logger;
     std::reference_wrapper<vax::vk::Device> _device;
@@ -100,6 +102,7 @@ class RenderPass : public RenderPassNode {
     bool _renderToSwapchain = false;
     bool _outsideRenderPass = false;
     vax::math::Position2DFloat _offset = {0.0f, 0.0f};
+    size_t _outputImageIndex = 0;
 
     template <typename Work> void _pass(RunPassInfo& runPassInfo, Work work) {
         auto renderDestinationShared = _renderDestination.lock();
@@ -116,7 +119,8 @@ class RenderPass : public RenderPassNode {
         VkRenderPassBeginInfo renderPassInfo{
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
             .renderPass = renderDescriptorShared->getVkRenderPass(),
-            .framebuffer = framebuffers[_renderToSwapchain ? runPassInfo.imageIndex : runPassInfo.frameIndex],
+            .framebuffer =
+                framebuffers[_renderToSwapchain ? runPassInfo.imageIndices[_outputImageIndex] : runPassInfo.frameIndex],
             .renderArea = _renderArea,
             .clearValueCount = static_cast<uint32_t>(_clearValues.size()),
             .pClearValues = _clearValues.data(),

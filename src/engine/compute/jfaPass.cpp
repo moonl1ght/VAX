@@ -11,11 +11,13 @@ using namespace vax::vk;
 
 void JFAPass::cleanup() {
     if (_initPipeline) {
-        vkDestroyPipeline(_device.get().vkDevice, _initPipeline->vkPipeline, nullptr);
+        vkDestroyPipelineLayout(_device.get().vkDevice, _initPipeline->vkPipelineLayout, nullptr);
+        _initPipeline->vkPipelineLayout = VK_NULL_HANDLE;
     }
 
     if (_jfaPipeline) {
-        vkDestroyPipeline(_device.get().vkDevice, _jfaPipeline->vkPipeline, nullptr);
+        vkDestroyPipelineLayout(_device.get().vkDevice, _jfaPipeline->vkPipelineLayout, nullptr);
+        _jfaPipeline->vkPipelineLayout = VK_NULL_HANDLE;
     }
 }
 
@@ -95,14 +97,15 @@ void JFAPass::setup(std::weak_ptr<vax::vk::RenderDestination> inputRenderDestina
         .pPushConstantRanges = &pushConstantRange,
     };
 
-    pipelineBuilder.updatePipelineLayout(jfaPipelineLayoutInfo);
+    ComputePipelineBuilder jfaPipelineBuilder(_device);
+    jfaPipelineBuilder.setPipelineLayout(jfaPipelineLayoutInfo);
     auto jfaShaderModule = shaderModuleBuilder.build(SRC_PATH("engine/shaders/out/jfa.comp.spv"));
     if (!jfaShaderModule) {
         _logger.error("Failed to create JFA shader module!");
         return;
     }
-    pipelineBuilder.setShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, jfaShaderModule.value(), "main");
-    _jfaPipeline = pipelineBuilder.build("jfa");
+    jfaPipelineBuilder.setShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, jfaShaderModule.value(), "main");
+    _jfaPipeline = jfaPipelineBuilder.build("jfa");
     if (!_jfaPipeline) {
         _logger.error("Failed to create JFA pipeline!");
         return;

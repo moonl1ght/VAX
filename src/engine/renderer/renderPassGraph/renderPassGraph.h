@@ -18,9 +18,9 @@ class RenderPassGraph {
         std::unordered_map<std::string, std::shared_ptr<vax::vk::RenderDestination>> renderDestinations,
         vax::ui::UIEngine& uiEngine
     )
-        : _renderPassDescriptors(std::move(renderPassDescriptors))
-        , _renderDestinations(std::move(renderDestinations))
-        , _rootNode(std::move(rootNode))
+        : _renderPassDescriptors(renderPassDescriptors)
+        , _renderDestinations(renderDestinations)
+        , _rootNode(rootNode)
         , _uiEngine(uiEngine) {};
 
     RenderPassGraph(const RenderPassGraph&) = delete;
@@ -48,7 +48,7 @@ class RenderPassGraph {
 
     std::shared_ptr<RenderPassNode> findNode(const std::string& name) const;
 
-    void toggleNode(const std::string& name);
+    void setNodeEnabled(const std::string& name, bool enabled);
 
   private:
     std::reference_wrapper<vax::ui::UIEngine> _uiEngine;

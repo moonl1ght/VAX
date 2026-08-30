@@ -5,7 +5,7 @@
 using namespace vax::engine;
 using namespace vax::vk;
 
-std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
+std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph(bool withRoverCamera) {
     auto swapchain = _windowController.get().getWindow(0)->getSwapchain();
 
     auto shadowPass = std::make_shared<RenderPass>(
@@ -177,15 +177,80 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
         uiEngine.render(runPassInfo.commandBuffer.vkCommandBuffer);
     });
 
-    shadowPass->next = mainPass;
+    if (withRoverCamera) {
+        auto roverCameraSwapchain = _windowController.get().getWindow(1)->getSwapchain();
+        auto roverCameraMainPass = std::make_shared<RenderPass>(
+            "rover_camera_main_pass",
+            _device.get(),
+            _pipelineManager.get(),
+            _descriptorSetManager.get(),
+            "RoverCameraMainPass",
+            _renderDestinations.at("rover_camera_main"),
+            _renderPassDescriptors.at("main")
+        );
+        roverCameraMainPass->addInputDescriptorSet({
+            .poolType = vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
+            .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
+            .name = "rover_camera",
+            .bindingInfo = {
+            .setIndex = MainSetIndices::PER_FRAME_SET_INDEX,
+            .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+            .dynamicOffsetCount = 1,
+            .dynamicOffsets = {0},
+            },
+        });
+        roverCameraMainPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = roverCameraSwapchain->swapchainExtent});
+        roverCameraMainPass->setPipeline(vax::vk::PipelineName::ROVER_CAMERA);
+        roverCameraMainPass->setPipelineLayout(vax::vk::PipelineLayoutName::BASE);
+        roverCameraMainPass->setDrawWork([this](RenderPass::RunPassInfo& runPassInfo, DrawContext& drawContext) {
+            runPassInfo.scene->draw(drawContext);
+        });
 
-    mainPass->prev = shadowPass;
-    mainPass->next = jfaPass;
+        auto roverCameraFBPass = std::make_shared<RenderPass>(
+            "rover_camera_fb_pass",
+            _device.get(),
+            _pipelineManager.get(),
+            _descriptorSetManager.get(),
+            "RoverCameraFBPass",
+            _renderDestinations.at("rover_camera_swapchain"),
+            _renderPassDescriptors.at("swapchain")
+        );
+        roverCameraFBPass->addInputDescriptorSet({
+            .poolType = vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
+            .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::FINAL_BLEND_SIMPLE,
+            .name = "rover_camera_fb",
+            .bindingInfo = {
+            .setIndex = 0,
+            .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+            .dynamicOffsetCount = 1,
+            .dynamicOffsets = {0},
+            },
+        });
+        roverCameraFBPass->setOutputImageIndex(1);
+        roverCameraFBPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = roverCameraSwapchain->swapchainExtent});
+        roverCameraFBPass->setPipeline(vax::vk::PipelineName::ROVER_CAMERA_FB);
+        roverCameraFBPass->setPipelineLayout(vax::vk::PipelineLayoutName::ROVER_CAMERA_FB);
+        roverCameraFBPass->setRenderToSwapchain(true);
+        roverCameraFBPass->setDrawWork([this](RenderPass::RunPassInfo& runPassInfo, DrawContext& drawContext) {
+            runPassInfo.scene->drawBackground(drawContext);
+        });
 
-    jfaPass->prev = mainPass;
-    jfaPass->next = finalBlendPass;
+        shadowPass->next = mainPass;
 
-    finalBlendPass->prev = jfaPass;
+        mainPass->next = roverCameraMainPass;
+
+        roverCameraMainPass->next = roverCameraFBPass;
+
+        roverCameraFBPass->next = jfaPass;
+
+        jfaPass->next = finalBlendPass;
+    } else {
+        shadowPass->next = mainPass;
+
+        mainPass->next = jfaPass;
+
+        jfaPass->next = finalBlendPass;
+    }
 
     auto renderPassGraph =
         std::make_unique<RenderPassGraph>(shadowPass, _renderPassDescriptors, _renderDestinations, _uiEngine.get());

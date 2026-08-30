@@ -19,7 +19,9 @@ class JFAPass final : public RenderPassNode {
         , _descriptorSetManager(descriptorSetManager)
         , _allocator(allocator) {};
 
-    ~JFAPass() = default;
+    ~JFAPass() {
+        cleanup();
+    }
 
     JFAPass(const JFAPass& other) = delete;
     JFAPass& operator=(const JFAPass& other) = delete;

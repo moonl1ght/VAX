@@ -28,11 +28,9 @@ void RenderPassGraphFactory::setupRenderPassDescriptors(VkFormat imageFormat) {
         *mainRenderPassDescriptorShared, *swapchainRenderPassDescriptorShared, *shadowSunRenderPassDescriptorShared
     );
 
-    _uiEngine.get().setup(swapchainRenderPassDescriptorShared->getVkRenderPass());
-
-    _renderPassDescriptors.emplace("main", mainRenderPassDescriptorShared);
-    _renderPassDescriptors.emplace("shadow_sun", shadowSunRenderPassDescriptorShared);
-    _renderPassDescriptors.emplace("swapchain", swapchainRenderPassDescriptorShared);
+    _renderPassDescriptors["main"] = mainRenderPassDescriptorShared;
+    _renderPassDescriptors["shadow_sun"] = shadowSunRenderPassDescriptorShared;
+    _renderPassDescriptors["swapchain"] = swapchainRenderPassDescriptorShared;
 }
 
 void RenderPassGraphFactory::setupRenderDestinations(
@@ -74,9 +72,9 @@ void RenderPassGraphFactory::setupRenderDestinations(
     auto shadowSunRenderDestinationShared =
         std::make_shared<vax::vk::RenderDestination>(std::move(shadowSunRenderDestination.value()));
 
-    _renderDestinations.emplace("main", mainRenderDestinationShared);
-    _renderDestinations.emplace("swapchain", swapchainRenderDestinationShared);
-    _renderDestinations.emplace("shadow_sun", shadowSunRenderDestinationShared);
+    _renderDestinations["main"] = mainRenderDestinationShared;
+    _renderDestinations["swapchain"] = swapchainRenderDestinationShared;
+    _renderDestinations["shadow_sun"] = shadowSunRenderDestinationShared;
 }
 
 void RenderPassGraphFactory::setupRenderDestinationsForRoverCamera(
@@ -108,6 +106,6 @@ void RenderPassGraphFactory::setupRenderDestinationsForRoverCamera(
     auto roverCameraFBRenderDestinationShared =
         std::make_shared<vax::vk::RenderDestination>(std::move(roverCameraFBRenderDestination.value()));
 
-    _renderDestinations.emplace("rover_camera_main", roverCameraRenderDestinationShared);
-    _renderDestinations.emplace("rover_camera_swapchain", roverCameraFBRenderDestinationShared);
+    _renderDestinations["rover_camera_main"] = roverCameraRenderDestinationShared;
+    _renderDestinations["rover_camera_swapchain"] = roverCameraFBRenderDestinationShared;
 }

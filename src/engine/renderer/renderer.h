@@ -4,15 +4,20 @@
 #include "commandBuffer.h"
 #include "drawableScene.h"
 #include "frameTime.h"
-#include "jfaPass.h"
 #include "renderPassDescriptor.h"
 #include "renderPassGraph.h"
+#include "renderPassGraphFactory.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
 
 namespace vax::engine {
 class Renderer final : public BaseRenderer {
   public:
+    enum class RendererMode {
+        ROVER_DEMO_WITH_ROVER_CAMERA,
+        ROVER_DEMO_WITHOUT_ROVER_CAMERA,
+    };
+
     Renderer(vax::vk::Engine& vkEngine, vax::ui::UIEngine& uiEngine)
         : BaseRenderer(vkEngine, uiEngine) {};
 
@@ -38,9 +43,15 @@ class Renderer final : public BaseRenderer {
 
     vax::Logger _logger = vax::Logger("Renderer");
 
+    std::unique_ptr<vax::engine::RenderPassGraphFactory> _roverDemoPassGraphFactory;
+
     std::unique_ptr<vax::engine::RenderPassGraph> _renderPassGraph;
 
     std::unique_ptr<vax::engine::RenderPassGraph> _uiPassGraph;
+
+    RendererMode _rendererMode = RendererMode::ROVER_DEMO_WITHOUT_ROVER_CAMERA;
+
+    bool _wasResized = false;
 
     bool _updateCommandBuffer(
         vax::vk::CommandBuffer& commandBuffer,
@@ -49,14 +60,9 @@ class Renderer final : public BaseRenderer {
         vax::engine::DrawableScene* scene
     );
 
-    bool _drawScene(
-        vax::vk::CommandBuffer& commandBuffer,
-        vax::engine::DrawableScene* scene,
-        uint32_t imageIndex,
-        uint32_t roverCameraImageIndex
-    );
+    bool _drawScene(vax::vk::CommandBuffer& commandBuffer, vax::engine::DrawableScene* scene);
 
-    void _drawUi(vax::vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
+    void _drawUi(vax::vk::CommandBuffer& commandBuffer);
 
     bool _bindGlobalDescriptorSet(vax::vk::CommandBuffer& commandBuffer, VkPipelineLayout pipelineLayout);
 
@@ -64,6 +70,8 @@ class Renderer final : public BaseRenderer {
 
     void _writeFinalBlendDescriptorSets();
 
-    bool _createRoverCameraRenderDestination();
+    void _writeRoverCameraDescriptorSets();
+
+    void _rebuildRenderPassGraph(bool withRoverCamera);
 };
 } // namespace vax::engine
