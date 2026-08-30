@@ -6,7 +6,7 @@
 #include "frameTime.h"
 #include "renderPassDescriptor.h"
 #include "renderPassGraph.h"
-#include "renderPassGraphFactory.h"
+#include "renderPassGraphManager.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
 
@@ -43,7 +43,7 @@ class Renderer final : public BaseRenderer {
 
     vax::Logger _logger = vax::Logger("Renderer");
 
-    std::unique_ptr<vax::engine::RenderPassGraphFactory> _roverDemoPassGraphFactory;
+    std::unique_ptr<vax::engine::RenderPassGraphManager> _roverDemoPassGraphManager;
 
     std::unique_ptr<vax::engine::RenderPassGraph> _renderPassGraph;
 

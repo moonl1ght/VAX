@@ -1,11 +1,11 @@
 #include "jfaPass.h"
 #include "renderPass.h"
-#include "renderPassGraphFactory.h"
+#include "renderPassGraphManager.h"
 
 using namespace vax::engine;
 using namespace vax::vk;
 
-std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph(bool withRoverCamera) {
+std::unique_ptr<RenderPassGraph> RenderPassGraphManager::buildRoverDemoGraph(bool withRoverCamera) {
     auto swapchain = _windowController.get().getWindow(0)->getSwapchain();
 
     auto shadowPass = std::make_shared<RenderPass>(

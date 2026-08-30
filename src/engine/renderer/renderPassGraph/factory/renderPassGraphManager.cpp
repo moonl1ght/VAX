@@ -1,4 +1,4 @@
-#include "renderPassGraphFactory.h"
+#include "renderPassGraphManager.h"
 #include "renderDestinationBuilder.h"
 #include "renderPassDescriptorBuilder.h"
 
@@ -6,7 +6,7 @@ using namespace vax::engine;
 using namespace vax::vk;
 using namespace vax;
 
-void RenderPassGraphFactory::setupRenderPassDescriptors(VkFormat imageFormat) {
+void RenderPassGraphManager::setupRenderPassDescriptors(VkFormat imageFormat) {
     auto renderPassDescriptorBuilder = RenderPassDescriptorBuilder(_device.get());
     auto mainRenderPassDescriptor = renderPassDescriptorBuilder.buildOffscreen(imageFormat, false);
     auto shadowSunRenderPassDescriptor = renderPassDescriptorBuilder.buildShadowSun(imageFormat, false);
@@ -33,7 +33,7 @@ void RenderPassGraphFactory::setupRenderPassDescriptors(VkFormat imageFormat) {
     _renderPassDescriptors["swapchain"] = swapchainRenderPassDescriptorShared;
 }
 
-void RenderPassGraphFactory::setupRenderDestinations(
+void RenderPassGraphManager::setupRenderDestinations(
     vax::vk::CommandManager& commandManager, vax::vk::QueueManager& queueManager, vax::vk::Swapchain& swapchain
 ) {
     auto& mainRenderPassDescriptor = _renderPassDescriptors.at("main");
@@ -77,7 +77,7 @@ void RenderPassGraphFactory::setupRenderDestinations(
     _renderDestinations["shadow_sun"] = shadowSunRenderDestinationShared;
 }
 
-void RenderPassGraphFactory::setupRenderDestinationsForRoverCamera(
+void RenderPassGraphManager::setupRenderDestinationsForRoverCamera(
     vax::vk::CommandManager& commandManager, vax::vk::QueueManager& queueManager, vax::vk::Swapchain& swapchain
 ) {
     auto& mainRenderPassDescriptor = _renderPassDescriptors.at("main");

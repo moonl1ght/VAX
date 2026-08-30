@@ -14,9 +14,9 @@
 #include <unordered_map>
 
 namespace vax::engine {
-class RenderPassGraphFactory final {
+class RenderPassGraphManager final {
   public:
-    RenderPassGraphFactory(
+    RenderPassGraphManager(
         VmaAllocator allocator,
         vax::vk::Device& device,
         vax::vk::PipelineManager& pipelineManager,
@@ -31,7 +31,7 @@ class RenderPassGraphFactory final {
         , _windowController(windowController)
         , _uiEngine(uiEngine) {};
 
-    ~RenderPassGraphFactory() = default;
+    ~RenderPassGraphManager() = default;
 
     void setupRenderPassDescriptors(VkFormat imageFormat);
 
