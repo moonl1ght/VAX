@@ -1,6 +1,6 @@
-#include "renderPassGraphFactory.h"
-#include "renderPass.h"
 #include "jfaPass.h"
+#include "renderPass.h"
+#include "renderPassGraphFactory.h"
 
 using namespace vax::engine;
 using namespace vax::vk;
@@ -35,7 +35,6 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
         .dynamicOffsets = {dynamicOffset},
         },
     });
-    shadowPass->setSwapchainExtent(swapchain->swapchainExtent);
 
     auto mainPass = std::make_shared<RenderPass>(
         "main_pass",
@@ -58,12 +57,54 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
         },
     });
     mainPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = swapchain->swapchainExtent});
-    mainPass->setSwapchainExtent(swapchain->swapchainExtent);
     mainPass->setPipeline(vax::vk::PipelineName::PBR);
     mainPass->setPipelineLayout(vax::vk::PipelineLayoutName::BASE);
     mainPass->setDrawWork([](RenderPass::RunPassInfo& runPassInfo, DrawContext& drawContext) {
         runPassInfo.scene->draw(drawContext);
     });
+
+    auto gizmoSubpass = std::make_unique<RenderSubpass>(
+        "gizmo_subpass", _device.get(), _pipelineManager.get(), _descriptorSetManager.get()
+    );
+
+    gizmoSubpass->setDrawWork(
+        [](RenderSubpass* subpass, RenderPassNode::RunPassInfo& runPassInfo, DrawContext& drawContext) {
+            VkClearAttachment clearAttachment{
+                .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
+                .clearValue = {.depthStencil = {0.0f, 0}},
+            };
+            auto xOffset = static_cast<float>(subpass->getSwapchainExtent().width - 256);
+            VkClearRect clearRect{
+                .rect = {.offset = {static_cast<int32_t>(xOffset), 0}, .extent = {256, 256}},
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            };
+
+            VkViewport viewport{
+                .x = xOffset,
+                .y = 256.0f,
+                .width = 256.0f,
+                .height = -256.0f,
+                .minDepth = 0.0f,
+                .maxDepth = 1.0f,
+            };
+
+            VkRect2D scissor{
+                .offset = {static_cast<int32_t>(xOffset), 0},
+                .extent = {256, 256},
+            };
+
+            vkCmdSetViewport(runPassInfo.commandBuffer.vkCommandBuffer, 0, 1, &viewport);
+            vkCmdSetScissor(runPassInfo.commandBuffer.vkCommandBuffer, 0, 1, &scissor);
+            vkCmdClearAttachments(runPassInfo.commandBuffer.vkCommandBuffer, 1, &clearAttachment, 1, &clearRect);
+            runPassInfo.scene->drawGizmo(drawContext);
+        }
+    );
+    gizmoSubpass->setPipeline(vax::vk::PipelineName::BASE);
+    gizmoSubpass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = {256, 256}});
+    gizmoSubpass->setSwapchainExtent(swapchain->swapchainExtent);
+
+    mainPass->addSubpass(std::move(gizmoSubpass));
 
     auto jfaPass = std::make_shared<JFAPass>("jfa_pass", _device.get(), _descriptorSetManager.get(), _allocator);
     jfaPass->setup(_renderDestinations.at("main"));
@@ -128,15 +169,13 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildRoverDemoGraph() {
     });
     finalBlendPass->setRenderToSwapchain(true);
     finalBlendPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = swapchain->swapchainExtent});
-    finalBlendPass->setSwapchainExtent(swapchain->swapchainExtent);
     finalBlendPass->setPipeline(vax::vk::PipelineName::FINAL_BLEND);
     finalBlendPass->setPipelineLayout(vax::vk::PipelineLayoutName::FINAL_BLEND);
-    finalBlendPass->setDrawWork(
-        [&uiEngine = _uiEngine.get()](RenderPass::RunPassInfo& runPassInfo, DrawContext& drawContext) {
-            runPassInfo.scene->drawBackground(drawContext);
-            uiEngine.render(runPassInfo.commandBuffer.vkCommandBuffer);
-        }
-    );
+    finalBlendPass->setDrawWork([&uiEngine =
+                                     _uiEngine.get()](RenderPass::RunPassInfo& runPassInfo, DrawContext& drawContext) {
+        runPassInfo.scene->drawBackground(drawContext);
+        uiEngine.render(runPassInfo.commandBuffer.vkCommandBuffer);
+    });
 
     shadowPass->next = mainPass;
 

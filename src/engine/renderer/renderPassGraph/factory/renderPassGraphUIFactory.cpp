@@ -18,7 +18,6 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphFactory::buildUiGraph() {
     );
     uiPass->setRenderToSwapchain(true);
     uiPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = swapchain->swapchainExtent});
-    uiPass->setSwapchainExtent(swapchain->swapchainExtent);
     uiPass->setOutsideRenderPass(true);
     uiPass->setOutsideDrawWork([&uiEngine = _uiEngine.get()](RenderPass::RunPassInfo& runPassInfo) {
         uiEngine.render(runPassInfo.commandBuffer.vkCommandBuffer);

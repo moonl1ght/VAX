@@ -2,16 +2,17 @@
 
 #include "commandBuffer.h"
 #include "device.h"
-#include "drawableScene.h"
 #include "pipeline.h"
 #include "renderDestination.h"
 #include "renderPassDescriptor.h"
 #include "renderPassNode.h"
+#include "vaxMath.h"
+#include "renderSubpass.h"
 
 namespace vax::engine {
 class RenderPass : public RenderPassNode {
   public:
-  RenderPass(
+    RenderPass(
         std::string_view id,
         vax::vk::Device& device,
         vax::vk::PipelineManager& pipelineManager,
@@ -47,8 +48,6 @@ class RenderPass : public RenderPassNode {
 
     void setRenderArea(VkRect2D renderArea) { _renderArea = renderArea; }
 
-    void setSwapchainExtent(VkExtent2D swapchainExtent) { _swapchainExtent = swapchainExtent; }
-
     void addInputDescriptorSet(InputDescriptorSetInfo inputDescriptorSetInfo) {
         _inputDescriptorSetInfos.push_back(inputDescriptorSetInfo);
     }
@@ -69,13 +68,15 @@ class RenderPass : public RenderPassNode {
 
     void setDrawWork(std::function<void(RunPassInfo&, DrawContext&)> drawWork) { _drawWork = drawWork; }
 
-    void setOutsideDrawWork(std::function<void(RunPassInfo&)> outsideDrawWork) {
-        _outsideDrawWork = outsideDrawWork;
-    }
+    void setOutsideDrawWork(std::function<void(RunPassInfo&)> outsideDrawWork) { _outsideDrawWork = outsideDrawWork; }
 
     void setRenderToSwapchain(bool renderToSwapchain) { _renderToSwapchain = renderToSwapchain; }
 
     void setOutsideRenderPass(bool outsideRenderPass) { _outsideRenderPass = outsideRenderPass; }
+
+    void setRenderOffset(vax::math::Position2DFloat offset) { _offset = offset; }
+
+    void addSubpass(std::unique_ptr<RenderSubpass> subpass) { _subpasses.push_back(std::move(subpass)); }
 
   protected:
     vax::Logger _logger;
@@ -87,17 +88,18 @@ class RenderPass : public RenderPassNode {
     std::weak_ptr<vax::vk::RenderPassDescriptor> _renderDescriptor;
 
     std::vector<InputDescriptorSetInfo> _inputDescriptorSetInfos;
+    std::vector<std::unique_ptr<RenderSubpass>> _subpasses;
 
     std::string _debugName;
     std::vector<VkClearValue> _clearValues;
     std::function<void(RunPassInfo&, DrawContext&)> _drawWork;
     std::function<void(RunPassInfo&)> _outsideDrawWork;
-    VkExtent2D _swapchainExtent = {0, 0};
     VkRect2D _renderArea{};
     vax::vk::PipelineName _pipelineName = vax::vk::PipelineName::UNKNOWN;
     vax::vk::PipelineLayoutName _pipelineLayoutName = vax::vk::PipelineLayoutName::UNKNOWN;
     bool _renderToSwapchain = false;
     bool _outsideRenderPass = false;
+    vax::math::Position2DFloat _offset = {0.0f, 0.0f};
 
     template <typename Work> void _pass(RunPassInfo& runPassInfo, Work work) {
         auto renderDestinationShared = _renderDestination.lock();

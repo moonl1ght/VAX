@@ -14,103 +14,6 @@ using namespace vax;
 using namespace vax::vk;
 
 void Renderer::setup() {
-    // auto swapchain = _getSwapchain(0);
-    // auto renderPassDescriptorBuilder = RenderPassDescriptorBuilder(*_vkEngine.get().device);
-    // auto mainRenderPassDescriptor = renderPassDescriptorBuilder.buildOffscreen(swapchain->swapchainImageFormat,
-    // false); auto shadowSunRenderPassDescriptor =
-    //     renderPassDescriptorBuilder.buildShadowSun(swapchain->swapchainImageFormat, false);
-    // auto swapchainRenderPassDescriptor = renderPassDescriptorBuilder.buildSwapchain(swapchain->swapchainImageFormat);
-    // if (!mainRenderPassDescriptor.has_value() || !shadowSunRenderPassDescriptor.has_value() ||
-    //     !swapchainRenderPassDescriptor.has_value()) {
-    //     _logger.error("Failed to create main render pass descriptor!");
-    //     return;
-    // }
-
-    // _uiEngine.get().setup(swapchainRenderPassDescriptor->getVkRenderPass());
-    // _vkEngine.get().pipelineManager->setup(
-    //     *mainRenderPassDescriptor, *swapchainRenderPassDescriptor, *shadowSunRenderPassDescriptor
-    // );
-
-    // auto mainRenderPassDescriptorShared =
-    //     std::make_shared<vax::vk::RenderPassDescriptor>(std::move(mainRenderPassDescriptor.value()));
-    // auto shadowSunRenderPassDescriptorShared =
-    //     std::make_shared<vax::vk::RenderPassDescriptor>(std::move(shadowSunRenderPassDescriptor.value()));
-    // auto swapchainRenderPassDescriptorShared =
-    //     std::make_shared<vax::vk::RenderPassDescriptor>(std::move(swapchainRenderPassDescriptor.value()));
-
-    // _renderPassDescriptors.emplace("main", mainRenderPassDescriptorShared);
-    // _renderPassDescriptors.emplace("shadow_sun", shadowSunRenderPassDescriptorShared);
-    // _renderPassDescriptors.emplace("swapchain", swapchainRenderPassDescriptorShared);
-
-    // _createRenderDestinations();
-    // if (!_renderDestinations.contains("main")) {
-    //     _logger.error("Main render destination not found!");
-    //     return;
-    // }
-    // auto& mainRenderDestination = _renderDestinations.at("main");
-    // _jfaPass = std::make_optional<JFAPass>(
-    //     "jfa_pass", *_vkEngine.get().device, *_vkEngine.get().descriptorSetManager, _vkEngine.get().allocator
-    // );
-    // _jfaPass->setup(mainRenderDestination);
-
-    // _shadowPass = std::make_optional<RenderPass_V2>(
-    //     "shadow_pass",
-    //     *_vkEngine.get().device,
-    //     *_vkEngine.get().pipelineManager,
-    //     *_vkEngine.get().descriptorSetManager,
-    //     "ShadowPass",
-    //     _renderDestinations.at("shadow_sun"),
-    //     _renderPassDescriptors.at("shadow_sun")
-    // );
-    // _shadowPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = _getSwapchain(0)->swapchainExtent});
-    // _shadowPass->setPipeline(vax::vk::PipelineName::SHADOW);
-    // _shadowPass->setPipelineLayout(vax::vk::PipelineLayoutName::BASE);
-    // _shadowPass->setDrawWork([this](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
-    //     runPassInfo.scene->draw(drawContext);
-    // });
-    // auto dynamicOffset =
-    //     static_cast<uint32_t>(_vkEngine.get().device->minUniformBufferOffsetAlignment<UniformBufferObject>());
-    // _shadowPass->addInputDescriptorSet({
-    //     .poolType = vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
-    //     .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
-    //     .name = "per_frame",
-    //     .bindingInfo = {
-    //     .setIndex = MainSetIndices::PER_FRAME_SET_INDEX,
-    //     .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-    //     .dynamicOffsetCount = 1,
-    //     .dynamicOffsets = {dynamicOffset},
-    //     },
-    // });
-    // _shadowPass->setSwapchainExtent(_getSwapchain(0)->swapchainExtent);
-
-    // _mainPass = std::make_optional<RenderPass_V2>(
-    //     "main_pass",
-    //     *_vkEngine.get().device,
-    //     *_vkEngine.get().pipelineManager,
-    //     *_vkEngine.get().descriptorSetManager,
-    //     "MainPass",
-    //     _renderDestinations.at("main"),
-    //     _renderPassDescriptors.at("main")
-    // );
-    // _mainPass->addInputDescriptorSet({
-    //     .poolType = vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
-    //     .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
-    //     .name = "per_frame",
-    //     .bindingInfo = {
-    //     .setIndex = MainSetIndices::PER_FRAME_SET_INDEX,
-    //     .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-    //     .dynamicOffsetCount = 1,
-    //     .dynamicOffsets = {0},
-    //     },
-    // });
-    // _mainPass->setRenderArea(VkRect2D{.offset = {0, 0}, .extent = _getSwapchain(0)->swapchainExtent});
-    // _mainPass->setSwapchainExtent(_getSwapchain(0)->swapchainExtent);
-    // _mainPass->setPipeline(vax::vk::PipelineName::PBR);
-    // _mainPass->setPipelineLayout(vax::vk::PipelineLayoutName::BASE);
-    // _mainPass->setDrawWork([this](RenderPass_V2::RunPassInfo& runPassInfo, DrawContext& drawContext) {
-    //     runPassInfo.scene->draw(drawContext);
-    // });
-
     auto renderPassGraphFactory = RenderPassGraphFactory(
         _vkEngine.get().allocator,
         *_vkEngine.get().device,
@@ -282,53 +185,6 @@ bool Renderer::_createRoverCameraRenderDestination() {
     // });
     return true;
 }
-
-// void Renderer::_createRenderDestinations() {
-//     auto& mainRenderPassDescriptor = _renderPassDescriptors.at("main");
-//     auto& swapchainRenderPassDescriptor = _renderPassDescriptors.at("swapchain");
-//     auto& shadowSunRenderPassDescriptor = _renderPassDescriptors.at("shadow_sun");
-//     auto renderDestinationBuilder = RenderDestinationBuilder(*_vkEngine.get().device, _vkEngine.get().allocator);
-//     auto mainRenderDestination = renderDestinationBuilder.buildMainOffscreen(
-//         *_vkEngine.get().commandManager,
-//         _vkEngine.get().queueManager->graphicsQueue,
-//         _getSwapchain(0)->swapchainExtent,
-//         *mainRenderPassDescriptor
-//     );
-//     if (!mainRenderDestination.has_value()) {
-//         _logger.error("Failed to create main render destination!");
-//         return;
-//     }
-//     auto mainRenderDestinationShared =
-//         std::make_shared<vax::vk::RenderDestination>(std::move(mainRenderDestination.value()));
-//     _renderDestinations.emplace("main", mainRenderDestinationShared);
-//     auto swapchainRenderDestination = renderDestinationBuilder.buildSwapchain(
-//         *_vkEngine.get().commandManager,
-//         _vkEngine.get().queueManager->graphicsQueue,
-//         *_getSwapchain(0),
-//         *swapchainRenderPassDescriptor
-//     );
-//     if (!swapchainRenderDestination.has_value()) {
-//         _logger.error("Failed to create swapchain render destination!");
-//         return;
-//     }
-//     auto swapchainRenderDestinationShared =
-//         std::make_shared<vax::vk::RenderDestination>(std::move(swapchainRenderDestination.value()));
-//     _renderDestinations.emplace("swapchain", swapchainRenderDestinationShared);
-
-//     auto shadowSunRenderDestination = renderDestinationBuilder.buildShadowSunOffscreen(
-//         *_vkEngine.get().commandManager,
-//         _vkEngine.get().queueManager->graphicsQueue,
-//         _getSwapchain(0)->swapchainExtent,
-//         *shadowSunRenderPassDescriptor
-//     );
-//     if (!shadowSunRenderDestination.has_value()) {
-//         _logger.error("Failed to create shadow sun render destination!");
-//         return;
-//     }
-//     auto shadowSunRenderDestinationShared =
-//         std::make_shared<vax::vk::RenderDestination>(std::move(shadowSunRenderDestination.value()));
-//     _renderDestinations.emplace("shadow_sun", shadowSunRenderDestinationShared);
-// }
 
 void Renderer::_writeFinalBlendDescriptorSets() {
     auto mainRenderDestination = _renderPassGraph->getRenderDestination("main");
@@ -545,14 +401,6 @@ void Renderer::_drawUi(CommandBuffer& commandBuffer, uint32_t imageIndex) {
 bool Renderer::_drawScene(
     CommandBuffer& commandBuffer, DrawableScene* scene, uint32_t imageIndex, uint32_t roverCameraImageIndex
 ) {
-    // if (!_renderPassDescriptors.contains("main") || !_renderPassDescriptors.contains("swapchain") ||
-    //     !_renderDestinations.contains("main")) {
-    //     _logger.error("Main render pass descriptor or main render destination not found!");
-    //     return false;
-    // }
-    // auto& mainRenderPassDescriptor = _renderPassDescriptors.at("main");
-    // auto& mainRenderDestination = _renderDestinations.at("main");
-    // auto& swapchainRenderPassDescriptor = _renderPassDescriptors.at("swapchain");
     auto pipelineLayout = _vkEngine.get().pipelineManager->getPipelineLayout(vax::vk::PipelineLayoutName::BASE);
     if (!pipelineLayout) {
         _logger.error("Failed to get base pipeline layout!");
@@ -560,14 +408,6 @@ bool Renderer::_drawScene(
     }
     if (!_bindGlobalDescriptorSet(commandBuffer, pipelineLayout))
         return false;
-
-    // RenderPassInfo renderPassInfo{
-    //     .commandBuffer = &commandBuffer,
-    //     .renderPassDescriptor = mainRenderPassDescriptor.get(),
-    //     .pipelineLayout = pipelineLayout,
-    //     .scene = scene,
-    //     .imageIndex = imageIndex
-    // };
 
     RenderPassNode::RunPassInfo runPassInfo{
         .commandBuffer = commandBuffer,
@@ -632,80 +472,3 @@ void Renderer::_resize() {
     // _jfaPass->update(mainRenderDestination);
     // _writeFinalBlendDescriptorSets();
 }
-
-// void Renderer::_finalBlendPass(RenderPassInfo& renderPassInfo) {
-//     if (!_renderDestinations.contains("swapchain")) {
-//         _logger.error("Swapchain render destination not found!");
-//         return;
-//     }
-//     auto& swapchainRenderDestination = _renderDestinations.at("swapchain");
-//     _setViewportAndScissor(*renderPassInfo.commandBuffer, _getSwapchain(0)->swapchainExtent);
-//     RenderPass renderPass(
-//         *_vkEngine.get().device,
-//         "swapchain_render_pass",
-//         renderPassInfo.renderPassDescriptor->getVkRenderPass(),
-//         swapchainRenderDestination->framebuffers[renderPassInfo.imageIndex],
-//         _getSwapchain(0)->swapchainExtent
-//     );
-//     renderPass.pass(renderPassInfo.commandBuffer->vkCommandBuffer, [&]() {
-//         auto pipelineLayout =
-//             _vkEngine.get().pipelineManager->getPipelineLayout(vax::vk::PipelineLayoutName::FINAL_BLEND);
-//         if (!pipelineLayout) {
-//             _logger.error("Failed to get final blend pipeline layout!");
-//             return;
-//         }
-//         auto finalBlendDescriptorSetHandler =
-//         _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
-//             _currentFrame,
-//             vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
-//             vax::vk::DescriptorSetManager::SetLayoutName::FINAL_BLEND,
-//             "final_blend",
-//             false
-//         );
-//         auto maskDescriptorSetName = _jfaPass->outputDescriptorSetName();
-//         auto maskDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
-//             _currentFrame,
-//             vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
-//             vax::vk::DescriptorSetManager::SetLayoutName::SINGLE_STORAGE_IMAGE,
-//             maskDescriptorSetName,
-//             false
-//         );
-//         auto perFrameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
-//             _currentFrame,
-//             vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
-//             vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
-//             "per_frame",
-//             false
-//         );
-//         if (!finalBlendDescriptorSetHandler.has_value() || !maskDescriptorSetHandler.has_value() ||
-//             !perFrameDescriptorSetHandler.has_value()) {
-//             _logger.error("Failed to get default descriptor set writer!");
-//             return;
-//         }
-//         finalBlendDescriptorSetHandler->bind(renderPassInfo.commandBuffer->vkCommandBuffer, pipelineLayout, 0);
-//         maskDescriptorSetHandler->bind(renderPassInfo.commandBuffer->vkCommandBuffer, pipelineLayout, 1);
-//         uint32_t offset = 0;
-//         perFrameDescriptorSetHandler->bind(
-//             renderPassInfo.commandBuffer->vkCommandBuffer,
-//             pipelineLayout,
-//             2,
-//             VK_PIPELINE_BIND_POINT_GRAPHICS,
-//             1,
-//             &offset
-//         );
-//         auto pipeline = _vkEngine.get().pipelineManager->getPipeline(vax::vk::PipelineName::FINAL_BLEND);
-//         if (!pipeline)
-//             return;
-//         if (!renderPassInfo.commandBuffer->bindPipeline(pipeline, VK_PIPELINE_BIND_POINT_GRAPHICS))
-//             return;
-
-//         DrawContext drawContext{
-//             .commandBuffer = renderPassInfo.commandBuffer->vkCommandBuffer,
-//             .pipelineLayout = pipeline->vkPipelineLayout,
-//             .currentFrame = _currentFrame,
-//         };
-//         renderPassInfo.scene->drawBackground(drawContext);
-
-//         renderPassInfo.commandBuffer->vkCommandBuffer);
-//     });
-// }_uiEngine.get().render(

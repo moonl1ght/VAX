@@ -54,13 +54,16 @@ void RenderPass::runPass(RunPassInfo& runPassInfo) {
             if (_drawWork) {
                 _drawWork(runPassInfo, drawContext);
             }
+            for (const auto& subpass : _subpasses) {
+                subpass->run(runPassInfo, drawContext);
+            }
         });
     }
 }
 
 void RenderPass::_setViewportAndScissor(vax::vk::CommandBuffer& commandBuffer, VkExtent2D extent) {
     VkViewport viewport{
-        .x = 0.0f,
+        .x = _offset.x,
         .y = static_cast<float>(extent.height),
         .width = static_cast<float>(extent.width),
         .height = -static_cast<float>(extent.height),
@@ -69,6 +72,6 @@ void RenderPass::_setViewportAndScissor(vax::vk::CommandBuffer& commandBuffer, V
     };
     vkCmdSetViewport(commandBuffer.vkCommandBuffer, 0, 1, &viewport);
 
-    VkRect2D scissor{.offset = {0, 0}, .extent = extent};
+    VkRect2D scissor{.offset = {static_cast<int32_t>(_offset.x), static_cast<int32_t>(_offset.y)}, .extent = extent};
     vkCmdSetScissor(commandBuffer.vkCommandBuffer, 0, 1, &scissor);
 }
