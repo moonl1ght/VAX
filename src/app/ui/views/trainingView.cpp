@@ -9,7 +9,6 @@ void TrainingView::update(const vax::engine::FrameTime& frameTime) {
     _mainThreadRunner.processThreadQueue();
     ImGui::Begin("Training");
     ImGui::SetNextWindowSize(ImVec2(480, 220), ImGuiCond_Always);
-    ImGui::SetWindowFontScale(2.0f);
     ImGui::Text("%s", _trainingStatus.c_str());
     ImGui::End();
 }

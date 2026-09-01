@@ -1,6 +1,9 @@
 #include "uiEngine.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_vulkan.h"
+#undef Status
+#include "imgui.h"
+#include "luna.h"
 
 using namespace vax::ui;
 using namespace vax;
@@ -34,6 +37,13 @@ void UIEngine::setup(VkRenderPass renderPass) {
     );
     init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     ImGui_ImplVulkan_Init(&init_info);
+
+    ImGuiIO& io = ImGui::GetIO();
+    auto fontPath = std::string(RES_PATH("fonts/FiraCode-Regular.ttf"));
+    ImFont* font = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 28.0f);
+    if (font != nullptr) {
+        io.FontDefault = font;
+    }
 }
 
 void UIEngine::cleanup() {

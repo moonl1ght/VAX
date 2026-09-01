@@ -18,7 +18,6 @@ RoverView::~RoverView() {
 void RoverView::update(const vax::engine::FrameTime& frameTime) {
     _mainThreadRunner.processThreadQueue();
     ImGui::Begin("Rover demo");
-    ImGui::SetWindowFontScale(1.5f);
     if (_isDemoLoaded) {
         if (_isDemoRunning) {
             ImGui::Text("Demo running");

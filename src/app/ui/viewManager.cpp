@@ -1,4 +1,6 @@
 #include "viewManager.h"
+#undef Status
+#include "imgui.h"
 
 using namespace vax::ui;
 

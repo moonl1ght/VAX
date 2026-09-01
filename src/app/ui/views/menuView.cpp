@@ -16,7 +16,6 @@ void MenuView::update(const vax::engine::FrameTime& frameTime) {
         nullptr,
         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar
     );
-    ImGui::SetWindowFontScale(2.0f);
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
     if (ImGui::Button("Show Rover Demo", ImVec2(-1, 55))) {
         _pendingAction = Action::SHOW_ROVER_DEMO;
