@@ -1,10 +1,11 @@
 #include "trainingView.h"
+#undef Status
 #include "imgui.h"
 
 using namespace vax::ui;
 using namespace vax::rl;
 
-void TrainingView::updateImGui() {
+void TrainingView::update(const vax::engine::FrameTime& frameTime) {
     _mainThreadRunner.processThreadQueue();
     ImGui::Begin("Training");
     ImGui::SetNextWindowSize(ImVec2(480, 220), ImGuiCond_Always);

@@ -22,6 +22,7 @@ class UIEngine final {
     UIEngine& operator=(UIEngine&& other) noexcept = delete;
 
     void updateUiStart();
+
     void updateUiEnd();
 
     void render(VkCommandBuffer commandBuffer);

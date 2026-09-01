@@ -3,19 +3,18 @@
 #include "inputController.h"
 #include "logger.h"
 #include "luna.h"
-#include "menuView.h"
 #include "renderer.h"
 #include "roverView.h"
-#include "trainingView.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
 #include "frameTime.h"
 #include "windowController.h"
 #include "physicsDemoMenu.h"
 #include "physicsDemoView.h"
+#include "appMode.h"
+#include "viewManager.h"
 
 namespace vax {
-enum class AppMode { Menu, Demo, Training, PhysicsDemoMenu, PhysicsDemo };
 
 class App final {
   public:
@@ -37,9 +36,8 @@ class App final {
     std::unique_ptr<vax::vk::Engine> _engine;
     std::unique_ptr<vax::engine::Renderer> _renderer;
     std::unique_ptr<vax::ui::UIEngine> _uiEngine;
-    std::unique_ptr<vax::ui::MenuView> _menuView;
-    std::unique_ptr<vax::ui::RoverView> _roverView;
-    std::unique_ptr<vax::ui::TrainingView> _trainingView;
+    std::unique_ptr<vax::ui::ViewManager> _viewManager;
+
     std::unique_ptr<vax::ui::PhysicsDemoMenuView> _physicsDemoMenuView;
     std::unique_ptr<vax::ui::PhysicsDemoView> _physicsDemoView;
 
@@ -49,7 +47,7 @@ class App final {
     void _loopByEventUpdate();
     void _loopContinuousUpdate();
     void _updateTimestamp();
-    void _checkActions();
+    void _updateAppMode();
     void _testCuda() const;
     void _testPhysics() const;
 };

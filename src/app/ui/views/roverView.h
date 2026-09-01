@@ -8,13 +8,17 @@
 #include "uiEngine.h"
 #include "vkEngine.h"
 #include "windowController.h"
+#include "view.h"
+#include "renderer.h"
+#include "logger.h"
 
 namespace vax::ui {
-class RoverView final {
+class RoverView final : public View {
   public:
-    RoverView(UIEngine& uiEngine, vax::WindowController& windowController)
+    RoverView(UIEngine& uiEngine, vax::WindowController& windowController, vax::engine::Renderer& renderer)
         : _uiEngine(uiEngine)
-        , _windowController(windowController) {}
+        , _windowController(windowController)
+        , _renderer(renderer) {}
     ~RoverView();
 
     RoverView(const RoverView& other) = delete;
@@ -22,14 +26,17 @@ class RoverView final {
     RoverView(RoverView&& other) noexcept = delete;
     RoverView& operator=(RoverView&& other) noexcept = delete;
 
-    void updateImGui();
+    void update(const vax::engine::FrameTime& frameTime) override;
+
+    vax::AppMode getNextAppMode() override { return vax::AppMode::Demo; }
+
     void load(vax::vk::Engine& engine, vax::InputController& inputController);
 
-    vax::engine::DrawableScene* drawableScene() const { return _drawableScene.get(); }
-
   private:
+    vax::Logger _logger = vax::Logger("RoverView");
     std::reference_wrapper<UIEngine> _uiEngine;
     std::reference_wrapper<vax::WindowController> _windowController;
+    std::reference_wrapper<vax::engine::Renderer> _renderer;
 
     std::unique_ptr<vax::engine::DrawableScene> _drawableScene;
     std::unique_ptr<vax::rl::GridWorld> _gridWorld;
@@ -53,5 +60,7 @@ class RoverView final {
     void _changeStartPosition();
 
     void _showRoverCamera();
+
+    void _drawScene(const vax::engine::FrameTime& frameTime);
 };
 } // namespace vax::ui

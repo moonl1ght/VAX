@@ -1,9 +1,11 @@
 #include "menuView.h"
+#undef Status
 #include "imgui.h"
 
 using namespace vax::ui;
+using namespace vax;
 
-void MenuView::updateImGui() {
+void MenuView::update(const vax::engine::FrameTime& frameTime) {
     ImGuiIO& io = ImGui::GetIO();
     ImGui::SetNextWindowPos(
         ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f)
@@ -28,4 +30,25 @@ void MenuView::updateImGui() {
         _pendingAction = Action::SHOW_PHYSICS_ENGINE_DEMO;
     }
     ImGui::End();
+
+    if (_trainingView) {
+        _trainingView->update(frameTime);
+    }
+}
+
+AppMode MenuView::getNextAppMode() {
+    auto action = _popPendingAction();
+    if (action) {
+        switch (action.value()) {
+        case Action::SHOW_ROVER_DEMO:
+            return vax::AppMode::Demo;
+        case Action::TRAIN_Q_LEARNING:
+            _trainingView = std::make_unique<TrainingView>();
+            _trainingView->startTraining();
+            return vax::AppMode::Training;
+        case Action::SHOW_PHYSICS_ENGINE_DEMO:
+            return vax::AppMode::PhysicsDemoMenu;
+        }
+    }
+    return vax::AppMode::Menu;
 }

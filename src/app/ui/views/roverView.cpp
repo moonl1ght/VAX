@@ -15,9 +15,8 @@ RoverView::~RoverView() {
     }
 }
 
-void RoverView::updateImGui() {
+void RoverView::update(const vax::engine::FrameTime& frameTime) {
     _mainThreadRunner.processThreadQueue();
-    _uiEngine.get().updateUiStart();
     ImGui::Begin("Rover demo");
     ImGui::SetWindowFontScale(1.5f);
     if (_isDemoLoaded) {
@@ -60,7 +59,8 @@ void RoverView::updateImGui() {
         }
     }
     ImGui::End();
-    _uiEngine.get().updateUiEnd();
+
+    _drawScene(frameTime);
 }
 
 void RoverView::load(Engine& engine, InputController& inputController) {
@@ -131,4 +131,21 @@ void RoverView::_showRoverCamera() {
     });
     _drawableScene->setShouldDrawSecondaryWindow(true);
     _isRoverCameraShown = true;
+}
+
+void RoverView::_drawScene(const vax::engine::FrameTime& frameTime) {
+    static bool firstTime = true;
+    bool renderResult = false;
+    vax::engine::SceneUpdateContext sceneUpdateContext{.frameTime = frameTime};
+    if (firstTime) {
+        _renderer.get().prepare(_drawableScene.get());
+        firstTime = false;
+    }
+    _drawableScene->update(sceneUpdateContext);
+
+    renderResult = _renderer.get().render(_drawableScene.get(), frameTime);
+
+    if (!renderResult) {
+        _logger.error("Failed to render scene!");
+    }
 }

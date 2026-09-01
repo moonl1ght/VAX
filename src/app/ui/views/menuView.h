@@ -1,9 +1,10 @@
 #pragma once
 
-#include "uiEngine.h"
+#include "trainingView.h"
+#include "view.h"
 
 namespace vax::ui {
-class MenuView final {
+class MenuView final : public View {
   public:
     enum class Action {
         SHOW_ROVER_DEMO,
@@ -11,21 +12,24 @@ class MenuView final {
         SHOW_PHYSICS_ENGINE_DEMO,
     };
 
-    MenuView(UIEngine& uiEngine)
-        : _uiEngine(uiEngine) {}
-    ~MenuView() = default;
+    MenuView() {};
+
+    ~MenuView() override = default;
 
     MenuView(const MenuView& other) = delete;
     MenuView& operator=(const MenuView& other) = delete;
     MenuView(MenuView&& other) noexcept = delete;
     MenuView& operator=(MenuView&& other) noexcept = delete;
 
-    void updateImGui();
-    std::optional<Action> popPendingAction() { return std::exchange(_pendingAction, std::nullopt); }
+    void update(const vax::engine::FrameTime& frameTime) override;
+
+    vax::AppMode getNextAppMode() override;
 
   private:
-    std::reference_wrapper<UIEngine> _uiEngine;
+    std::unique_ptr<TrainingView> _trainingView = nullptr;
     std::optional<Action> _pendingAction;
     bool _showTrainingStatus = false;
+
+    std::optional<Action> _popPendingAction() { return std::exchange(_pendingAction, std::nullopt); }
 };
 } // namespace vax::ui

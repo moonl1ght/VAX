@@ -8,7 +8,9 @@
 #include <cuda_runtime.h>
 
 #include "cudaEnv.h"
+#include "menuView.h"
 #include "physicsEngine.h"
+#include "roverView.h"
 
 using namespace vax;
 
@@ -43,9 +45,10 @@ bool App::_setup() {
     _engine->setup();
 
     _uiEngine = std::make_unique<ui::UIEngine>(*_engine, *_windowController->getWindow(0));
-    _menuView = std::make_unique<ui::MenuView>(*_uiEngine);
-    _roverView = std::make_unique<ui::RoverView>(*_uiEngine, *_windowController);
-    _trainingView = std::make_unique<ui::TrainingView>(*_uiEngine);
+    _viewManager = std::make_unique<ui::ViewManager>(*_uiEngine);
+    auto menuView = std::make_unique<ui::MenuView>();
+    _viewManager->setRootView(std::move(menuView));
+
     _physicsDemoMenuView = std::make_unique<ui::PhysicsDemoMenuView>(*_uiEngine);
     _physicsDemoView = std::make_unique<ui::PhysicsDemoView>(*_uiEngine, *_windowController);
 
@@ -61,10 +64,8 @@ void App::_cleanup() {
     _uiEngine->cleanup();
 
     _renderer = nullptr;
-    _roverView = nullptr;
-    _trainingView = nullptr;
-    _menuView = nullptr;
     _uiEngine = nullptr;
+    _viewManager = nullptr;
 
     _engine->cleanup();
 
@@ -138,16 +139,9 @@ void App::_updateTimestamp() {
 void App::_loopByEventUpdate() {
     ZoneScoped;
 
-    _uiEngine->updateUiStart();
-    if (_appMode == AppMode::Menu || _appMode == AppMode::Training) {
-        _menuView->updateImGui();
-        _trainingView->updateImGui();
-    } else if (_appMode == AppMode::PhysicsDemoMenu) {
-        _physicsDemoMenuView->updateImGui();
-    }
-    _uiEngine->updateUiEnd();
+    _viewManager->update(_frameTime);
 
-    _checkActions();
+    _updateAppMode();
 
     _updateTimestamp();
 
@@ -163,53 +157,25 @@ void App::_loopContinuousUpdate() {
     static bool firstTime = true;
     ZoneScoped;
 
-    _roverView->updateImGui();
+    _viewManager->update(_frameTime);
 
-    _checkActions();
+    _updateAppMode();
 
     _updateTimestamp();
-
-    bool renderResult = false;
-    vax::engine::SceneUpdateContext sceneUpdateContext{.frameTime = _frameTime};
-    if (firstTime) {
-        _renderer->prepare(_roverView->drawableScene());
-        firstTime = false;
-    }
-    _roverView->drawableScene()->update(sceneUpdateContext);
-
-    renderResult = _renderer->render(_roverView->drawableScene(), _frameTime);
-
-    if (!renderResult) {
-        _logger.error("Failed to render scene!");
-    }
 }
 
-void App::_checkActions() {
-    auto menuViewAction = _menuView->popPendingAction();
-    auto physicsDemoMenuAction = _physicsDemoMenuView->popPendingAction();
-
-    if (menuViewAction) {
-        switch (menuViewAction.value()) {
-        case ui::MenuView::Action::SHOW_ROVER_DEMO: {
-            _appMode = AppMode::Demo;
-            _roverView->load(*_engine.get(), _inputController);
+void App::_updateAppMode() {
+    auto appMode = _viewManager->getNextAppMode();
+    if (appMode != _appMode) {
+        _appMode = appMode;
+        switch (appMode) {
+        case AppMode::Demo: {
+            auto roverView = std::make_unique<ui::RoverView>(*_uiEngine, *_windowController, *_renderer);
+            roverView->load(*_engine.get(), _inputController);
+            _viewManager->setRootView(std::move(roverView));
         } break;
-        case ui::MenuView::Action::TRAIN_Q_LEARNING: {
-            _trainingView->startTraining();
-            _appMode = AppMode::Training;
-        } break;
-        case ui::MenuView::Action::SHOW_PHYSICS_ENGINE_DEMO: {
-            _appMode = AppMode::PhysicsDemoMenu;
-        } break;
-        }
-    } else if (physicsDemoMenuAction) {
-        switch (physicsDemoMenuAction.value()) {
-        case ui::PhysicsDemoMenuView::Action::SHOW_SIMPLE_DEMO: {
-            _appMode = AppMode::PhysicsDemo;
-        } break;
-        case ui::PhysicsDemoMenuView::Action::GO_TO_MAIN_MENU: {
-            _appMode = AppMode::Menu;
-        } break;
+        default:
+            break;
         }
     }
 }
