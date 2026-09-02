@@ -2,12 +2,14 @@
 #include "sceneNode.h"
 #include "shaderSharedUtils.h"
 #include "transform.h"
+#include "profiler.h"
 
 using namespace vax::engine;
 using namespace vax;
 using namespace vax::math;
 
 void Node::draw(const DrawContext& drawContext) {
+    ZoneScopedN("Node::draw");
     if (_type == NodeType::SCENE) {
         auto scene = static_cast<SceneNode*>(this);
         scene->resetDrawingRangeIndex();

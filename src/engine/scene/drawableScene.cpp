@@ -2,6 +2,7 @@
 #include "camera.h"
 #include "gridWorldDescriptor.h"
 #include "swapchain.h"
+#include "profiler.h"
 
 using namespace vax;
 using namespace vax::vk;
@@ -9,6 +10,7 @@ using namespace vax::engine;
 using namespace vax::rl;
 
 void DrawableScene::prepareForDraw(engine::RenderCallContext renderCallContext) {
+    ZoneScopedN("DrawableScene::prepareForDraw");
     _renderCallContext = renderCallContext;
     if (auto mappedMemory = _sceneUniformBuffers[renderCallContext.currentFrame]->mappedMemory()) {
         uint8_t* mappedPtr = static_cast<uint8_t*>(mappedMemory.value());

@@ -333,6 +333,7 @@ void Renderer::_drawUi(CommandBuffer& commandBuffer) {
 }
 
 bool Renderer::_drawScene(CommandBuffer& commandBuffer, DrawableScene* scene) {
+    ZoneScopedN("Renderer::_drawScene");
     auto pipelineLayout = _vkEngine.get().pipelineManager->getPipelineLayout(vax::vk::PipelineLayoutName::BASE);
     if (!pipelineLayout) {
         _logger.error("Failed to get base pipeline layout!");
@@ -349,7 +350,6 @@ bool Renderer::_drawScene(CommandBuffer& commandBuffer, DrawableScene* scene) {
     };
 
     _renderPassGraph->run(runPassInfo);
-
     return true;
 }
 

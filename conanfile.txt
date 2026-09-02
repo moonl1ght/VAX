@@ -10,7 +10,7 @@ ktx/4.4.2
 urdfdom/4.0.0
 
 [options]
-tracy/*:enable=False
+tracy/*:enable=True
 
 [generators]
 CMakeDeps

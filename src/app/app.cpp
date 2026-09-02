@@ -10,7 +10,6 @@
 #include "cudaEnv.h"
 #include "menuView.h"
 #include "physicsEngine.h"
-#include "roverView.h"
 
 using namespace vax;
 
@@ -161,22 +160,6 @@ void App::_loopContinuousUpdate() {
 
     _updateTimestamp();
 }
-
-// void App::_updateAppMode() {
-//     auto appMode = _viewManager->getNextAppMode();
-//     if (appMode != _appMode) {
-//         _appMode = appMode;
-//         switch (appMode) {
-//         case AppMode::Demo: {
-//             auto roverView = std::make_unique<ui::RoverView>(*_uiEngine, *_windowController, *_renderer);
-//             roverView->load(*_engine.get(), _inputController);
-//             _viewManager->setRootView(std::move(roverView));
-//         } break;
-//         default:
-//             break;
-//         }
-//     }
-// }
 
 void App::_testCuda() const {
     vax::CudaEnv cudaEnv;
