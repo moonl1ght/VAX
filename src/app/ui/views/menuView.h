@@ -1,7 +1,9 @@
 #pragma once
 
+#include "statsView.h"
 #include "trainingView.h"
 #include "view.h"
+#include "viewBuilder.h"
 
 namespace vax::ui {
 class MenuView final : public View {
@@ -12,7 +14,11 @@ class MenuView final : public View {
         SHOW_PHYSICS_ENGINE_DEMO,
     };
 
-    MenuView() {};
+    MenuView(std::unique_ptr<ViewBuilder> viewBuilder, vax::engine::Renderer& renderer)
+        : View(renderer)
+        , _viewBuilder(std::move(viewBuilder)) {
+        _statsView = std::make_unique<StatsView>(renderer);
+    };
 
     ~MenuView() override = default;
 
@@ -23,13 +29,15 @@ class MenuView final : public View {
 
     void update(const vax::engine::FrameTime& frameTime) override;
 
-    vax::AppMode getNextAppMode() override;
-
   private:
+    std::unique_ptr<ViewBuilder> _viewBuilder;
     std::unique_ptr<TrainingView> _trainingView = nullptr;
+    std::unique_ptr<StatsView> _statsView = nullptr;
     std::optional<Action> _pendingAction;
     bool _showTrainingStatus = false;
 
     std::optional<Action> _popPendingAction() { return std::exchange(_pendingAction, std::nullopt); }
+
+    void _handleAction(Action action);
 };
 } // namespace vax::ui

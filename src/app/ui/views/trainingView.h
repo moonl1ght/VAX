@@ -7,7 +7,7 @@
 namespace vax::ui {
 class TrainingView final : public View {
   public:
-    TrainingView() {};
+    TrainingView(vax::engine::Renderer& renderer) : View(renderer) {};
 
     ~TrainingView() = default;
 
@@ -17,8 +17,6 @@ class TrainingView final : public View {
     TrainingView& operator=(TrainingView&& other) noexcept = delete;
 
     void update(const vax::engine::FrameTime& frameTime) override;
-
-    vax::AppMode getNextAppMode() override { return vax::AppMode::Training; }
 
     void startTraining();
 

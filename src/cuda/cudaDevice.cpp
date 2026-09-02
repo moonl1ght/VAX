@@ -70,7 +70,7 @@ void CudaDevice::printGpuInfo() const {
 
     logger.info("-- Memory --");
     logger.info("Total global memory:          ", mib(_prop.totalGlobalMem));
-    logger.info("Free / total global memory:   ", mib(getFreeMemory()), " / ", mib(_totalMemory));
+    logger.info("Free / total global memory:   ", mib(getMemoryUsage().first), " / ", mib(getMemoryUsage().second));
     logger.info("Memory bus width:             ", _prop.memoryBusWidth, " bit");
     if (_memoryClockKHz > 0) {
         logger.info("Memory clock rate:            ", _memoryClockKHz / 1000, " MHz");
@@ -126,11 +126,11 @@ void CudaDevice::_parseGpuInfo() {
     _bandwidth = _memoryClockKHz * 1000.0 * (_prop.memoryBusWidth / 8.0) * 2.0 / 1.0e9;
 }
 
-size_t CudaDevice::getFreeMemory() const {
+std::pair<size_t, size_t> CudaDevice::getMemoryUsage() const {
     size_t freeMemory = 0;
     size_t totalMemory = 0;
     if (cudaMemGetInfo(&freeMemory, &totalMemory) == cudaSuccess) {
-        return freeMemory;
+        return std::make_pair(freeMemory, totalMemory);
     }
-    return -1;
+    return std::make_pair(0, 0);
 }

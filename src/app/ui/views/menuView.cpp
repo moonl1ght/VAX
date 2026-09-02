@@ -1,11 +1,18 @@
 #include "menuView.h"
+#include "roverView.h"
 #undef Status
 #include "imgui.h"
+#include "viewManager.h"
 
 using namespace vax::ui;
 using namespace vax;
 
 void MenuView::update(const vax::engine::FrameTime& frameTime) {
+    auto action = _popPendingAction();
+    if (action) {
+        _handleAction(action.value());
+    }
+
     ImGuiIO& io = ImGui::GetIO();
     ImGui::SetNextWindowPos(
         ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f)
@@ -33,21 +40,25 @@ void MenuView::update(const vax::engine::FrameTime& frameTime) {
     if (_trainingView) {
         _trainingView->update(frameTime);
     }
+    if (_statsView) {
+        _statsView->update(frameTime);
+    }
 }
 
-AppMode MenuView::getNextAppMode() {
-    auto action = _popPendingAction();
-    if (action) {
-        switch (action.value()) {
-        case Action::SHOW_ROVER_DEMO:
-            return vax::AppMode::Demo;
-        case Action::TRAIN_Q_LEARNING:
-            _trainingView = std::make_unique<TrainingView>();
-            _trainingView->startTraining();
-            return vax::AppMode::Training;
-        case Action::SHOW_PHYSICS_ENGINE_DEMO:
-            return vax::AppMode::PhysicsDemoMenu;
+void MenuView::_handleAction(Action action) {
+    switch (action) {
+    case Action::SHOW_ROVER_DEMO:
+        if (_viewManager) {
+            auto roverView = _viewBuilder->buildRoverView();
+            _viewManager->setRootView(std::move(roverView));
         }
+
+        break;
+    case Action::TRAIN_Q_LEARNING:
+        _trainingView = std::make_unique<TrainingView>(_renderer.get());
+        _trainingView->startTraining();
+        break;
+    case Action::SHOW_PHYSICS_ENGINE_DEMO:
+        break;
     }
-    return vax::AppMode::Menu;
 }

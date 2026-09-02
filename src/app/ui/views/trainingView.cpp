@@ -7,8 +7,8 @@ using namespace vax::rl;
 
 void TrainingView::update(const vax::engine::FrameTime& frameTime) {
     _mainThreadRunner.processThreadQueue();
+    ImGui::SetNextWindowSize(ImVec2(380, 220), ImGuiCond_Always);
     ImGui::Begin("Training");
-    ImGui::SetNextWindowSize(ImVec2(480, 220), ImGuiCond_Always);
     ImGui::Text("%s", _trainingStatus.c_str());
     ImGui::End();
 }

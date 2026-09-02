@@ -4,7 +4,6 @@
 #include "logger.h"
 #include "luna.h"
 #include "renderer.h"
-#include "roverView.h"
 #include "uiEngine.h"
 #include "vkEngine.h"
 #include "frameTime.h"
@@ -29,7 +28,7 @@ class App final {
     vax::Logger _logger = vax::Logger("App");
 
     vax::InputController _inputController;
-    vax::AppMode _appMode = vax::AppMode::Menu;
+    vax::AppMode _appMode = vax::AppMode::EventDriven;
     vax::engine::FrameTime _frameTime;
 
     std::unique_ptr<vax::WindowController> _windowController;
@@ -47,7 +46,6 @@ class App final {
     void _loopByEventUpdate();
     void _loopContinuousUpdate();
     void _updateTimestamp();
-    void _updateAppMode();
     void _testCuda() const;
     void _testPhysics() const;
 };

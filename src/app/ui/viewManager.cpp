@@ -1,6 +1,4 @@
 #include "viewManager.h"
-#undef Status
-#include "imgui.h"
 
 using namespace vax::ui;
 
@@ -12,6 +10,6 @@ void ViewManager::update(const vax::engine::FrameTime& frameTime) {
     _uiEngine.get().updateUiEnd();
 }
 
-vax::AppMode ViewManager::getNextAppMode() const {
-    return _rootView->getNextAppMode();
+vax::AppMode ViewManager::getAppMode() const {
+    return _rootView->getAppMode();
 }

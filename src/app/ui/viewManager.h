@@ -1,9 +1,9 @@
 #pragma once
 
-#include "uiEngine.h"
-#include "view.h"
 #include "appMode.h"
 #include "frameTime.h"
+#include "uiEngine.h"
+#include "view.h"
 
 namespace vax::ui {
 class ViewManager final {
@@ -20,9 +20,12 @@ class ViewManager final {
 
     void update(const vax::engine::FrameTime& frameTime);
 
-    void setRootView(std::unique_ptr<View> view) { _rootView = std::move(view); }
+    void setRootView(std::unique_ptr<View> view) {
+        _rootView = std::move(view);
+        _rootView->linkViewManager(this);
+    }
 
-    vax::AppMode getNextAppMode() const;
+    vax::AppMode getAppMode() const;
 
     View& rootView() { return *_rootView; }
 

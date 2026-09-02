@@ -17,6 +17,7 @@ RoverView::~RoverView() {
 
 void RoverView::update(const vax::engine::FrameTime& frameTime) {
     _mainThreadRunner.processThreadQueue();
+    ImGui::SetNextWindowSize(ImVec2(380, 320), ImGuiCond_FirstUseEver);
     ImGui::Begin("Rover demo");
     if (_isDemoLoaded) {
         if (_isDemoRunning) {
@@ -58,6 +59,8 @@ void RoverView::update(const vax::engine::FrameTime& frameTime) {
         }
     }
     ImGui::End();
+
+    _statsView->update(frameTime);
 
     _drawScene(frameTime);
 }

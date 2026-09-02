@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cuda_runtime.h>
+#include <string>
 
 namespace vax {
 
@@ -32,7 +33,9 @@ class CudaDevice {
 
     int residentThreads() const { return _residentThreads; }
 
-    size_t getFreeMemory() const;
+    std::pair<size_t, size_t> getMemoryUsage() const;
+
+    std::string name() const { return _prop.name; }
 
   private:
     cudaDeviceProp _prop;

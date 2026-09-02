@@ -39,6 +39,7 @@ void UIEngine::setup(VkRenderPass renderPass) {
     ImGui_ImplVulkan_Init(&init_info);
 
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
     auto fontPath = std::string(RES_PATH("fonts/FiraCode-Regular.ttf"));
     ImFont* font = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 28.0f);
     if (font != nullptr) {

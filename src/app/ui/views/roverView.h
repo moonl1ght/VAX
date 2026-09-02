@@ -4,13 +4,14 @@
 #include "gridWorld.h"
 #include "gwTrainingManager.h"
 #include "inputController.h"
+#include "logger.h"
+#include "renderer.h"
+#include "statsView.h"
 #include "threadRunner.h"
 #include "uiEngine.h"
+#include "view.h"
 #include "vkEngine.h"
 #include "windowController.h"
-#include "view.h"
-#include "renderer.h"
-#include "logger.h"
 
 namespace vax::ui {
 class RoverView final : public View {
@@ -18,7 +19,9 @@ class RoverView final : public View {
     RoverView(UIEngine& uiEngine, vax::WindowController& windowController, vax::engine::Renderer& renderer)
         : _uiEngine(uiEngine)
         , _windowController(windowController)
-        , _renderer(renderer) {}
+        , View(renderer) {
+        _statsView = std::make_unique<StatsView>(renderer);
+    }
     ~RoverView();
 
     RoverView(const RoverView& other) = delete;
@@ -28,7 +31,7 @@ class RoverView final : public View {
 
     void update(const vax::engine::FrameTime& frameTime) override;
 
-    vax::AppMode getNextAppMode() override { return vax::AppMode::Demo; }
+    vax::AppMode getAppMode() override { return vax::AppMode::Continous; }
 
     void load(vax::vk::Engine& engine, vax::InputController& inputController);
 
@@ -36,8 +39,7 @@ class RoverView final : public View {
     vax::Logger _logger = vax::Logger("RoverView");
     std::reference_wrapper<UIEngine> _uiEngine;
     std::reference_wrapper<vax::WindowController> _windowController;
-    std::reference_wrapper<vax::engine::Renderer> _renderer;
-
+    std::unique_ptr<StatsView> _statsView;
     std::unique_ptr<vax::engine::DrawableScene> _drawableScene;
     std::unique_ptr<vax::rl::GridWorld> _gridWorld;
     std::unique_ptr<vax::rl::GWTrainingManager> _trainingManager;

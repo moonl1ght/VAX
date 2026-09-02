@@ -45,15 +45,17 @@ bool App::_setup() {
     _engine->setup();
 
     _uiEngine = std::make_unique<ui::UIEngine>(*_engine, *_windowController->getWindow(0));
-    _viewManager = std::make_unique<ui::ViewManager>(*_uiEngine);
-    auto menuView = std::make_unique<ui::MenuView>();
-    _viewManager->setRootView(std::move(menuView));
 
     _physicsDemoMenuView = std::make_unique<ui::PhysicsDemoMenuView>(*_uiEngine);
     _physicsDemoView = std::make_unique<ui::PhysicsDemoView>(*_uiEngine, *_windowController);
 
     _renderer = std::make_unique<engine::Renderer>(*_engine, *_uiEngine);
     _renderer->setup();
+
+    _viewManager = std::make_unique<ui::ViewManager>(*_uiEngine);
+    auto viewBuilder = std::make_unique<ui::ViewBuilder>(*_uiEngine, *_windowController, _inputController, *_renderer, *_engine);
+    auto menuView = std::make_unique<ui::MenuView>(std::move(viewBuilder), *_renderer);
+    _viewManager->setRootView(std::move(menuView));
 
     return true;
 }
@@ -103,7 +105,8 @@ void App::_mainLoop() {
             }
             return true;
         };
-        if (_appMode == AppMode::Demo) {
+        _appMode = _viewManager->getAppMode();
+        if (_appMode == AppMode::Continous) {
             while (SDL_PollEvent(&event)) {
                 if (!processEvent(event)) {
                     break;
@@ -141,8 +144,6 @@ void App::_loopByEventUpdate() {
 
     _viewManager->update(_frameTime);
 
-    _updateAppMode();
-
     _updateTimestamp();
 
     bool renderResult = false;
@@ -154,31 +155,28 @@ void App::_loopByEventUpdate() {
 }
 
 void App::_loopContinuousUpdate() {
-    static bool firstTime = true;
     ZoneScoped;
 
     _viewManager->update(_frameTime);
 
-    _updateAppMode();
-
     _updateTimestamp();
 }
 
-void App::_updateAppMode() {
-    auto appMode = _viewManager->getNextAppMode();
-    if (appMode != _appMode) {
-        _appMode = appMode;
-        switch (appMode) {
-        case AppMode::Demo: {
-            auto roverView = std::make_unique<ui::RoverView>(*_uiEngine, *_windowController, *_renderer);
-            roverView->load(*_engine.get(), _inputController);
-            _viewManager->setRootView(std::move(roverView));
-        } break;
-        default:
-            break;
-        }
-    }
-}
+// void App::_updateAppMode() {
+//     auto appMode = _viewManager->getNextAppMode();
+//     if (appMode != _appMode) {
+//         _appMode = appMode;
+//         switch (appMode) {
+//         case AppMode::Demo: {
+//             auto roverView = std::make_unique<ui::RoverView>(*_uiEngine, *_windowController, *_renderer);
+//             roverView->load(*_engine.get(), _inputController);
+//             _viewManager->setRootView(std::move(roverView));
+//         } break;
+//         default:
+//             break;
+//         }
+//     }
+// }
 
 void App::_testCuda() const {
     vax::CudaEnv cudaEnv;

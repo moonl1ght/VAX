@@ -7,7 +7,7 @@
 namespace vax {
 class WindowController final {
   public:
-    static constexpr uint32_t maxWindows = 2;
+    static constexpr uint32_t maxWindows = 3;
 
     WindowController() = default;
     ~WindowController() = default;

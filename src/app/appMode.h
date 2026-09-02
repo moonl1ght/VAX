@@ -1,5 +1,5 @@
 #pragma once
 
 namespace vax {
-enum class AppMode { Menu, Demo, Training, PhysicsDemoMenu, PhysicsDemo };
+enum class AppMode { Continous, EventDriven };
 }

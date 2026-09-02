@@ -12,12 +12,6 @@ public:
     CudaEnv() { _load(); }
     ~CudaEnv() = default;
 
-    CudaEnv(const CudaEnv&) = delete;
-    CudaEnv& operator=(const CudaEnv&) = delete;
-
-    CudaEnv(CudaEnv&&) = default;
-    CudaEnv& operator=(CudaEnv&&) = default;
-
     void printInfo() const;
 
     const std::vector<CudaDevice>& devices() const { return _devices; }
@@ -25,8 +19,6 @@ public:
     const CudaDevice& device(int index = 0) const { return _devices[index]; }
 
   private:
-    vax::Logger _logger = vax::Logger("CudaEnv");
-
     std::vector<CudaDevice> _devices;
 
     int _driverVersion = 0;
