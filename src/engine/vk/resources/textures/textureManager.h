@@ -17,9 +17,8 @@ class TextureManager final {
     using TextureResource = std::pair<TextureHandle, Texture*>;
     using SamplerResource = std::pair<SamplerHandle, Sampler*>;
 
-    explicit TextureManager(const vk::Device& device, VmaAllocator allocator)
-        : _device(device)
-        , _allocator(allocator) {
+    explicit TextureManager(const vk::Device& device)
+        : _device(device) {
         _globalSamplers.reserve(vax::vk::MAX_GLOBAL_SAMPLERS);
     };
 
@@ -53,7 +52,6 @@ class TextureManager final {
     vax::Logger _logger = vax::Logger("TextureManager");
 
     std::reference_wrapper<const vk::Device> _device;
-    VmaAllocator _allocator;
     // TODO: change to vector + use generation for stability
     // maybe vector of vectors of buffers?
     std::unordered_map<TextureId, Texture> _pool;

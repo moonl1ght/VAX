@@ -17,15 +17,13 @@ namespace vax::engine {
 class RenderPassGraphManager final {
   public:
     RenderPassGraphManager(
-        VmaAllocator allocator,
         vax::vk::Device& device,
         vax::vk::PipelineManager& pipelineManager,
         vax::vk::DescriptorSetManager& descriptorSetManager,
         vax::WindowController& windowController,
         vax::ui::UIEngine& uiEngine
     )
-        : _allocator(allocator)
-        , _device(device)
+        : _device(device)
         , _pipelineManager(pipelineManager)
         , _descriptorSetManager(descriptorSetManager)
         , _windowController(windowController)
@@ -48,15 +46,14 @@ class RenderPassGraphManager final {
     std::unique_ptr<RenderPassGraph> buildUiGraph();
 
     std::shared_ptr<vax::vk::RenderPassDescriptor> getRenderPassDescriptor(std::string name) const {
-      if(_renderPassDescriptors.contains(name)) {
-        return _renderPassDescriptors.at(name);
-      }
-      return nullptr;
+        if (_renderPassDescriptors.contains(name)) {
+            return _renderPassDescriptors.at(name);
+        }
+        return nullptr;
     }
 
   private:
     vax::Logger _logger = vax::Logger("rednerPassGraphFactory");
-    VmaAllocator _allocator;
     std::reference_wrapper<vax::vk::Device> _device;
     std::reference_wrapper<vax::WindowController> _windowController;
     std::reference_wrapper<vax::vk::PipelineManager> _pipelineManager;

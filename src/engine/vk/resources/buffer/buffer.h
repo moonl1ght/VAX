@@ -9,7 +9,7 @@
 namespace vax::vk {
 class CommandBuffer;
 class BufferManager;
-}
+} // namespace vax::vk
 
 namespace vax::vk {
 class Buffer final {
@@ -22,7 +22,8 @@ class Buffer final {
         const void* data,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
-        VkMemoryPropertyFlags properties
+        VmaMemoryUsage memoryUsage,
+        VmaAllocationCreateFlags flags = 0
     );
 
     static std::optional<Buffer> allocate(
@@ -30,7 +31,8 @@ class Buffer final {
         std::string name,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
-        VkMemoryPropertyFlags properties
+        VmaMemoryUsage memoryUsage,
+        VmaAllocationCreateFlags flags = 0
     );
 
     ~Buffer() { cleanup(); }
@@ -45,12 +47,12 @@ class Buffer final {
     Buffer(Buffer&& other)
         : _device(other._device)
         , _vkBuffer(other._vkBuffer)
-        , _vkBufferMemory(other._vkBufferMemory)
+        , _allocation(other._allocation)
         , _size(other._size)
         , _isDetached(other._isDetached)
         , _id(other._id) {
         other._vkBuffer = VK_NULL_HANDLE;
-        other._vkBufferMemory = VK_NULL_HANDLE;
+        other._allocation = VK_NULL_HANDLE;
         other._size = 0;
         other._isDetached = true;
         other._id = NullId;
@@ -61,12 +63,12 @@ class Buffer final {
             cleanup();
             _device = other._device;
             _vkBuffer = other._vkBuffer;
-            _vkBufferMemory = other._vkBufferMemory;
+            _allocation = other._allocation;
             _size = other._size;
             _isDetached = other._isDetached;
             _id = other._id;
             other._vkBuffer = VK_NULL_HANDLE;
-            other._vkBufferMemory = VK_NULL_HANDLE;
+            other._allocation = VK_NULL_HANDLE;
             other._size = 0;
             other._isDetached = true;
             other._id = NullId;
@@ -74,9 +76,21 @@ class Buffer final {
         return *this;
     }
 
-    bool load(const void* data, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+    bool load(
+        const void* data,
+        VkDeviceSize size,
+        VkBufferUsageFlags usage,
+        VmaMemoryUsage memoryUsage,
+        VmaAllocationCreateFlags flags = 0
+    );
 
-    bool reload(const void* data, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+    bool reload(
+        const void* data,
+        VkDeviceSize size,
+        VkBufferUsageFlags usage,
+        VmaMemoryUsage memoryUsage,
+        VmaAllocationCreateFlags flags = 0
+    );
 
     bool fill(const void* fillData);
 
@@ -98,8 +112,6 @@ class Buffer final {
 
     VkBuffer vkBuffer() const { return _vkBuffer; }
 
-    VkDeviceMemory vkBufferMemory() const { return _vkBufferMemory; }
-
     VkDeviceSize size() const { return _size; }
 
     BufferId id() const { return _id; }
@@ -115,13 +127,13 @@ class Buffer final {
     std::string _name;
     BufferId _id = NullBufferId;
     VkBuffer _vkBuffer = VK_NULL_HANDLE;
-    VkDeviceMemory _vkBufferMemory = VK_NULL_HANDLE;
+    VmaAllocation _allocation = VK_NULL_HANDLE;
     VkDeviceSize _size = 0;
     bool _isMapped = false;
     void* _mappedMemory = nullptr;
     bool _isDetached = true;
 
-    bool _allocate(VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+    bool _allocate(VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags flags);
 
     void _destroy();
 

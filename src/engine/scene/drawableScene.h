@@ -34,7 +34,7 @@ class DrawableScene final : public vax::InputController::Observer {
   public:
     DrawableScene(vax::vk::Engine& vkEngine)
         : _vkEngine(vkEngine)
-        , _resourceManager(vax::vk::ResourceManager(*vkEngine.device, vkEngine.allocator))
+        , _resourceManager(vax::vk::ResourceManager(*vkEngine.device))
         , _textureLoader(
               vax::vk::TextureLoader(*vkEngine.device, _resourceManager.textureManager(), *vkEngine.commandManager)
           )

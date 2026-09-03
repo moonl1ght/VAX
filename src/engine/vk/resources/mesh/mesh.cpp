@@ -12,14 +12,15 @@ bool vax::vk::Mesh<VertexType>::loadBuffers(const LoadMeshBuffersContext& contex
         _vertices.data(),
         bufferSize,
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        VMA_MEMORY_USAGE_CPU_TO_GPU,
+        VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
     );
     vertexBuffer = Buffer::allocate(
         _device.get(),
         _name + "_vertex_buffer",
         bufferSize,
         VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+        VMA_MEMORY_USAGE_GPU_ONLY
     );
     if (!_stagingVertexBuffer.has_value() && !vertexBuffer.has_value()) {
         return false;
@@ -33,14 +34,15 @@ bool vax::vk::Mesh<VertexType>::loadBuffers(const LoadMeshBuffersContext& contex
             _indices.data(),
             indexBufferSize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+            VMA_MEMORY_USAGE_CPU_TO_GPU,
+            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
         );
         indexBuffer = vk::Buffer::allocate(
             _device.get(),
             _name + "_index_buffer",
             indexBufferSize,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+            VMA_MEMORY_USAGE_GPU_ONLY
         );
         if (!_stagingIndexBuffer.has_value() && !indexBuffer.has_value()) {
             return false;

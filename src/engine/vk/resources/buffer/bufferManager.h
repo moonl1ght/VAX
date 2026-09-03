@@ -22,8 +22,13 @@ class BufferManager final {
 
     void fullCleanup();
 
-    std::optional<BufferResource>
-    allocateBuffer(std::string name, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+    std::optional<BufferResource> allocateBuffer(
+        std::string name,
+        VkDeviceSize size,
+        VkBufferUsageFlags usage,
+        VmaMemoryUsage memoryUsage,
+        VmaAllocationCreateFlags flags = 0
+    );
 
     std::optional<BufferResource> find(BufferHandle handle);
 

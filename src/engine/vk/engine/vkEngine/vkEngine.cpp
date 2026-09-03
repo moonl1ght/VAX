@@ -58,7 +58,9 @@ bool vax::vk::Engine::setup() {
     deletionQueue.push_function([&]() { _windowController.get().getWindow(0)->destroySurface(); });
 
     device = std::make_unique<Device>();
-    if (!device->load(instance, _windowController.get().getWindow(0)->surface, enableValidationLayers)) {
+    if (!device->load(
+            instance, _windowController.get().getWindow(0)->surface, enableValidationLayers, vulkanApiVersion
+        )) {
         return false;
     }
 
@@ -68,17 +70,6 @@ bool vax::vk::Engine::setup() {
     queueManager->setup(*device);
 
     deletionQueue.push_function([&]() { queueManager = nullptr; });
-
-    _logger.info("Creating allocator...");
-    if (!VK_CHECK(createAllocator())) {
-        _logger.error("Failed to create allocator!");
-        return false;
-    }
-
-    deletionQueue.push_function([&]() {
-        _logger.debug("Destroying allocator...");
-        vmaDestroyAllocator(allocator);
-    });
 
     commandManager = std::make_unique<CommandManager>(*device);
     if (!commandManager->setup())
@@ -149,15 +140,4 @@ bool vax::vk::Engine::setupDebugMessenger() {
     });
 
     return true;
-}
-
-VkResult vax::vk::Engine::createAllocator() {
-    VmaAllocatorCreateInfo allocatorInfo{
-        .flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
-        .physicalDevice = device->vkPhysicalDevice,
-        .device = device->vkDevice,
-        .instance = instance,
-        .vulkanApiVersion = vulkanApiVersion,
-    };
-    return vmaCreateAllocator(&allocatorInfo, &allocator);
 }

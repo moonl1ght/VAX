@@ -24,14 +24,12 @@ class TextureFactory final {
         uint32_t numMips = 1;
     };
 
-    explicit TextureFactory(const vax::vk::Device& device, VmaAllocator allocator, TextureManager* textureManager)
+    explicit TextureFactory(const vax::vk::Device& device, TextureManager* textureManager)
         : _device(device)
-        , _allocator(allocator)
         , _textureManager(textureManager) {};
 
-    explicit TextureFactory(const vax::vk::Device& device, VmaAllocator allocator)
+    explicit TextureFactory(const vax::vk::Device& device)
         : _device(device)
-        , _allocator(allocator)
         , _textureManager(nullptr) {};
 
     TextureFactory(const TextureFactory& other) = delete;
@@ -51,6 +49,5 @@ class TextureFactory final {
     vax::Logger _logger = vax::Logger("TextureFactory");
     std::reference_wrapper<const Device> _device;
     TextureManager* _textureManager;
-    VmaAllocator _allocator;
 };
 } // namespace vax::vk

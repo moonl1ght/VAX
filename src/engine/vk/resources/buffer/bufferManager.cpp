@@ -10,13 +10,17 @@ void BufferManager::fullCleanup() {
 }
 
 std::optional<BufferManager::BufferResource> BufferManager::allocateBuffer(
-    std::string name, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties
+    std::string name,
+    VkDeviceSize size,
+    VkBufferUsageFlags usage,
+    VmaMemoryUsage memoryUsage,
+    VmaAllocationCreateFlags flags
 ) {
     auto buffer = vk::Buffer(_device.get());
     buffer._name = name;
     buffer._size = size;
     buffer._id = _lastId++;
-    if (!buffer._allocate(usage, properties))
+    if (!buffer._allocate(usage, memoryUsage, flags))
         return std::nullopt;
     auto [it, inserted] = _pool.try_emplace(buffer.id(), std::move(buffer));
     if (!inserted) {

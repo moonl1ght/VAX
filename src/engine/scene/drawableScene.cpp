@@ -1,8 +1,8 @@
 #include "drawableScene.h"
 #include "camera.h"
 #include "gridWorldDescriptor.h"
-#include "swapchain.h"
 #include "profiler.h"
+#include "swapchain.h"
 
 using namespace vax;
 using namespace vax::vk;
@@ -80,7 +80,8 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
                                   "frame_uniform_buffer",
                                   passUboStride * (lightCount + 1),
                                   VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                                  VMA_MEMORY_USAGE_CPU_TO_GPU,
+                                  VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
                               )
                               .value();
         allocation.second->map();
@@ -90,7 +91,8 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
                                              "rover_camera_uniform_buffer",
                                              bufferSize,
                                              VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                                             VMA_MEMORY_USAGE_CPU_TO_GPU,
+                                             VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
                                          )
                                          .value();
         roverCameraAllocation.second->map();
@@ -100,7 +102,8 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
                                        "light_uniform_buffer",
                                        sizeof(LightUBO),
                                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                                       VMA_MEMORY_USAGE_CPU_TO_GPU,
+                                       VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
                                    )
                                    .value();
         lightAllocation.second->map();

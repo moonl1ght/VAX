@@ -17,7 +17,8 @@ bool SSBOManager::setup(uint32_t maxInstances) {
             "ssbo_instance_buffer",
             sizeof(InstanceData) * maxInstances,
             VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+            VMA_MEMORY_USAGE_CPU_TO_GPU,
+            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
         );
         if (!allocation.has_value())
             return false;

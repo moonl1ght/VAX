@@ -106,7 +106,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphManager::buildRoverDemoGraph(boo
 
     mainPass->addSubpass(std::move(gizmoSubpass));
 
-    auto jfaPass = std::make_shared<JFAPass>("jfa_pass", _device.get(), _descriptorSetManager.get(), _allocator);
+    auto jfaPass = std::make_shared<JFAPass>("jfa_pass", _device.get(), _descriptorSetManager.get());
     jfaPass->setup(_renderDestinations.at("main"));
 
     jfaPass->setPostPassWork([](RenderPassNode* passNode, RenderPass::RunPassInfo& runPassInfo) {

@@ -16,7 +16,7 @@ void Texture::_destroy() {
         _imageView = VK_NULL_HANDLE;
     }
     if (_image != VK_NULL_HANDLE) {
-        vmaDestroyImage(_allocator, _image, _allocation);
+        vmaDestroyImage(_device.get().allocator, _image, _allocation);
         _allocation = VK_NULL_HANDLE;
         _image = VK_NULL_HANDLE;
     }

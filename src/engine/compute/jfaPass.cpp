@@ -125,7 +125,7 @@ void JFAPass::update(std::weak_ptr<vax::vk::RenderDestination> inputRenderDestin
 void JFAPass::_writeTextures(const std::vector<vax::vk::Texture>& maskTextures, const vax::vk::Texture& depthTexture) {
     _jfaTexturesA.clear();
     _jfaTexturesB.clear();
-    auto textureFactory = TextureFactory(_device.get(), _allocator);
+    auto textureFactory = TextureFactory(_device.get());
     for (int i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
         auto initDescriptorSetHandler = _descriptorSetManager.get().createDescriptorSetHandler(
             i, DescriptorSetManager::PoolType::PROCESSING, "jfa_init", "init_jfa", true

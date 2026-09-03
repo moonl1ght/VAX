@@ -62,7 +62,7 @@ void TextureManager::fullCleanup() {
 }
 
 TextureFactory TextureManager::createTextureFactory() const {
-    return TextureFactory(_device.get(), _allocator, const_cast<TextureManager* const>(this));
+    return TextureFactory(_device.get(), const_cast<TextureManager* const>(this));
 }
 
 std::optional<TextureManager::TextureResource> TextureManager::attach(Texture&& texture) {

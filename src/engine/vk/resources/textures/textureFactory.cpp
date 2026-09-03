@@ -6,7 +6,7 @@ using namespace vax;
 
 std::optional<Texture> TextureFactory::makeDepthTextureDetached(VkFormat format, vax::math::SizeUI size) {
     auto imageResult = vax::vk::createImage(
-        _allocator,
+        _device.get().allocator,
         size.toExtent3D(),
         format,
         VK_IMAGE_TILING_OPTIMAL,
@@ -26,7 +26,7 @@ std::optional<Texture> TextureFactory::makeDepthTextureDetached(VkFormat format,
     vax::vk::pfnSetDebugUtilsObjectNameEXT(_device.get().vkDevice, &nameInfo);
     auto [depthImage, allocation] = imageResult.value();
     auto texture = Texture(
-        _device.get(), _allocator, "depth_texture", depthImage, allocation, size, format, VK_IMAGE_ASPECT_DEPTH_BIT
+        _device.get(), "depth_texture", depthImage, allocation, size, format, VK_IMAGE_ASPECT_DEPTH_BIT
     );
     return std::make_optional(std::move(texture));
 }
@@ -49,7 +49,7 @@ std::optional<TextureManager::TextureResource> TextureFactory::makeDepthTexture(
 
 std::optional<Texture> TextureFactory::makeTextureDetached(const TextureCreateInfo& createInfo) {
     auto imageResult = createImage(
-        _allocator,
+        _device.get().allocator,
         createInfo.size.toExtent3D(),
         createInfo.format,
         VK_IMAGE_TILING_OPTIMAL,
@@ -63,7 +63,6 @@ std::optional<Texture> TextureFactory::makeTextureDetached(const TextureCreateIn
         auto [image, allocation] = imageResult.value();
         auto texture = Texture(
             _device.get(),
-            _allocator,
             createInfo.name,
             image,
             allocation,

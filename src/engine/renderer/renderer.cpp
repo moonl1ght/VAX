@@ -14,7 +14,6 @@ using namespace vax::vk;
 
 void Renderer::setup() {
     _roverDemoPassGraphManager = std::make_unique<RenderPassGraphManager>(
-        _vkEngine.get().allocator,
         *_vkEngine.get().device,
         *_vkEngine.get().pipelineManager,
         *_vkEngine.get().descriptorSetManager,

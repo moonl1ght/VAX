@@ -151,12 +151,20 @@ int Device::pickPhysicalDevice(
     return EXIT_SUCCESS;
 }
 
-bool Device::load(VkInstance instance, VkSurfaceKHR surface, bool enableValidationLayers) {
+bool Device::load(VkInstance instance, VkSurfaceKHR surface, bool enableValidationLayers, uint32_t vulkanApiVersion) {
     _logger.info("Loading device...");
     if (pickPhysicalDevice(instance, surface, vkPhysicalDevice) == EXIT_SUCCESS) {
         _indices = findQueueFamilies(vkPhysicalDevice, surface);
         if (createLogicalDevice(vkPhysicalDevice, surface, vkDevice, enableValidationLayers) == EXIT_SUCCESS) {
             _logger.info("Device loaded successfully!");
+            VmaAllocatorCreateInfo allocatorInfo{
+                .flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
+                .physicalDevice = vkPhysicalDevice,
+                .device = vkDevice,
+                .instance = instance,
+                .vulkanApiVersion = vulkanApiVersion,
+            };
+            vmaCreateAllocator(&allocatorInfo, &allocator);
             return true;
         }
     }

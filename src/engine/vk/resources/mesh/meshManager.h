@@ -1,7 +1,7 @@
 #pragma once
 
 #include "device.h"
-#include "luna.h"
+#include "buffer.h"
 #include "mesh.h"
 #include "resourceHandle.h"
 
@@ -34,6 +34,8 @@ class MeshManager final {
     vax::Logger _logger = vax::Logger("MeshManager");
 
     std::reference_wrapper<const Device> _device;
+    std::unique_ptr<Buffer> _globalVertexBuffer;
+    std::unique_ptr<Buffer> _globalIndexBuffer;
     // TODO: change to vector + use generation for stability
     // maybe vector of vectors of buffers?
     std::unordered_map<MeshId, MeshPBR> _pool;

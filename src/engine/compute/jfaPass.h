@@ -8,20 +8,12 @@
 namespace vax::engine {
 class JFAPass final : public RenderPassNode {
   public:
-    JFAPass(
-        std::string_view id,
-        const vax::vk::Device& device,
-        vax::vk::DescriptorSetManager& descriptorSetManager,
-        VmaAllocator allocator
-    )
+    JFAPass(std::string_view id, const vax::vk::Device& device, vax::vk::DescriptorSetManager& descriptorSetManager)
         : RenderPassNode(id)
         , _device(device)
-        , _descriptorSetManager(descriptorSetManager)
-        , _allocator(allocator) {};
+        , _descriptorSetManager(descriptorSetManager) {};
 
-    ~JFAPass() {
-        cleanup();
-    }
+    ~JFAPass() { cleanup(); }
 
     JFAPass(const JFAPass& other) = delete;
     JFAPass& operator=(const JFAPass& other) = delete;
@@ -52,7 +44,6 @@ class JFAPass final : public RenderPassNode {
     vax::Logger _logger = vax::Logger("JFAPass");
     std::reference_wrapper<const vax::vk::Device> _device;
     std::reference_wrapper<vax::vk::DescriptorSetManager> _descriptorSetManager;
-    VmaAllocator _allocator;
     std::optional<vax::vk::Pipeline> _initPipeline;
     std::optional<vax::vk::Pipeline> _jfaPipeline;
     std::vector<vax::vk::Texture> _jfaTexturesA;

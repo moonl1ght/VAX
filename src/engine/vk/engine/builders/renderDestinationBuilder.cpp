@@ -11,7 +11,7 @@ std::optional<RenderDestination> RenderDestinationBuilder::buildMainOffscreen(
     _logger.info("Building main offscreen render destination...");
     VkFormat depthFormat = renderPassDescriptor.depthFormat;
     auto depthTexture =
-        TextureFactory(_device.get(), _allocator).makeDepthTextureDetached(depthFormat, math::SizeUI(extent));
+        TextureFactory(_device.get()).makeDepthTextureDetached(depthFormat, math::SizeUI(extent));
 
     if (!depthTexture.has_value()) {
         return std::nullopt;
@@ -40,7 +40,7 @@ std::optional<RenderDestination> RenderDestinationBuilder::buildMainOffscreen(
     framebuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-        auto colorTexture = TextureFactory(_device.get(), _allocator)
+        auto colorTexture = TextureFactory(_device.get())
                                 .makeTextureDetached(
                                     TextureFactory::TextureCreateInfo{
                                     .name = "main_offscreen_color_" + std::to_string(i),
@@ -56,7 +56,7 @@ std::optional<RenderDestination> RenderDestinationBuilder::buildMainOffscreen(
         colorTexture->loadImageView(VK_IMAGE_VIEW_TYPE_2D, 1, 1);
         colorTexture->createSampler();
 
-        auto maskTexture = TextureFactory(_device.get(), _allocator)
+        auto maskTexture = TextureFactory(_device.get())
                                .makeTextureDetached(
                                    TextureFactory::TextureCreateInfo{
                                    .name = "main_offscreen_mask_" + std::to_string(i),
@@ -109,7 +109,7 @@ std::optional<RenderDestination> RenderDestinationBuilder::buildSwapchain(
 ) const noexcept {
     _logger.info("Building swapchain render destination...");
     VkFormat depthFormat = renderPassDescriptor.depthFormat;
-    auto depthTexture = TextureFactory(_device.get(), _allocator)
+    auto depthTexture = TextureFactory(_device.get())
                             .makeDepthTextureDetached(depthFormat, math::SizeUI(swapchain.swapchainExtent));
 
     if (!depthTexture.has_value()) {
@@ -164,7 +164,7 @@ std::optional<RenderDestination> RenderDestinationBuilder::buildShadowSunOffscre
     _logger.info("Building shadow sun offscreen render destination...");
     VkFormat depthFormat = renderPassDescriptor.depthFormat;
     auto depthTexture =
-        TextureFactory(_device.get(), _allocator).makeDepthTextureDetached(depthFormat, math::SizeUI(extent));
+        TextureFactory(_device.get()).makeDepthTextureDetached(depthFormat, math::SizeUI(extent));
 
     if (!depthTexture.has_value()) {
         return std::nullopt;

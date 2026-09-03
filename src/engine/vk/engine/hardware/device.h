@@ -8,6 +8,7 @@ class Device final {
   public:
     VkPhysicalDevice vkPhysicalDevice = VK_NULL_HANDLE;
     VkDevice vkDevice = VK_NULL_HANDLE;
+    VmaAllocator allocator = VK_NULL_HANDLE;
 
     Device() {}
 
@@ -16,7 +17,7 @@ class Device final {
     Device& operator=(const Device& other) = delete;
     Device& operator=(Device&& other) = delete;
 
-    bool load(VkInstance instance, VkSurfaceKHR surface, bool enableValidationLayers);
+    bool load(VkInstance instance, VkSurfaceKHR surface, bool enableValidationLayers, uint32_t vulkanApiVersion);
     void destroy();
 
     QueueFamilyIndices getQueueFamilyIndices() const { return _indices; }

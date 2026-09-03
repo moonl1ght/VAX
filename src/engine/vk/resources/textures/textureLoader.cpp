@@ -158,7 +158,8 @@ std::optional<TextureManager::TextureResource> TextureLoader::_loadKTXTexture(st
         ktxTexture_GetData(ktxTex),
         static_cast<VkDeviceSize>(dataSize),
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        VMA_MEMORY_USAGE_CPU_TO_GPU,
+        VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
     );
     if (!stagingBuffer.has_value()) {
         ktxTexture_Destroy(ktxTex);
@@ -246,7 +247,8 @@ std::optional<TextureManager::TextureResource> TextureLoader::_loadTexture(
         pixels,
         imageSize,
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        VMA_MEMORY_USAGE_CPU_TO_GPU,
+        VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
     );
 
     stbi_image_free(pixels);

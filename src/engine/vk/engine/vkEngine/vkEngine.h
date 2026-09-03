@@ -34,7 +34,6 @@ class Engine final {
     VkInstance instance = VK_NULL_HANDLE;
 
     std::unique_ptr<vax::vk::Device> device;
-    VmaAllocator allocator = VK_NULL_HANDLE;
 
     std::unique_ptr<vax::vk::QueueManager> queueManager;
     std::unique_ptr<vax::vk::DescriptorSetManager> descriptorSetManager;
@@ -66,6 +65,5 @@ class Engine final {
     std::reference_wrapper<vax::WindowController> _windowController;
 
     bool setupDebugMessenger();
-    VkResult createAllocator();
 };
 } // namespace vax::vk

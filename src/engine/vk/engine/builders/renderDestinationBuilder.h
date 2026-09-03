@@ -10,9 +10,8 @@
 namespace vax::vk {
 class RenderDestinationBuilder {
   public:
-    explicit RenderDestinationBuilder(const Device& device, VmaAllocator allocator)
-        : _device(device)
-        , _allocator(allocator) {};
+    explicit RenderDestinationBuilder(const Device& device)
+        : _device(device) {};
 
     std::optional<RenderDestination> buildSwapchain(
         CommandManager& commandManager,
@@ -38,6 +37,5 @@ class RenderDestinationBuilder {
   private:
     vax::Logger _logger = vax::Logger("RenderDestinationBuilder");
     std::reference_wrapper<const Device> _device;
-    VmaAllocator _allocator;
 };
 } // namespace vax::vk

@@ -10,10 +10,10 @@
 namespace vax::vk {
 class ResourceManager final {
   public:
-    explicit ResourceManager(const vax::vk::Device& device, VmaAllocator allocator)
+    explicit ResourceManager(const vax::vk::Device& device)
         : _bufferManager(device)
         , _meshManager(device)
-        , _textureManager(device, allocator)
+        , _textureManager(device)
         , _materialManager(device)
         , _ssboManager(device) {};
 

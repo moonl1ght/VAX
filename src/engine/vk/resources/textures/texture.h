@@ -16,13 +16,12 @@ class Texture final {
     friend class vax::vk::TextureManager;
     friend class vax::vk::TextureFactory;
 
-    Texture(const vax::vk::Device& device, VmaAllocator allocator)
+    Texture(const vax::vk::Device& device)
         : _device(device)
-        , _allocator(allocator) {};
+        {};
 
     Texture(
         const vax::vk::Device& device,
-        VmaAllocator allocator,
         std::string name,
         VkImage image,
         VmaAllocation allocation,
@@ -31,7 +30,6 @@ class Texture final {
         VkImageAspectFlags aspectMask
     )
         : _device(device)
-        , _allocator(allocator)
         , _name(name)
         , _image(image)
         , _allocation(allocation)
@@ -44,7 +42,6 @@ class Texture final {
 
     Texture(Texture&& other) noexcept
         : _device(other._device)
-        , _allocator(other._allocator)
         , _name(other._name)
         , _image(other._image)
         , _allocation(other._allocation)
@@ -71,7 +68,6 @@ class Texture final {
         if (this != &other) {
             cleanup();
             _device = other._device;
-            _allocator = other._allocator;
             _name = other._name;
             _size = other._size;
             _image = other._image;
@@ -141,7 +137,6 @@ class Texture final {
     VkImage _image = VK_NULL_HANDLE;
     VkImageView _imageView = VK_NULL_HANDLE;
     VmaAllocation _allocation = VK_NULL_HANDLE;
-    VmaAllocator _allocator = VK_NULL_HANDLE;
     std::reference_wrapper<const vax::vk::Device> _device;
     bool _isDetached = true;
     std::optional<Sampler> _sampler;
