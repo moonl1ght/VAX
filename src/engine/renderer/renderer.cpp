@@ -207,6 +207,10 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
         return false;
     }
 
+    if (_frameProfiler) {
+        _frameProfiler->beginFrameZone("frame_workload");
+    }
+
     vkResetFences(
         _vkEngine.get().device->vkDevice, 1, &_vkEngine.get().syncObjectsManager->getInFlightFences()[_currentFrame]
     );
@@ -300,6 +304,10 @@ bool Renderer::render(DrawableScene* scene, const FrameTime& frameTime) {
     }
 
     _currentFrame = (_currentFrame + 1) % vax::vk::MAX_FRAMES_IN_FLIGHT;
+
+    if (_frameProfiler) {
+        _frameProfiler->endFrameZone("frame_workload");
+    }
     return true;
 }
 

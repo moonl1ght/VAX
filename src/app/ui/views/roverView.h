@@ -12,6 +12,7 @@
 #include "view.h"
 #include "vkEngine.h"
 #include "windowController.h"
+#include "frameProfiler.h"
 
 namespace vax::ui {
 class RoverView final : public View {
@@ -21,6 +22,8 @@ class RoverView final : public View {
         , _windowController(windowController)
         , View(renderer) {
         _statsView = std::make_unique<StatsView>(renderer);
+        _frameProfiler = std::make_shared<vax::FrameProfiler>();
+        _statsView->linkFrameProfiler(_frameProfiler);
     }
     ~RoverView();
 
@@ -43,6 +46,7 @@ class RoverView final : public View {
     std::unique_ptr<vax::engine::DrawableScene> _drawableScene;
     std::unique_ptr<vax::rl::GridWorld> _gridWorld;
     std::unique_ptr<vax::rl::GWTrainingManager> _trainingManager;
+    std::shared_ptr<vax::FrameProfiler> _frameProfiler;
     vax::core::ThreadRunner _mainThreadRunner;
     std::string _trainingStatus = "Training not started";
     bool _isTrainingRunning = false;

@@ -1,4 +1,7 @@
 #include "statsView.h"
+#include "debouncer.h"
+#include <imgui.h>
+#include <ratio>
 
 using namespace vax::ui;
 
@@ -12,23 +15,66 @@ void StatsView::update(const vax::engine::FrameTime& frameTime) {
     ImGui::SetNextWindowSize(ImVec2(480, 250), ImGuiCond_FirstUseEver);
     ImGui::Begin("Stats");
 
-    showSystemInfo();
+    _updateStats();
+    _showSystemInfo();
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+    _showFrameInfo();
     ImGui::End();
 }
 
-void StatsView::showSystemInfo() const {
-    SystemInfo::MemoryStats memoryStats = _systemInfo.getRAMStats();
-    ImGui::Text("RAM usage: %.2f%% (%dMB / %dMB)", memoryStats.usagePercentage, memoryStats.used, memoryStats.total);
+void StatsView::_showSystemInfo() const {
+    ImGui::Text("RAM usage: %.2f%% (%dMB / %dMB)", _memoryStats.usagePercentage, _memoryStats.used, _memoryStats.total);
 
+    ImGui::Spacing();
     ImGui::Separator();
+    ImGui::Spacing();
 
-    SystemInfo::GPUStats gpuStats = _systemInfo.getGPUStats();
     ImGui::Text("GPU Info:");
-    ImGui::Text("%s", gpuStats.name.c_str());
+    ImGui::Text("%s", _gpuStats.name.c_str());
     ImGui::Text(
         "Usage: %.2f%% (%dMB / %dMB)",
-        gpuStats.memoryStats.usagePercentage,
-        gpuStats.memoryStats.used,
-        gpuStats.memoryStats.total
+        _gpuStats.memoryStats.usagePercentage,
+        _gpuStats.memoryStats.used,
+        _gpuStats.memoryStats.total
     );
+}
+
+void StatsView::_showFrameInfo() const {
+    if (_frameProfiler) {
+        using float_milliseconds = std::chrono::duration<float, std::milli>;
+        auto duration = float_milliseconds(_frameInfo.duration).count();
+        ImGui::Text("Frame Info:");
+        ImGui::Text("VSYNC FT: %.2fms, FPS: %d", duration, _frameInfo.fps);
+
+        auto workloadDuration = float_milliseconds(_frameWorkloadInfo.duration).count();
+        if (duration > 0.0f) {
+            ImGui::Text(
+                "Used FT: %.2fms / %.2fms (%.2f%%)",
+                workloadDuration,
+                duration,
+                (workloadDuration * 100.0f) / duration
+            );
+        } else {
+            ImGui::Text("Used FT: %.2fms / %.2fms", workloadDuration, duration);
+        }
+    }
+}
+
+void StatsView::_updateStats() {
+    _debouncer.execute([this]() {
+        _memoryStats = _systemInfo.getRAMStats();
+        _gpuStats = _systemInfo.getGPUStats();
+        if (_frameProfiler) {
+            auto frameInfo = _frameProfiler->getFrameZoneInfo("frame");
+            if (frameInfo) {
+                _frameInfo = *frameInfo;
+            }
+            auto frameWorkloadInfo = _frameProfiler->getFrameZoneInfo("frame_workload");
+            if (frameWorkloadInfo) {
+                _frameWorkloadInfo = *frameWorkloadInfo;
+            }
+        }
+    });
 }

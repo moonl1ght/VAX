@@ -66,6 +66,7 @@ void RoverView::update(const vax::engine::FrameTime& frameTime) {
 }
 
 void RoverView::load(Engine& engine, InputController& inputController) {
+    _renderer.get().linkFrameProfiler(_frameProfiler);
     _gridWorld = std::make_unique<GridWorld>(QLearningConfig{
         .learningRate = 0.1,
         .gamma = 0.9,
@@ -136,6 +137,7 @@ void RoverView::_showRoverCamera() {
 }
 
 void RoverView::_drawScene(const vax::engine::FrameTime& frameTime) {
+    _frameProfiler->beginFrameZone("frame");
     static bool firstTime = true;
     bool renderResult = false;
     vax::engine::SceneUpdateContext sceneUpdateContext{.frameTime = frameTime};
@@ -150,4 +152,5 @@ void RoverView::_drawScene(const vax::engine::FrameTime& frameTime) {
     if (!renderResult) {
         _logger.error("Failed to render scene!");
     }
+    _frameProfiler->endFrameZone("frame");
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "debouncer.h"
+#include "frameProfiler.h"
 #include "systemInfo.h"
 #include "view.h"
 
@@ -7,7 +9,8 @@ namespace vax::ui {
 class StatsView final : public View {
   public:
     StatsView(vax::engine::Renderer& renderer)
-        : View(renderer) {
+        : View(renderer)
+        , _debouncer(std::chrono::milliseconds(500)) {
         _systemInfo = SystemInfo();
     };
 
@@ -15,9 +18,23 @@ class StatsView final : public View {
 
     void update(const vax::engine::FrameTime& frameTime) override;
 
+    void linkFrameProfiler(std::shared_ptr<vax::FrameProfiler> frameProfiler) noexcept {
+        _frameProfiler = std::move(frameProfiler);
+    }
+
   private:
     SystemInfo _systemInfo;
+    std::shared_ptr<vax::FrameProfiler> _frameProfiler = nullptr;
+    vax::core::Debouncer _debouncer;
+    SystemInfo::MemoryStats _memoryStats = SystemInfo::MemoryStats();
+    SystemInfo::GPUStats _gpuStats = SystemInfo::GPUStats();
+    FrameProfiler::FrameInfo _frameInfo = FrameProfiler::FrameInfo();
+    FrameProfiler::FrameInfo _frameWorkloadInfo = FrameProfiler::FrameInfo();
 
-    void showSystemInfo() const;
+    void _showSystemInfo() const;
+
+    void _showFrameInfo() const;
+
+    void _updateStats();
 };
 } // namespace vax::ui

@@ -3,6 +3,7 @@
 #include "baseRenderer.h"
 #include "commandBuffer.h"
 #include "drawableScene.h"
+#include "frameProfiler.h"
 #include "frameTime.h"
 #include "renderPassDescriptor.h"
 #include "renderPassGraph.h"
@@ -29,8 +30,14 @@ class Renderer final : public BaseRenderer {
     Renderer& operator=(Renderer&& other) noexcept = delete;
 
     bool render(DrawableScene* scene, const FrameTime& frameTime);
+
     void setup();
+
     void prepare(DrawableScene* scene);
+
+    void linkFrameProfiler(std::shared_ptr<vax::FrameProfiler> frameProfiler) noexcept {
+        _frameProfiler = std::move(frameProfiler);
+    }
 
   private:
     struct RenderPassInfo {
@@ -42,6 +49,8 @@ class Renderer final : public BaseRenderer {
     };
 
     vax::Logger _logger = vax::Logger("Renderer");
+
+    std::shared_ptr<vax::FrameProfiler> _frameProfiler = nullptr;
 
     std::unique_ptr<vax::engine::RenderPassGraphManager> _roverDemoPassGraphManager;
 

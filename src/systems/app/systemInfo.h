@@ -7,15 +7,15 @@ namespace vax {
 class SystemInfo final {
   public:
     struct MemoryStats { // in MB
-        int total;
-        int available;
-        int used;
-        int free;
-        float usagePercentage;
+        int total = 0;
+        int available = 0;
+        int used = 0;
+        int free = 0;
+        float usagePercentage = 0.0f;
     };
 
     struct GPUStats {
-        std::string name;
+        std::string name = "";
         MemoryStats memoryStats;
     };
 
