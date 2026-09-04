@@ -111,8 +111,6 @@ void App::_mainLoop() {
                     break;
                 }
             }
-            // TODO: fix this
-            // SDL_Delay(16);
             _loopContinuousUpdate();
         } else if (SDL_WaitEvent(&event)) {
             do {

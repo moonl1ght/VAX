@@ -61,9 +61,9 @@ void RoverView::update(const vax::engine::FrameTime& frameTime) {
     ImGui::End();
 
     _statsView->update(frameTime);
-
-    _drawScene(frameTime);
 }
+
+void RoverView::render(const vax::engine::FrameTime& frameTime) { _drawScene(frameTime); }
 
 void RoverView::load(Engine& engine, InputController& inputController) {
     _renderer.get().linkFrameProfiler(_frameProfiler);

@@ -35,12 +35,19 @@ class MeshManager final {
     bool deleteMesh(MeshHandle handle);
 
   private:
+    struct ChunkInfo {
+        size_t offset;
+        size_t count;
+    };
+
     vax::Logger _logger = vax::Logger("MeshManager");
 
     std::reference_wrapper<const Device> _device;
 
     std::vector<std::unique_ptr<VertexBuffer>> _globalVertexBuffers;
     std::vector<std::unique_ptr<IndexBuffer>> _globalIndexBuffers;
+
+    std::vector<std::vector<ChunkInfo>> _chunkInfos;
 
     // TODO: change to vector + use generation for stability2
     // maybe vector of vectors of buffers?

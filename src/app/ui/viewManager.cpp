@@ -19,6 +19,8 @@ void ViewManager::update(const vax::engine::FrameTime& frameTime) {
 
     _uiEngine.get().updateUiEnd();
 
+    _rootView->render(frameTime);
+
     if (_pendingRootView) {
         _swapRootView(std::move(_pendingRootView));
     }

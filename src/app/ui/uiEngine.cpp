@@ -57,6 +57,7 @@ void UIEngine::cleanup() {
 void UIEngine::processEvents(SDL_Event& event) { ImGui_ImplSDL3_ProcessEvent(&event); }
 
 void UIEngine::updateUiStart() {
+    _imguiDrawData = nullptr;
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();

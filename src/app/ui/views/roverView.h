@@ -34,6 +34,8 @@ class RoverView final : public View {
 
     void update(const vax::engine::FrameTime& frameTime) override;
 
+    void render(const vax::engine::FrameTime& frameTime) override;
+
     vax::AppMode getAppMode() override { return vax::AppMode::Continous; }
 
     void load(vax::vk::Engine& engine, vax::InputController& inputController);
