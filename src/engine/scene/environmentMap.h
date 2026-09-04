@@ -8,11 +8,14 @@
 namespace vax::engine {
 class EnvironmentMap final {
   public:
+    using EnvironmentMapBuffer = vax::vk::Buffer<EnvironmentMapData>;
+
     enum class TextureType {
         EnvMap,
         EnvMapIrradiance,
         BRDFLUT,
     };
+
     struct Descriptor {
         std::vector<std::pair<TextureType, std::string>> textures;
     };
@@ -44,13 +47,13 @@ class EnvironmentMap final {
 
     void load(const Descriptor& descriptor, VkQueue submitQueue);
 
-    const vax::vk::Buffer& environmentMapBuffer() const { return *_buffer; }
+    const EnvironmentMapBuffer& environmentMapBuffer() const { return *_buffer; }
 
   private:
     vax::Logger _logger = vax::Logger("EnvironmentMap");
     std::reference_wrapper<vax::vk::TextureLoader> _textureLoader;
     std::reference_wrapper<const vax::vk::Device> _device;
     EnvironmentMapData _environmentMapData;
-    std::unique_ptr<vax::vk::Buffer> _buffer = nullptr;
+    std::unique_ptr<EnvironmentMapBuffer> _buffer = nullptr;
 };
 } // namespace vax::engine

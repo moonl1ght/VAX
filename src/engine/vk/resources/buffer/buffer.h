@@ -12,21 +12,21 @@ class BufferManager;
 } // namespace vax::vk
 
 namespace vax::vk {
-class Buffer final {
+template <typename T> class Buffer final {
   public:
     friend class vax::vk::BufferManager;
 
-    static std::optional<Buffer> allocateAndFillData(
+    static std::optional<Buffer<T>> allocateAndFillData(
         const vax::vk::Device& device,
         std::string name,
-        const void* data,
+        const T* data,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
         VmaMemoryUsage memoryUsage,
         VmaAllocationCreateFlags flags = 0
     );
 
-    static std::optional<Buffer> allocate(
+    static std::optional<Buffer<T>> allocate(
         const vax::vk::Device& device,
         std::string name,
         VkDeviceSize size,
@@ -50,9 +50,15 @@ class Buffer final {
         , _allocation(other._allocation)
         , _size(other._size)
         , _isDetached(other._isDetached)
-        , _id(other._id) {
+        , _id(other._id)
+        , _mappedMemory(other._mappedMemory)
+        , _isMapped(other._isMapped)
+        , _isPersistentlyMapped(other._isPersistentlyMapped) {
         other._vkBuffer = VK_NULL_HANDLE;
         other._allocation = VK_NULL_HANDLE;
+        other._mappedMemory = nullptr;
+        other._isMapped = false;
+        other._isPersistentlyMapped = false;
         other._size = 0;
         other._isDetached = true;
         other._id = NullId;
@@ -67,8 +73,13 @@ class Buffer final {
             _size = other._size;
             _isDetached = other._isDetached;
             _id = other._id;
+            _mappedMemory = other._mappedMemory;
+            _isMapped = other._isMapped;
+            _isPersistentlyMapped = other._isPersistentlyMapped;
             other._vkBuffer = VK_NULL_HANDLE;
             other._allocation = VK_NULL_HANDLE;
+            other._mappedMemory = nullptr;
+            other._isMapped = false;
             other._size = 0;
             other._isDetached = true;
             other._id = NullId;
@@ -77,7 +88,7 @@ class Buffer final {
     }
 
     bool load(
-        const void* data,
+        const T* data,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
         VmaMemoryUsage memoryUsage,
@@ -85,20 +96,20 @@ class Buffer final {
     );
 
     bool reload(
-        const void* data,
+        const T* data,
         VkDeviceSize size,
         VkBufferUsageFlags usage,
         VmaMemoryUsage memoryUsage,
         VmaAllocationCreateFlags flags = 0
     );
 
-    bool fill(const void* fillData);
+    bool fill(const T* fillData);
 
     void map();
 
     void unmap();
 
-    std::optional<void*> mappedMemory() const;
+    std::optional<T*> mappedMemory() const;
 
     void copyBufferCommand(vax::vk::CommandBuffer& commandBuffer, Buffer& dstBuffer, VkDeviceSize size) const;
 
@@ -130,7 +141,8 @@ class Buffer final {
     VmaAllocation _allocation = VK_NULL_HANDLE;
     VkDeviceSize _size = 0;
     bool _isMapped = false;
-    void* _mappedMemory = nullptr;
+    bool _isPersistentlyMapped = false;
+    T* _mappedMemory = nullptr;
     bool _isDetached = true;
 
     bool _allocate(VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags flags);
@@ -139,4 +151,6 @@ class Buffer final {
 
     void _detach();
 };
+
+using AnyBuffer= Buffer<void>;
 } // namespace vax::vk

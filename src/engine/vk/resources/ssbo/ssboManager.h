@@ -10,7 +10,9 @@
 namespace vax::vk {
 class SSBOManager final {
   public:
+    using InstanceBuffer = Buffer<InstanceData>;
     using SSBOHandle = uint32_t;
+
     constexpr static SSBOHandle NullSSBOHandle = std::numeric_limits<SSBOHandle>::max();
 
     explicit SSBOManager(const Device& device)
@@ -29,12 +31,12 @@ class SSBOManager final {
 
     bool updateInstance(uint32_t frameIndex, uint32_t index, const InstanceData& instance);
 
-    const Buffer& instanceBuffer(uint32_t frameIndex) const { return *_buffers[frameIndex]; }
+    const InstanceBuffer& instanceBuffer(uint32_t frameIndex) const { return *_buffers[frameIndex]; }
 
   private:
     vax::Logger _logger = vax::Logger("SSBOManager");
     std::reference_wrapper<const Device> _device;
-    std::array<std::unique_ptr<Buffer>, MAX_FRAMES_IN_FLIGHT> _buffers;
+    std::array<std::unique_ptr<InstanceBuffer>, MAX_FRAMES_IN_FLIGHT> _buffers;
     uint32_t _maxInstances = 0;
 };
 } // namespace vax::vk

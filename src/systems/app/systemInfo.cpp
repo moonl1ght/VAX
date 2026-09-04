@@ -38,12 +38,17 @@ SystemInfo::MemoryStats SystemInfo::getRAMStats() const {
 
 SystemInfo::GPUStats SystemInfo::getGPUStats() const {
     GPUStats gpuStats;
+
     gpuStats.name = _cudaEnv.devices()[0].name();
     std::pair<size_t, size_t> memoryUsage = _cudaEnv.devices()[0].getMemoryUsage();
     gpuStats.memoryStats.free = memoryUsage.first / 1024 / 1024;
     gpuStats.memoryStats.total = memoryUsage.second / 1024 / 1024;
     gpuStats.memoryStats.used = gpuStats.memoryStats.total - gpuStats.memoryStats.free;
-    gpuStats.memoryStats.usagePercentage =
-        (static_cast<float>(gpuStats.memoryStats.used) / static_cast<float>(gpuStats.memoryStats.total)) * 100.0f;
+    if (gpuStats.memoryStats.total == 0) [[unlikely]] {
+        gpuStats.memoryStats.usagePercentage = 0.0f;
+    } else {
+        gpuStats.memoryStats.usagePercentage =
+            (static_cast<float>(gpuStats.memoryStats.used) / static_cast<float>(gpuStats.memoryStats.total)) * 100.0f;
+    }
     return gpuStats;
 }

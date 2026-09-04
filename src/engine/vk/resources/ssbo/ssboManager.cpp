@@ -12,7 +12,7 @@ void SSBOManager::cleanup() {
 bool SSBOManager::setup(uint32_t maxInstances) {
     _maxInstances = maxInstances;
     for (uint32_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
-        auto allocation = vk::Buffer::allocate(
+        auto allocation = InstanceBuffer::allocate(
             _device.get(),
             "ssbo_instance_buffer",
             sizeof(InstanceData) * maxInstances,
@@ -22,7 +22,7 @@ bool SSBOManager::setup(uint32_t maxInstances) {
         );
         if (!allocation.has_value())
             return false;
-        _buffers[i] = std::make_unique<vk::Buffer>(std::move(*allocation));
+        _buffers[i] = std::make_unique<InstanceBuffer>(std::move(*allocation));
         _buffers[i]->map();
     }
     return true;
@@ -37,7 +37,7 @@ bool SSBOManager::updateInstance(uint32_t frameIndex, uint32_t index, const Inst
     auto mappedMemory = buf->mappedMemory();
     if (!mappedMemory.has_value())
         return false;
-    InstanceData* instancePtr = static_cast<InstanceData*>(*mappedMemory);
+    InstanceData* instancePtr = mappedMemory.value();
     instancePtr[index] = instance;
     return true;
 }

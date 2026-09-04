@@ -81,7 +81,7 @@ bool vax::vk::Engine::setup() {
         return false;
     deletionQueue.push_function([&]() { syncObjectsManager->cleanup(); });
 
-    _windowController.get().getWindow(0)->createSwapchain(*device);
+    _windowController.get().getWindow(0)->createSwapchain(*device, VK_PRESENT_MODE_FIFO_KHR);
     deletionQueue.push_function([&]() { _windowController.get().getWindow(0)->cleanupSwapchain(); });
 
     descriptorSetManager = std::make_unique<DescriptorSetManager>(*device, MAX_FRAMES_IN_FLIGHT);
@@ -118,7 +118,7 @@ void vax::vk::Engine::resize() {
     }
     vkDeviceWaitIdle(device->vkDevice);
 
-    _windowController.get().getWindow(0)->getSwapchain()->recreate();
+    _windowController.get().getWindow(0)->getSwapchain()->recreate(VK_PRESENT_MODE_FIFO_KHR);
 }
 
 bool vax::vk::Engine::setupDebugMessenger() {

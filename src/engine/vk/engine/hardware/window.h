@@ -28,7 +28,7 @@ class Window final {
     void destroyWindow();
     void destroy();
 
-    void createSwapchain(const vax::vk::Device& device);
+    void createSwapchain(const vax::vk::Device& device, VkPresentModeKHR presentMode);
 
     void cleanupSwapchain();
 

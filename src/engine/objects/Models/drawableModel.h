@@ -41,7 +41,7 @@ class DrawableModel final {
 
     ~DrawableModel() {};
 
-    bool loadMesh(const vax::vk::MeshPBR::LoadMeshBuffersContext& context);
+    bool loadMesh(const vax::vk::Mesh::LoadMeshBuffersContext& context);
 
     void draw(const vax::engine::DrawContext& drawContext, const DrawSettings& drawSettings);
 
@@ -65,7 +65,7 @@ class DrawableModel final {
     vax::vk::MeshHandle _meshHandle;
 
     // TODO: remove this will need to use mesh manager to get the mesh
-    vax::vk::MeshPBR* _mesh;
+    vax::vk::Mesh* _mesh;
     std::vector<vax::vk::Submesh> _submeshes;
     Settings _settings;
 };

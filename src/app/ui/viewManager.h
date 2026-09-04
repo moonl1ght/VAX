@@ -20,10 +20,7 @@ class ViewManager final {
 
     void update(const vax::engine::FrameTime& frameTime);
 
-    void setRootView(std::unique_ptr<View> view) {
-        _rootView = std::move(view);
-        _rootView->linkViewManager(this);
-    }
+    void setRootView(std::unique_ptr<View> view);
 
     vax::AppMode getAppMode() const;
 
@@ -34,5 +31,9 @@ class ViewManager final {
   private:
     std::reference_wrapper<UIEngine> _uiEngine;
     std::unique_ptr<View> _rootView = nullptr;
+    std::unique_ptr<View> _pendingRootView = nullptr;
+    bool _isUpdating = false;
+
+    void _swapRootView(std::unique_ptr<View> view);
 };
 } // namespace vax::ui

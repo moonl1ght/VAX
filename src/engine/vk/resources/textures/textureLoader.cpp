@@ -152,7 +152,7 @@ std::optional<TextureManager::TextureResource> TextureLoader::_loadKTXTexture(st
 
     const ktx_size_t dataSize = ktxTexture_GetDataSize(ktxTex);
 
-    auto stagingBuffer = vk::Buffer::allocateAndFillData(
+    auto stagingBuffer = vk::AnyBuffer::allocateAndFillData(
         _device.get(),
         path + "_texture_staging_buffer",
         ktxTexture_GetData(ktxTex),
@@ -241,7 +241,7 @@ std::optional<TextureManager::TextureResource> TextureLoader::_loadTexture(
     std::string name, unsigned char* pixels, VkQueue submitQueue, int texWidth, int texHeight, int texChannels
 ) {
     VkDeviceSize imageSize = texWidth * texHeight * 4;
-    auto stagingBuffer = vk::Buffer::allocateAndFillData(
+    auto stagingBuffer = vk::AnyBuffer::allocateAndFillData(
         _device.get(),
         name + "_texture_staging_buffer",
         pixels,

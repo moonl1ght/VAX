@@ -44,6 +44,6 @@ class TextureLoader final {
 
     std::optional<TextureManager::TextureResource> _loadKTXTexture(std::string path, VkQueue submitQueue);
 
-    std::vector<std::pair<Buffer, TextureManager::TextureResource>> _stagingTextures;
+    std::vector<std::pair<Buffer<void>, TextureManager::TextureResource>> _stagingTextures;
 };
 } // namespace vax::vk

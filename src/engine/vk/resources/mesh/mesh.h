@@ -10,7 +10,7 @@ class MeshManager;
 }
 
 namespace vax::vk {
-template <typename VertexType> class Mesh final {
+template <typename VertexType> class MeshObject final {
   public:
     struct LoadMeshBuffersContext final {
         CommandBuffer* commandBuffer;
@@ -19,36 +19,38 @@ template <typename VertexType> class Mesh final {
 
     friend class vax::vk::MeshManager;
 
-    std::optional<Buffer> vertexBuffer = std::nullopt;
-    std::optional<Buffer> indexBuffer = std::nullopt;
+    std::optional<Buffer<VertexType>> vertexBuffer = std::nullopt;
+    std::optional<Buffer<uint32_t>> indexBuffer = std::nullopt;
 
-    explicit Mesh(const Device& device, uint32_t instancesCount = 1)
-        : _device(device) {};
-    ~Mesh() { cleanup(); };
+    explicit MeshObject(const Device& device, const MeshManager& meshManager)
+        : _device(device)
+        , _meshManager(meshManager) {};
 
-    Mesh(const Mesh& other) = delete;
-    Mesh& operator=(const Mesh& other) = delete;
+    ~MeshObject() {};
 
-    Mesh(Mesh&& other) noexcept
+    MeshObject(const MeshObject& other) = delete;
+    MeshObject& operator=(const MeshObject& other) = delete;
+
+    MeshObject(MeshObject&& other) noexcept
         : _device(other._device)
+        , _meshManager(other._meshManager)
         , _name(other._name)
         , _vertices(std::move(other._vertices))
         , _indices(std::move(other._indices))
         , _isLoaded(other._isLoaded)
         , _id(other._id)
-        , _isDetached(other._isDetached)
         , vertexBuffer(std::move(other.vertexBuffer))
         , indexBuffer(std::move(other.indexBuffer)) {
         other._isLoaded = false;
         other._id = NullId;
-        other._isDetached = true;
         other._name.clear();
     }
 
-    Mesh& operator=(Mesh&& other) noexcept {
+    MeshObject& operator=(MeshObject&& other) noexcept {
         if (this != &other) {
-            cleanup();
+            _destroy();
             _device = other._device;
+            _meshManager = other._meshManager;
             _name = std::move(other._name);
             _vertices = std::move(other._vertices);
             _indices = std::move(other._indices);
@@ -56,7 +58,6 @@ template <typename VertexType> class Mesh final {
             indexBuffer = std::move(other.indexBuffer);
             _isLoaded = other._isLoaded;
             _id = other._id;
-            _isDetached = other._isDetached;
         }
         return *this;
     }
@@ -64,8 +65,6 @@ template <typename VertexType> class Mesh final {
     bool loadBuffers(const LoadMeshBuffersContext& context);
 
     bool isLoaded() const { return _isLoaded; }
-
-    bool isDetached() const { return _isDetached; }
 
     MeshId id() const { return _id; }
 
@@ -81,8 +80,6 @@ template <typename VertexType> class Mesh final {
 
     void addIndex(uint32_t index) { _indices.push_back(index); }
 
-    void cleanup();
-
     void cleanupStagingBuffers();
 
     void setName(const std::string& name) { _name = name; }
@@ -91,23 +88,22 @@ template <typename VertexType> class Mesh final {
     vax::Logger _logger = vax::Logger("Mesh");
 
     std::reference_wrapper<const Device> _device;
+    std::reference_wrapper<const MeshManager> _meshManager;
+
     std::string _name;
 
     std::vector<VertexType> _vertices;
     std::vector<uint32_t> _indices;
 
-    std::optional<Buffer> _stagingVertexBuffer = std::nullopt;
-    std::optional<Buffer> _stagingIndexBuffer = std::nullopt;
+    std::optional<Buffer<VertexType>> _stagingVertexBuffer = std::nullopt;
+    std::optional<Buffer<uint32_t>> _stagingIndexBuffer = std::nullopt;
 
     bool _isLoaded = false;
     MeshId _id = NullId;
-    bool _isDetached = true;
 
     void _destroy();
-
-    void _detach();
 };
 
-using MeshPBR = Mesh<Vertex>;
-using MeshPUV = Mesh<VertexPUV>;
+using Mesh = MeshObject<Vertex>;
+using MeshPUV = MeshObject<VertexPUV>;
 } // namespace vax::vk

@@ -7,6 +7,8 @@
 #include "shaderUniforms.h"
 
 namespace vax::vk {
+using MaterialBuffer = Buffer<PBRMaterial>;
+
 class MaterialManager final {
   public:
     explicit MaterialManager(const Device& device)
@@ -31,13 +33,13 @@ class MaterialManager final {
 
     void deleteMaterial(MaterialId id);
 
-    const Buffer& materialBuffer() const { return *_buffer; }
+    const MaterialBuffer& materialBuffer() const { return *_buffer; }
 
   private:
     vax::Logger _logger = vax::Logger("MaterialManager");
     std::reference_wrapper<const Device> _device;
     // TODO: change to vector of buffers to handle material overflow
-    std::unique_ptr<Buffer> _buffer = nullptr;
+    std::unique_ptr<MaterialBuffer> _buffer = nullptr;
     std::vector<PBRMaterial> _materials;
     std::vector<MaterialId> _materialsToDelete;
 

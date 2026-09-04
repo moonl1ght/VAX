@@ -16,7 +16,7 @@ std::optional<BufferManager::BufferResource> BufferManager::allocateBuffer(
     VmaMemoryUsage memoryUsage,
     VmaAllocationCreateFlags flags
 ) {
-    auto buffer = vk::Buffer(_device.get());
+    auto buffer = AnyBuffer(_device.get());
     buffer._name = name;
     buffer._size = size;
     buffer._id = _lastId++;
@@ -46,7 +46,7 @@ bool BufferManager::deleteBuffer(BufferHandle handle) {
     return true;
 }
 
-std::optional<Buffer> BufferManager::detach(BufferHandle handle) {
+std::optional<AnyBuffer> BufferManager::detach(BufferHandle handle) {
     auto it = _pool.find(handle.id());
     if (it == _pool.end())
         return std::nullopt;

@@ -82,7 +82,7 @@ void ModelsController::preload(
     }
     commandBuffer.begin();
     for (auto& drawableModel : _drawableModels) {
-        MeshPBR::LoadMeshBuffersContext context = {
+        Mesh::LoadMeshBuffersContext context = {
             .commandBuffer = &commandBuffer, .maxFramesInFlight = vax::vk::MAX_FRAMES_IN_FLIGHT
         };
         drawableModel.loadMesh(context);

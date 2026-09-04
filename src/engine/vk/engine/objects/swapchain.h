@@ -24,9 +24,9 @@ class Swapchain final {
     Swapchain& operator=(const Swapchain& other) = delete;
     Swapchain& operator=(Swapchain&& other) = delete;
 
-    bool setup();
+    bool setup(VkPresentModeKHR presentMode);
     void cleanup();
-    bool recreate();
+    bool recreate(VkPresentModeKHR presentMode);
 
   private:
     vax::Logger _logger = vax::Logger("Swapchain");
@@ -35,11 +35,10 @@ class Swapchain final {
     std::reference_wrapper<const vax::vk::Device> _device;
     VkSurfaceKHR _surface = VK_NULL_HANDLE;
 
-    bool createSwapchain();
-    bool createImageViews();
+    bool _createSwapchain(VkPresentModeKHR presentMode);
+    bool _createImageViews();
 
     VkSurfaceFormatKHR _chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-    VkPresentModeKHR _chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D _chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 };
 } // namespace vax::vk

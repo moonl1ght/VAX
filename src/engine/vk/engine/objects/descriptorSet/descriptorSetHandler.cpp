@@ -1,30 +1,9 @@
 #include "descriptorSetHandler.h"
-#include "buffer.h"
-#include "texture.h"
+#include "shaderUniforms.h"
 #include "vkUtils.h"
 
 using namespace vax::vk;
 using namespace vax;
-
-void DescriptorSetHandler::writeBuffer(
-    const Buffer& buffer, uint32_t binding, uint32_t offset, VkDescriptorType descriptorType, uint32_t arrayElement
-) {
-    VkDescriptorBufferInfo& bufferInfo = _bufferInfos.emplace_back(
-        VkDescriptorBufferInfo{.buffer = buffer.vkBuffer(), .offset = offset, .range = buffer.size()}
-    );
-
-    VkWriteDescriptorSet write{
-        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = _descriptorSet,
-        .dstBinding = binding,
-        .dstArrayElement = arrayElement,
-        .descriptorCount = 1,
-        .descriptorType = descriptorType,
-        .pBufferInfo = &bufferInfo
-    };
-
-    _writes.push_back(write);
-}
 
 void DescriptorSetHandler::writeTexture(
     const Texture& texture, uint32_t binding, uint32_t arrayElement, bool withSampler

@@ -46,7 +46,7 @@ void StatsView::_showFrameInfo() const {
         using float_milliseconds = std::chrono::duration<float, std::milli>;
         auto duration = float_milliseconds(_frameInfo.duration).count();
         ImGui::Text("Frame Info:");
-        ImGui::Text("VSYNC FT: %.2fms, FPS: %d", duration, _frameInfo.fps);
+        ImGui::Text("VSYNC FB: %.2fms, FPS: %d", duration, _frameInfo.fps);
 
         auto workloadDuration = float_milliseconds(_frameWorkloadInfo.duration).count();
         if (duration > 0.0f) {

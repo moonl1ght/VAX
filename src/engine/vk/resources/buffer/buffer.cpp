@@ -1,20 +1,23 @@
 #include "buffer.h"
 #include "commandBuffer.h"
+#include "vertex.h"
+#include "shaderUniforms.h"
 
 using namespace vax::vk;
 
 using namespace vax;
 
-std::optional<Buffer> Buffer::allocateAndFillData(
+template <typename T>
+std::optional<Buffer<T>> Buffer<T>::allocateAndFillData(
     const vax::vk::Device& device,
     std::string name,
-    const void* data,
+    const T* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
     VmaMemoryUsage memoryUsage,
     VmaAllocationCreateFlags flags
 ) {
-    auto buffer = Buffer(device);
+    auto buffer = Buffer<T>(device);
     buffer._name = name;
     buffer._size = size;
     if (!buffer._allocate(usage, memoryUsage, flags))
@@ -24,7 +27,8 @@ std::optional<Buffer> Buffer::allocateAndFillData(
     return buffer;
 }
 
-std::optional<Buffer> Buffer::allocate(
+template <typename T>
+std::optional<Buffer<T>> Buffer<T>::allocate(
     const vax::vk::Device& device,
     std::string name,
     VkDeviceSize size,
@@ -32,7 +36,7 @@ std::optional<Buffer> Buffer::allocate(
     VmaMemoryUsage memoryUsage,
     VmaAllocationCreateFlags flags
 ) {
-    auto buffer = Buffer(device);
+    auto buffer = Buffer<T>(device);
     buffer._name = name;
     buffer._size = size;
     if (!buffer._allocate(usage, memoryUsage, flags))
@@ -40,17 +44,20 @@ std::optional<Buffer> Buffer::allocate(
     return buffer;
 }
 
-void Buffer::cleanup() {
+template <typename T>
+void Buffer<T>::cleanup() {
     if (isDetached())
         _destroy();
 }
 
-void Buffer::_detach() {
+template <typename T>
+void Buffer<T>::_detach() {
     _isDetached = true;
     _id = NullId;
 }
 
-void Buffer::_destroy() {
+template <typename T>
+void Buffer<T>::_destroy() {
     unmap();
     if (_vkBuffer != VK_NULL_HANDLE && _allocation != VK_NULL_HANDLE) {
         vmaDestroyBuffer(_device.get().allocator, _vkBuffer, _allocation);
@@ -63,8 +70,9 @@ void Buffer::_destroy() {
     _id = NullId;
 }
 
-bool Buffer::reload(
-    const void* data,
+template <typename T>
+bool Buffer<T>::reload(
+    const T* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
     VmaMemoryUsage memoryUsage,
@@ -79,8 +87,9 @@ bool Buffer::reload(
     return true;
 }
 
-bool Buffer::load(
-    const void* data,
+template <typename T>
+bool Buffer<T>::load(
+    const T* data,
     VkDeviceSize size,
     VkBufferUsageFlags usage,
     VmaMemoryUsage memoryUsage,
@@ -98,7 +107,8 @@ bool Buffer::load(
     return true;
 }
 
-bool Buffer::fill(const void* fillData) {
+template <typename T>
+bool Buffer<T>::fill(const T* fillData) {
     if (isEmpty() || !isAllocated() || fillData == nullptr) {
         return false;
     }
@@ -109,19 +119,23 @@ bool Buffer::fill(const void* fillData) {
     return true;
 }
 
-void vax::vk::Buffer::copyBufferCommand(
-    vax::vk::CommandBuffer& commandBuffer, Buffer& dstBuffer, VkDeviceSize size
+template <typename T>
+void vax::vk::Buffer<T>::copyBufferCommand(
+    vax::vk::CommandBuffer& commandBuffer, Buffer<T>& dstBuffer, VkDeviceSize size
 ) const {
     VkBufferCopy copyRegion{};
     copyRegion.size = size;
     vkCmdCopyBuffer(commandBuffer.vkCommandBuffer, _vkBuffer, dstBuffer._vkBuffer, 1, &copyRegion);
 }
 
-bool Buffer::isEmpty() const { return _size == 0; }
+template <typename T>
+bool Buffer<T>::isEmpty() const { return _size == 0; }
 
-bool Buffer::isAllocated() const { return _vkBuffer != VK_NULL_HANDLE && _allocation != VK_NULL_HANDLE; }
+template <typename T>
+bool Buffer<T>::isAllocated() const { return _vkBuffer != VK_NULL_HANDLE && _allocation != VK_NULL_HANDLE; }
 
-bool Buffer::_allocate(VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags flags) {
+template <typename T>
+bool Buffer<T>::_allocate(VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags flags) {
     if (isAllocated()) {
         return false;
     }
@@ -146,8 +160,9 @@ bool Buffer::_allocate(VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, Vma
     }
 
     if (flags & VMA_ALLOCATION_CREATE_MAPPED_BIT) {
-        _mappedMemory = resultAllocInfo.pMappedData;
+        _mappedMemory = static_cast<T*>(resultAllocInfo.pMappedData);
         _isMapped = true;
+        _isPersistentlyMapped = true;
     }
 
     if (!_name.empty()) {
@@ -164,23 +179,39 @@ bool Buffer::_allocate(VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, Vma
     return true;
 }
 
-void Buffer::map() {
+template <typename T>
+void Buffer<T>::map() {
     if (isMapped())
         return;
-    vmaMapMemory(_device.get().allocator, _allocation, &_mappedMemory);
+    void* mappedData = nullptr;
+    vmaMapMemory(_device.get().allocator, _allocation, &mappedData);
+    _mappedMemory = static_cast<T*>(mappedData);
     _isMapped = true;
 }
 
-void Buffer::unmap() {
+template <typename T>
+void Buffer<T>::unmap() {
     if (!isMapped())
         return;
+    if (_isPersistentlyMapped) {
+        return;
+    }
     vmaUnmapMemory(_device.get().allocator, _allocation);
     _isMapped = false;
     _mappedMemory = nullptr;
 }
 
-std::optional<void*> Buffer::mappedMemory() const {
+template <typename T>
+std::optional<T*> Buffer<T>::mappedMemory() const {
     if (!isMapped())
         return std::nullopt;
     return _mappedMemory;
 }
+
+template class vax::vk::Buffer<void>;
+template class vax::vk::Buffer<uint32_t>;
+template class vax::vk::Buffer<vax::vk::Vertex>;
+template class vax::vk::Buffer<vax::vk::VertexPUV>;
+template class vax::vk::Buffer<PBRMaterial>;
+template class vax::vk::Buffer<InstanceData>;
+template class vax::vk::Buffer<EnvironmentMapData>;

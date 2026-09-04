@@ -126,7 +126,9 @@ void RoverView::_showRoverCamera() {
         _windowController.get().setupWindow(1, vax::math::SizeUI{640, 480}, "Rover camera");
         _windowController.get().getWindow(1)->load(true, false);
         _windowController.get().getWindow(1)->createSurface(_uiEngine.get().engine().instance);
-        _windowController.get().getWindow(1)->createSwapchain(*_uiEngine.get().engine().device);
+        _windowController.get().getWindow(1)->createSwapchain(
+            *_uiEngine.get().engine().device, VK_PRESENT_MODE_MAILBOX_KHR
+        );
     }
     _windowController.get().getWindow(1)->setWindowWillHideCallback([this]() {
         _isRoverCameraShown = false;

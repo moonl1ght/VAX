@@ -280,7 +280,7 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, uin
         _logger
     );
 
-    auto mesh = _resourceManager.get().meshManager().createEmptyMesh(instancesCount);
+    auto mesh = _resourceManager.get().meshManager().createEmptyMesh();
     if (!mesh)
         return std::nullopt;
 

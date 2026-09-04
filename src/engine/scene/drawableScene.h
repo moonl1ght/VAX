@@ -102,9 +102,9 @@ class DrawableScene final : public vax::InputController::Observer {
 
   private:
     vax::Logger _logger = vax::Logger("DrawableScene");
-    std::vector<vax::vk::Buffer*> _sceneUniformBuffers;
-    std::vector<vax::vk::Buffer*> _roverCameraUniformBuffers;
-    std::vector<vax::vk::Buffer*> _lightsUniformBuffer;
+    std::vector<vax::vk::AnyBuffer*> _sceneUniformBuffers;
+    std::vector<vax::vk::AnyBuffer*> _roverCameraUniformBuffers;
+    std::vector<vax::vk::AnyBuffer*> _lightsUniformBuffer;
     std::reference_wrapper<vax::vk::Engine> _vkEngine;
     vax::engine::ModelsController _modelsController;
     vax::vk::ResourceManager _resourceManager;

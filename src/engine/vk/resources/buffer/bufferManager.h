@@ -8,7 +8,7 @@
 namespace vax::vk {
 class BufferManager final {
   public:
-    using BufferResource = std::pair<BufferHandle, Buffer*>;
+    using BufferResource = std::pair<BufferHandle, AnyBuffer*>;
 
     explicit BufferManager(const Device& device)
         : _device(device) {};
@@ -34,7 +34,7 @@ class BufferManager final {
 
     bool deleteBuffer(BufferHandle handle);
 
-    std::optional<Buffer> detach(BufferHandle handle);
+    std::optional<AnyBuffer> detach(BufferHandle handle);
 
   private:
     vax::Logger _logger = vax::Logger("BufferManager");
@@ -42,7 +42,7 @@ class BufferManager final {
     std::reference_wrapper<const Device> _device;
     // TODO: change to vector + use generation for stability
     // maybe vector of vectors of buffers?
-    std::unordered_map<BufferId, Buffer> _pool;
+    std::unordered_map<BufferId, AnyBuffer> _pool;
     BufferId _lastId = 0;
 };
 } // namespace vax::vk

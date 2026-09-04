@@ -25,7 +25,7 @@ class TextureTaskSchedulerInline final {
         Texture& texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlags aspectMask
     );
 
-    void copyBufferToTexture(vax::vk::Buffer& buffer, Texture& texture);
+    void copyBufferToTexture(vax::vk::AnyBuffer& buffer, Texture& texture);
 
   private:
     std::reference_wrapper<const vax::vk::Device> _device;
@@ -53,7 +53,7 @@ class TextureTaskScheduler final {
         VkImageAspectFlags aspectMask
     );
 
-    void copyBufferToTextureAndSubmit(VkQueue submitQueue, vax::vk::Buffer& buffer, Texture& texture);
+    void copyBufferToTextureAndSubmit(VkQueue submitQueue, vax::vk::AnyBuffer& buffer, Texture& texture);
 
   private:
     std::reference_wrapper<const vax::vk::Device> _device;

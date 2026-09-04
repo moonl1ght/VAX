@@ -3,7 +3,7 @@
 using namespace vax::engine;
 using namespace vax::vk;
 
-bool DrawableModel::loadMesh(const MeshPBR::LoadMeshBuffersContext& context) { return _mesh->loadBuffers(context); }
+bool DrawableModel::loadMesh(const Mesh::LoadMeshBuffersContext& context) { return _mesh->loadBuffers(context); }
 
 void DrawableModel::draw(const DrawContext& drawContext, const DrawSettings& drawSettings) {
     if (!_mesh->isLoaded())

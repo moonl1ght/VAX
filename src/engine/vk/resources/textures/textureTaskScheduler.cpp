@@ -51,7 +51,7 @@ void TextureTaskScheduler::transitionTextureLayoutAndSubmit(
     commandBuffer.submitAndWait(submitQueue);
 }
 
-void TextureTaskSchedulerInline::copyBufferToTexture(vax::vk::Buffer& buffer, Texture& texture) {
+void TextureTaskSchedulerInline::copyBufferToTexture(vax::vk::AnyBuffer& buffer, Texture& texture) {
     VkBufferImageCopy region{
         .bufferOffset = 0,
         .bufferRowLength = 0,
@@ -73,7 +73,7 @@ void TextureTaskSchedulerInline::copyBufferToTexture(vax::vk::Buffer& buffer, Te
 }
 
 void TextureTaskScheduler::copyBufferToTextureAndSubmit(
-    VkQueue submitQueue, vax::vk::Buffer& buffer, Texture& texture
+    VkQueue submitQueue, vax::vk::AnyBuffer& buffer, Texture& texture
 ) {
     auto commandBuffer = _commandManager.get().createSingleTimeCommandBuffer();
     auto taskSchedulerInline = TextureTaskSchedulerInline(_device.get(), commandBuffer);

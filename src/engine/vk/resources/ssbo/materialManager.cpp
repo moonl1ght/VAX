@@ -10,7 +10,7 @@ void MaterialManager::cleanup() {
 
 bool MaterialManager::setup() {
     VkDeviceSize bufferSize = sizeof(PBRMaterial) * vax::vk::MAX_MATERIALS;
-    auto allocation = vk::Buffer::allocate(
+    auto allocation = MaterialBuffer::allocate(
         _device.get(),
         "global_material_buffer",
         bufferSize,
@@ -20,7 +20,7 @@ bool MaterialManager::setup() {
     );
     if (!allocation.has_value())
         return false;
-    _buffer = std::make_unique<vk::Buffer>(std::move(*allocation));
+    _buffer = std::make_unique<MaterialBuffer>(std::move(*allocation));
     _buffer->map();
     _materials.reserve(vax::vk::MAX_MATERIALS);
     _materialsToDelete.reserve(vax::vk::MAX_MATERIALS);
@@ -48,7 +48,7 @@ std::vector<MaterialId> MaterialManager::insertMaterials(std::vector<PBRMaterial
     auto mappedMemory = _buffer->mappedMemory();
     if (!mappedMemory.has_value())
         return {};
-    PBRMaterial* materialPtr = static_cast<PBRMaterial*>(*mappedMemory);
+    PBRMaterial* materialPtr = mappedMemory.value();
     memcpy(materialPtr + _materials.size(), materials.data(), materials.size() * sizeof(PBRMaterial));
     std::vector<MaterialId> ids(materials.size());
     std::iota(ids.begin(), ids.end(), _materials.size());

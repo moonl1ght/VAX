@@ -31,7 +31,7 @@ void EnvironmentMap::load(const Descriptor& descriptor, VkQueue submitQueue) {
         }
     }
     VkDeviceSize bufferSize = sizeof(EnvironmentMapData);
-    auto allocation = vk::Buffer::allocate(
+    auto allocation = EnvironmentMapBuffer::allocate(
         _device.get(),
         "environment_map_buffer",
         bufferSize,
@@ -41,11 +41,11 @@ void EnvironmentMap::load(const Descriptor& descriptor, VkQueue submitQueue) {
     );
     if (!allocation.has_value())
         return;
-    _buffer = std::make_unique<vk::Buffer>(std::move(*allocation));
+    _buffer = std::make_unique<EnvironmentMapBuffer>(std::move(*allocation));
     _buffer->map();
     auto mappedMemory = _buffer->mappedMemory();
     if (!mappedMemory.has_value())
         return;
-    EnvironmentMapData* environmentMapDataPtr = static_cast<EnvironmentMapData*>(*mappedMemory);
+    EnvironmentMapData* environmentMapDataPtr = mappedMemory.value();
     *environmentMapDataPtr = _environmentMapData;
 }

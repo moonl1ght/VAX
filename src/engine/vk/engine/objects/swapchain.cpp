@@ -3,10 +3,10 @@
 
 using namespace vax::vk;
 
-bool Swapchain::setup() {
-    if (!createSwapchain())
+bool Swapchain::setup(VkPresentModeKHR presentMode) {
+    if (!_createSwapchain(presentMode))
         return false;
-    if (!createImageViews())
+    if (!_createImageViews())
         return false;
     return true;
 }
@@ -20,10 +20,10 @@ void Swapchain::cleanup() {
     vkDestroySwapchainKHR(_device.get().vkDevice, swapchain, nullptr);
 }
 
-bool Swapchain::recreate() {
+bool Swapchain::recreate(VkPresentModeKHR presentMode) {
     cleanup();
 
-    if (!setup())
+    if (!setup(presentMode))
         return false;
 
     return true;
@@ -37,10 +37,6 @@ VkSurfaceFormatKHR Swapchain::_chooseSwapSurfaceFormat(const std::vector<VkSurfa
         }
     }
     return availableFormats[0];
-}
-
-VkPresentModeKHR Swapchain::_chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
-    return VK_PRESENT_MODE_FIFO_KHR;
 }
 
 VkExtent2D Swapchain::_chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
@@ -58,12 +54,11 @@ VkExtent2D Swapchain::_chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabili
     }
 }
 
-bool Swapchain::createSwapchain() {
+bool Swapchain::_createSwapchain(VkPresentModeKHR presentMode) {
     SwapChainSupportDetails swapChainSupport =
         querySwapChainSupport(_device.get().vkPhysicalDevice, _surface);
 
     VkSurfaceFormatKHR surfaceFormat = _chooseSwapSurfaceFormat(swapChainSupport.formats);
-    VkPresentModeKHR presentMode = _chooseSwapPresentMode(swapChainSupport.presentModes);
     VkExtent2D extent = _chooseSwapExtent(swapChainSupport.capabilities);
 
     uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
@@ -123,7 +118,7 @@ bool Swapchain::createSwapchain() {
     return true;
 }
 
-bool Swapchain::createImageViews() {
+bool Swapchain::_createImageViews() {
     swapchainImageViews.resize(swapchainImages.size());
 
     for (uint32_t i = 0; i < swapchainImages.size(); i++) {

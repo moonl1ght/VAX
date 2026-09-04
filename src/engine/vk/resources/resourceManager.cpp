@@ -12,6 +12,7 @@ void ResourceManager::cleanup() {
 }
 
 bool ResourceManager::setup(uint32_t maxInstances) {
+    _meshManager.loadGlobalBuffers(1024);
     if (!_materialManager.setup())
         return false;
     if (!_textureManager.setup())
