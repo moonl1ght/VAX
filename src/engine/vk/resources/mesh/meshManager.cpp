@@ -70,3 +70,8 @@ bool MeshManager::deleteMesh(MeshHandle handle) {
     _pool.erase(it);
     return true;
 }
+
+std::optional<MeshManager::MeshResource>
+MeshManager::createMesh(std::vector<Vertex> vertices, std::vector<uint32_t> indices) {
+    return std::nullopt;
+}

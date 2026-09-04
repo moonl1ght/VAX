@@ -1,6 +1,53 @@
 #include "mesh.h"
+#include "vertex.h"
+#include <cstdint>
 
 using namespace vax::vk;
+
+template <typename VertexType> void vax::vk::MeshObject<VertexType>::setVertices(std::vector<VertexType> vertices) {
+    if (!_locked) {
+        _vertices = std::move(vertices);
+    }
+}
+
+template <typename VertexType> void vax::vk::MeshObject<VertexType>::addVertex(const VertexType& vertex) {
+    if (!_locked) {
+        _vertices.push_back(vertex);
+    }
+}
+
+template<typename VertexType> void vax::vk::MeshObject<VertexType>::setIndices(std::vector<uint32_t> indices) {
+    if (!_locked) {
+        _indices = std::move(indices);
+    }
+}
+
+template <typename VertexType> void vax::vk::MeshObject<VertexType>::addIndex(uint32_t index) {
+    if (!_locked) {
+        _indices.push_back(index);
+    }
+}
+
+template <typename VertexType> void vax::vk::MeshObject<VertexType>::lock() {
+    _locked = true;
+}
+
+template <typename VertexType> void vax::vk::MeshObject<VertexType>::unlock() {
+    _locked = false;
+}
+
+template <typename VertexType> void vax::vk::MeshObject<VertexType>::bindToCommandBuffer(CommandBuffer* commandBuffer) {
+    if (_bound) {
+        return;
+    }
+}
+
+template <typename VertexType> bool vax::vk::MeshObject<VertexType>::bindBuffers() {
+    if (_bound) {
+        return true;
+    }
+    return false;
+}
 
 template <typename VertexType>
 bool vax::vk::MeshObject<VertexType>::loadBuffers(const LoadMeshBuffersContext& context) {

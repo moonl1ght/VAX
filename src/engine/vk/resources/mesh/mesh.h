@@ -1,7 +1,6 @@
 #pragma once
 
 #include "buffer.h"
-#include "luna.h"
 #include "resourceUtils.h"
 #include "vertex.h"
 
@@ -72,17 +71,29 @@ template <typename VertexType> class MeshObject final {
 
     std::vector<uint32_t>& indices() { return _indices; }
 
-    void setVertices(const std::vector<VertexType>& vertices) { _vertices = vertices; }
+    void setVertices(std::vector<VertexType> vertices);
 
-    void addVertex(const VertexType& vertex) { _vertices.push_back(vertex); }
+    void addVertex(const VertexType& vertex);
 
-    void setIndices(const std::vector<uint32_t>& indices) { _indices = indices; }
+    void setIndices(std::vector<uint32_t> indices);
 
-    void addIndex(uint32_t index) { _indices.push_back(index); }
+    void addIndex(uint32_t index);
 
     void cleanupStagingBuffers();
 
     void setName(const std::string& name) { _name = name; }
+
+    void bindToCommandBuffer(CommandBuffer* commandBuffer);
+
+    bool bindBuffers();
+
+    void lock();
+
+    void unlock();
+
+    bool isLocked() const { return _locked; }
+
+    bool isBound() const { return _bound; }
 
   private:
     vax::Logger _logger = vax::Logger("Mesh");
@@ -92,14 +103,18 @@ template <typename VertexType> class MeshObject final {
 
     std::string _name;
 
+    MeshId _id = NullId;
+
     std::vector<VertexType> _vertices;
     std::vector<uint32_t> _indices;
+
+    bool _bound = false;
+    bool _locked = false; // if true, the mesh is locked and cannot be modified
 
     std::optional<Buffer<VertexType>> _stagingVertexBuffer = std::nullopt;
     std::optional<Buffer<uint32_t>> _stagingIndexBuffer = std::nullopt;
 
     bool _isLoaded = false;
-    MeshId _id = NullId;
 
     void _destroy();
 };
