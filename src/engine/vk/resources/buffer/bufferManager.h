@@ -4,6 +4,7 @@
 #include "device.h"
 #include "luna.h"
 #include "resourceHandle.h"
+#include <unordered_map>
 
 namespace vax::vk {
 class BufferManager final {

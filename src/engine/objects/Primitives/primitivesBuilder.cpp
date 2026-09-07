@@ -56,13 +56,20 @@ std::optional<DrawableModel> PrimitivesBuilder::createCube(float size, vax::engi
         mesh.value().second->addIndex(offset + 3);
     }
 
+    mesh.value().second->lock();
+    mesh.value().second->bindBuffers();
+
+    if (!mesh.value().second->flushToGPU()) {
+        return std::nullopt;
+    }
+
     PBRMaterial material{
         .baseColor = color,
     };
     material.baseColorTextureIndex = NO_TEXTURE_FLAG;
     auto materialIndex = _materialManager.get().insert(material);
     Submesh submesh{
-        .indexCount = static_cast<uint32_t>(mesh->second->indices().size()),
+        .indexCount = static_cast<uint32_t>(mesh.value().second->indexCount()),
         .materialIndex = materialIndex,
     };
     auto drawableModel = vax::engine::DrawableModel(_meshManager.get(), mesh.value().first);
@@ -89,8 +96,13 @@ std::optional<DrawableModel> PrimitivesBuilder::createPlane() {
     mesh.value().second->addIndex(2);
     mesh.value().second->addIndex(3);
 
+    mesh.value().second->lock();
+    mesh.value().second->bindBuffers();
+    if (!mesh.value().second->flushToGPU()) {
+        return std::nullopt;
+    }
     Submesh submesh{
-        .indexCount = static_cast<uint32_t>(mesh->second->indices().size()),
+        .indexCount = static_cast<uint32_t>(mesh.value().second->indexCount()),
         .materialIndex = NO_MATERIAL_INDEX,
     };
     auto drawableModel = vax::engine::DrawableModel(_meshManager.get(), mesh.value().first);

@@ -1,7 +1,7 @@
 #include "buffer.h"
 #include "commandBuffer.h"
-#include "vertex.h"
 #include "shaderUniforms.h"
+#include "vertex.h"
 
 using namespace vax::vk;
 
@@ -44,20 +44,17 @@ std::optional<Buffer<T>> Buffer<T>::allocate(
     return buffer;
 }
 
-template <typename T>
-void Buffer<T>::cleanup() {
+template <typename T> void Buffer<T>::cleanup() {
     if (isDetached())
         _destroy();
 }
 
-template <typename T>
-void Buffer<T>::_detach() {
+template <typename T> void Buffer<T>::_detach() {
     _isDetached = true;
     _id = NullId;
 }
 
-template <typename T>
-void Buffer<T>::_destroy() {
+template <typename T> void Buffer<T>::_destroy() {
     unmap();
     if (_vkBuffer != VK_NULL_HANDLE && _allocation != VK_NULL_HANDLE) {
         vmaDestroyBuffer(_device.get().allocator, _vkBuffer, _allocation);
@@ -102,21 +99,24 @@ bool Buffer<T>::load(
     _size = size;
     if (!_allocate(usage, memoryUsage, flags))
         return false;
-    if (!fill(data))
+    if (!fill(static_cast<const void*>(data), size))
         return false;
     return true;
 }
 
-template <typename T>
-bool Buffer<T>::fill(const T* fillData) {
-    if (isEmpty() || !isAllocated() || fillData == nullptr) {
+template <typename T> bool Buffer<T>::fill(const void* fillData, size_t bytesFill, size_t bytesOffset) {
+    if (isEmpty() || !isAllocated() || fillData == nullptr || bytesFill == 0) {
         return false;
     }
 
     map();
-    memcpy(_mappedMemory, fillData, (size_t)_size);
+    memcpy(reinterpret_cast<char*>(_mappedMemory) + bytesOffset, fillData, bytesFill);
     unmap();
     return true;
+}
+
+template <typename T> bool Buffer<T>::fill(const void* fillData) {
+    return fill(fillData, static_cast<size_t>(_size), 0);
 }
 
 template <typename T>
@@ -128,11 +128,11 @@ void vax::vk::Buffer<T>::copyBufferCommand(
     vkCmdCopyBuffer(commandBuffer.vkCommandBuffer, _vkBuffer, dstBuffer._vkBuffer, 1, &copyRegion);
 }
 
-template <typename T>
-bool Buffer<T>::isEmpty() const { return _size == 0; }
+template <typename T> bool Buffer<T>::isEmpty() const { return _size == 0; }
 
-template <typename T>
-bool Buffer<T>::isAllocated() const { return _vkBuffer != VK_NULL_HANDLE && _allocation != VK_NULL_HANDLE; }
+template <typename T> bool Buffer<T>::isAllocated() const {
+    return _vkBuffer != VK_NULL_HANDLE && _allocation != VK_NULL_HANDLE;
+}
 
 template <typename T>
 bool Buffer<T>::_allocate(VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags flags) {
@@ -179,8 +179,7 @@ bool Buffer<T>::_allocate(VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, 
     return true;
 }
 
-template <typename T>
-void Buffer<T>::map() {
+template <typename T> void Buffer<T>::map() {
     if (isMapped())
         return;
     void* mappedData = nullptr;
@@ -189,8 +188,7 @@ void Buffer<T>::map() {
     _isMapped = true;
 }
 
-template <typename T>
-void Buffer<T>::unmap() {
+template <typename T> void Buffer<T>::unmap() {
     if (!isMapped())
         return;
     if (_isPersistentlyMapped) {
@@ -201,8 +199,7 @@ void Buffer<T>::unmap() {
     _mappedMemory = nullptr;
 }
 
-template <typename T>
-std::optional<T*> Buffer<T>::mappedMemory() const {
+template <typename T> std::optional<T*> Buffer<T>::mappedMemory() const {
     if (!isMapped())
         return std::nullopt;
     return _mappedMemory;

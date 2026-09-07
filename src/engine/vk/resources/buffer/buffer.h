@@ -1,10 +1,8 @@
 #pragma once
 
-#include "bufferData.h"
 #include "device.h"
 #include "luna.h"
 #include "resourceUtils.h"
-#include "vkUtils.h"
 
 namespace vax::vk {
 class CommandBuffer;
@@ -103,7 +101,9 @@ template <typename T> class Buffer final {
         VmaAllocationCreateFlags flags = 0
     );
 
-    bool fill(const T* fillData);
+    bool fill(const void* fillData, size_t bytesFill, size_t bytesOffset = 0);
+
+    bool fill(const void* fillData);
 
     void map();
 

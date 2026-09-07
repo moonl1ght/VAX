@@ -14,7 +14,7 @@ class MeshManager final {
     using IndexBuffer = Buffer<uint32_t>;
     using MeshResource = std::pair<MeshHandle, Mesh*>;
 
-    friend class MeshObject<vax::vk::Vertex>;
+    template <typename VertexType> friend class MeshObject;
 
     explicit MeshManager(const Device& device)
         : _device(device) {};
@@ -37,18 +37,37 @@ class MeshManager final {
 
     std::optional<MeshResource> find(MeshHandle handle);
 
-    bool deleteMesh(MeshHandle handle);
+    VkBuffer globalVertexBuffer(size_t bufferIndex) const { return _globalVertexBuffers[bufferIndex]->vkBuffer(); }
+
+    VkBuffer globalIndexBuffer(size_t bufferIndex) const { return _globalIndexBuffers[bufferIndex]->vkBuffer(); }
+
+    // TODO: implement mesh deletion with freeing memory
+    // bool deleteMesh(MeshHandle handle);
 
   private:
     struct ChunkInfo {
-        size_t offset;
-        size_t count;
+        uint32_t offset;
+        uint32_t count;
+    };
+
+    struct BindMemoryResult {
+        uint32_t vertexBufferIndex;
+        uint32_t indexBufferIndex;
+        uint32_t vertexOffset;
+        uint32_t indexOffset;
+    };
+
+    struct FreeMemorySlot {
+        uint32_t bufferIndex;
+        uint32_t chunkIndex;
+        uint32_t offset;
     };
 
     struct BufferDescriptor {
-        std::vector<ChunkInfo> memoryChunks;
-        int maxNumberOfElements;
-        int usedElements;
+        std::vector<ChunkInfo> usedMemoryChunks;
+        std::vector<ChunkInfo> freeMemoryChunks;
+        uint32_t maxNumberOfElements;
+        uint32_t usedElements;
     };
 
     vax::Logger _logger = vax::Logger("MeshManager");
@@ -63,5 +82,13 @@ class MeshManager final {
 
     std::unordered_map<MeshId, Mesh> _pool;
     MeshId _lastId = 0;
+
+    template <typename VertexType>
+    std::optional<BindMemoryResult> _tryToBindMemory(const MeshObject<VertexType>& mesh, bool allocateNewPool);
+
+    std::optional<FreeMemorySlot>
+    _tryToFindFreeMemory(const std::vector<BufferDescriptor>& bufferDescriptors, uint32_t count) const;
+
+    void _commitMemory(std::vector<BufferDescriptor>& bufferDescriptors, const FreeMemorySlot& slot, uint32_t count);
 };
 } // namespace vax::vk

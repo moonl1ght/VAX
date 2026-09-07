@@ -41,8 +41,6 @@ class DrawableModel final {
 
     ~DrawableModel() {};
 
-    bool loadMesh(const vax::vk::Mesh::LoadMeshBuffersContext& context);
-
     void draw(const vax::engine::DrawContext& drawContext, const DrawSettings& drawSettings);
 
     Settings& settings() { return _settings; }

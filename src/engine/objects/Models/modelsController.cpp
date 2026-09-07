@@ -80,15 +80,6 @@ void ModelsController::preload(
             _globalInstanceCursor += instanceCount;
         }
     }
-    commandBuffer.begin();
-    for (auto& drawableModel : _drawableModels) {
-        Mesh::LoadMeshBuffersContext context = {
-            .commandBuffer = &commandBuffer, .maxFramesInFlight = vax::vk::MAX_FRAMES_IN_FLIGHT
-        };
-        drawableModel.loadMesh(context);
-    }
-    commandBuffer.end();
-    commandBuffer.submitAndWait(submitQueue);
 }
 
 std::vector<std::string> ModelsController::getModelIds() const {

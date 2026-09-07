@@ -229,17 +229,37 @@ bool vax::engine::DrawableScene::writeFrameDescriptorSet(
     return true;
 }
 
-void vax::engine::DrawableScene::draw(const DrawContext& drawContext) { _sceneGraph->draw(drawContext); }
+void vax::engine::DrawableScene::draw(const DrawContext& drawContext) {
+    VkBuffer vertexBuffers[] = {_resourceManager.meshManager().globalVertexBuffer(0)};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(drawContext.commandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(
+        drawContext.commandBuffer, _resourceManager.meshManager().globalIndexBuffer(0), 0, VK_INDEX_TYPE_UINT32
+    );
+    _sceneGraph->draw(drawContext);
+}
 
 void vax::engine::DrawableScene::drawBackground(const DrawContext& drawContext) {
     if (!_background)
         return;
+    VkBuffer vertexBuffers[] = {_resourceManager.meshManager().globalVertexBuffer(0)};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(drawContext.commandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(
+        drawContext.commandBuffer, _resourceManager.meshManager().globalIndexBuffer(0), 0, VK_INDEX_TYPE_UINT32
+    );
     _background->draw(drawContext);
 }
 
 void vax::engine::DrawableScene::drawGizmo(const DrawContext& drawContext) {
     if (!_gizmo)
         return;
+    VkBuffer vertexBuffers[] = {_resourceManager.meshManager().globalVertexBuffer(0)};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(drawContext.commandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(
+        drawContext.commandBuffer, _resourceManager.meshManager().globalIndexBuffer(0), 0, VK_INDEX_TYPE_UINT32
+    );
     auto viewMatrix = _gizmoCamera.viewMatrix();
     auto projectionMatrix = _gizmoCamera.projectionMatrix();
     auto viewProjectionMatrix = projectionMatrix * viewMatrix;

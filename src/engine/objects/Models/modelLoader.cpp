@@ -287,6 +287,12 @@ std::optional<DrawableModel> ModelLoader::loadModel(const std::string& path, uin
     (*mesh).second->setName(path);
     (*mesh).second->setVertices(modelVertices);
     (*mesh).second->setIndices(modelIndices);
+    (*mesh).second->lock();
+    (*mesh).second->bindBuffers();
+    if (!(*mesh).second->flushToGPU()) {
+        _logger.error("Failed to flush mesh to GPU");
+        return std::nullopt;
+    }
 
     auto drawableModel = vax::engine::DrawableModel(_resourceManager.get().meshManager(), mesh->first);
     drawableModel._mesh = (*mesh).second;

@@ -3,16 +3,7 @@
 using namespace vax::engine;
 using namespace vax::vk;
 
-bool DrawableModel::loadMesh(const Mesh::LoadMeshBuffersContext& context) { return _mesh->loadBuffers(context); }
-
 void DrawableModel::draw(const DrawContext& drawContext, const DrawSettings& drawSettings) {
-    if (!_mesh->isLoaded())
-        return;
-    VkBuffer vertexBuffers[] = {_mesh->vertexBuffer->vkBuffer()};
-    VkDeviceSize offsets[] = {0};
-    vkCmdBindVertexBuffers(drawContext.commandBuffer, 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(drawContext.commandBuffer, _mesh->indexBuffer->vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
-
     uint32_t flags = ObjectFlags::NoFlags;
     if (_settings.useWireframe) {
         flags |= ObjectFlags::IsWireframe;
@@ -43,8 +34,8 @@ void DrawableModel::draw(const DrawContext& drawContext, const DrawSettings& dra
             drawContext.commandBuffer,
             submesh.indexCount,
             drawSettings.instancesCount,
-            submesh.firstIndex,
-            submesh.vertexOffset,
+            _mesh->globalMemoryIndexCursor().offset + submesh.firstIndex,
+            _mesh->globalMemoryVertexCursor().offset + submesh.vertexOffset,
             drawSettings.instanceOffset
         );
     }
