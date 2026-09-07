@@ -2,6 +2,7 @@
 
 #include "resourceUtils.h"
 #include "vertex.h"
+#include "device.h"
 
 namespace vax::vk {
 class MeshManager;
