@@ -355,7 +355,9 @@ bool Renderer::_drawScene(CommandBuffer& commandBuffer, DrawableScene* scene) {
         .frameIndex = _currentFrame,
     };
 
+    scene->beginDrawing();
     _renderPassGraph->run(runPassInfo);
+    scene->endDrawing();
     return true;
 }
 

@@ -22,7 +22,7 @@ void DrawableModel::draw(const DrawContext& drawContext, const DrawSettings& dra
         if (!_settings.skipPushConstants) {
             drawPushConstants.materialIndex = submesh.materialIndex;
             vkCmdPushConstants(
-                drawContext.commandBuffer,
+                drawContext.commandBuffer.vkCommandBuffer,
                 drawContext.pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
@@ -30,13 +30,24 @@ void DrawableModel::draw(const DrawContext& drawContext, const DrawSettings& dra
                 &drawPushConstants
             );
         }
-        vkCmdDrawIndexed(
-            drawContext.commandBuffer,
-            submesh.indexCount,
-            drawSettings.instancesCount,
-            _mesh->globalMemoryIndexCursor().offset + submesh.firstIndex,
-            _mesh->globalMemoryVertexCursor().offset + submesh.vertexOffset,
-            drawSettings.instanceOffset
-        );
+        if (drawContext.indirectDrawController) {
+            VkDrawIndexedIndirectCommand drawIndexedIndirectCommand{
+                .indexCount = submesh.indexCount,
+                .instanceCount = drawSettings.instancesCount,
+                .firstIndex = _mesh->globalMemoryIndexCursor().offset + submesh.firstIndex,
+                .vertexOffset = static_cast<int32_t>(_mesh->globalMemoryVertexCursor().offset + submesh.vertexOffset),
+                .firstInstance = drawSettings.instanceOffset,
+            };
+            drawContext.indirectDrawController->pushCommand(drawIndexedIndirectCommand);
+        } else {
+            vkCmdDrawIndexed(
+                drawContext.commandBuffer.vkCommandBuffer,
+                submesh.indexCount,
+                drawSettings.instancesCount,
+                _mesh->globalMemoryIndexCursor().offset + submesh.firstIndex,
+                _mesh->globalMemoryVertexCursor().offset + submesh.vertexOffset,
+                drawSettings.instanceOffset
+            );
+        }
     }
 }

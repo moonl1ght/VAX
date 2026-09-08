@@ -108,6 +108,8 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
                                    .value();
         lightAllocation.second->map();
         _lightsUniformBuffer.push_back(lightAllocation.second);
+        _indirectDrawController = std::make_unique<IndirectDrawController>(*_vkEngine.get().device);
+        _indirectDrawController->setup(10000);
     }
     std::vector<vax::engine::ModelDescriptor> modelDescriptors = {
         {
@@ -232,11 +234,18 @@ bool vax::engine::DrawableScene::writeFrameDescriptorSet(
 void vax::engine::DrawableScene::draw(const DrawContext& drawContext) {
     VkBuffer vertexBuffers[] = {_resourceManager.meshManager().globalVertexBuffer(0)};
     VkDeviceSize offsets[] = {0};
-    vkCmdBindVertexBuffers(drawContext.commandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindVertexBuffers(drawContext.commandBuffer.vkCommandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(
-        drawContext.commandBuffer, _resourceManager.meshManager().globalIndexBuffer(0), 0, VK_INDEX_TYPE_UINT32
+        drawContext.commandBuffer.vkCommandBuffer,
+        _resourceManager.meshManager().globalIndexBuffer(0),
+        0,
+        VK_INDEX_TYPE_UINT32
     );
-    _sceneGraph->draw(drawContext);
+    auto drawContextCopy = drawContext;
+    drawContextCopy.indirectDrawController = _indirectDrawController.get();
+    _indirectDrawController->prepareForDraw(drawContext.currentFrame);
+    _sceneGraph->draw(drawContextCopy);
+    _submitDrawCommands(drawContextCopy.commandBuffer, drawContext.currentFrame);
 }
 
 void vax::engine::DrawableScene::drawBackground(const DrawContext& drawContext) {
@@ -244,11 +253,18 @@ void vax::engine::DrawableScene::drawBackground(const DrawContext& drawContext) 
         return;
     VkBuffer vertexBuffers[] = {_resourceManager.meshManager().globalVertexBuffer(0)};
     VkDeviceSize offsets[] = {0};
-    vkCmdBindVertexBuffers(drawContext.commandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindVertexBuffers(drawContext.commandBuffer.vkCommandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(
-        drawContext.commandBuffer, _resourceManager.meshManager().globalIndexBuffer(0), 0, VK_INDEX_TYPE_UINT32
+        drawContext.commandBuffer.vkCommandBuffer,
+        _resourceManager.meshManager().globalIndexBuffer(0),
+        0,
+        VK_INDEX_TYPE_UINT32
     );
-    _background->draw(drawContext);
+    auto drawContextCopy = drawContext;
+    drawContextCopy.indirectDrawController = _indirectDrawController.get();
+    _indirectDrawController->prepareForDraw(drawContext.currentFrame);
+    _background->draw(drawContextCopy);
+    _submitDrawCommands(drawContextCopy.commandBuffer, drawContext.currentFrame);
 }
 
 void vax::engine::DrawableScene::drawGizmo(const DrawContext& drawContext) {
@@ -256,9 +272,12 @@ void vax::engine::DrawableScene::drawGizmo(const DrawContext& drawContext) {
         return;
     VkBuffer vertexBuffers[] = {_resourceManager.meshManager().globalVertexBuffer(0)};
     VkDeviceSize offsets[] = {0};
-    vkCmdBindVertexBuffers(drawContext.commandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindVertexBuffers(drawContext.commandBuffer.vkCommandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(
-        drawContext.commandBuffer, _resourceManager.meshManager().globalIndexBuffer(0), 0, VK_INDEX_TYPE_UINT32
+        drawContext.commandBuffer.vkCommandBuffer,
+        _resourceManager.meshManager().globalIndexBuffer(0),
+        0,
+        VK_INDEX_TYPE_UINT32
     );
     auto viewMatrix = _gizmoCamera.viewMatrix();
     auto projectionMatrix = _gizmoCamera.projectionMatrix();
@@ -266,7 +285,11 @@ void vax::engine::DrawableScene::drawGizmo(const DrawContext& drawContext) {
     _gizmo->updateTransform([&](vax::math::TransformHandle& transformHandle) {
         transformHandle.setCachedTransformMatrix(viewProjectionMatrix);
     });
-    _gizmo->draw(drawContext);
+    auto drawContextCopy = drawContext;
+    drawContextCopy.indirectDrawController = _indirectDrawController.get();
+    _indirectDrawController->prepareForDraw(drawContext.currentFrame);
+    _gizmo->draw(drawContextCopy);
+    _submitDrawCommands(drawContextCopy.commandBuffer, drawContext.currentFrame);
 }
 
 void vax::engine::DrawableScene::onMouseMove(const vax::MouseMoveValue& value) {
@@ -290,4 +313,13 @@ void vax::engine::DrawableScene::_loadEnvironmentMap(VkQueue submitQueue) {
         },
         submitQueue
     );
+}
+
+void DrawableScene::beginDrawing() {}
+
+void DrawableScene::endDrawing() {}
+
+void DrawableScene::_submitDrawCommands(CommandBuffer& commandBuffer, uint32_t frameIndex) {
+    _indirectDrawController->submitCommands(frameIndex);
+    _indirectDrawController->draw(commandBuffer, frameIndex);
 }

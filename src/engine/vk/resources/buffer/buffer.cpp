@@ -212,3 +212,4 @@ template class vax::vk::Buffer<vax::vk::VertexPUV>;
 template class vax::vk::Buffer<PBRMaterial>;
 template class vax::vk::Buffer<InstanceData>;
 template class vax::vk::Buffer<EnvironmentMapData>;
+template class vax::vk::Buffer<VkDrawIndexedIndirectCommand>;

@@ -6,6 +6,7 @@
 #include <memory>
 #include <unordered_map>
 #include <variant>
+#include "shaderUniforms.h"
 
 namespace vax::engine {
 

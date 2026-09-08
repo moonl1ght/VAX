@@ -1,12 +1,13 @@
 #pragma once
 
-#include "descriptorSetHandler.h"
 #include "luna.h"
+#include "indirectDrawController.h"
 
 namespace vax::engine {
 struct DrawContext {
-    VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+    vax::vk::CommandBuffer& commandBuffer;
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     uint32_t currentFrame = 0;
+    IndirectDrawController* indirectDrawController = nullptr;
 };
 } // namespace vax::engine

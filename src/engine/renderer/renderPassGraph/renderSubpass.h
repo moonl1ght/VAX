@@ -39,7 +39,7 @@ class RenderSubpass final {
             if (!runPassInfo.commandBuffer.bindPipeline(gizmoPipeline, VK_PIPELINE_BIND_POINT_GRAPHICS))
                 return;
             DrawContext drawContext{
-                .commandBuffer = runPassInfo.commandBuffer.vkCommandBuffer,
+                .commandBuffer = runPassInfo.commandBuffer,
                 .pipelineLayout = gizmoPipeline->vkPipelineLayout,
                 .currentFrame = runPassInfo.frameIndex,
             };

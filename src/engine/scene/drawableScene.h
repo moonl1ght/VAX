@@ -8,6 +8,7 @@
 #include "environmentMap.h"
 #include "frameTime.h"
 #include "gwSceneGraph.h"
+#include "indirectDrawController.h"
 #include "inputController.h"
 #include "light.h"
 #include "luna.h"
@@ -80,6 +81,10 @@ class DrawableScene final : public vax::InputController::Observer {
         vax::vk::DescriptorSetHandler& descriptorHandler, vax::vk::DescriptorSetHandler& roverCameraDescriptorHandler
     );
 
+    void beginDrawing();
+
+    void endDrawing();
+
     void draw(const vax::engine::DrawContext& drawContext);
 
     void drawBackground(const vax::engine::DrawContext& drawContext);
@@ -102,6 +107,10 @@ class DrawableScene final : public vax::InputController::Observer {
 
   private:
     vax::Logger _logger = vax::Logger("DrawableScene");
+
+    std::unique_ptr<IndirectDrawController> _indirectDrawController;
+    std::unique_ptr<vax::rl::GwSceneGraph> _sceneGraph;
+
     std::vector<vax::vk::AnyBuffer*> _sceneUniformBuffers;
     std::vector<vax::vk::AnyBuffer*> _roverCameraUniformBuffers;
     std::vector<vax::vk::AnyBuffer*> _lightsUniformBuffer;
@@ -117,7 +126,6 @@ class DrawableScene final : public vax::InputController::Observer {
     UniformBufferObject _ubo;
     UniformBufferObject _sunLightUbo;
     UniformBufferObject _roverCameraUbo;
-    std::unique_ptr<vax::rl::GwSceneGraph> _sceneGraph;
     std::optional<vax::engine::DrawableNode> _background;
     std::optional<vax::engine::DrawableNode> _gizmo;
     std::optional<vax::engine::EnvironmentMap> _environmentMap;
@@ -131,5 +139,6 @@ class DrawableScene final : public vax::InputController::Observer {
     void _drawDrawableNode(
         vax::engine::DrawableNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline
     );
+    void _submitDrawCommands(vax::vk::CommandBuffer& commandBuffer, uint32_t frameIndex);
 };
 } // namespace vax::engine

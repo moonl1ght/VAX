@@ -3,7 +3,12 @@ import sharedUtils;
 import uniforms;
 
 [shader("vertex")]
-VertexOutput vertMain(uniform DrawPushConstants pushConstants, VertexInput input, uint instanceIndex : SV_VulkanInstanceID) {
+VertexOutput vertMain(
+    uniform DrawPushConstants pushConstants,
+    VertexInput input,
+    uint instanceIndex : SV_VulkanInstanceID,
+    uint drawIndex : SV_DrawIndex
+) {
     VertexOutput output;
     InstanceData instance = instances[instanceIndex];
     float4x4 modelMatrix = instance.model;

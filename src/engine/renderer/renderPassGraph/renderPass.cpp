@@ -47,7 +47,7 @@ void RenderPass::runPass(RunPassInfo& runPassInfo) {
             if (!runPassInfo.commandBuffer.bindPipeline(pipeline, VK_PIPELINE_BIND_POINT_GRAPHICS))
                 return;
             DrawContext drawContext{
-                .commandBuffer = runPassInfo.commandBuffer.vkCommandBuffer,
+                .commandBuffer = runPassInfo.commandBuffer,
                 .pipelineLayout = pipeline->vkPipelineLayout,
                 .currentFrame = runPassInfo.frameIndex,
             };
