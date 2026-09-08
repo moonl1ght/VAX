@@ -11,7 +11,7 @@ using namespace vax::engine;
 bool GwSceneGraph::load(
     engine::ModelsController& modelsController, const vax::rl::GridWorldDrawableDescriptor& descriptor
 ) {
-    auto agentNode = modelsController.getPreloadedSceneNodeById(descriptor.agentDrawableDescriptor.id, 1);
+    auto agentNode = modelsController.getPreloadedDrawableNodeById(descriptor.agentDrawableDescriptor.id, 1);
     if (!agentNode.has_value()) {
         _logger.error("Failed to load agent model: {}", descriptor.agentDrawableDescriptor.id);
         return false;
@@ -19,7 +19,7 @@ bool GwSceneGraph::load(
     agentNode->setIsSelected(true);
     agentNode->setNodeSelectionColor(ColorPalette::Clear);
     _gwAgentNode =
-        std::make_unique<vax::rl::GWAgentNode>(std::make_unique<vax::engine::SceneNode>(std::move(agentNode.value())));
+        std::make_unique<vax::rl::GWAgentNode>(std::make_unique<vax::engine::DrawableNode>(std::move(agentNode.value())));
 
     _gwAgentNode->agentNode().updateTransform([&](TransformHandle& transformHandle) {
         transformHandle.updateTransform([&](Transform& transform) {
@@ -29,7 +29,7 @@ bool GwSceneGraph::load(
 
     _envNodes.reserve(descriptor.drawableDescriptors.size());
     for (const auto& drawableDescriptor : descriptor.drawableDescriptors) {
-        auto node = modelsController.createSceneNodeById(drawableDescriptor.id, drawableDescriptor.transforms);
+        auto node = modelsController.createDrawableNodeById(drawableDescriptor.id, drawableDescriptor.transforms);
         for (auto& selectedInstanceInfo : drawableDescriptor.selectedInstanceInfos) {
             node->selectInstance(selectedInstanceInfo.instanceIndex);
             node->setSelectionColor(selectedInstanceInfo.instanceIndex, selectedInstanceInfo.color);

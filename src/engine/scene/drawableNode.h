@@ -13,11 +13,11 @@ class ModelLoader;
 }
 
 namespace vax::engine {
-class SceneNode final : public Node {
+class DrawableNode final : public Node {
   public:
     friend class vax::engine::ModelLoader;
 
-    explicit SceneNode(
+    explicit DrawableNode(
         vax::vk::SSBOManager& ssboManager,
         std::string name,
         const vax::math::Transform& originalParentRelativeTransform,
@@ -38,7 +38,7 @@ class SceneNode final : public Node {
         }
     };
 
-    SceneNode(
+    DrawableNode(
         vax::vk::SSBOManager& ssboManager,
         std::string name,
         std::vector<vax::math::Transform> transforms,
@@ -59,11 +59,10 @@ class SceneNode final : public Node {
         }
     };
 
-    SceneNode(const SceneNode& other) = delete;
-    SceneNode& operator=(const SceneNode& other) = delete;
-
-    SceneNode(SceneNode&& other) noexcept = default;
-    SceneNode& operator=(SceneNode&& other) = default;
+    DrawableNode(const DrawableNode& other) = delete;
+    DrawableNode& operator=(const DrawableNode& other) = delete;
+    DrawableNode(DrawableNode&& other) noexcept = default;
+    DrawableNode& operator=(DrawableNode&& other) noexcept = default;
 
     bool hasDrawableModels() const { return !_drawableModels.empty(); };
 

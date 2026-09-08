@@ -7,7 +7,7 @@
 #include "modelLoader.h"
 #include "primitivesBuilder.h"
 #include "resourceManager.h"
-#include "sceneNode.h"
+#include "drawableNode.h"
 #include "vkUtils.h"
 
 namespace vax::engine {
@@ -43,11 +43,11 @@ class ModelsController {
 
     std::vector<std::string> getModelIds() const;
 
-    std::vector<std::string> getSceneNodeIds() const;
+    std::vector<std::string> getDrawableNodeIds() const;
 
-    std::optional<vax::engine::SceneNode> getPreloadedSceneNodeById(const std::string& id, uint32_t instancesCount);
+    std::optional<vax::engine::DrawableNode> getPreloadedDrawableNodeById(const std::string& id, uint32_t instancesCount);
 
-    std::optional<vax::engine::SceneNode> createSceneNodeById(
+    std::optional<vax::engine::DrawableNode> createDrawableNodeById(
         const std::string& id,
         std::vector<vax::math::Transform> transforms = {vax::math::Transform()}
     );
@@ -77,7 +77,7 @@ class ModelsController {
     std::reference_wrapper<vax::engine::ModelLoader> _modelLoader;
     std::reference_wrapper<vax::engine::PrimitivesBuilder> _primitivesBuilder;
 
-    std::unordered_map<std::string, vax::engine::SceneNode> _cachedSceneNodeMap;
+    std::unordered_map<std::string, vax::engine::DrawableNode> _cachedDrawableNodeMap;
 
     std::unordered_map<std::string, ModelInfo> _modelMap;
     std::vector<vax::engine::DrawableModel> _drawableModels;

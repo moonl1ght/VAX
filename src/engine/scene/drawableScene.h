@@ -4,10 +4,12 @@
 #include "descriptorSetHandler.h"
 #include "drawContext.h"
 #include "drawableModel.h"
+#include "drawableNode.h"
 #include "environmentMap.h"
 #include "frameTime.h"
 #include "gwSceneGraph.h"
 #include "inputController.h"
+#include "light.h"
 #include "luna.h"
 #include "modelLoader.h"
 #include "modelsController.h"
@@ -15,11 +17,9 @@
 #include "primitivesBuilder.h"
 #include "renderContext.h"
 #include "resourceManager.h"
-#include "sceneNode.h"
 #include "shaderUniforms.h"
 #include "textureLoader.h"
 #include "vkEngine.h"
-#include "light.h"
 
 namespace vax::rl {
 struct GridWorldDrawableDescriptor;
@@ -118,8 +118,8 @@ class DrawableScene final : public vax::InputController::Observer {
     UniformBufferObject _sunLightUbo;
     UniformBufferObject _roverCameraUbo;
     std::unique_ptr<vax::rl::GwSceneGraph> _sceneGraph;
-    std::optional<vax::engine::SceneNode> _background;
-    std::optional<vax::engine::SceneNode> _gizmo;
+    std::optional<vax::engine::DrawableNode> _background;
+    std::optional<vax::engine::DrawableNode> _gizmo;
     std::optional<vax::engine::EnvironmentMap> _environmentMap;
 
     vax::engine::RenderCallContext _renderCallContext;
@@ -128,6 +128,8 @@ class DrawableScene final : public vax::InputController::Observer {
     bool _shouldDrawSecondaryWindow = false;
 
     void _loadEnvironmentMap(VkQueue submitQueue);
-    void _drawSceneNode(vax::engine::SceneNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline);
+    void _drawDrawableNode(
+        vax::engine::DrawableNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline
+    );
 };
 } // namespace vax::engine

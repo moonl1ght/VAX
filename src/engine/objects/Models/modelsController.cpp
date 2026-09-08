@@ -30,13 +30,13 @@ void ModelsController::preload(
         switch (modelDescriptor.modelType) {
         case vax::engine::ModelDescriptor::ModelType::MODEL: {
             if (modelDescriptor.getModelExtension() == vax::engine::ModelDescriptor::ModelExtension::URDF) {
-                auto sceneNode = _modelLoader.get().loadSceneModel(*this, modelDescriptor);
-                if (sceneNode) {
+                auto drawableNode = _modelLoader.get().loadSceneModel(*this, modelDescriptor);
+                if (drawableNode) {
                     if (modelDescriptor.isIdentifiable) {
-                        sceneNode->setNodeId(_lastObjectId);
+                        drawableNode->setNodeId(_lastObjectId);
                         _lastObjectId += modelDescriptor.instancesCount;
                     }
-                    _cachedSceneNodeMap.insert_or_assign(modelDescriptor.id, std::move(*sceneNode));
+                    _cachedDrawableNodeMap.insert_or_assign(modelDescriptor.id, std::move(*drawableNode));
                     isURDF = true;
                 }
             } else {
@@ -91,14 +91,14 @@ std::vector<std::string> ModelsController::getModelIds() const {
     return modelIds;
 }
 
-std::optional<SceneNode>
-ModelsController::createSceneNodeById(const std::string& id, std::vector<vax::math::Transform> transforms) {
+std::optional<DrawableNode>
+ModelsController::createDrawableNodeById(const std::string& id, std::vector<vax::math::Transform> transforms) {
     uint32_t instancesCount = transforms.size();
     auto itModelInfo = _modelMap.find(id);
     if (itModelInfo != _modelMap.end()) {
-        auto sceneNode = SceneNode(_resourceManager.get().ssboManager(), id, transforms, true);
+        auto drawableNode = DrawableNode(_resourceManager.get().ssboManager(), id, transforms, true);
         if (itModelInfo->second.isIdentifiable) {
-            sceneNode.setNodeId(_lastObjectId);
+            drawableNode.setNodeId(_lastObjectId);
             _lastObjectId += instancesCount;
         }
         auto drawableModelPtr = &_drawableModels[itModelInfo->second.modelIndex];
@@ -135,16 +135,16 @@ ModelsController::createSceneNodeById(const std::string& id, std::vector<vax::ma
                 _globalInstanceCursor += newChunk.maxInstances;
             }
         }
-        sceneNode.addDrawableModel(drawableModelHandle);
-        return std::optional<SceneNode>(std::in_place, std::move(sceneNode));
+        drawableNode.addDrawableModel(drawableModelHandle);
+        return std::optional<DrawableNode>(std::in_place, std::move(drawableNode));
     }
     return std::nullopt;
 }
 
-std::optional<SceneNode> ModelsController::getPreloadedSceneNodeById(const std::string& id, uint32_t instancesCount) {
-    auto itCachedSceneNode = _cachedSceneNodeMap.find(id);
-    if (itCachedSceneNode != _cachedSceneNodeMap.end()) {
-        return std::optional<SceneNode>(std::in_place, std::move(itCachedSceneNode->second));
+std::optional<DrawableNode> ModelsController::getPreloadedDrawableNodeById(const std::string& id, uint32_t instancesCount) {
+    auto itCachedDrawableNode = _cachedDrawableNodeMap.find(id);
+    if (itCachedDrawableNode != _cachedDrawableNodeMap.end()) {
+        return std::optional<DrawableNode>(std::in_place, std::move(itCachedDrawableNode->second));
     }
     return std::nullopt;
 }

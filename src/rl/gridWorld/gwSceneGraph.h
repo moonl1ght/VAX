@@ -9,7 +9,7 @@
 #include "modelLoader.h"
 #include "modelsController.h"
 #include "gwAgentNode.h"
-#include "sceneNode.h"
+#include "drawableNode.h"
 #include "vaxMath.h"
 #include "camera.h"
 
@@ -58,7 +58,7 @@ class GwSceneGraph final {
 
   private:
     vax::Logger _logger = vax::Logger("GwSceneGraph");
-    std::vector<vax::engine::SceneNode> _envNodes;
+    std::vector<vax::engine::DrawableNode> _envNodes;
     std::unique_ptr<vax::rl::GWAgentNode> _gwAgentNode;
     std::optional<vax::AnimationGroup> _animations;
     std::optional<std::function<void()>> _onAllAnimationsCompleted;

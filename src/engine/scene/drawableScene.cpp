@@ -128,11 +128,11 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
     auto commandBuffer1 = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
     _modelsController.preload(modelDescriptors, commandBuffer1, submitQueue);
     _sceneGraph->load(_modelsController, descriptor);
-    _gizmo = std::move(_modelsController.createSceneNodeById("gizmo"));
+    _gizmo = std::move(_modelsController.createDrawableNodeById("gizmo"));
     for (auto& drawableModel : _gizmo->drawableModels()) {
         drawableModel->setSettings({.precomputedMVP = true});
     }
-    _background = std::move(_modelsController.createSceneNodeById("background"));
+    _background = std::move(_modelsController.createDrawableNodeById("background"));
 
     auto commandBuffer = _vkEngine.get().commandManager->createSingleTimeCommandBuffer();
 

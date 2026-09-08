@@ -4,7 +4,7 @@
 #include "luna.h"
 #include "modelDescriptor.h"
 #include "resourceManager.h"
-#include "sceneNode.h"
+#include "drawableNode.h"
 #include "textureLoader.h"
 
 namespace vax::engine {
@@ -25,7 +25,7 @@ class ModelLoader final {
     ModelLoader(ModelLoader&& other) noexcept = delete;
     ModelLoader& operator=(ModelLoader&& other) noexcept = delete;
 
-    std::optional<SceneNode>
+    std::optional<DrawableNode>
     loadSceneModel(vax::engine::ModelsController& modelsController, const vax::engine::ModelDescriptor& descriptor);
 
     std::optional<vax::engine::DrawableModel> loadModel(const std::string& path, uint32_t instancesCount = 1);
@@ -39,9 +39,9 @@ class ModelLoader final {
     std::reference_wrapper<vax::vk::ResourceManager> _resourceManager;
     std::reference_wrapper<vax::vk::TextureLoader> _textureLoader;
 
-    std::optional<SceneNode>
+    std::optional<DrawableNode>
     _loadURDFSceneModel(vax::engine::ModelsController& modelsController, vax::engine::ModelDescriptor descriptor);
-    std::optional<SceneNode>
+    std::optional<DrawableNode>
     _loadGLBSceneModel(vax::engine::ModelsController& modelsController, vax::engine::ModelDescriptor descriptor);
 };
 } // namespace vax::engine

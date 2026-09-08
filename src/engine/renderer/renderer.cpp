@@ -1,7 +1,6 @@
 #include "renderer.h"
 #include "descriptorSetManager.h"
 #include "imageUtils.h"
-#include "imgui_impl_vulkan.h"
 #include "jfaPass.h"
 #include "pipeline.h"
 #include "profiler.h"

@@ -313,7 +313,7 @@ static glm::mat4 urdfPoseToMat4(const urdf::Pose& pose) {
 }
 
 template <typename ModelLoaderFunc>
-SceneNode processURDFLink(
+DrawableNode processURDFLink(
     const std::string_view mainPath,
     vax::vk::ResourceManager& resourceManager,
     urdf::LinkConstSharedPtr link,
@@ -333,7 +333,7 @@ SceneNode processURDFLink(
     auto transform = transformHandle.getModelMatrix();
     auto nodeTransform = parentTransform * transform;
 
-    SceneNode node(
+    DrawableNode node(
         resourceManager.ssboManager(), link->name, transformHandle.getTransform(), {nodeTransform}, !link->parent_joint
     );
 
@@ -369,13 +369,13 @@ SceneNode processURDFLink(
 
     for (const auto& child : link->child_links) {
         auto childNode = processURDFLink(mainPath, resourceManager, child, loadModel, nodeTransform);
-        node.insertChild(std::make_unique<SceneNode>(std::move(childNode)));
+        node.insertChild(std::make_unique<DrawableNode>(std::move(childNode)));
     }
 
     return node;
 }
 
-std::optional<SceneNode>
+std::optional<DrawableNode>
 ModelLoader::_loadURDFSceneModel(ModelsController& modelsController, ModelDescriptor descriptor) {
     auto path = descriptor.path;
     auto model = urdf::parseURDFFile(path);
@@ -405,10 +405,10 @@ ModelLoader::_loadURDFSceneModel(ModelsController& modelsController, ModelDescri
             transform = descriptor.transforms[instanceIndex];
         });
     });
-    return std::optional<SceneNode>(std::in_place, std::move(rootNode));
+    return std::optional<DrawableNode>(std::in_place, std::move(rootNode));
 }
 
-std::optional<SceneNode>
+std::optional<DrawableNode>
 ModelLoader::_loadGLBSceneModel(ModelsController& modelsController, ModelDescriptor descriptor) {
     auto path = descriptor.path;
     auto model = loadModel(path, 1);
@@ -417,7 +417,7 @@ ModelLoader::_loadGLBSceneModel(ModelsController& modelsController, ModelDescrip
         return std::nullopt;
     }
     auto transformHandle = vax::math::TransformHandle();
-    auto node = SceneNode(
+    auto node = DrawableNode(
         _resourceManager.get().ssboManager(),
         path,
         transformHandle.getTransform(),
@@ -427,10 +427,10 @@ ModelLoader::_loadGLBSceneModel(ModelsController& modelsController, ModelDescrip
     static UUIDv4::UUIDGenerator<std::mt19937_64> uuidGen;
     auto drawableModel = modelsController._addDrawableModel(uuidGen.getUUID().str(), path, std::move(*model));
     node.addDrawableModel(drawableModel);
-    return std::optional<SceneNode>(std::in_place, std::move(node));
+    return std::optional<DrawableNode>(std::in_place, std::move(node));
 }
 
-std::optional<SceneNode>
+std::optional<DrawableNode>
 ModelLoader::loadSceneModel(ModelsController& modelsController, const vax::engine::ModelDescriptor& descriptor) {
     if (descriptor.getModelExtension() == vax::engine::ModelDescriptor::ModelExtension::URDF) {
         return _loadURDFSceneModel(modelsController, descriptor);

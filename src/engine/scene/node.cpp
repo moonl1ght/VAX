@@ -1,5 +1,5 @@
 #include "node.h"
-#include "sceneNode.h"
+#include "drawableNode.h"
 #include "shaderSharedUtils.h"
 #include "transform.h"
 #include "profiler.h"
@@ -11,8 +11,8 @@ using namespace vax::math;
 void Node::draw(const DrawContext& drawContext) {
     ZoneScopedN("Node::draw");
     if (_type == NodeType::SCENE) {
-        auto scene = static_cast<SceneNode*>(this);
-        scene->resetDrawingRangeIndex();
+        auto drawableNode = static_cast<DrawableNode*>(this);
+        drawableNode->resetDrawingRangeIndex();
     }
     // TODO: Fix cache miss when updating instance data
     for (size_t i = 0; i < _instancesCount; ++i) {
@@ -34,8 +34,8 @@ void Node::draw(const DrawContext& drawContext) {
         };
         switch (_type) {
         case NodeType::SCENE: {
-            auto scene = static_cast<SceneNode*>(this);
-            scene->updateInstanceData(drawContext, instanceData, i);
+            auto drawableNode = static_cast<DrawableNode*>(this);
+            drawableNode->updateInstanceData(drawContext, instanceData, i);
         } break;
         default:
             break;
@@ -60,8 +60,8 @@ void Node::draw(const DrawContext& drawContext) {
     }
     switch (_type) {
     case NodeType::SCENE: {
-        auto scene = static_cast<SceneNode*>(this);
-        scene->drawModels(drawContext);
+        auto drawableNode = static_cast<DrawableNode*>(this);
+        drawableNode->drawModels(drawContext);
     } break;
     }
     for (auto& child : _children) {

@@ -1,12 +1,11 @@
-#include "sceneNode.h"
-#include "shaderUniforms.h"
+#include "drawableNode.h"
 #include <glm/ext/matrix_float4x4.hpp>
 
 using namespace vax::engine;
 using namespace vax;
 using namespace vax::math;
 
-void SceneNode::updateInstanceData(
+void DrawableNode::updateInstanceData(
     const DrawContext& drawContext, const InstanceData& instanceData, uint32_t instanceIndex
 ) {
     for (auto& drawingRangeForDrawableModel : _drawableModelInstanceDrawingRanges) {
@@ -24,7 +23,7 @@ void SceneNode::updateInstanceData(
     }
 }
 
-void SceneNode::drawModels(const DrawContext& drawContext) {
+void DrawableNode::drawModels(const DrawContext& drawContext) {
     for (size_t i = 0; i < _drawableModels.size(); ++i) {
         auto& drawableModel = _drawableModels[i];
         for (auto& drawingRange : _drawableModelInstanceDrawingRanges[i]) {
@@ -37,11 +36,11 @@ void SceneNode::drawModels(const DrawContext& drawContext) {
     }
 }
 
-void SceneNode::draw(const DrawContext& drawContext) {
+void DrawableNode::draw(const DrawContext& drawContext) {
     Node::draw(drawContext);
 }
 
-void SceneNode::addDrawableModel(DrawableModelHandle drawableModelHandle) {
+void DrawableNode::addDrawableModel(DrawableModelHandle drawableModelHandle) {
     _drawableModels.push_back(drawableModelHandle.drawableModel);
     _drawableModelInstanceDrawingRanges.push_back(drawableModelHandle.instanceDrawingRanges);
 }
