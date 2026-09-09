@@ -1,30 +1,33 @@
 import uniforms;
 
-[vk::binding(FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX, MainSetIndices::PER_FRAME_SET_INDEX)]
+[vk::binding(PerFrameDescriptorSetResourceIndex::FRAME_UNIFORM_BUFFER_INDEX, MainSetIndices::PER_FRAME_SET_INDEX)]
 ConstantBuffer<UniformBufferObject> ubo;
 
-[vk::binding(FrameBindingIndices::FRAME_LIGHT_BUFFER_INDEX, MainSetIndices::PER_FRAME_SET_INDEX)]
+[vk::binding(PerFrameDescriptorSetResourceIndex::FRAME_LIGHT_BUFFER_INDEX, MainSetIndices::PER_FRAME_SET_INDEX)]
 ConstantBuffer<LightUBO> lights;
 
-[vk::binding(FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX, MainSetIndices::PER_FRAME_SET_INDEX)]
+[vk::binding(PerFrameDescriptorSetResourceIndex::FRAME_INSTANCE_BUFFER_INDEX, MainSetIndices::PER_FRAME_SET_INDEX)]
 StructuredBuffer<InstanceData> instances;
 
-[vk::binding(GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
+[vk::binding(DrawBindingIndices::DRAW_DATA_BUFFER_INDEX, MainSetIndices::PER_DRAW_SET_INDEX)]
+StructuredBuffer<PerDrawData> drawData;
+
+[vk::binding(GlobalDescriptorSetResourceIndex::GLOBAL_MATERIAL_BUFFER_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
 StructuredBuffer<PBRMaterial> materials;
 
-[vk::binding(GlobalBindingIndices::GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
+[vk::binding(GlobalDescriptorSetResourceIndex::GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
 StructuredBuffer<EnvironmentMapData> environmentMaps;
 
-[vk::binding(GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
+[vk::binding(GlobalDescriptorSetResourceIndex::GLOBAL_SAMPLER_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
 SamplerState globalSamplers[MAX_SAMPLERS];
 
-[vk::binding(GlobalBindingIndices::GLOBAL_TEXTURE_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
+[vk::binding(GlobalDescriptorSetResourceIndex::GLOBAL_TEXTURE_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
 Texture2D globalTextures[MAX_TEXTURES];
 
-[vk::binding(GlobalBindingIndices::GLOBAL_TEXTURE_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
+[vk::binding(GlobalDescriptorSetResourceIndex::GLOBAL_TEXTURE_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
 TextureCube globalCubeTextures[MAX_CUBE_MAP_TEXTURES];
 
-[vk::binding(GlobalBindingIndices::GLOBAL_SHADOW_TEXTURE_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
+[vk::binding(GlobalDescriptorSetResourceIndex::GLOBAL_SHADOW_TEXTURE_INDEX, MainSetIndices::GLOBAL_SET_INDEX)]
 Texture2D globalShadowTextures[MAX_SHADOW_TEXTURES];
 
 struct VertexInput {
@@ -71,5 +74,7 @@ struct VertexOutput {
     uint packedColor : PACKED_COLOR;
 
     nointerpolation uint instanceIndex : INSTANCE_INDEX;
+
+    nointerpolation uint drawIndex : DRAW_INDEX;
 };
 

@@ -20,7 +20,21 @@ void IndirectDrawController::setup(uint32_t maxCommands) {
             return;
         }
         _commandBuffers.push_back(std::make_unique<IndirectDrawCommandBuffer>(std::move(*buffer)));
+
         _submitted.push_back(false);
+
+        auto perDrawDataBuffer = PerDrawDataBuffer::allocate(
+            _device.get(),
+            "per_draw_data",
+            _maxCommands * sizeof(PerDrawData),
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+            VMA_MEMORY_USAGE_CPU_TO_GPU
+        );
+        if (!perDrawDataBuffer) {
+            _logger.error("Failed to allocate per draw data buffer");
+            return;
+        }
+        _perDrawDataBuffers.push_back(std::make_unique<PerDrawDataBuffer>(std::move(*perDrawDataBuffer)));
     }
 }
 
@@ -38,12 +52,13 @@ void IndirectDrawController::draw(CommandBuffer& commandBuffer, uint32_t frameIn
     );
 }
 
-void IndirectDrawController::pushCommand(VkDrawIndexedIndirectCommand command) {
+void IndirectDrawController::pushCommand(VkDrawIndexedIndirectCommand command, const PerDrawData& perDrawData) {
     if (_commands.size() >= _maxCommands) {
         _logger.error("Max commands reached");
         return;
     }
     _commands.push_back(command);
+    _perDrawData.push_back(perDrawData);
 }
 
 void IndirectDrawController::submitCommands(uint32_t frameIndex) {
@@ -51,10 +66,12 @@ void IndirectDrawController::submitCommands(uint32_t frameIndex) {
         return;
     }
     _commandBuffers[frameIndex]->fill(_commands.data(), _commands.size() * sizeof(VkDrawIndexedIndirectCommand));
+    _perDrawDataBuffers[frameIndex]->fill(_perDrawData.data(), _perDrawData.size() * sizeof(PerDrawData));
     _submitted[frameIndex] = true;
 }
 
 void IndirectDrawController::prepareForDraw(uint32_t frameIndex) {
     _commands.clear();
+    _perDrawData.clear();
     _submitted[frameIndex] = false;
 }

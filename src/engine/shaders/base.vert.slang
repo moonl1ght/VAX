@@ -4,7 +4,7 @@ import uniforms;
 
 [shader("vertex")]
 VertexOutput vertMain(
-    uniform DrawPushConstants pushConstants,
+    uniform GlobalPushConstants pushConstants,
     VertexInput input,
     uint instanceIndex : SV_VulkanInstanceID,
     uint drawIndex : SV_DrawIndex
@@ -12,7 +12,8 @@ VertexOutput vertMain(
     VertexOutput output;
     InstanceData instance = instances[instanceIndex];
     float4x4 modelMatrix = instance.model;
-    if ((pushConstants.flags & ObjectFlags::PrecomputedMVP) != 0) {
+    PerDrawData drawData = drawData[drawIndex]; 
+    if ((drawData.flags & ObjectFlags::PrecomputedMVP) != 0) {
         output.position = mul(modelMatrix, float4(input.position, 1.0));
     } else {
         output.position = mul(ubo.proj, mul(ubo.view, mul(modelMatrix, float4(input.position, 1.0))));
@@ -24,5 +25,6 @@ VertexOutput vertMain(
     output.uv2 = input.uv2;
     output.packedColor = input.packedColor;
     output.instanceIndex = instanceIndex;
+    output.drawIndex = drawIndex;
     return output;
 }

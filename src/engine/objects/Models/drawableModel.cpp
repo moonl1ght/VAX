@@ -15,21 +15,21 @@ void DrawableModel::draw(const DrawContext& drawContext, const DrawSettings& dra
         flags |= ObjectFlags::PrecomputedMVP;
     }
 
-    DrawPushConstants drawPushConstants{};
-    drawPushConstants.flags = flags;
+    // DrawPushConstants drawPushConstants{};
+    // drawPushConstants.flags = flags;
 
     for (auto& submesh : _submeshes) {
-        if (!_settings.skipPushConstants) {
-            drawPushConstants.materialIndex = submesh.materialIndex;
-            vkCmdPushConstants(
-                drawContext.commandBuffer.vkCommandBuffer,
-                drawContext.pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(DrawPushConstants),
-                &drawPushConstants
-            );
-        }
+        // if (!_settings.skipPushConstants) {
+        //     drawPushConstants.materialIndex = submesh.materialIndex;
+        //     vkCmdPushConstants(
+        //         drawContext.commandBuffer.vkCommandBuffer,
+        //         drawContext.pipelineLayout,
+        //         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        //         0,
+        //         sizeof(DrawPushConstants),
+        //         &drawPushConstants
+        //     );
+        // }
         if (drawContext.indirectDrawController) {
             VkDrawIndexedIndirectCommand drawIndexedIndirectCommand{
                 .indexCount = submesh.indexCount,
@@ -38,7 +38,11 @@ void DrawableModel::draw(const DrawContext& drawContext, const DrawSettings& dra
                 .vertexOffset = static_cast<int32_t>(_mesh->globalMemoryVertexCursor().offset + submesh.vertexOffset),
                 .firstInstance = drawSettings.instanceOffset,
             };
-            drawContext.indirectDrawController->pushCommand(drawIndexedIndirectCommand);
+            PerDrawData perDrawData{
+                .flags = flags,
+                .materialIndex = submesh.materialIndex,
+            };
+            drawContext.indirectDrawController->pushCommand(drawIndexedIndirectCommand, perDrawData);
         } else {
             vkCmdDrawIndexed(
                 drawContext.commandBuffer.vkCommandBuffer,

@@ -24,15 +24,20 @@ typedef float4 vec4;
 enum MainSetIndices {
     GLOBAL_SET_INDEX = 0,
     PER_FRAME_SET_INDEX = 1,
+    PER_DRAW_SET_INDEX = 2,
 };
 
-enum FrameBindingIndices {
+enum PerFrameDescriptorSetResourceIndex{
     FRAME_UNIFORM_BUFFER_INDEX = 0,
     FRAME_LIGHT_BUFFER_INDEX = 1,
     FRAME_INSTANCE_BUFFER_INDEX = 2,
 };
 
-enum GlobalBindingIndices {
+enum DrawBindingIndices {
+    DRAW_DATA_BUFFER_INDEX = 0,
+};
+
+enum GlobalDescriptorSetResourceIndex {
     GLOBAL_MATERIAL_BUFFER_INDEX = 0,
     GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX = 1,
     GLOBAL_SAMPLER_INDEX = 2,
@@ -135,9 +140,12 @@ struct InstanceData {     // total size: 144 bytes
     uint32_t padding;     // 4 bytes
 };
 
-struct DrawPushConstants {
-    uint32_t flags;                             // 4 bytes
+struct PerDrawData {
+    uint32_t flags = 0; // 4 bytes
     uint32_t materialIndex = NO_MATERIAL_INDEX; // 4 bytes
+};
+
+struct GlobalPushConstants {
 };
 
 struct PBRMaterial {

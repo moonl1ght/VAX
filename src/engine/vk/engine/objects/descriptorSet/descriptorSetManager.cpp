@@ -6,7 +6,14 @@
 using namespace vax::vk;
 using namespace vax;
 
-void DescriptorSetManager::cleanup() { vkDestroyDescriptorPool(_device.get().vkDevice, _descriptorPool, nullptr); }
+void DescriptorSetManager::cleanup() {
+    vkDestroyDescriptorPool(_device.get().vkDevice, _persistentDescriptorPool, nullptr);
+    vkDestroyDescriptorPool(_device.get().vkDevice, _persistentUABDescriptorPool, nullptr);
+
+    vkDestroyDescriptorPool(_device.get().vkDevice, _descriptorPool, nullptr);
+    vkDestroyDescriptorPool(_device.get().vkDevice, _processingDescriptorPool, nullptr);
+    vkDestroyDescriptorPool(_device.get().vkDevice, _finalBlendDescriptorPool, nullptr);
+}
 
 bool DescriptorSetManager::setup() {
     if (!_createDescriptorSetLayouts()) {
@@ -42,7 +49,7 @@ bool DescriptorSetManager::_createDescriptorSetPools() {
         {VK_DESCRIPTOR_TYPE_SAMPLER, maxSamplers},
     };
 
-    uint32_t totalSetsPerFrame = 3;
+    uint32_t totalSetsPerFrame = 4;
     uint32_t maxAllocatedSets = static_cast<uint32_t>(_maxFramesInFlight) * totalSetsPerFrame;
     VkDescriptorPoolCreateInfo poolInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
@@ -184,36 +191,36 @@ std::optional<DescriptorSetHandler> DescriptorSetManager::createDescriptorSetHan
 bool DescriptorSetManager::_createDescriptorSetLayouts() {
     DescriptorSetLayoutBuilder globalBuilder(_device.get(), "global_descriptor_set_layout");
     globalBuilder.addBinding(
-        GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX,
+        GlobalDescriptorSetResourceIndex::GLOBAL_MATERIAL_BUFFER_INDEX,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         1
     );
     globalBuilder.addBinding(
-        GlobalBindingIndices::GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX,
+        GlobalDescriptorSetResourceIndex::GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         1
     );
     globalBuilder.addBinding(
-        GlobalBindingIndices::GLOBAL_SAMPLER_INDEX,
+        GlobalDescriptorSetResourceIndex::GLOBAL_SAMPLER_INDEX,
         VK_DESCRIPTOR_TYPE_SAMPLER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         vax::vk::MAX_GLOBAL_SAMPLERS
     );
     globalBuilder.addBinding(
-        GlobalBindingIndices::GLOBAL_TEXTURE_INDEX,
+        GlobalDescriptorSetResourceIndex::GLOBAL_TEXTURE_INDEX,
         VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         MAX_TEXTURES + MAX_CUBE_MAP_TEXTURES
     );
     globalBuilder.addBinding(
-        GlobalBindingIndices::GLOBAL_SHADOW_TEXTURE_INDEX,
+        GlobalDescriptorSetResourceIndex::GLOBAL_SHADOW_TEXTURE_INDEX,
         VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         MAX_SHADOW_TEXTURES
     );
-    auto globalDescriptorSetLayout = globalBuilder.build(DescriptorSetLayout::SetType::GLOBAL);
+    auto globalDescriptorSetLayout = globalBuilder.build();
     globalBuilder.clear();
     if (!globalDescriptorSetLayout) {
         _logger.error("Failed to create global descriptor set layout!");
@@ -225,24 +232,24 @@ bool DescriptorSetManager::_createDescriptorSetLayouts() {
 
     DescriptorSetLayoutBuilder perFrameBuilder(_device.get(), "per_frame_descriptor_set_layout");
     perFrameBuilder.addBinding(
-        FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
+        PerFrameDescriptorSetResourceIndex::FRAME_UNIFORM_BUFFER_INDEX,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         1
     );
     perFrameBuilder.addBinding(
-        FrameBindingIndices::FRAME_LIGHT_BUFFER_INDEX,
+        PerFrameDescriptorSetResourceIndex::FRAME_LIGHT_BUFFER_INDEX,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         1
     );
     perFrameBuilder.addBinding(
-        FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX,
+        PerFrameDescriptorSetResourceIndex::FRAME_INSTANCE_BUFFER_INDEX,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         1
     );
-    auto perFrameDescriptorSetLayout = perFrameBuilder.build(DescriptorSetLayout::SetType::PER_FRAME);
+    auto perFrameDescriptorSetLayout = perFrameBuilder.build();
     perFrameBuilder.clear();
     if (!perFrameDescriptorSetLayout) {
         _logger.error("Failed to create base descriptor set layout!");
@@ -256,7 +263,7 @@ bool DescriptorSetManager::_createDescriptorSetLayouts() {
     finalBlendSampledBuilder.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
     finalBlendSampledBuilder.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
     finalBlendSampledBuilder.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-    auto finalBlendSampledDescriptorSetLayout = finalBlendSampledBuilder.build(DescriptorSetLayout::SetType::OTHER);
+    auto finalBlendSampledDescriptorSetLayout = finalBlendSampledBuilder.build();
     finalBlendSampledBuilder.clear();
     if (!finalBlendSampledDescriptorSetLayout) {
         _logger.error("Failed to create final blend descriptor set layout!");
@@ -273,7 +280,7 @@ bool DescriptorSetManager::_createDescriptorSetLayouts() {
         0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1
     );
     auto finalBlendCamSampledDescriptorSetLayout =
-        finalBlendCamSampledBuilder.build(DescriptorSetLayout::SetType::OTHER);
+        finalBlendCamSampledBuilder.build();
     finalBlendCamSampledBuilder.clear();
     if (!finalBlendCamSampledDescriptorSetLayout) {
         _logger.error("Failed to create final blend descriptor set layout!");
@@ -285,7 +292,7 @@ bool DescriptorSetManager::_createDescriptorSetLayouts() {
 
     DescriptorSetLayoutBuilder finalBlendStorageBuilder(_device.get(), "final_blend_descriptor_set_layout");
     finalBlendStorageBuilder.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-    auto finalBlendStorageDescriptorSetLayout = finalBlendStorageBuilder.build(DescriptorSetLayout::SetType::OTHER);
+    auto finalBlendStorageDescriptorSetLayout = finalBlendStorageBuilder.build();
     finalBlendStorageBuilder.clear();
     if (!finalBlendStorageDescriptorSetLayout) {
         _logger.error("Failed to create final blend descriptor set layout!");

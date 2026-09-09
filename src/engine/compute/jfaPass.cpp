@@ -26,7 +26,7 @@ void JFAPass::setup(std::weak_ptr<vax::vk::RenderDestination> inputRenderDestina
     jfaInitDescriptorSetLayoutBuilder.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 1);
     jfaInitDescriptorSetLayoutBuilder.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 1);
     jfaInitDescriptorSetLayoutBuilder.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 1);
-    auto jfaInitLayout = jfaInitDescriptorSetLayoutBuilder.build(DescriptorSetLayout::SetType::OTHER);
+    auto jfaInitLayout = jfaInitDescriptorSetLayoutBuilder.build();
     if (!jfaInitLayout) {
         _logger.error("Failed to create init JFA descriptor set layout!");
         return;
@@ -35,7 +35,7 @@ void JFAPass::setup(std::weak_ptr<vax::vk::RenderDestination> inputRenderDestina
     DescriptorSetLayoutBuilder descriptorSetLayoutBuilder(_device, "jfa");
     descriptorSetLayoutBuilder.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 1);
     descriptorSetLayoutBuilder.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 1);
-    auto layout = descriptorSetLayoutBuilder.build(DescriptorSetLayout::SetType::OTHER);
+    auto layout = descriptorSetLayoutBuilder.build();
     if (!layout) {
         _logger.error("Failed to create init JFA descriptor set layout!");
         return;

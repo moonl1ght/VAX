@@ -16,6 +16,7 @@ struct FragmentInput {
     uint packedColor : PACKED_COLOR;
     // float3 baryCoords : SV_Barycentrics;
     nointerpolation uint instanceIndex : INSTANCE_INDEX;
+    nointerpolation uint drawIndex : DRAW_INDEX;
 };
 
 float edgeFactor(float3 barycoords, float thickness) {
@@ -42,10 +43,12 @@ struct FragmentOutput
 };
 
 [shader("fragment")]
-FragmentOutput fragMain(uniform DrawPushConstants pushConstants, FragmentInput input) {
+FragmentOutput fragMain(uniform GlobalPushConstants pushConstants, FragmentInput input) {
 
     uint instanceIndex = input.instanceIndex;
-    PBRMaterial material = materials[pushConstants.materialIndex];
+    uint drawIndex = input.drawIndex;
+    PerDrawData drawData = drawData[drawIndex];
+    PBRMaterial material = materials[drawData.materialIndex];
     float2[2] UVs = float2[2](input.uv, input.uv2);
     InstanceData instance = instances[instanceIndex];
     float3x3 normalMatrix = float3x3(instance.normalMatrix);
@@ -58,7 +61,7 @@ FragmentOutput fragMain(uniform DrawPushConstants pushConstants, FragmentInput i
     float3 finalNormal = input.normal;
     float2 normalUV = UVs[material.normalMapTextureUVIndex];
     float4 sampledNormal = sampleNormalMap(material, normalUV);
-    if ((pushConstants.flags & ObjectFlags::NoTangent) != 0) {
+    if ((drawData.flags & ObjectFlags::NoTangent) != 0) {
         finalNormal = normalize(mul(normalMatrix, finalNormal));
         finalNormal = perturbNormal(finalNormal, input.worldPosition, sampledNormal.xyz, normalUV);
     } else {
@@ -117,7 +120,7 @@ FragmentOutput fragMain(uniform DrawPushConstants pushConstants, FragmentInput i
     // color = ACESFilm(color);
 
     float4 finalColor;
-    if ((pushConstants.flags & ObjectFlags::IsWireframe) != 0) {
+    if ((drawData.flags & ObjectFlags::IsWireframe) != 0) {
         // float val = edgeFactor(input.baryCoords, 1.0);
         // return lerp(albedo, float4(0, 0, 0, 1), 1.0 - val);
         finalColor = float4(1.0f, 0.0f, 0.0f, 1.0f);

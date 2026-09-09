@@ -15,7 +15,7 @@ Texture2D<float> inputDepth;
 [vk::binding(0, 1)]
 Texture2D<uint2> inputJFATexture;
 
-[vk::binding(FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX, 2)]
+[vk::binding(PerFrameDescriptorSetResourceIndex::FRAME_INSTANCE_BUFFER_INDEX, 2)]
 StructuredBuffer<InstanceData> instancesFinalBlend;
 
 [shader("fragment")]

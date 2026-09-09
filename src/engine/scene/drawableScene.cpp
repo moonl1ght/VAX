@@ -170,20 +170,22 @@ bool vax::engine::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSet
     }
     descriptorHandler.writeBuffer(
         _resourceManager.materialManager().materialBuffer(),
-        GlobalBindingIndices::GLOBAL_MATERIAL_BUFFER_INDEX,
+        GlobalDescriptorSetResourceIndex::GLOBAL_MATERIAL_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );
     descriptorHandler.writeBuffer(
         _environmentMap->environmentMapBuffer(),
-        GlobalBindingIndices::GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX,
+        GlobalDescriptorSetResourceIndex::GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );
-    descriptorHandler.writeSampler(*globalSampler->second, GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 0);
-    descriptorHandler.writeSampler(*globalCubeMapSampler->second, GlobalBindingIndices::GLOBAL_SAMPLER_INDEX, 1);
+    descriptorHandler.writeSampler(*globalSampler->second, GlobalDescriptorSetResourceIndex::GLOBAL_SAMPLER_INDEX, 0);
+    descriptorHandler.writeSampler(
+        *globalCubeMapSampler->second, GlobalDescriptorSetResourceIndex::GLOBAL_SAMPLER_INDEX, 1
+    );
     _resourceManager.textureManager().updateDescriptorHandlerWithAllTextures(
-        descriptorHandler, GlobalBindingIndices::GLOBAL_TEXTURE_INDEX
+        descriptorHandler, GlobalDescriptorSetResourceIndex::GLOBAL_TEXTURE_INDEX
     );
     return true;
 }
@@ -193,38 +195,38 @@ bool vax::engine::DrawableScene::writeFrameDescriptorSet(
 ) {
     descriptorHandler.writeBuffer(
         *_sceneUniformBuffers[_renderCallContext.currentFrame],
-        FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
+        PerFrameDescriptorSetResourceIndex::FRAME_UNIFORM_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
     );
     descriptorHandler.writeBuffer(
         *_lightsUniformBuffer[_renderCallContext.currentFrame],
-        FrameBindingIndices::FRAME_LIGHT_BUFFER_INDEX,
+        PerFrameDescriptorSetResourceIndex::FRAME_LIGHT_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     );
     descriptorHandler.writeBuffer(
         _resourceManager.ssboManager().instanceBuffer(_renderCallContext.currentFrame),
-        FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX,
+        PerFrameDescriptorSetResourceIndex::FRAME_INSTANCE_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );
 
     roverCameraDescriptorHandler.writeBuffer(
         *_roverCameraUniformBuffers[_renderCallContext.currentFrame],
-        FrameBindingIndices::FRAME_UNIFORM_BUFFER_INDEX,
+        PerFrameDescriptorSetResourceIndex::FRAME_UNIFORM_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
     );
     roverCameraDescriptorHandler.writeBuffer(
         *_lightsUniformBuffer[_renderCallContext.currentFrame],
-        FrameBindingIndices::FRAME_LIGHT_BUFFER_INDEX,
+        PerFrameDescriptorSetResourceIndex::FRAME_LIGHT_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     );
     roverCameraDescriptorHandler.writeBuffer(
         _resourceManager.ssboManager().instanceBuffer(_renderCallContext.currentFrame),
-        FrameBindingIndices::FRAME_INSTANCE_BUFFER_INDEX,
+        PerFrameDescriptorSetResourceIndex::FRAME_INSTANCE_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );

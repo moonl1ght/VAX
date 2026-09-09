@@ -5,11 +5,13 @@
 #include "device.h"
 #include "logger.h"
 #include "luna.h"
+#include "shaderUniforms.h"
 
 namespace vax::engine {
 class IndirectDrawController final {
   public:
     using IndirectDrawCommandBuffer = vk::Buffer<VkDrawIndexedIndirectCommand>;
+    using PerDrawDataBuffer = vk::Buffer<PerDrawData>;
 
     IndirectDrawController(const vk::Device& device)
         : _device(device) {};
@@ -20,7 +22,7 @@ class IndirectDrawController final {
 
     void prepareForDraw(uint32_t frameIndex);
 
-    void pushCommand(VkDrawIndexedIndirectCommand command);
+    void pushCommand(VkDrawIndexedIndirectCommand command, const PerDrawData& perDrawData);
 
     void submitCommands(uint32_t frameIndex);
 
@@ -33,7 +35,11 @@ class IndirectDrawController final {
 
     std::vector<VkDrawIndexedIndirectCommand> _commands;
 
+    std::vector<PerDrawData> _perDrawData;
+
     std::vector<std::unique_ptr<IndirectDrawCommandBuffer>> _commandBuffers;
+
+    std::vector<std::unique_ptr<PerDrawDataBuffer>> _perDrawDataBuffers;
 
     uint32_t _maxCommands;
 

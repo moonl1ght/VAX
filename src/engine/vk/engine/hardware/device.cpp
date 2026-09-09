@@ -55,9 +55,9 @@ int Device::createLogicalDevice(
         .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
         .descriptorBindingUniformBufferUpdateAfterBind = VK_TRUE,
         .descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
+        .descriptorBindingStorageImageUpdateAfterBind = VK_TRUE,
         .descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE,
         .descriptorBindingPartiallyBound = VK_TRUE,
-        .runtimeDescriptorArray = VK_TRUE,
     };
 
     VkPhysicalDeviceFeatures2 deviceFeatures{

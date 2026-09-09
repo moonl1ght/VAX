@@ -286,7 +286,7 @@ bool vax::vk::PipelineManager::_createBasePipelineLayout(vax::vk::PipelineLayout
     pipelineBuilder.setPushConstantRange({
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         .offset = 0,
-        .size = sizeof(DrawPushConstants),
+        .size = sizeof(GlobalPushConstants),
     });
     auto pipelineLayout = pipelineBuilder.buildPipelineLayout(name);
     if (!pipelineLayout) {

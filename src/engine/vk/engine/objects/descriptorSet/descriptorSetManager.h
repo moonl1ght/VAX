@@ -5,6 +5,7 @@
 #include "device.h"
 #include "luna.h"
 #include <unordered_map>
+#include "commonDescriptorSets.h"
 
 namespace vax::vk {
 class DescriptorSetManager {
@@ -14,6 +15,7 @@ class DescriptorSetManager {
         PROCESSING = 1,
         FINAL_BLEND = 2,
         PER_FRAME = 3,
+        PER_DRAW = 4,
     };
 
     enum class SetLayoutName : uint32_t {
@@ -22,6 +24,7 @@ class DescriptorSetManager {
         FINAL_BLEND = 2,        // Inlcudes depth, color textures and mask texture
         FINAL_BLEND_SIMPLE = 3, // Includes only color texture
         SINGLE_STORAGE_IMAGE = 4,
+        PER_DRAW = 5,
         UNKNOWN = 0xFFFFFFFF,
     };
 
@@ -37,6 +40,8 @@ class DescriptorSetManager {
             return "final_blend_simple";
         case SetLayoutName::SINGLE_STORAGE_IMAGE:
             return "single_storage_image";
+        case SetLayoutName::PER_DRAW:
+            return "per_draw";
         case SetLayoutName::UNKNOWN:
             return "unknown";
         default:
@@ -80,6 +85,9 @@ class DescriptorSetManager {
 
     std::unordered_map<std::string, DescriptorSetLayout> _descriptorSetLayouts;
     std::unordered_map<std::string, std::vector<VkDescriptorSet>> _descriptorSets;
+
+    VkDescriptorPool _persistentDescriptorPool = VK_NULL_HANDLE;
+    VkDescriptorPool _persistentUABDescriptorPool = VK_NULL_HANDLE;
 
     VkDescriptorPool _descriptorPool = VK_NULL_HANDLE;
     VkDescriptorPool _processingDescriptorPool = VK_NULL_HANDLE;

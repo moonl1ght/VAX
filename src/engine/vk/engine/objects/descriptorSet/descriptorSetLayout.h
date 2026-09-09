@@ -7,17 +7,8 @@
 namespace vax::vk {
 class DescriptorSetLayout final {
   public:
-    enum class SetType {
-        GLOBAL = 0,
-        PER_FRAME = 1,
-        OTHER = 2,
-    };
-
-    explicit DescriptorSetLayout(
-        const vax::vk::Device& device, VkDescriptorSetLayout vkDescriptorSetLayout, SetType setType
-    )
+    explicit DescriptorSetLayout(const vax::vk::Device& device, VkDescriptorSetLayout vkDescriptorSetLayout)
         : _device(device)
-        , _setType(setType)
         , _vkDescriptorSetLayout(vkDescriptorSetLayout) {}
 
     ~DescriptorSetLayout() { vkDestroyDescriptorSetLayout(_device.get().vkDevice, _vkDescriptorSetLayout, nullptr); }
@@ -27,8 +18,7 @@ class DescriptorSetLayout final {
 
     DescriptorSetLayout(DescriptorSetLayout&& other) noexcept
         : _device(other._device)
-        , _vkDescriptorSetLayout(other._vkDescriptorSetLayout)
-        , _setType(other._setType) {
+        , _vkDescriptorSetLayout(other._vkDescriptorSetLayout) {
         other._vkDescriptorSetLayout = VK_NULL_HANDLE;
     }
 
@@ -36,7 +26,6 @@ class DescriptorSetLayout final {
         if (this != &other) {
             _device = other._device;
             _vkDescriptorSetLayout = other._vkDescriptorSetLayout;
-            _setType = other._setType;
             other._vkDescriptorSetLayout = VK_NULL_HANDLE;
         }
         return *this;
@@ -46,7 +35,6 @@ class DescriptorSetLayout final {
 
   private:
     std::reference_wrapper<const vax::vk::Device> _device;
-    SetType _setType;
     VkDescriptorSetLayout _vkDescriptorSetLayout = VK_NULL_HANDLE;
 };
 } // namespace vax::vk

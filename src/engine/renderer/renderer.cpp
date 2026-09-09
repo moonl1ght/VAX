@@ -51,7 +51,7 @@ void Renderer::prepare(DrawableScene* scene) {
         scene->writeGlobalDescriptorSet(*globalDescriptorSetHandler);
         auto shadowSunRenderDestination = _renderPassGraph->getRenderDestination("shadow_sun");
         globalDescriptorSetHandler->writeTexture(
-            shadowSunRenderDestination->depthTexture(), GlobalBindingIndices::GLOBAL_SHADOW_TEXTURE_INDEX
+            shadowSunRenderDestination->depthTexture(), GlobalDescriptorSetResourceIndex::GLOBAL_SHADOW_TEXTURE_INDEX
         );
         globalDescriptorSetHandler->update();
         auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
