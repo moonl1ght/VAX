@@ -25,9 +25,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphManager::buildRoverDemoGraph(boo
     });
     auto dynamicOffset = static_cast<uint32_t>(_device.get().minUniformBufferOffsetAlignment<UniformBufferObject>());
     shadowPass->addInputDescriptorSet({
-        .poolType = vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
-        .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
-        .name = "per_frame",
+        .setName = CommonDescriptorSetName::PER_FRAME,
         .bindingInfo = {
         .setIndex = MainSetIndices::PER_FRAME_SET_INDEX,
         .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -46,9 +44,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphManager::buildRoverDemoGraph(boo
         _renderPassDescriptors.at("main")
     );
     mainPass->addInputDescriptorSet({
-        .poolType = vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
-        .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
-        .name = "per_frame",
+        .setName = CommonDescriptorSetName::PER_FRAME,
         .bindingInfo = {
         .setIndex = MainSetIndices::PER_FRAME_SET_INDEX,
         .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -120,7 +116,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphManager::buildRoverDemoGraph(boo
                 return;
             }
             auto descriptorSetInfo = finalBlendPass->getInputDescriptorSetAt(1);
-            descriptorSetInfo.name = jfaPass->outputDescriptorSetName();
+            descriptorSetInfo.setName = jfaPass->outputDescriptorSetName();
             finalBlendPass->updateInputDescriptorSetAt(1, descriptorSetInfo);
         }
     });
@@ -135,9 +131,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphManager::buildRoverDemoGraph(boo
         _renderPassDescriptors.at("swapchain")
     );
     finalBlendPass->addInputDescriptorSet({
-        .poolType = vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
-        .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::FINAL_BLEND,
-        .name = "final_blend",
+        .setName = CommonDescriptorSetName::MAIN_FB,
         .bindingInfo = {
         .setIndex = 0,
         .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -146,9 +140,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphManager::buildRoverDemoGraph(boo
         },
     });
     finalBlendPass->addInputDescriptorSet({
-        .poolType = vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
-        .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::SINGLE_STORAGE_IMAGE,
-        .name = jfaPass->outputDescriptorSetName(),
+        .setName = jfaPass->outputDescriptorSetName(),
         .bindingInfo = {
         .setIndex = 1,
         .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -157,9 +149,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphManager::buildRoverDemoGraph(boo
         },
     });
     finalBlendPass->addInputDescriptorSet({
-        .poolType = vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
-        .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
-        .name = "per_frame",
+        .setName = CommonDescriptorSetName::PER_FRAME,
         .bindingInfo = {
         .setIndex = 2,
         .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -189,9 +179,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphManager::buildRoverDemoGraph(boo
             _renderPassDescriptors.at("main")
         );
         roverCameraMainPass->addInputDescriptorSet({
-            .poolType = vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
-            .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
-            .name = "rover_camera",
+            .setName = CommonDescriptorSetName::ROVER_CAMERA,
             .bindingInfo = {
             .setIndex = MainSetIndices::PER_FRAME_SET_INDEX,
             .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -216,9 +204,7 @@ std::unique_ptr<RenderPassGraph> RenderPassGraphManager::buildRoverDemoGraph(boo
             _renderPassDescriptors.at("swapchain")
         );
         roverCameraFBPass->addInputDescriptorSet({
-            .poolType = vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
-            .layoutName = vax::vk::DescriptorSetManager::SetLayoutName::FINAL_BLEND_SIMPLE,
-            .name = "rover_camera_fb",
+            .setName = CommonDescriptorSetName::ROVER_CAMERA_FB,
             .bindingInfo = {
             .setIndex = 0,
             .bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,

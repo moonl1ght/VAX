@@ -1,7 +1,7 @@
 #pragma once
 
 #include "camera.h"
-#include "descriptorSetHandler.h"
+#include "descriptorSetWriter.h"
 #include "drawContext.h"
 #include "drawableModel.h"
 #include "drawableNode.h"
@@ -75,10 +75,10 @@ class DrawableScene final : public vax::InputController::Observer {
 
     void update(vax::engine::SceneUpdateContext sceneUpdateContext);
 
-    bool writeGlobalDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler);
+    bool writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& descriptorWriter);
 
     bool writeFrameDescriptorSet(
-        vax::vk::DescriptorSetHandler& descriptorHandler, vax::vk::DescriptorSetHandler& roverCameraDescriptorHandler
+        vax::vk::DescriptorSetWriter& descriptorWriter, vax::vk::DescriptorSetWriter& roverCameraDescriptorWriter
     );
 
     void beginDrawing();

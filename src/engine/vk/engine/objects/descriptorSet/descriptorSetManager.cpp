@@ -1,321 +1,172 @@
 #include "descriptorSetManager.h"
 #include "descriptorSetLayoutBuilder.h"
 #include "vkUtils.h"
+#include <vector>
 #include <vulkan/vulkan_core.h>
 
 using namespace vax::vk;
 using namespace vax;
 
-void DescriptorSetManager::cleanup() {
-    vkDestroyDescriptorPool(_device.get().vkDevice, _persistentDescriptorPool, nullptr);
-    vkDestroyDescriptorPool(_device.get().vkDevice, _persistentUABDescriptorPool, nullptr);
-
-    vkDestroyDescriptorPool(_device.get().vkDevice, _descriptorPool, nullptr);
-    vkDestroyDescriptorPool(_device.get().vkDevice, _processingDescriptorPool, nullptr);
-    vkDestroyDescriptorPool(_device.get().vkDevice, _finalBlendDescriptorPool, nullptr);
-}
-
-bool DescriptorSetManager::setup() {
-    if (!_createDescriptorSetLayouts()) {
-        return false;
-    }
-    return _createDescriptorSetPools();
-}
-
-bool DescriptorSetManager::_createDescriptorSetPools() {
-    uint32_t uniformBufferCount = 2;
-    uint32_t dynamicUniformBufferCount = 2;
-    uint32_t ssboBufferCount = 2;
-    uint32_t materialBufferCount = 1;
-    uint32_t environmentMapCount = 1;
-    uint32_t samplerCount = vax::vk::MAX_GLOBAL_SAMPLERS;
-    uint32_t textureCount = vax::vk::MAX_GLOBAL_TEXTURES;
-    // auto samplersImageLimit = _device.get().getPhysicalDeviceProperties().limits.maxPerStageDescriptorSamplers;
-    uint32_t maxUniformBuffers = static_cast<uint32_t>(_maxFramesInFlight) * uniformBufferCount;
-    uint32_t maxDynamicUniformBuffers = static_cast<uint32_t>(_maxFramesInFlight) * dynamicUniformBufferCount;
-    uint32_t maxEnvironmentMaps = static_cast<uint32_t>(_maxFramesInFlight) * environmentMapCount;
-    uint32_t maxMaterials = static_cast<uint32_t>(_maxFramesInFlight) * materialBufferCount;
-    uint32_t maxTextures = static_cast<uint32_t>(_maxFramesInFlight) * textureCount;
-    uint32_t maxSamplers = static_cast<uint32_t>(_maxFramesInFlight) * samplerCount;
-    uint32_t maxSSBOBuffers = static_cast<uint32_t>(_maxFramesInFlight) * ssboBufferCount;
-    auto totalStorageBuffers = maxMaterials + maxEnvironmentMaps + maxSSBOBuffers;
-    // maxImageSamplerSets = std::min(maxImageSamplerSets, samplersImageLimit);
-
-    std::vector<VkDescriptorPoolSize> poolSizes = {
-        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxUniformBuffers},
-        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, maxDynamicUniformBuffers},
-        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, totalStorageBuffers},
-        {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, maxTextures},
-        {VK_DESCRIPTOR_TYPE_SAMPLER, maxSamplers},
-    };
-
-    uint32_t totalSetsPerFrame = 4;
-    uint32_t maxAllocatedSets = static_cast<uint32_t>(_maxFramesInFlight) * totalSetsPerFrame;
-    VkDescriptorPoolCreateInfo poolInfo{
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
-        .maxSets = maxAllocatedSets,
-        .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
-        .pPoolSizes = poolSizes.data(),
-    };
-
-    if (!VK_CHECK(vkCreateDescriptorPool(_device.get().vkDevice, &poolInfo, nullptr, &_descriptorPool))) {
-        _logger.error("Failed to create descriptor pool!");
-        return false;
-    }
-
-    uint32_t numberOfProcessingSets = 3;
-    uint32_t numberOfProcessingImages = 7;
-
-    uint32_t maxProcessingImages = static_cast<uint32_t>(_maxFramesInFlight) * numberOfProcessingImages;
-    std::vector<VkDescriptorPoolSize> processingDescriptorPoolSizes = {
-        {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, maxProcessingImages},
-    };
-
-    VkDescriptorPoolCreateInfo processingDescriptorPoolInfo{
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
-        .maxSets = static_cast<uint32_t>(_maxFramesInFlight) * numberOfProcessingSets,
-        .poolSizeCount = static_cast<uint32_t>(processingDescriptorPoolSizes.size()),
-        .pPoolSizes = processingDescriptorPoolSizes.data(),
-    };
-
-    if (!VK_CHECK(vkCreateDescriptorPool(
-            _device.get().vkDevice, &processingDescriptorPoolInfo, nullptr, &_processingDescriptorPool
-        ))) {
-        _logger.error("Failed to create processing descriptor pool!");
-        return false;
-    }
-
-    uint32_t numberOfCombinedImages = 2;
-    uint32_t numberOfStorageImages = 4;
-    uint32_t maxCombinedImageSamplers = static_cast<uint32_t>(_maxFramesInFlight) * numberOfCombinedImages;
-    uint32_t maxStorageImages = static_cast<uint32_t>(_maxFramesInFlight) * numberOfStorageImages;
-    std::vector<VkDescriptorPoolSize> finalBlendDescriptorPoolSizes = {
-        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxCombinedImageSamplers},
-        {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, maxStorageImages},
-    };
-
-    VkDescriptorPoolCreateInfo finalBlendDescriptorPoolInfo{
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
-        .maxSets = 4 * MAX_FRAMES_IN_FLIGHT,
-        .poolSizeCount = static_cast<uint32_t>(finalBlendDescriptorPoolSizes.size()),
-        .pPoolSizes = finalBlendDescriptorPoolSizes.data(),
-    };
-
-    if (!VK_CHECK(vkCreateDescriptorPool(
-            _device.get().vkDevice, &finalBlendDescriptorPoolInfo, nullptr, &_finalBlendDescriptorPool
-        ))) {
-        _logger.error("Failed to create descriptor pool!");
-        return false;
-    }
-
-    return true;
-}
-
-std::optional<DescriptorSetHandler> createOrGetDescriptorSet(
-    const Device& device,
-    std::vector<VkDescriptorSet>& descriptorSets,
-    const DescriptorSetLayout& descriptorSetLayout,
-    const VkDescriptorPool descriptorPool,
-    const uint32_t maxFramesInFlight,
-    const uint32_t frameIndex
-) {
-    if (descriptorSets.size() == maxFramesInFlight) {
-        return std::make_optional<DescriptorSetHandler>(device, descriptorSets[frameIndex]);
-    }
-    std::vector<VkDescriptorSetLayout> layouts(
-        static_cast<size_t>(maxFramesInFlight), descriptorSetLayout.getVkDescriptorSetLayout()
-    );
-    VkDescriptorSetAllocateInfo allocInfo{
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .descriptorPool = descriptorPool,
-        .descriptorSetCount = static_cast<uint32_t>(maxFramesInFlight),
-        .pSetLayouts = layouts.data(),
-    };
-    descriptorSets.resize(maxFramesInFlight, VK_NULL_HANDLE);
-    auto result = vkAllocateDescriptorSets(device.vkDevice, &allocInfo, descriptorSets.data());
-    if (result != VK_SUCCESS) {
-        return std::nullopt;
-    }
-    return std::make_optional<DescriptorSetHandler>(device, descriptorSets[frameIndex]);
-}
-
-std::optional<DescriptorSetHandler> DescriptorSetManager::createDefaultDescriptorSetHandler(
-    uint32_t frameIndex, PoolType poolType, SetLayoutName setLayoutName, std::string name, bool autoCreate
-) {
-    return createDescriptorSetHandler(frameIndex, poolType, getSetLayoutName(setLayoutName), name, autoCreate);
-}
-
-std::optional<DescriptorSetHandler> DescriptorSetManager::createDescriptorSetHandler(
-    uint32_t frameIndex, PoolType poolType, std::string setLayoutName, std::string name, bool autoCreate
-) {
-    if (!autoCreate) {
-        auto descriptorSets = _descriptorSets.find(name);
-        if (descriptorSets == _descriptorSets.end()) {
-            _logger.error("Descriptor set not found!");
-            return std::nullopt;
-        }
-        return std::make_optional<DescriptorSetHandler>(_device.get(), descriptorSets->second[frameIndex]);
-    }
-    auto& sets = _descriptorSets[name];
-    auto descriptorSetLayout = _descriptorSetLayouts.find(setLayoutName);
-    if (descriptorSetLayout == _descriptorSetLayouts.end()) {
-        _logger.error("Descriptor set layout not found!");
-        return std::nullopt;
-    }
-    switch (poolType) {
-    case PoolType::PROCESSING:
-        return createOrGetDescriptorSet(
-            _device.get(), sets, descriptorSetLayout->second, _processingDescriptorPool, _maxFramesInFlight, frameIndex
-        );
-    case PoolType::FINAL_BLEND:
-        return createOrGetDescriptorSet(
-            _device.get(), sets, descriptorSetLayout->second, _finalBlendDescriptorPool, _maxFramesInFlight, frameIndex
-        );
-    case PoolType::PER_FRAME:
-        return createOrGetDescriptorSet(
-            _device.get(), sets, descriptorSetLayout->second, _descriptorPool, _maxFramesInFlight, frameIndex
-        );
-    case PoolType::GLOBAL:
-        return createOrGetDescriptorSet(
-            _device.get(), sets, descriptorSetLayout->second, _descriptorPool, _maxFramesInFlight, frameIndex
-        );
-    default:
-        _logger.error("Invalid pool type!");
-        return std::nullopt;
-    }
-}
-
-bool DescriptorSetManager::_createDescriptorSetLayouts() {
-    DescriptorSetLayoutBuilder globalBuilder(_device.get(), "global_descriptor_set_layout");
-    globalBuilder.addBinding(
-        GlobalDescriptorSetResourceIndex::GLOBAL_MATERIAL_BUFFER_INDEX,
-        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        1
-    );
-    globalBuilder.addBinding(
-        GlobalDescriptorSetResourceIndex::GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX,
-        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        1
-    );
-    globalBuilder.addBinding(
-        GlobalDescriptorSetResourceIndex::GLOBAL_SAMPLER_INDEX,
-        VK_DESCRIPTOR_TYPE_SAMPLER,
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        vax::vk::MAX_GLOBAL_SAMPLERS
-    );
-    globalBuilder.addBinding(
-        GlobalDescriptorSetResourceIndex::GLOBAL_TEXTURE_INDEX,
-        VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        MAX_TEXTURES + MAX_CUBE_MAP_TEXTURES
-    );
-    globalBuilder.addBinding(
-        GlobalDescriptorSetResourceIndex::GLOBAL_SHADOW_TEXTURE_INDEX,
-        VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        MAX_SHADOW_TEXTURES
-    );
-    auto globalDescriptorSetLayout = globalBuilder.build();
-    globalBuilder.clear();
-    if (!globalDescriptorSetLayout) {
-        _logger.error("Failed to create global descriptor set layout!");
-        return false;
-    }
-    _descriptorSetLayouts.insert(
-        {getSetLayoutName(SetLayoutName::GLOBAL), std::move(globalDescriptorSetLayout.value())}
-    );
-
-    DescriptorSetLayoutBuilder perFrameBuilder(_device.get(), "per_frame_descriptor_set_layout");
-    perFrameBuilder.addBinding(
-        PerFrameDescriptorSetResourceIndex::FRAME_UNIFORM_BUFFER_INDEX,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-        1
-    );
-    perFrameBuilder.addBinding(
-        PerFrameDescriptorSetResourceIndex::FRAME_LIGHT_BUFFER_INDEX,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        1
-    );
-    perFrameBuilder.addBinding(
-        PerFrameDescriptorSetResourceIndex::FRAME_INSTANCE_BUFFER_INDEX,
-        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-        1
-    );
-    auto perFrameDescriptorSetLayout = perFrameBuilder.build();
-    perFrameBuilder.clear();
-    if (!perFrameDescriptorSetLayout) {
-        _logger.error("Failed to create base descriptor set layout!");
-        return false;
-    }
-    _descriptorSetLayouts.insert(
-        {getSetLayoutName(SetLayoutName::PER_FRAME), std::move(perFrameDescriptorSetLayout.value())}
-    );
-
-    DescriptorSetLayoutBuilder finalBlendSampledBuilder(_device.get(), "final_blend_sampled_descriptor_set_layout");
-    finalBlendSampledBuilder.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-    finalBlendSampledBuilder.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-    finalBlendSampledBuilder.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-    auto finalBlendSampledDescriptorSetLayout = finalBlendSampledBuilder.build();
-    finalBlendSampledBuilder.clear();
-    if (!finalBlendSampledDescriptorSetLayout) {
-        _logger.error("Failed to create final blend descriptor set layout!");
-        return false;
-    }
-    _descriptorSetLayouts.insert(
-        {getSetLayoutName(SetLayoutName::FINAL_BLEND), std::move(finalBlendSampledDescriptorSetLayout.value())}
-    );
-
-    DescriptorSetLayoutBuilder finalBlendCamSampledBuilder(
-        _device.get(), "final_blend_cam_sampled_descriptor_set_layout"
-    );
-    finalBlendCamSampledBuilder.addBinding(
-        0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1
-    );
-    auto finalBlendCamSampledDescriptorSetLayout =
-        finalBlendCamSampledBuilder.build();
-    finalBlendCamSampledBuilder.clear();
-    if (!finalBlendCamSampledDescriptorSetLayout) {
-        _logger.error("Failed to create final blend descriptor set layout!");
-        return false;
-    }
-    _descriptorSetLayouts.insert(
-        {getSetLayoutName(SetLayoutName::FINAL_BLEND_SIMPLE), std::move(finalBlendCamSampledDescriptorSetLayout.value())}
-    );
-
-    DescriptorSetLayoutBuilder finalBlendStorageBuilder(_device.get(), "final_blend_descriptor_set_layout");
-    finalBlendStorageBuilder.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-    auto finalBlendStorageDescriptorSetLayout = finalBlendStorageBuilder.build();
-    finalBlendStorageBuilder.clear();
-    if (!finalBlendStorageDescriptorSetLayout) {
-        _logger.error("Failed to create final blend descriptor set layout!");
-        return false;
-    }
-    _descriptorSetLayouts.insert(
-        {getSetLayoutName(SetLayoutName::SINGLE_STORAGE_IMAGE), std::move(finalBlendStorageDescriptorSetLayout.value())}
-    );
-    return true;
-}
-
-void DescriptorSetManager::addDescriptorSetLayout(std::string name, DescriptorSetLayout&& layout) {
-    _descriptorSetLayouts.insert({name, std::move(layout)});
-}
-
-const DescriptorSetLayout* DescriptorSetManager::getDescriptorSetLayout(std::string name) const {
-    auto it = _descriptorSetLayouts.find(name);
+const DescriptorSetLayout*
+DescriptorSetManager::getDescriptorSetLayout(const DescriptorSetLayoutName& setLayoutName) const {
+    auto it = _descriptorSetLayouts.find(getSetLayoutName(setLayoutName));
     if (it == _descriptorSetLayouts.end()) {
         return nullptr;
     }
     return &it->second;
 }
 
-const DescriptorSetLayout* DescriptorSetManager::getDefaultDescriptorSetLayout(SetLayoutName setLayoutName) const {
-    return getDescriptorSetLayout(getSetLayoutName(setLayoutName));
+std::optional<DescriptorSetWriter>
+DescriptorSetManager::getDescriptorSetWriter(const CommonDescriptorSetName& setName, uint32_t frameIndex) {
+    auto it = _descriptorSets.find(getCommonDescriptorSetName(setName));
+    if (it == _descriptorSets.end()) {
+        auto descriptorSets = _createDescriptorSets(setName);
+        if (descriptorSets.empty()) {
+            return std::nullopt;
+        }
+        _descriptorSets[getCommonDescriptorSetName(setName)] = descriptorSets;
+        return std::make_optional<DescriptorSetWriter>(_device.get(), descriptorSets[frameIndex]);
+    }
+    return std::make_optional<DescriptorSetWriter>(_device.get(), it->second[frameIndex]);
+}
+
+std::optional<DescriptorSetHandler>
+DescriptorSetManager::getDescriptorSetHandler(const CommonDescriptorSetName& setName, uint32_t frameIndex) const {
+    auto it = _descriptorSets.find(getCommonDescriptorSetName(setName));
+    if (it == _descriptorSets.end()) {
+        return std::nullopt;
+    }
+    return std::make_optional<DescriptorSetHandler>(it->second[frameIndex]);
+}
+
+void DescriptorSetManager::cleanup() {
+    vkDestroyDescriptorPool(_device.get().vkDevice, _persistentDescriptorPool, nullptr);
+    vkDestroyDescriptorPool(_device.get().vkDevice, _persistentUABDescriptorPool, nullptr);
+}
+
+bool DescriptorSetManager::setup(std::vector<DescriptorSetInfo> descriptorSetInfos) {
+    for (const auto& descriptorSetInfo : descriptorSetInfos) {
+        _descriptorSetInfos.insert({getCommonDescriptorSetName(descriptorSetInfo.name), descriptorSetInfo});
+    }
+    return _createDescriptorSetLayouts(descriptorSetInfos) && _createDescriptorSetPools(descriptorSetInfos);
+}
+
+std::vector<VkDescriptorSet> DescriptorSetManager::_createDescriptorSets(const CommonDescriptorSetName& setName) {
+    auto setNameStr = getCommonDescriptorSetName(setName);
+    auto it = _descriptorSetInfos.find(setNameStr);
+    if (it == _descriptorSetInfos.end()) {
+        return {};
+    }
+
+    auto setLayoutName = getSetLayoutName(it->second.layoutName);
+    auto setLayoutIt = _descriptorSetLayouts.find(setLayoutName);
+    if (setLayoutIt == _descriptorSetLayouts.end()) {
+        return {};
+    }
+
+    std::vector<VkDescriptorSet> descriptorSets;
+    std::vector<VkDescriptorSetLayout> layouts(
+        static_cast<size_t>(_maxFramesInFlight), setLayoutIt->second.getVkDescriptorSetLayout()
+    );
+    VkDescriptorPool descriptorPool = it->second.isUABPool ? _persistentUABDescriptorPool : _persistentDescriptorPool;
+    VkDescriptorSetAllocateInfo allocInfo{
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        .descriptorPool = descriptorPool,
+        .descriptorSetCount = static_cast<uint32_t>(_maxFramesInFlight),
+        .pSetLayouts = layouts.data(),
+    };
+    descriptorSets.resize(_maxFramesInFlight, VK_NULL_HANDLE);
+    auto result = vkAllocateDescriptorSets(_device.get().vkDevice, &allocInfo, descriptorSets.data());
+    if (result != VK_SUCCESS) {
+        _logger.error("Failed to allocate descriptor set!");
+        return {};
+    }
+    return descriptorSets;
+}
+
+bool DescriptorSetManager::_createDescriptorSetLayouts(const std::vector<DescriptorSetInfo>& descriptorSetInfos) {
+    for (const auto& descriptorSetInfo : descriptorSetInfos) {
+        auto descriptorSetLayoutInfo = getDescriptorLayoutResources(descriptorSetInfo.layoutName);
+        auto descriptorSetLayoutName = getSetLayoutName(descriptorSetInfo.layoutName);
+        DescriptorSetLayoutBuilder builder(_device.get(), descriptorSetLayoutName);
+        for (const auto& descriptorLayoutResourceInfo : descriptorSetLayoutInfo) {
+            builder.addBinding(
+                descriptorLayoutResourceInfo.binding,
+                descriptorLayoutResourceInfo.type,
+                descriptorLayoutResourceInfo.stageFlags,
+                descriptorLayoutResourceInfo.descriptorCount
+            );
+        }
+        auto layout =
+            builder.build(descriptorSetInfo.isUABPool ? VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT : 0);
+        if (!layout) {
+            _logger.error("Failed to create descriptor set layout!");
+            return false;
+        }
+        _descriptorSetLayouts.insert({descriptorSetLayoutName, std::move(layout.value())});
+    }
+    return true;
+}
+
+bool DescriptorSetManager::_createDescriptorSetPools(const std::vector<DescriptorSetInfo>& descriptorSetInfos) {
+    std::unordered_map<VkDescriptorType, uint32_t> poolSizes;
+    std::unordered_map<VkDescriptorType, uint32_t> uabPoolSizes;
+    uint32_t maxAllocatedSets = 0;
+    uint32_t maxUABAllocatedSets = 0;
+    for (const auto& descriptorSetInfo : descriptorSetInfos) {
+        auto resourceRequirements = getDescriptorLayoutResources(descriptorSetInfo.layoutName);
+        for (const auto& resourceRequirement : resourceRequirements) {
+            if (descriptorSetInfo.isUABPool) {
+                uabPoolSizes[resourceRequirement.type] += resourceRequirement.descriptorCount * _maxFramesInFlight;
+            } else {
+                poolSizes[resourceRequirement.type] += resourceRequirement.descriptorCount * _maxFramesInFlight;
+            }
+        }
+        if (descriptorSetInfo.isUABPool) {
+            ++maxUABAllocatedSets;
+        } else {
+            ++maxAllocatedSets;
+        }
+    }
+
+    std::vector<VkDescriptorPoolSize> poolSizesVector;
+    std::vector<VkDescriptorPoolSize> uabPoolSizesVector;
+
+    for (const auto& [type, count] : poolSizes) {
+        poolSizesVector.push_back({type, count});
+    }
+    for (const auto& [type, count] : uabPoolSizes) {
+        uabPoolSizesVector.push_back({type, count});
+    }
+
+    if (maxAllocatedSets > 0) {
+        VkDescriptorPoolCreateInfo poolInfo{
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+            .flags = 0,
+            .maxSets = static_cast<uint32_t>(_maxFramesInFlight) * maxAllocatedSets,
+            .poolSizeCount = static_cast<uint32_t>(poolSizesVector.size()),
+            .pPoolSizes = poolSizesVector.data(),
+        };
+        if (!VK_CHECK(vkCreateDescriptorPool(_device.get().vkDevice, &poolInfo, nullptr, &_persistentDescriptorPool))) {
+            _logger.error("Failed to create persistent descriptor pool!");
+            return false;
+        }
+    }
+
+    if (maxUABAllocatedSets > 0) {
+        VkDescriptorPoolCreateInfo poolInfo{
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+            .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
+            .maxSets = static_cast<uint32_t>(_maxFramesInFlight) * maxUABAllocatedSets,
+            .poolSizeCount = static_cast<uint32_t>(uabPoolSizesVector.size()),
+            .pPoolSizes = uabPoolSizesVector.data(),
+        };
+        if (!VK_CHECK(
+                vkCreateDescriptorPool(_device.get().vkDevice, &poolInfo, nullptr, &_persistentUABDescriptorPool)
+            )) {
+            _logger.error("Failed to create persistent UAB descriptor pool!");
+            return false;
+        }
+    }
+    return true;
 }

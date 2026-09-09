@@ -85,8 +85,10 @@ bool vax::vk::Engine::setup() {
     deletionQueue.push_function([&]() { _windowController.get().getWindow(0)->cleanupSwapchain(); });
 
     descriptorSetManager = std::make_unique<DescriptorSetManager>(*device, MAX_FRAMES_IN_FLIGHT);
-    if (!descriptorSetManager->setup())
+    auto descriptorSetInfos = allDescriptorSets();
+    if (!descriptorSetManager->setup(descriptorSetInfos)) {
         return false;
+    }
     deletionQueue.push_function([&]() {
         _logger.debug("Destroying descriptor set manager...");
         descriptorSetManager->cleanup();

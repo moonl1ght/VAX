@@ -37,48 +37,33 @@ void Renderer::prepare(DrawableScene* scene) {
         if (scene != nullptr) {
             scene->prepareForDraw(engine::RenderCallContext{.currentFrame = i});
         }
-        auto globalDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
-            i,
-            vax::vk::DescriptorSetManager::PoolType::GLOBAL,
-            vax::vk::DescriptorSetManager::SetLayoutName::GLOBAL,
-            "global",
-            true
-        );
-        if (!globalDescriptorSetHandler.has_value()) {
+        auto globalDescriptorSetWriter =
+            _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(CommonDescriptorSetName::GLOBAL, i);
+        if (!globalDescriptorSetWriter.has_value()) {
             _logger.error("Failed to get global descriptor set writer!");
             return;
         }
-        scene->writeGlobalDescriptorSet(*globalDescriptorSetHandler);
+        scene->writeGlobalDescriptorSet(*globalDescriptorSetWriter);
         auto shadowSunRenderDestination = _renderPassGraph->getRenderDestination("shadow_sun");
-        globalDescriptorSetHandler->writeTexture(
+        globalDescriptorSetWriter->writeTexture(
             shadowSunRenderDestination->depthTexture(), GlobalDescriptorSetResourceIndex::GLOBAL_SHADOW_TEXTURE_INDEX
         );
-        globalDescriptorSetHandler->update();
-        auto frameDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
-            i,
-            vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
-            vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
-            "per_frame",
-            true
-        );
-        if (!frameDescriptorSetHandler.has_value()) {
+        globalDescriptorSetWriter->update();
+        auto frameDescriptorSetWriter =
+            _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(CommonDescriptorSetName::PER_FRAME, i);
+        if (!frameDescriptorSetWriter.has_value()) {
             _logger.error("Failed to get frame descriptor set writer!");
             return;
         }
-        auto roverCameraDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
-            i,
-            vax::vk::DescriptorSetManager::PoolType::PER_FRAME,
-            vax::vk::DescriptorSetManager::SetLayoutName::PER_FRAME,
-            "rover_camera",
-            true
-        );
-        if (!roverCameraDescriptorSetHandler.has_value()) {
+        auto roverCameraDescriptorSetWriter =
+            _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(CommonDescriptorSetName::ROVER_CAMERA, i);
+        if (!roverCameraDescriptorSetWriter.has_value()) {
             _logger.error("Failed to get rover camera descriptor set writer!");
             return;
         }
-        scene->writeFrameDescriptorSet(*frameDescriptorSetHandler, *roverCameraDescriptorSetHandler);
-        roverCameraDescriptorSetHandler->update();
-        frameDescriptorSetHandler->update();
+        scene->writeFrameDescriptorSet(*frameDescriptorSetWriter, *roverCameraDescriptorSetWriter);
+        roverCameraDescriptorSetWriter->update();
+        frameDescriptorSetWriter->update();
     }
     _writeFinalBlendDescriptorSets();
 }
@@ -86,64 +71,57 @@ void Renderer::prepare(DrawableScene* scene) {
 void Renderer::_writeRoverCameraDescriptorSets() {
     auto roverCameraRenderDestination = _renderPassGraph->getRenderDestination("rover_camera_main");
     for (uint32_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
-        auto roverCameraFBDescriptorSetHandler =
-            _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
-                i,
-                vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
-                vax::vk::DescriptorSetManager::SetLayoutName::FINAL_BLEND_SIMPLE,
-                "rover_camera_fb",
-                true
-            );
-        roverCameraFBDescriptorSetHandler->writeTexture(roverCameraRenderDestination->textures()[i], 0, 0, true);
-        roverCameraFBDescriptorSetHandler->update();
+        auto roverCameraFBDescriptorSetWriter =
+            _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(CommonDescriptorSetName::ROVER_CAMERA_FB, i);
+        if (!roverCameraFBDescriptorSetWriter.has_value()) {
+            _logger.error("Failed to get rover camera FB descriptor set writer!");
+            return;
+        }
+        roverCameraFBDescriptorSetWriter->writeTexture(roverCameraRenderDestination->textures()[i], 0, 0, true);
+        roverCameraFBDescriptorSetWriter->update();
     }
 }
 
 void Renderer::_writeFinalBlendDescriptorSets() {
     auto mainRenderDestination = _renderPassGraph->getRenderDestination("main");
     for (uint32_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
-        auto finalBlendDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
-            i,
-            vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
-            vax::vk::DescriptorSetManager::SetLayoutName::FINAL_BLEND,
-            "final_blend",
-            true
-        );
-        if (!finalBlendDescriptorSetHandler.has_value()) {
+        auto finalBlendDescriptorSetWriter =
+            _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(CommonDescriptorSetName::MAIN_FB, i);
+        if (!finalBlendDescriptorSetWriter.has_value()) {
             _logger.error("Failed to get post process descriptor set writer!");
             return;
         }
-        finalBlendDescriptorSetHandler->writeTexture(mainRenderDestination->textures()[i], 0, 0, true);
-        finalBlendDescriptorSetHandler->writeTexture(mainRenderDestination->maskTextures()[i], 1, 0, false);
-        finalBlendDescriptorSetHandler->writeTexture(mainRenderDestination->depthTexture(), 2, 0, false);
-        finalBlendDescriptorSetHandler->update();
+        finalBlendDescriptorSetWriter->writeTexture(mainRenderDestination->textures()[i], 0, 0, true);
+        finalBlendDescriptorSetWriter->writeTexture(mainRenderDestination->maskTextures()[i], 1, 0, false);
+        finalBlendDescriptorSetWriter->writeTexture(mainRenderDestination->depthTexture(), 2, 0, false);
+        finalBlendDescriptorSetWriter->update();
     }
 }
 
 void Renderer::_rebuildRenderPassGraph(bool withRoverCamera) {
     _renderPassGraph = _roverDemoPassGraphManager->buildRoverDemoGraph(withRoverCamera);
     for (uint32_t i = 0; i < vax::vk::MAX_FRAMES_IN_FLIGHT; ++i) {
-        auto inputMaskDescriptorSetHandler0 = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
-            i,
-            vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
-            vax::vk::DescriptorSetManager::SetLayoutName::SINGLE_STORAGE_IMAGE,
-            "fb_input_mask_0",
-            true
+        auto inputMaskDescriptorSetWriter0 = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+            CommonDescriptorSetName::MAIN_FB_INPUT_MASK_0, i
         );
-        auto inputMaskDescriptorSetHandler1 = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
-            i,
-            vax::vk::DescriptorSetManager::PoolType::FINAL_BLEND,
-            vax::vk::DescriptorSetManager::SetLayoutName::SINGLE_STORAGE_IMAGE,
-            "fb_input_mask_1",
-            true
+        if (!inputMaskDescriptorSetWriter0.has_value()) {
+            _logger.error("Failed to get input mask descriptor set writer 0!");
+            return;
+        }
+        auto inputMaskDescriptorSetWriter1 = _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(
+            CommonDescriptorSetName::MAIN_FB_INPUT_MASK_1, i
         );
+        if (!inputMaskDescriptorSetWriter1.has_value()) {
+            _logger.error("Failed to get input mask descriptor set writer 1!");
+            return;
+        }
 
         auto jfaNode = _renderPassGraph->findNode("jfa_pass");
         auto jfaPass = std::dynamic_pointer_cast<JFAPass>(jfaNode);
-        inputMaskDescriptorSetHandler0->writeTexture(jfaPass->outputATextures()[i], 0, 0, false);
-        inputMaskDescriptorSetHandler0->update();
-        inputMaskDescriptorSetHandler1->writeTexture(jfaPass->outputBTextures()[i], 0, 0, false);
-        inputMaskDescriptorSetHandler1->update();
+        inputMaskDescriptorSetWriter0->writeTexture(jfaPass->outputATextures()[i], 0, 0, false);
+        inputMaskDescriptorSetWriter0->update();
+        inputMaskDescriptorSetWriter1->writeTexture(jfaPass->outputBTextures()[i], 0, 0, false);
+        inputMaskDescriptorSetWriter1->update();
     }
 }
 
@@ -362,13 +340,8 @@ bool Renderer::_drawScene(CommandBuffer& commandBuffer, DrawableScene* scene) {
 }
 
 bool Renderer::_bindGlobalDescriptorSet(CommandBuffer& commandBuffer, VkPipelineLayout pipelineLayout) {
-    auto globalDescriptorSetHandler = _vkEngine.get().descriptorSetManager->createDefaultDescriptorSetHandler(
-        _currentFrame,
-        vax::vk::DescriptorSetManager::PoolType::GLOBAL,
-        vax::vk::DescriptorSetManager::SetLayoutName::GLOBAL,
-        "global",
-        false
-    );
+    auto globalDescriptorSetHandler =
+        _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(CommonDescriptorSetName::GLOBAL, _currentFrame);
     if (!globalDescriptorSetHandler.has_value()) {
         _logger.error("Failed to get global descriptor set writer!");
         return false;

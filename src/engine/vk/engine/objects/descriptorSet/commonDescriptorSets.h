@@ -63,7 +63,7 @@ constexpr std::vector<DescriptorSetInfo> allDescriptorSets() {
     };
 }
 
-constexpr std::string_view getSetLayoutName(DescriptorSetLayoutName setLayoutName) {
+constexpr std::string_view getSetLayoutName(const DescriptorSetLayoutName& setLayoutName) {
     switch (setLayoutName) {
     case DescriptorSetLayoutName::GLOBAL:
         return "global";
@@ -84,8 +84,35 @@ constexpr std::string_view getSetLayoutName(DescriptorSetLayoutName setLayoutNam
     }
 }
 
+constexpr std::string_view getCommonDescriptorSetName(const CommonDescriptorSetName& commonDescriptorSetName) {
+    switch (commonDescriptorSetName) {
+    case CommonDescriptorSetName::GLOBAL:
+        return "global";
+    case CommonDescriptorSetName::PER_FRAME:
+        return "per_frame";
+    case CommonDescriptorSetName::ROVER_CAMERA:
+        return "rover_camera";
+    case CommonDescriptorSetName::PER_DRAW:
+        return "per_draw";
+    case CommonDescriptorSetName::MAIN_FB:
+        return "main_fb";
+    case CommonDescriptorSetName::MAIN_FB_INPUT_MASK_0:
+        return "main_fb_input_mask_0";
+    case CommonDescriptorSetName::MAIN_FB_INPUT_MASK_1:
+        return "main_fb_input_mask_1";
+    case CommonDescriptorSetName::ROVER_CAMERA_FB:
+        return "rover_camera_fb";
+    case CommonDescriptorSetName::JFA_INIT:
+        return "jfa_init";
+    case CommonDescriptorSetName::JFA_MAIN_0:
+        return "jfa_main_0";
+    case CommonDescriptorSetName::JFA_MAIN_1:
+        return "jfa_main_1";
+    }
+}
+
 constexpr std::vector<DescriptorLayoutResourceInfo>
-getDescriptorLayoutResources(DescriptorSetLayoutName setLayoutName) {
+getDescriptorLayoutResources(const DescriptorSetLayoutName& setLayoutName) {
     switch (setLayoutName) {
     case DescriptorSetLayoutName::GLOBAL:
         return {
@@ -216,7 +243,8 @@ getDescriptorLayoutResources(DescriptorSetLayoutName setLayoutName) {
     }
 }
 
-constexpr std::vector<VkDescriptorPoolSize> getDescriptorLayoutPoolRequirements(DescriptorSetLayoutName setLayoutName) {
+constexpr std::vector<VkDescriptorPoolSize>
+getDescriptorLayoutPoolRequirements(const DescriptorSetLayoutName& setLayoutName) {
     switch (setLayoutName) {
     case DescriptorSetLayoutName::GLOBAL:
         return {

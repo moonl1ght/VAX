@@ -1,11 +1,11 @@
-#include "descriptorSetHandler.h"
+#include "descriptorSetWriter.h"
 #include "shaderUniforms.h"
 #include "vkUtils.h"
 
 using namespace vax::vk;
 using namespace vax;
 
-void DescriptorSetHandler::writeTexture(
+void DescriptorSetWriter::writeTexture(
     const Texture& texture, uint32_t binding, uint32_t arrayElement, bool withSampler
 ) {
     auto imageInfoOpt = withSampler ? texture.descriptorImageInfoWithSampler() : texture.descriptorImageInfoNoSampler();
@@ -29,7 +29,7 @@ void DescriptorSetHandler::writeTexture(
     _writes.push_back(write);
 }
 
-void DescriptorSetHandler::writeTextures(
+void DescriptorSetWriter::writeTextures(
     const std::vector<const Texture*>& textures, uint32_t binding, bool withSampler
 ) {
     std::vector<VkDescriptorImageInfo> imageInfos;
@@ -58,7 +58,7 @@ void DescriptorSetHandler::writeTextures(
     _writes.push_back(write);
 }
 
-void DescriptorSetHandler::writeSampler(const Sampler& sampler, uint32_t binding, uint32_t arrayElement) {
+void DescriptorSetWriter::writeSampler(const Sampler& sampler, uint32_t binding, uint32_t arrayElement) {
     VkDescriptorImageInfo& samplerInfo = _imageInfos.emplace_back(
         VkDescriptorImageInfo{
         .sampler = sampler.vkSampler,
@@ -78,19 +78,19 @@ void DescriptorSetHandler::writeSampler(const Sampler& sampler, uint32_t binding
     _writes.push_back(write);
 }
 
-VkDescriptorSet DescriptorSetHandler::update() {
+VkDescriptorSet DescriptorSetWriter::update() {
     vkUpdateDescriptorSets(_device.get().vkDevice, static_cast<uint32_t>(_writes.size()), _writes.data(), 0, nullptr);
     return _descriptorSet;
 }
 
-void DescriptorSetHandler::clear() {
+void DescriptorSetWriter::clear() {
     _writes.clear();
     _bufferInfos.clear();
     _imageInfos.clear();
     _imageInfosArray.clear();
 }
 
-void DescriptorSetHandler::bind(
+void DescriptorSetWriter::bind(
     VkCommandBuffer commandBuffer,
     VkPipelineLayout pipelineLayout,
     uint32_t setIndex,

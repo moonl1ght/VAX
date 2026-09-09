@@ -162,69 +162,69 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
     _gizmoCamera.setViewSize(1.5f);
 }
 
-bool vax::engine::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetHandler& descriptorHandler) {
+bool vax::engine::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& descriptorWriter) {
     auto globalSampler = _resourceManager.textureManager().getGlobalSampler(GlobalSampler::PBRSampler);
     auto globalCubeMapSampler = _resourceManager.textureManager().getGlobalSampler(GlobalSampler::CubeMapSampler);
     if (!globalSampler.has_value() || !globalCubeMapSampler.has_value()) {
         return false;
     }
-    descriptorHandler.writeBuffer(
+    descriptorWriter.writeBuffer(
         _resourceManager.materialManager().materialBuffer(),
         GlobalDescriptorSetResourceIndex::GLOBAL_MATERIAL_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );
-    descriptorHandler.writeBuffer(
+    descriptorWriter.writeBuffer(
         _environmentMap->environmentMapBuffer(),
         GlobalDescriptorSetResourceIndex::GLOBAL_ENVIRONMENT_MAP_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );
-    descriptorHandler.writeSampler(*globalSampler->second, GlobalDescriptorSetResourceIndex::GLOBAL_SAMPLER_INDEX, 0);
-    descriptorHandler.writeSampler(
+    descriptorWriter.writeSampler(*globalSampler->second, GlobalDescriptorSetResourceIndex::GLOBAL_SAMPLER_INDEX, 0);
+    descriptorWriter.writeSampler(
         *globalCubeMapSampler->second, GlobalDescriptorSetResourceIndex::GLOBAL_SAMPLER_INDEX, 1
     );
-    _resourceManager.textureManager().updateDescriptorHandlerWithAllTextures(
-        descriptorHandler, GlobalDescriptorSetResourceIndex::GLOBAL_TEXTURE_INDEX
+    _resourceManager.textureManager().updateDescriptorWriterWithAllTextures(
+        descriptorWriter, GlobalDescriptorSetResourceIndex::GLOBAL_TEXTURE_INDEX
     );
     return true;
 }
 
 bool vax::engine::DrawableScene::writeFrameDescriptorSet(
-    vax::vk::DescriptorSetHandler& descriptorHandler, vax::vk::DescriptorSetHandler& roverCameraDescriptorHandler
+    vax::vk::DescriptorSetWriter& descriptorWriter, vax::vk::DescriptorSetWriter& roverCameraDescriptorWriter
 ) {
-    descriptorHandler.writeBuffer(
+    descriptorWriter.writeBuffer(
         *_sceneUniformBuffers[_renderCallContext.currentFrame],
         PerFrameDescriptorSetResourceIndex::FRAME_UNIFORM_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
     );
-    descriptorHandler.writeBuffer(
+    descriptorWriter.writeBuffer(
         *_lightsUniformBuffer[_renderCallContext.currentFrame],
         PerFrameDescriptorSetResourceIndex::FRAME_LIGHT_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     );
-    descriptorHandler.writeBuffer(
+    descriptorWriter.writeBuffer(
         _resourceManager.ssboManager().instanceBuffer(_renderCallContext.currentFrame),
         PerFrameDescriptorSetResourceIndex::FRAME_INSTANCE_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
     );
 
-    roverCameraDescriptorHandler.writeBuffer(
+    roverCameraDescriptorWriter.writeBuffer(
         *_roverCameraUniformBuffers[_renderCallContext.currentFrame],
         PerFrameDescriptorSetResourceIndex::FRAME_UNIFORM_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
     );
-    roverCameraDescriptorHandler.writeBuffer(
+    roverCameraDescriptorWriter.writeBuffer(
         *_lightsUniformBuffer[_renderCallContext.currentFrame],
         PerFrameDescriptorSetResourceIndex::FRAME_LIGHT_BUFFER_INDEX,
         0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     );
-    roverCameraDescriptorHandler.writeBuffer(
+    roverCameraDescriptorWriter.writeBuffer(
         _resourceManager.ssboManager().instanceBuffer(_renderCallContext.currentFrame),
         PerFrameDescriptorSetResourceIndex::FRAME_INSTANCE_BUFFER_INDEX,
         0,

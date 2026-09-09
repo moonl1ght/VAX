@@ -23,12 +23,8 @@ void RenderPass::runPass(RunPassInfo& runPassInfo) {
                 return;
             }
             for (const auto& inputDescriptorSetInfo : _inputDescriptorSetInfos) {
-                auto descriptorSetHandler = _descriptorSetManager.get().createDefaultDescriptorSetHandler(
-                    runPassInfo.frameIndex,
-                    inputDescriptorSetInfo.poolType,
-                    inputDescriptorSetInfo.layoutName,
-                    inputDescriptorSetInfo.name,
-                    true
+                auto descriptorSetHandler = _descriptorSetManager.get().getDescriptorSetHandler(
+                    inputDescriptorSetInfo.setName, runPassInfo.frameIndex
                 );
                 if (!descriptorSetHandler.has_value()) {
                     _logger.error("Failed to get descriptor set handler!");

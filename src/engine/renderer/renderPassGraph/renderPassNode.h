@@ -4,14 +4,13 @@
 
 #include "commandBuffer.h"
 #include "drawableScene.h"
+#include "commonDescriptorSets.h"
 
 namespace vax::engine {
 class RenderPassNode {
   public:
     struct InputDescriptorSetInfo {
-        vax::vk::DescriptorSetManager::PoolType poolType;
-        vax::vk::DescriptorSetManager::SetLayoutName layoutName;
-        std::string name;
+        vax::vk::CommonDescriptorSetName setName;
 
         struct BindingInfo {
             uint32_t setIndex;

@@ -4,6 +4,7 @@
 #include "renderDestination.h"
 #include "renderPassNode.h"
 #include "texture.h"
+#include "commonDescriptorSets.h"
 
 namespace vax::engine {
 class JFAPass final : public RenderPassNode {
@@ -30,11 +31,11 @@ class JFAPass final : public RenderPassNode {
 
     const std::vector<vax::vk::Texture>& outputBTextures() const;
 
-    std::string outputDescriptorSetName() const {
+    vax::vk::CommonDescriptorSetName outputDescriptorSetName() const {
         if (_isFinalImageA) {
-            return "fb_input_mask_0";
+            return vax::vk::CommonDescriptorSetName::MAIN_FB_INPUT_MASK_0;
         } else {
-            return "fb_input_mask_1";
+            return vax::vk::CommonDescriptorSetName::MAIN_FB_INPUT_MASK_1;
         }
     }
 
