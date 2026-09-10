@@ -146,6 +146,7 @@ struct PerDrawData {
 };
 
 struct GlobalPushConstants {
+    uint32_t drawIndexOffset;
 };
 
 struct PBRMaterial {

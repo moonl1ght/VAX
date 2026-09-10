@@ -6,7 +6,7 @@ using namespace vax;
 using namespace vax::math;
 
 void DrawableNode::updateInstanceData(
-    const DrawContext& drawContext, const InstanceData& instanceData, uint32_t instanceIndex
+    uint32_t frameIndex, const InstanceData& instanceData, uint32_t instanceIndex
 ) {
     for (auto& drawingRangeForDrawableModel : _drawableModelInstanceDrawingRanges) {
         auto drawingRange = drawingRangeForDrawableModel[_drawingRangeIndex];
@@ -19,11 +19,11 @@ void DrawableNode::updateInstanceData(
             count = drawingRange.second;
         }
         auto offset = drawingRange.first;
-        _ssboManager.get().updateInstance(drawContext.currentFrame, offset + instanceIndex, instanceData);
+        _ssboManager.get().updateInstance(frameIndex, offset + instanceIndex, instanceData);
     }
 }
 
-void DrawableNode::drawModels(const DrawContext& drawContext) {
+void DrawableNode::prepareDrawingModels(engine::IndirectDrawController* indirectDrawController, uint32_t frameIndex) {
     for (size_t i = 0; i < _drawableModels.size(); ++i) {
         auto& drawableModel = _drawableModels[i];
         for (auto& drawingRange : _drawableModelInstanceDrawingRanges[i]) {
@@ -31,13 +31,13 @@ void DrawableNode::drawModels(const DrawContext& drawContext) {
                 .instanceOffset = drawingRange.first,
                 .instancesCount = drawingRange.second,
             };
-            drawableModel->draw(drawContext, drawSettings);
+            drawableModel->prepareDrawing(indirectDrawController, frameIndex, drawSettings);
         }
     }
 }
 
-void DrawableNode::draw(const DrawContext& drawContext) {
-    Node::draw(drawContext);
+void DrawableNode::prepareDrawing(engine::IndirectDrawController* indirectDrawController, uint32_t frameIndex) {
+    Node::prepareDrawing(indirectDrawController, frameIndex);
 }
 
 void DrawableNode::addDrawableModel(DrawableModelHandle drawableModelHandle) {

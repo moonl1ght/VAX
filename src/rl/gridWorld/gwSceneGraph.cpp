@@ -44,14 +44,14 @@ bool GwSceneGraph::load(
     return true;
 }
 
-void GwSceneGraph::draw(const DrawContext& drawContext) {
+void GwSceneGraph::prepareDrawing(engine::IndirectDrawController* indirectDrawController, uint32_t frameIndex) {
     if (_gwAgentNode) {
-        _gwAgentNode->agentNode().draw(drawContext);
+        _gwAgentNode->agentNode().prepareDrawing(indirectDrawController, frameIndex);
     } else {
         _logger.warning("Agent node not loaded!");
     }
     for (auto& node : _envNodes) {
-        node.draw(drawContext);
+        node.prepareDrawing(indirectDrawController, frameIndex);
     }
 }
 

@@ -13,6 +13,7 @@ struct FragmentInput {
     float2 uv : TEXCOORD0;
     float2 uv2 : TEXCOORD1;
     uint packedColor : PACKED_COLOR;
+    nointerpolation uint instanceIndex : INSTANCE_INDEX;
     nointerpolation uint drawIndex : DRAW_INDEX;
 };
 

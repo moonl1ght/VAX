@@ -1,6 +1,6 @@
 #pragma once
 
-#include "drawContext.h"
+#include "indirectDrawController.h"
 #include "luna.h"
 #include "mesh.h"
 #include "resourceHandle.h"
@@ -18,7 +18,7 @@ class DrawableModel final {
         uint32_t instanceOffset;
         uint32_t instancesCount;
     };
-    
+
     struct Settings {
         bool useWireframe = false;
         bool hasTangents = false;
@@ -41,7 +41,9 @@ class DrawableModel final {
 
     ~DrawableModel() {};
 
-    void draw(const vax::engine::DrawContext& drawContext, const DrawSettings& drawSettings);
+    void prepareDrawing(
+        engine::IndirectDrawController* indirectDrawController, uint32_t frameIndex, const DrawSettings& drawSettings
+    );
 
     Settings& settings() { return _settings; }
 

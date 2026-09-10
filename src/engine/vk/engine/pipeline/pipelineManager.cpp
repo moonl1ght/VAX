@@ -282,6 +282,13 @@ bool vax::vk::PipelineManager::_createBasePipelineLayout(vax::vk::PipelineLayout
         return false;
     }
     pipelineBuilder.addDescriptorSetLayout(perFrameDescriptorSetLayout->getVkDescriptorSetLayout());
+    auto perDrawDescriptorSetLayout =
+        _descriptorSetManager.get().getDescriptorSetLayout(DescriptorSetLayoutName::PER_DRAW);
+    if (!perDrawDescriptorSetLayout) {
+        _logger.error("Failed to get per draw descriptor set layout!");
+        return false;
+    }
+    pipelineBuilder.addDescriptorSetLayout(perDrawDescriptorSetLayout->getVkDescriptorSetLayout());
     pipelineBuilder.setPushConstantRange({
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         .offset = 0,

@@ -108,9 +108,10 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
                                    .value();
         lightAllocation.second->map();
         _lightsUniformBuffer.push_back(lightAllocation.second);
-        _indirectDrawController = std::make_unique<IndirectDrawController>(*_vkEngine.get().device);
-        _indirectDrawController->setup(10000);
     }
+    _indirectDrawController = std::make_unique<IndirectDrawController>(*_vkEngine.get().device);
+    _indirectDrawController->setup(10000);
+
     std::vector<vax::engine::ModelDescriptor> modelDescriptors = {
         {
         .path = "",
@@ -160,6 +161,11 @@ void vax::engine::DrawableScene::loadScene(const GridWorldDrawableDescriptor& de
     _gizmoCamera.setViewPortSize(math::SizeUI(256, 256));
     _gizmoCamera.setProjection(engine::Camera::Projection::orthographic);
     _gizmoCamera.setViewSize(1.5f);
+}
+
+bool vax::engine::DrawableScene::writePerDrawDescriptorSet(vax::vk::DescriptorSetWriter& descriptorWriter) {
+    _indirectDrawController->writePerDrawDescriptorSet(descriptorWriter, _renderCallContext.currentFrame);
+    return true;
 }
 
 bool vax::engine::DrawableScene::writeGlobalDescriptorSet(vax::vk::DescriptorSetWriter& descriptorWriter) {
@@ -243,11 +249,29 @@ void vax::engine::DrawableScene::draw(const DrawContext& drawContext) {
         0,
         VK_INDEX_TYPE_UINT32
     );
-    auto drawContextCopy = drawContext;
-    drawContextCopy.indirectDrawController = _indirectDrawController.get();
-    _indirectDrawController->prepareForDraw(drawContext.currentFrame);
-    _sceneGraph->draw(drawContextCopy);
-    _submitDrawCommands(drawContextCopy.commandBuffer, drawContext.currentFrame);
+
+    auto perDrawDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+        CommonDescriptorSetName::PER_DRAW, drawContext.currentFrame
+    );
+    if (!perDrawDescriptorSetHandler.has_value()) {
+        _logger.error("Failed to get per draw descriptor set handler!");
+        return;
+    }
+    perDrawDescriptorSetHandler->bind(
+        drawContext.commandBuffer.vkCommandBuffer, drawContext.pipelineLayout, MainSetIndices::PER_DRAW_SET_INDEX
+    );
+
+    auto drawRange = _drawRanges[0];
+    GlobalPushConstants pushConstants{.drawIndexOffset = drawRange.start};
+    vkCmdPushConstants(
+        drawContext.commandBuffer.vkCommandBuffer,
+        drawContext.pipelineLayout,
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        0,
+        sizeof(pushConstants),
+        &pushConstants
+    );
+    _indirectDrawController->drawRange(drawContext.commandBuffer, drawContext.currentFrame, drawRange);
 }
 
 void vax::engine::DrawableScene::drawBackground(const DrawContext& drawContext) {
@@ -262,11 +286,8 @@ void vax::engine::DrawableScene::drawBackground(const DrawContext& drawContext) 
         0,
         VK_INDEX_TYPE_UINT32
     );
-    auto drawContextCopy = drawContext;
-    drawContextCopy.indirectDrawController = _indirectDrawController.get();
-    _indirectDrawController->prepareForDraw(drawContext.currentFrame);
-    _background->draw(drawContextCopy);
-    _submitDrawCommands(drawContextCopy.commandBuffer, drawContext.currentFrame);
+    auto drawRange = _drawRanges[2];
+    _indirectDrawController->drawRange(drawContext.commandBuffer, drawContext.currentFrame, drawRange);
 }
 
 void vax::engine::DrawableScene::drawGizmo(const DrawContext& drawContext) {
@@ -281,17 +302,28 @@ void vax::engine::DrawableScene::drawGizmo(const DrawContext& drawContext) {
         0,
         VK_INDEX_TYPE_UINT32
     );
-    auto viewMatrix = _gizmoCamera.viewMatrix();
-    auto projectionMatrix = _gizmoCamera.projectionMatrix();
-    auto viewProjectionMatrix = projectionMatrix * viewMatrix;
-    _gizmo->updateTransform([&](vax::math::TransformHandle& transformHandle) {
-        transformHandle.setCachedTransformMatrix(viewProjectionMatrix);
-    });
-    auto drawContextCopy = drawContext;
-    drawContextCopy.indirectDrawController = _indirectDrawController.get();
-    _indirectDrawController->prepareForDraw(drawContext.currentFrame);
-    _gizmo->draw(drawContextCopy);
-    _submitDrawCommands(drawContextCopy.commandBuffer, drawContext.currentFrame);
+    auto drawRange = _drawRanges[1];
+    auto perDrawDescriptorSetHandler = _vkEngine.get().descriptorSetManager->getDescriptorSetHandler(
+        CommonDescriptorSetName::PER_DRAW, drawContext.currentFrame
+    );
+    if (!perDrawDescriptorSetHandler.has_value()) {
+        _logger.error("Failed to get per draw descriptor set handler!");
+        return;
+    }
+    // TODO: fix this
+    perDrawDescriptorSetHandler->bind(
+        drawContext.commandBuffer.vkCommandBuffer, drawContext.pipelineLayout, MainSetIndices::PER_DRAW_SET_INDEX
+    );
+    GlobalPushConstants pushConstants{.drawIndexOffset = drawRange.start};
+    vkCmdPushConstants(
+        drawContext.commandBuffer.vkCommandBuffer,
+        drawContext.pipelineLayout,
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        0,
+        sizeof(pushConstants),
+        &pushConstants
+    );
+    _indirectDrawController->drawRange(drawContext.commandBuffer, drawContext.currentFrame, drawRange);
 }
 
 void vax::engine::DrawableScene::onMouseMove(const vax::MouseMoveValue& value) {
@@ -317,11 +349,31 @@ void vax::engine::DrawableScene::_loadEnvironmentMap(VkQueue submitQueue) {
     );
 }
 
-void DrawableScene::beginDrawing() {}
+void DrawableScene::beginDrawing(CommandBuffer& commandBuffer, uint32_t frameIndex) {
+    auto viewMatrix = _gizmoCamera.viewMatrix();
+    auto projectionMatrix = _gizmoCamera.projectionMatrix();
+    auto viewProjectionMatrix = projectionMatrix * viewMatrix;
+    _gizmo->updateTransform([&](vax::math::TransformHandle& transformHandle) {
+        transformHandle.setCachedTransformMatrix(viewProjectionMatrix);
+    });
+    _indirectDrawController->prepareForDraw(frameIndex);
 
-void DrawableScene::endDrawing() {}
+    auto drawRange = _indirectDrawController->addDrawScope([&]() {
+        _sceneGraph->prepareDrawing(_indirectDrawController.get(), frameIndex);
+    });
 
-void DrawableScene::_submitDrawCommands(CommandBuffer& commandBuffer, uint32_t frameIndex) {
+    auto gizmoDrawRange = _indirectDrawController->addDrawScope([&]() {
+        _gizmo->prepareDrawing(_indirectDrawController.get(), frameIndex);
+    });
+
+    auto backgroundDrawRange = _indirectDrawController->addDrawScope([&]() {
+        _background->prepareDrawing(_indirectDrawController.get(), frameIndex);
+    });
+
     _indirectDrawController->submitCommands(frameIndex);
-    _indirectDrawController->draw(commandBuffer, frameIndex);
+
+
+    _drawRanges = {drawRange, gizmoDrawRange, backgroundDrawRange};
 }
+
+void DrawableScene::endDrawing(CommandBuffer& commandBuffer, uint32_t frameIndex) {}

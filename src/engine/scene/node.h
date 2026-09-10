@@ -45,7 +45,7 @@ class Node {
 
     NodeType getType() const { return _type; }
 
-    void draw(const DrawContext& drawContext);
+    void prepareDrawing(engine::IndirectDrawController* indirectDrawController, uint32_t frameIndex);
 
     bool isRoot() const { return _isRoot; };
 

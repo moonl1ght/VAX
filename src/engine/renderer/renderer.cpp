@@ -64,6 +64,15 @@ void Renderer::prepare(DrawableScene* scene) {
         scene->writeFrameDescriptorSet(*frameDescriptorSetWriter, *roverCameraDescriptorSetWriter);
         roverCameraDescriptorSetWriter->update();
         frameDescriptorSetWriter->update();
+
+        auto perDrawDescriptorSetWriter =
+            _vkEngine.get().descriptorSetManager->getDescriptorSetWriter(CommonDescriptorSetName::PER_DRAW, i);
+        if (!perDrawDescriptorSetWriter.has_value()) {
+            _logger.error("Failed to get per draw descriptor set writer!");
+            return;
+        }
+        scene->writePerDrawDescriptorSet(*perDrawDescriptorSetWriter);
+        perDrawDescriptorSetWriter->update();
     }
     _writeFinalBlendDescriptorSets();
 }
@@ -333,9 +342,9 @@ bool Renderer::_drawScene(CommandBuffer& commandBuffer, DrawableScene* scene) {
         .frameIndex = _currentFrame,
     };
 
-    scene->beginDrawing();
+    scene->beginDrawing(commandBuffer, _currentFrame);
     _renderPassGraph->run(runPassInfo);
-    scene->endDrawing();
+    scene->endDrawing(commandBuffer, _currentFrame);
     return true;
 }
 

@@ -81,9 +81,11 @@ class DrawableScene final : public vax::InputController::Observer {
         vax::vk::DescriptorSetWriter& descriptorWriter, vax::vk::DescriptorSetWriter& roverCameraDescriptorWriter
     );
 
-    void beginDrawing();
+    bool writePerDrawDescriptorSet(vax::vk::DescriptorSetWriter& descriptorWriter);
 
-    void endDrawing();
+    void beginDrawing(vax::vk::CommandBuffer& commandBuffer, uint32_t frameIndex);
+
+    void endDrawing(vax::vk::CommandBuffer& commandBuffer, uint32_t frameIndex);
 
     void draw(const vax::engine::DrawContext& drawContext);
 
@@ -129,6 +131,7 @@ class DrawableScene final : public vax::InputController::Observer {
     std::optional<vax::engine::DrawableNode> _background;
     std::optional<vax::engine::DrawableNode> _gizmo;
     std::optional<vax::engine::EnvironmentMap> _environmentMap;
+    std::vector<IndirectDrawController::DrawRange> _drawRanges;
 
     vax::engine::RenderCallContext _renderCallContext;
     vax::engine::SceneUpdateContext _sceneUpdateContext;
@@ -136,9 +139,5 @@ class DrawableScene final : public vax::InputController::Observer {
     bool _shouldDrawSecondaryWindow = false;
 
     void _loadEnvironmentMap(VkQueue submitQueue);
-    void _drawDrawableNode(
-        vax::engine::DrawableNode& node, VkCommandBuffer commandBuffer, const vax::vk::Pipeline& pipeline
-    );
-    void _submitDrawCommands(vax::vk::CommandBuffer& commandBuffer, uint32_t frameIndex);
 };
 } // namespace vax::engine

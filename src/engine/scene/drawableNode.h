@@ -66,9 +66,9 @@ class DrawableNode final : public Node {
 
     bool hasDrawableModels() const { return !_drawableModels.empty(); };
 
-    void draw(const vax::engine::DrawContext& drawContext);
+    void prepareDrawing(engine::IndirectDrawController* indirectDrawController, uint32_t frameIndex);
 
-    void drawModels(const vax::engine::DrawContext& drawContext);
+    void prepareDrawingModels(engine::IndirectDrawController* indirectDrawController, uint32_t frameIndex);
 
     const std::vector<DrawableModel*>& drawableModels() const { return _drawableModels; }
 
@@ -78,7 +78,7 @@ class DrawableNode final : public Node {
 
     void resetDrawingRangeIndex() { _drawingRangeIndex = 0; }
 
-    void updateInstanceData(const DrawContext& drawContext,const InstanceData& instanceData, uint32_t instanceIndex);
+    void updateInstanceData(uint32_t frameIndex, const InstanceData& instanceData, uint32_t instanceIndex);
 
   private:
     std::reference_wrapper<vax::vk::SSBOManager> _ssboManager;

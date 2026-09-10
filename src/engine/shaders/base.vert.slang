@@ -12,7 +12,8 @@ VertexOutput vertMain(
     VertexOutput output;
     InstanceData instance = instances[instanceIndex];
     float4x4 modelMatrix = instance.model;
-    PerDrawData drawData = drawData[drawIndex]; 
+    uint absoluteDrawIndex = pushConstants.drawIndexOffset + drawIndex;
+    PerDrawData drawData = drawData[absoluteDrawIndex]; 
     if ((drawData.flags & ObjectFlags::PrecomputedMVP) != 0) {
         output.position = mul(modelMatrix, float4(input.position, 1.0));
     } else {
@@ -25,6 +26,6 @@ VertexOutput vertMain(
     output.uv2 = input.uv2;
     output.packedColor = input.packedColor;
     output.instanceIndex = instanceIndex;
-    output.drawIndex = drawIndex;
+    output.drawIndex = absoluteDrawIndex;
     return output;
 }

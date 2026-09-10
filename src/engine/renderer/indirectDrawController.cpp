@@ -52,6 +52,20 @@ void IndirectDrawController::draw(CommandBuffer& commandBuffer, uint32_t frameIn
     );
 }
 
+void IndirectDrawController::drawRange(CommandBuffer& commandBuffer, uint32_t frameIndex, DrawRange drawRange) {
+    if (!_submitted[frameIndex]) {
+        _logger.error("Commands not submitted");
+        return;
+    }
+    vkCmdDrawIndexedIndirect(
+        commandBuffer.vkCommandBuffer,
+        _commandBuffers[frameIndex]->vkBuffer(),
+        drawRange.start * sizeof(VkDrawIndexedIndirectCommand),
+        drawRange.count,
+        sizeof(VkDrawIndexedIndirectCommand)
+    );
+}
+
 void IndirectDrawController::pushCommand(VkDrawIndexedIndirectCommand command, const PerDrawData& perDrawData) {
     if (_commands.size() >= _maxCommands) {
         _logger.error("Max commands reached");
@@ -74,4 +88,15 @@ void IndirectDrawController::prepareForDraw(uint32_t frameIndex) {
     _commands.clear();
     _perDrawData.clear();
     _submitted[frameIndex] = false;
+}
+
+void IndirectDrawController::writePerDrawDescriptorSet(
+    vax::vk::DescriptorSetWriter& descriptorWriter, uint32_t frameIndex
+) {
+    descriptorWriter.writeBuffer(
+        *_perDrawDataBuffers[frameIndex],
+        DrawBindingIndices::DRAW_DATA_BUFFER_INDEX,
+        0,
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+    );
 }

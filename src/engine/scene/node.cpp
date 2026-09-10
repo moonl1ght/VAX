@@ -1,14 +1,14 @@
 #include "node.h"
 #include "drawableNode.h"
+#include "profiler.h"
 #include "shaderSharedUtils.h"
 #include "transform.h"
-#include "profiler.h"
 
 using namespace vax::engine;
 using namespace vax;
 using namespace vax::math;
 
-void Node::draw(const DrawContext& drawContext) {
+void Node::prepareDrawing(engine::IndirectDrawController* indirectDrawController, uint32_t frameIndex) {
     ZoneScopedN("Node::draw");
     if (_type == NodeType::SCENE) {
         auto drawableNode = static_cast<DrawableNode*>(this);
@@ -35,7 +35,7 @@ void Node::draw(const DrawContext& drawContext) {
         switch (_type) {
         case NodeType::SCENE: {
             auto drawableNode = static_cast<DrawableNode*>(this);
-            drawableNode->updateInstanceData(drawContext, instanceData, i);
+            drawableNode->updateInstanceData(frameIndex, instanceData, i);
         } break;
         default:
             break;
@@ -61,11 +61,11 @@ void Node::draw(const DrawContext& drawContext) {
     switch (_type) {
     case NodeType::SCENE: {
         auto drawableNode = static_cast<DrawableNode*>(this);
-        drawableNode->drawModels(drawContext);
+        drawableNode->prepareDrawingModels(indirectDrawController, frameIndex);
     } break;
     }
     for (auto& child : _children) {
-        child->draw(drawContext);
+        child->prepareDrawing(indirectDrawController, frameIndex);
     }
 }
 

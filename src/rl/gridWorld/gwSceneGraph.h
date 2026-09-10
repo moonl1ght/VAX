@@ -1,17 +1,17 @@
 #pragma once
 
 #include "animationGroup.h"
-#include "drawContext.h"
+#include "camera.h"
+#include "drawableNode.h"
 #include "frameTime.h"
 #include "gridWorldDescriptor.h"
+#include "gwAgentNode.h"
 #include "gwenv.h"
+#include "indirectDrawController.h"
 #include "logger.h"
 #include "modelLoader.h"
 #include "modelsController.h"
-#include "gwAgentNode.h"
-#include "drawableNode.h"
 #include "vaxMath.h"
-#include "camera.h"
 
 namespace vax::rl {
 // TODO: move to generic scene graph
@@ -28,7 +28,7 @@ class GwSceneGraph final {
 
     bool load(vax::engine::ModelsController& modelsController, const vax::rl::GridWorldDrawableDescriptor& descriptor);
 
-    void draw(const vax::engine::DrawContext& drawContext);
+    void prepareDrawing(engine::IndirectDrawController* indirectDrawController, uint32_t frameIndex);
 
     void update(const vax::engine::FrameTime& frameTime);
 
@@ -48,13 +48,9 @@ class GwSceneGraph final {
 
     void setOnAllAnimationsCompleted(std::function<void()> onAllAnimationsCompleted);
 
-    const vax::engine::Camera& roverCamera() const {
-        return _gwAgentNode->camera();
-    }
+    const vax::engine::Camera& roverCamera() const { return _gwAgentNode->camera(); }
 
-    vax::engine::Camera& roverCamera() {
-        return _gwAgentNode->camera();
-    }
+    vax::engine::Camera& roverCamera() { return _gwAgentNode->camera(); }
 
   private:
     vax::Logger _logger = vax::Logger("GwSceneGraph");
