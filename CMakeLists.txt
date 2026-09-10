@@ -24,7 +24,6 @@ if(WIN32)
     find_package(SDL3 REQUIRED)
 else()
     find_package(SDL3 REQUIRED FATAL_ERROR)
-    find_package(tinyobjloader REQUIRED FATAL_ERROR)
 endif()
 find_package(imgui REQUIRED CONFIG)
 find_package(Tracy REQUIRED)
@@ -217,7 +216,6 @@ else()
             Vulkan::Vulkan
             nlohmann_json::nlohmann_json
             assimp::assimp
-            tinyobjloader::tinyobjloader
             SDL3::SDL3
             glm::glm
             Tracy::TracyClient
